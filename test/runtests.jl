@@ -1,5 +1,16 @@
+using SCS
+using JuMP
 using SumOfSquares
 using Base.Test
 
-# write your own tests here
-@test 1 == 2
+#x = Var("x")
+#y = Var("y")
+#@polyvar x y z
+
+#println([x^2, x*y, y^2])
+#println([x, y])
+
+#println(MonomialVector((x*y*z).vars, 3))
+
+include("sosdemo1.jl")
+include("motzkin.jl")
