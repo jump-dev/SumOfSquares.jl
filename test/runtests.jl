@@ -14,3 +14,4 @@ using Base.Test
 
 include("sosdemo1.jl")
 include("motzkin.jl")
+include("sosdemo2.jl")

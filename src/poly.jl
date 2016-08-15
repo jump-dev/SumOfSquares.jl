@@ -1,7 +1,10 @@
-export Term, VecPolynomial, MatPolynomial
+export Term, VecPolynomial, MatPolynomial, SOSDecomposition, getmat
+import Base.eltype
 
 abstract TermContainer{T}
 
+# Invariant:
+# α is nonzero (otherwise, just keep zero(T) and drop the monomial x)
 type Term{T} <: TermContainer{T}
   α::T
   x::Monomial
@@ -16,6 +19,8 @@ Term{T}(α::T) = Term{T}(α, Monomial())
 (::Type{Term{T}}){T}(x::PolyVar) = Term{T}(Monomial(x))
 (::Type{Term{T}}){T}(α) = Term(T(α))
 
+eltype{T}(p::Term{T}) = T
+
 vars(t::Term) = vars(t.x)
 
 length(::Term) = 1
@@ -24,6 +29,9 @@ start(::Term) = false
 done(::Term, state) = state
 next(x::Term, state) = (x, true)
 
+# Invariant:
+# a does not contain any zeros
+# x is increasing in the monomial order (i.e. grlex)
 type VecPolynomial{T} <: TermContainer{T}
   a::Vector{T}
   x::MonomialVector
@@ -49,6 +57,14 @@ type VecPolynomial{T} <: TermContainer{T}
   end
 end
 VecPolynomial{T}(a::Vector{T}, x::MonomialVector) = VecPolynomial{T}(a, x)
+
+VecPolynomial(x) = VecPolynomial(Term(x))
+VecPolynomial{T}(t::Term{T}) = VecPolynomial{T}([t.α], [t.x])
+Base.convert{T}(::Type{VecPolynomial{T}}, x) = VecPolynomial(Term{T}(x))
+Base.convert{T}(::Type{VecPolynomial{T}}, t::Term) = VecPolynomial{T}([T(t.α)], [t.x])
+Base.convert{T}(::Type{VecPolynomial{T}}, p::VecPolynomial{T}) = p
+
+eltype{T}(p::VecPolynomial{T}) = T
 
 function vecpolynomialclean{T}(vars::Vector{PolyVar}, adup::Vector{T}, Zdup::Vector{Vector{Int}})
   σ = sortperm(Zdup)
@@ -125,4 +141,43 @@ function VecPolynomial{T}(p::MatPolynomial{T})
     end
   end
   vecpolynomialclean(p.x.vars, a, Z)
+end
+
+type SOSDecomposition{T}
+  ps::Vector{VecPolynomial{T}}
+  function SOSDecomposition(ps::Vector{VecPolynomial{T}})
+    new(ps)
+  end
+end
+function (::Type{SOSDecomposition{T}}){T}(ps::Vector)
+  SOSDecomposition(Vector{VecPolynomial{T}}(ps))
+end
+function SOSDecomposition(ps::Vector)
+  T = reduce(promote_type, Int, map(eltype, ps))
+  SOSDecomposition{T}(ps)
+end
+length(p::SOSDecomposition) = length(p.ps)
+isempty(p::SOSDecomposition) = isempty(p.ps)
+start(p::SOSDecomposition) = start(p.ps)
+done(p::SOSDecomposition, state) = done(p.ps, state)
+next(p::SOSDecomposition, state) = next(p.ps, state)
+
+function getmat{T}(p::MatPolynomial{T})
+  n = length(p.x)
+  A = Matrix{T}(n, n)
+  for i in 1:n, j in i:n
+    A[j,i] = A[i,j] = p.Q[trimap(i,j,n)]
+  end
+  A
+end
+
+function SOSDecomposition{T}(p::MatPolynomial{T})
+  n = length(p.x)
+  # TODO LDL^T factorization for SDP is missing in Julia
+  # it would be nice to have though
+  A = getmat(p)
+  @show A
+  Q = chol(A)
+  ps = [VecPolynomial(Q[i,:], p.x) for i in 1:n]
+  SOSDecomposition(ps)
 end

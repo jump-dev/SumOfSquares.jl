@@ -4,6 +4,8 @@ import Base.show, Base.length, Base.getindex, Base.vect, Base.isless, Base.isemp
 
 include("mono.jl")
 include("poly.jl")
+include("rational.jl")
+include("comp.jl")
 include("alg.jl")
 include("show.jl")
 include("certificate.jl")

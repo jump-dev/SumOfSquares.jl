@@ -11,8 +11,6 @@ type PolyVar <: MonomialContainer
   name::AbstractString
 end
 
-isless(x::PolyVar, y::PolyVar) = isless(x.name, y.name)
-
 vars(x::PolyVar) = varsvect(x)
 nvars(::PolyVar) = 1
 
@@ -22,6 +20,9 @@ start(::PolyVar) = false
 done(::PolyVar, state) = state
 next(x::PolyVar, state) = (Monomial(x), true)
 
+# Invariant:
+# vars is increasing
+# z may contain 0's (otherwise, getindex of MonomialVector would be inefficient)
 type Monomial <: MonomialContainer
   vars::Vector{PolyVar}
   z::Vector{Int}
@@ -35,6 +36,7 @@ type Monomial <: MonomialContainer
 end
 Monomial(x::PolyVar) = Monomial(varsvect(x), [1])
 Monomial() = Monomial(Vector{PolyVar}(), Vector{Int}())
+deg(x::Monomial) = sum(x.z)
 
 length(::Monomial) = 1
 isempty(::Monomial) = false
@@ -86,7 +88,10 @@ function MonomialVector(vars::Vector{PolyVar}, degs, filter::Function = x->true)
 end
 MonomialVector(vars::Vector{PolyVar}, degs::Int, filter::Function = x->true) = MonomialVector(vars, [degs], filter)
 
-function getindex(x::MonomialVector, i)
+function getindex(x::MonomialVector, I)
+  MonomialVector(x.vars, x.Z[I])
+end
+function getindex(x::MonomialVector, i::Integer)
   Monomial(x.vars, x.Z[i])
 end
 length(x::MonomialVector) = length(x.Z)
@@ -140,7 +145,7 @@ function varsvect{T<:PolyVar}(X::T...)
 end
 
 function Base.vect(X::MonomialContainer...)
-  varsvec = [ vars(x) for x in X ]
+  varsvec = Vector{PolyVar}[ vars(x) for x in X ]
   allvars, maps = myunion(varsvec)
   nvars = length(allvars)
   n = sum([length(x) for x in X])

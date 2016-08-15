@@ -1,8 +1,5 @@
-import Base.*, Base.==, Base.+, Base.-
-# TODO equality should be between name ?
-function (==)(x::PolyVar, y::PolyVar)
-  x === y
-end
+import Base.+, Base.-, Base.*
+
 function (*)(x::PolyVar, y::PolyVar)
   if x === y
     Monomial(varsvect(x), [2])
@@ -109,8 +106,8 @@ function (-)(x::Term, y::Term)
   end
 end
 
-(+){S<:Union{Term,PolyVar,Monomial},T<:Union{Term,PolyVar,Monomial}}(x::S, y::T) = Term(x) + Term(y)
-(-){S<:Union{Term,PolyVar,Monomial},T<:Union{Term,PolyVar,Monomial}}(x::S, y::T) = Term(x) - Term(y)
+(+){S<:Union{PolyVar,Monomial},T<:Union{PolyVar,Monomial}}(x::S, y::T) = Term(x) + Term(y)
+(-){S<:Union{PolyVar,Monomial},T<:Union{PolyVar,Monomial}}(x::S, y::T) = Term(x) - Term(y)
 
 function plusorminus{S,T}(x::TermContainer{S}, y::TermContainer{T}, isplus)
   varsvec = [vars(x), vars(y)]
@@ -149,6 +146,7 @@ end
 (+)(x::TermContainer, y::TermContainer) = plusorminus(x, y, true)
 (-)(x::TermContainer, y::TermContainer) = plusorminus(x, y, false)
 (+){S<:Union{Monomial,PolyVar},T}(x::TermContainer{T}, y::S) = x + Term{T}(y)
+(+){S<:Union{Monomial,PolyVar},T}(x::S, y::TermContainer{T}) = Term{T}(x) + y
 
 (+)(x::TermContainer, y::MatPolynomial) = x + VecPolynomial(y)
 (+)(x::MatPolynomial, y::TermContainer) = VecPolynomial(x) + y
@@ -160,10 +158,15 @@ iszero(t::Term) = iszero(t.α)
 iszero(p::VecPolynomial) = isempty(p.x)
 iszero(p::MatPolynomial) = isempty(p.x)
 
-# Avoid adding a zero constant that might artificially increase the Newton polytope
-(+)(x::TermContainer, y) = iszero(y) ? x : x + Term(y)
-(+)(x, y::TermContainer) = y + x
 (-){S<:Union{Monomial,PolyVar},T}(x::TermContainer{T}, y::S) = x - Term{T}(y)
-(-)(x::TermContainer, y) = iszero(y) ? x : x - Term(y)
 (-){S<:Union{Monomial,PolyVar},T}(x::S, y::TermContainer{T}) = Term{T}(x) - y
-(-)(x, y::TermContainer) = iszero(x) ? -y : Term(x) - y
+
+typealias PolyType Union{MonomialContainer, TermContainer, MatPolynomial}
+# Avoid adding a zero constant that might artificially increase the Newton polytope
+(+)(x::PolyType, y) = iszero(y) ? x : x + Term(y)
+(+)(x, y::PolyType) = iszero(x) ? y : Term(x) + y
+(-)(x::PolyType, y) = iszero(y) ? x : x - Term(y)
+(-)(x, y::PolyType) = iszero(x) ? -y : Term(x) - y
+
+(-)(x::PolyVar) = Term(-1, Monomial(x))
+(-)(x::Monomial) = Term(-1, x)

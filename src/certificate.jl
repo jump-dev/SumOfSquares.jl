@@ -1,18 +1,6 @@
 # Inspired from SOSTools
 import Base.extrema
 
-function isless(x::Vector, y::Vector)
-  @assert length(x) == length(y)
-  for (a, b) in zip(x, y)
-    if a < b
-      return true
-    elseif a > b
-      return false
-    end
-  end
-  false
-end
-
 function extrema(f, itr)
   state = start(itr)
   it1, state = next(itr, state)
@@ -60,7 +48,7 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
     for i in 1:n
       minmultideg[i], maxmultideg[i] = cfld(extrema(z->z[i], Z.Z), 2)
     end
-    MonomialVector(vars(Z), mindeg:maxdeg, z -> minmultideg < z < maxmultideg)
+    MonomialVector(vars(Z), mindeg:maxdeg, z -> reduce(&, true, minmultideg .<= z .<= maxmultideg))
   else
     error("Not supported yet :(")
   end
