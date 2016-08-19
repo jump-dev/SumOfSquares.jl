@@ -1,6 +1,7 @@
-export PolyVar, Monomial, MonomialVector, @polyvar
+export PolyVar, Monomial, MonomialVector, @polyvar, varsvect
 
-abstract MonomialContainer
+abstract PolyType
+abstract MonomialContainer <: PolyType
 
 macro polyvar(args...)
   reduce((x,y) -> :($x; $y), :(), [esc(:($arg = PolyVar($"$arg"))) for arg in args])

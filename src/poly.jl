@@ -1,7 +1,12 @@
 export Term, VecPolynomial, MatPolynomial, SOSDecomposition, getmat
-import Base.eltype
+import Base.eltype, Base.zero
 
-abstract TermContainer{T}
+abstract TermType{T} <: PolyType
+zero(t::TermType) = VecPolynomial(Int[], MonomialVector(vars(t), Vector{Vector{Int}}()))
+zero{T<:TermType}(::Type{T}) = VecPolynomial(Int[], MonomialVector(PolyVar[], Vector{Vector{Int}}()))
+zero{T}(::Type{TermType{T}}) = VecPolynomial(T[], MonomialVector(PolyVar[], Vector{Vector{Int}}()))
+
+abstract TermContainer{T} <: TermType{T}
 
 # Invariant:
 # α is nonzero (otherwise, just keep zero(T) and drop the monomial x)
@@ -30,6 +35,7 @@ done(::Term, state) = state
 next(x::Term, state) = (x, true)
 
 # Invariant:
+# a and x might be empty: meaning it is the zero polynomial
 # a does not contain any zeros
 # x is increasing in the monomial order (i.e. grlex)
 type VecPolynomial{T} <: TermContainer{T}
@@ -94,7 +100,22 @@ start(::VecPolynomial) = 1
 done(x::VecPolynomial, state) = length(x) < state
 next(x::VecPolynomial, state) = (Term(x.a[state], x.x[state]), state+1)
 
-type MatPolynomial{T}
+function removemonomials(p::VecPolynomial, x::MonomialVector)
+  # use the fact that monomials are sorted to do this O(n) instead of O(n^2)
+  j = 1
+  I = Int[]
+  for (i,t) in enumerate(p)
+    while x[j] < t.x
+      j += 1
+    end
+    if x[j] != t.x
+      push!(I, i)
+    end
+  end
+  VecPolynomial(p.a[I], p.x[I])
+end
+
+type MatPolynomial{T} <: TermType{T}
   Q::Vector{T}
   x::MonomialVector
 end
@@ -143,7 +164,7 @@ function VecPolynomial{T}(p::MatPolynomial{T})
   vecpolynomialclean(p.x.vars, a, Z)
 end
 
-type SOSDecomposition{T}
+type SOSDecomposition{T} <: TermType{T}
   ps::Vector{VecPolynomial{T}}
   function SOSDecomposition(ps::Vector{VecPolynomial{T}})
     new(ps)
@@ -176,7 +197,6 @@ function SOSDecomposition{T}(p::MatPolynomial{T})
   # TODO LDL^T factorization for SDP is missing in Julia
   # it would be nice to have though
   A = getmat(p)
-  @show A
   Q = chol(A)
   ps = [VecPolynomial(Q[i,:], p.x) for i in 1:n]
   SOSDecomposition(ps)

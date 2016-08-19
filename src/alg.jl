@@ -1,4 +1,4 @@
-import Base.+, Base.-, Base.*
+import Base.dot
 
 function (*)(x::PolyVar, y::PolyVar)
   if x === y
@@ -53,36 +53,49 @@ end
 *(x::Term, y::Monomial) = Term(x.α, x.x*y)
 *(x::Monomial, y::Term) = y * x
 
+*(α, p::MatPolynomial) = α * VecPolynomial(p)
+*(p::MatPolynomial, α) = VecPolynomial(p) * α
+
 *(α, p::VecPolynomial) = VecPolynomial(α*p.a, p.x)
 
 function *(p::VecPolynomial, q::VecPolynomial)
-  samevars = vars(p) == vars(q)
-  if samevars
-    allvars = vars(p)
+  if iszero(p)
+    zero(q)
+  elseif iszero(q)
+    zero(p)
   else
-    allvars, maps = myunion([vars(p), vars(q)])
-  end
-  N = length(p)*length(q)
-  Z = Vector{Vector{Int}}(N)
-  T = typeof(p.a[1]*q.a[1])
-  a = Vector{T}(N)
-  i = 0
-  for u in p
-    for v in q
-      if samevars
-        z = u.x.z + v.x.z
-      else
-        z = zeros(Int, length(allvars))
-        z[maps[1]] += u.x.z
-        z[maps[2]] += v.x.z
-      end
-      i += 1
-      Z[i] = z
-      a[i] = u.α * v.α
+    samevars = vars(p) == vars(q)
+    if samevars
+      allvars = vars(p)
+    else
+      allvars, maps = myunion([vars(p), vars(q)])
     end
+    N = length(p)*length(q)
+    Z = Vector{Vector{Int}}(N)
+    T = typeof(p.a[1]*q.a[1])
+    a = Vector{T}(N)
+    i = 0
+    for u in p
+      for v in q
+        if samevars
+          z = u.x.z + v.x.z
+        else
+          z = zeros(Int, length(allvars))
+          z[maps[1]] += u.x.z
+          z[maps[2]] += v.x.z
+        end
+        i += 1
+        Z[i] = z
+        a[i] = u.α * v.α
+      end
+    end
+    vecpolynomialclean(allvars, a, Z)
   end
-  vecpolynomialclean(allvars, a, Z)
 end
+
+dot(p::PolyType, q::PolyType) = p * q
+dot(α, p::PolyType) = α * p
+dot(p::PolyType, α) = p * α
 
 myminivect{T}(x::T, y::T) = [x, y]
 function myminivect{S,T}(x::S, y::T)
@@ -161,7 +174,6 @@ iszero(p::MatPolynomial) = isempty(p.x)
 (-){S<:Union{Monomial,PolyVar},T}(x::TermContainer{T}, y::S) = x - Term{T}(y)
 (-){S<:Union{Monomial,PolyVar},T}(x::S, y::TermContainer{T}) = Term{T}(x) - y
 
-typealias PolyType Union{MonomialContainer, TermContainer, MatPolynomial}
 # Avoid adding a zero constant that might artificially increase the Newton polytope
 (+)(x::PolyType, y) = iszero(y) ? x : x + Term(y)
 (+)(x, y::PolyType) = iszero(x) ? y : Term(x) + y
