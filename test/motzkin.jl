@@ -1,21 +1,25 @@
-@polyvar x y
+facts("Motzkin") do
+for solver in sdp_solvers
+context("With solver $(typeof(solver))") do
+  @polyvar x y
 
-m = JuMP.Model(solver = SCSSolver(verbose=false))
+  m = JuMP.Model(solver = solver)
 
-p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
+  p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
 
-@SOSconstraint m p >= 0
+  @SOSconstraint m p >= 0
 
-status = solve(m)
+  status = solve(m)
 
-@test status == :Infeasible
+  @fact status --> :Infeasible
 
-M = JuMP.Model(solver = SCSSolver(verbose=false))
+  M = JuMP.Model(solver = solver)
 
-q = (x^2 + y^2) * p
+  q = (x^2 + y^2) * p
 
-@SOSconstraint M q >= 0
+  @SOSconstraint M q >= 0
 
-status = solve(M)
+  status = solve(M)
 
-@test status == :Optimal
+  @fact status --> :Optimal
+end; end; end

@@ -1,7 +1,6 @@
-using SCS
 using JuMP
 using SumOfSquares
-using Base.Test
+using FactCheck
 
 #x = Var("x")
 #y = Var("y")
@@ -12,6 +11,10 @@ using Base.Test
 
 #println(MonomialVector((x*y*z).vars, 3))
 
+include("solvers.jl")
+
 include("sosdemo1.jl")
 include("motzkin.jl")
 include("sosdemo2.jl")
+
+FactCheck.exitstatus()

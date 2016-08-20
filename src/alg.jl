@@ -1,4 +1,6 @@
-import Base.dot
+import Base.dot, Base.(.^)
+
+(.^)(p::TermType, i::Int) = p^i
 
 function (*)(x::PolyVar, y::PolyVar)
   if x === y

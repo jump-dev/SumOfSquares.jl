@@ -1,4 +1,4 @@
-export Term, VecPolynomial, MatPolynomial, SOSDecomposition, getmat
+export Term, VecPolynomial, MatPolynomial, SOSDecomposition, getmat, removemonomials
 import Base.eltype, Base.zero
 
 abstract TermType{T} <: PolyType
