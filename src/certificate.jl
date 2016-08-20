@@ -53,3 +53,4 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
     error("Not supported yet :(")
   end
 end
+getmonomialsforcertificate(Z::Vector, sparse=:No) = getmonomialsforcertificate(MonomialVector(Z), sparse)

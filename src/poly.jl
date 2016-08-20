@@ -62,7 +62,10 @@ type VecPolynomial{T} <: TermContainer{T}
     new(a, x)
   end
 end
+(::Type{VecPolynomial{T}}){T}(a::Vector{T}, x::Vector) = VecPolynomial{T}(a, MonomialVector(x))
+
 VecPolynomial{T}(a::Vector{T}, x::MonomialVector) = VecPolynomial{T}(a, x)
+VecPolynomial(a::Vector, x::Vector) = VecPolynomial(a, MonomialVector(x))
 
 VecPolynomial(x) = VecPolynomial(Term(x))
 VecPolynomial{T}(t::Term{T}) = VecPolynomial{T}([t.α], [t.x])
@@ -114,6 +117,7 @@ function removemonomials(p::VecPolynomial, x::MonomialVector)
   end
   VecPolynomial(p.a[I], p.x[I])
 end
+removemonomials(p::VecPolynomial, x::Vector) = removemonomials(p, MonomialVector(x))
 
 type MatPolynomial{T} <: TermType{T}
   Q::Vector{T}
@@ -134,6 +138,7 @@ function (::Type{MatPolynomial{T}}){T}(f::Function, x::MonomialVector)
   end
   MatPolynomial{T}(Q, x)
 end
+(::Type{MatPolynomial{T}}){T}(f::Function, x::Vector) = MatPolynomial{T}(f, MonomialVector(x))
 
 function getindex(p::MatPolynomial, I::NTuple{2,Int})
   i, j = I

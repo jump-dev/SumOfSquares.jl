@@ -18,7 +18,7 @@ m = JuMP.Model(solver = SCSSolver(verbose=false))
 @SOSconstraint m V >= x1^2+x2^2+x3^2
 
 # dV/dx*(x3^2+1)*f <= 0
-x = varsvect(x1, x2, x3)
+x = [x1, x2, x3]
 P = dot(differentiate(V, x), f)*(x3^2+1)
 @SOSconstraint m P <= 0
 

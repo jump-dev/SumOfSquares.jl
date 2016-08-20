@@ -1,4 +1,4 @@
-export PolyVar, Monomial, MonomialVector, @polyvar, varsvect
+export PolyVar, Monomial, MonomialVector, @polyvar
 
 abstract PolyType
 abstract MonomialContainer <: PolyType
@@ -12,7 +12,7 @@ type PolyVar <: MonomialContainer
   name::AbstractString
 end
 
-vars(x::PolyVar) = varsvect(x)
+vars(x::PolyVar) = [x]
 nvars(::PolyVar) = 1
 
 length(::PolyVar) = 1
@@ -35,7 +35,7 @@ type Monomial <: MonomialContainer
     new(vars, z)
   end
 end
-Monomial(x::PolyVar) = Monomial(varsvect(x), [1])
+Monomial(x::PolyVar) = Monomial([x], [1])
 Monomial() = Monomial(Vector{PolyVar}(), Vector{Int}())
 deg(x::Monomial) = sum(x.z)
 
@@ -134,18 +134,7 @@ function myunion(varsvec::Vector{Vector{PolyVar}})
   vars, maps
 end
 
-# [x, y] calls vect(::PolyVar, ::PolyVar)
-# but what if I want to build vector of vars internally ?
-# I can use the following:
-function varsvect{T<:PolyVar}(X::T...)
-  xs = Vector{T}(length(X))
-  for i in 1:length(X)
-    xs[i] = X[i]
-  end
-  xs
-end
-
-function Base.vect(X::MonomialContainer...)
+function MonomialVector(X::Vector)
   varsvec = Vector{PolyVar}[ vars(x) for x in X ]
   allvars, maps = myunion(varsvec)
   nvars = length(allvars)

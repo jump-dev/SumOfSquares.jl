@@ -2,9 +2,9 @@ import Base.dot
 
 function (*)(x::PolyVar, y::PolyVar)
   if x === y
-    Monomial(varsvect(x), [2])
+    Monomial([x], [2])
   else
-    Monomial(varsvect(x,y), [1,1])
+    Monomial([x,y], [1,1])
   end
 end
 function (*)(x::PolyVar, y::Monomial)
