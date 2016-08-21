@@ -1,7 +1,8 @@
 import Base.dot, Base.(.^)
 
-(.^)(p::TermType, i::Int) = p^i
+(.^)(p::PolyType, i::Int) = p^i
 
+# Product between PolyVar and Monomial -> Monomial
 function (*)(x::PolyVar, y::PolyVar)
   if x === y
     Monomial([x], [2])
@@ -45,21 +46,41 @@ function (*)(x::Monomial, y::Monomial)
   end
 end
 
-*(α, x::PolyVar) = Term(α, Monomial(x))
-*(α, x::Monomial) = Term(α, x)
-*(α, x::Term) = Term(T(α)*x.α, x.x)
-*{T<:Union{PolyVar,Monomial,Term}}(x::T, α) = α * x
-*(x::Term, y::Term) = Term(x.α*y.α, x.x*y.x)
-*(x::Term, y::PolyVar) = Term(x.α, x.x*y)
-*(x::PolyVar, y::Term) = y * x
-*(x::Term, y::Monomial) = Term(x.α, x.x*y)
-*(x::Monomial, y::Term) = y * x
+# non-PolyType * PolyType: specific methods for speed
+*(p::PolyType, α) = α * p
 
+*(α, x::PolyVar)       = Term(α, Monomial(x))
+*(α, x::Monomial)      = Term(α, x)
 *(α, p::MatPolynomial) = α * VecPolynomial(p)
-*(p::MatPolynomial, α) = VecPolynomial(p) * α
-
+*{T}(α, x::Term{T})    = Term(T(α)*x.α, x.x)
 *(α, p::VecPolynomial) = VecPolynomial(α*p.a, p.x)
 
+# Reverse order to avoid abiguïty with above 5 specific methods
+*(p::PolyType, x::PolyVar) = x * p
+*(p::PolyType, x::Monomial) = x * p
+*(p::PolyType, x::MatPolynomial) = x * p
+# The three above are mapped to one of the two below
+*(p::PolyType, q::Term) = TermContainer(p) * q
+*(p::PolyType, q::VecPolynomial) = TermContainer(p) * q
+
+# TermContainer * TermContainer
+*(x::Term, y::Term) = Term(x.α*y.α, x.x*y.x)
+*(p::VecPolynomial, t::Term) = t * p
+function *(t::Term, p::VecPolynomial)
+  if iszero(p)
+    zero(p)
+  else
+    n = length(p)
+    allvars, maps = myunion([t.x.vars, p.x.vars])
+    nvars = length(allvars)
+    Z = [zeros(Int, nvars) for i in 1:n]
+    for i in 1:n
+      Z[i][maps[1]] = t.x.z
+      Z[i][maps[2]] += p.x.Z[i]
+    end
+    VecPolynomial(t.α * p.a, MonomialVector(allvars, Z))
+  end
+end
 function *(p::VecPolynomial, q::VecPolynomial)
   if iszero(p)
     zero(q)

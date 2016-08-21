@@ -21,13 +21,15 @@ function (-)(r::Rational, s::Rational)
 end
 (-)(p::PolyType, s::Rational) = (p * s.den - s.num) / s.den
 (-)(s::Rational, p::PolyType) = (s.num - p * s.den) / s.den
-function (*)(p::VecPolynomial, r::Rational)
+
+function (*)(p::TermContainer, r::Rational)
   if p == r.den
     r.num
   else
     (p * r.num) / r.den
   end
 end
+(*)(r::Rational, p::Term) = p * r
 (*)(r::Rational, p::VecPolynomial) = p * r
 
 zero(r::Rational) = zero(r.num)

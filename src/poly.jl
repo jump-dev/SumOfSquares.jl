@@ -17,6 +17,7 @@ end
 Term(t::Term) = t
 Term(x::Monomial) = Term{Int}(x)
 Term(x::PolyVar) = Term(Monomial(x))
+TermContainer{T<:Union{Monomial,PolyVar}}(x::T) = Term(x)
 Term{T}(α::T) = Term{T}(α, Monomial())
 (::Type{Term{T}}){T}(t::Term{T}) = t
 (::Type{Term{T}}){T}(t::Term) = Term{T}(T(t.α), t.x)
@@ -168,6 +169,7 @@ function VecPolynomial{T}(p::MatPolynomial{T})
   end
   vecpolynomialclean(p.x.vars, a, Z)
 end
+TermContainer(p::MatPolynomial) = VecPolynomial(p)
 
 type SOSDecomposition{T} <: TermType{T}
   ps::Vector{VecPolynomial{T}}
