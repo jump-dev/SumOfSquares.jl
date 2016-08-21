@@ -1,5 +1,7 @@
 using JuMP
-import JuMP.getvalue
+import JuMP: getvalue, validmodel, addtoexpr_reorder
+using Base.Meta
+
 export @SOSvariable, @SOSconstraint, getslack
 
 function freshmatpoly(m::JuMP.Model, Z::MonomialVector)
@@ -39,9 +41,9 @@ macro SOSvariable(args...)
     x = comparison_to_call(x)
   end
   explicit_comparison = false
-  if JuMP.JuMP.isexpr(x,:comparison) # two-sided
+  if isexpr(x,:comparison) # two-sided
     JuMP.variable_error(args, "SOS variable declaration does not support the form lb <= ... <= ub. Use ... >= 0 and separate constraints instead.")
-  elseif JuMP.isexpr(x,:call)
+  elseif isexpr(x,:call)
     explicit_comparison = true
     if x.args[1] == :>= || x.args[1] == :≥
       # x >= lb
@@ -71,11 +73,11 @@ macro SOSvariable(args...)
   end
 
   # separate out keyword arguments
-  kwargs = filter(ex->JuMP.isexpr(ex,:kw), extra)
-  extra = filter(ex->!JuMP.isexpr(ex,:kw), extra)
+  kwargs = filter(ex->isexpr(ex,:kw), extra)
+  extra = filter(ex->!isexpr(ex,:kw), extra)
 
   variable = gensym()
-  quotvarname = JuMP.quot(getname(var))
+  quotvarname = quot(getname(var))
   escvarname  = esc(getname(var))
 
   # process keyword arguments
@@ -129,7 +131,7 @@ macro SOSconstraint(m, x)
   if VERSION < v"0.5.0-dev+3231"
     x = comparison_to_call(x)
   end
-  JuMP.isexpr(x,:call) && length(x.args) == 3 || error("in @SDconstraint ($(string(x))): constraints must be in one of the following forms:\n" *
+  isexpr(x,:call) && length(x.args) == 3 || error("in @SDconstraint ($(string(x))): constraints must be in one of the following forms:\n" *
   "       expr1 <= expr2\n" * "       expr1 >= expr2")
   # Build the constraint
   # Simple comparison - move everything to the LHS
