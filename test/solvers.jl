@@ -10,7 +10,7 @@ function try_import(name::Symbol)
 end
 
 mos = try_import(:Mosek)
-scs = false # && try_import(:SCS)
+scs = try_import(:SCS)
 
 # Semidefinite solvers
 sdp_solvers = Any[]
