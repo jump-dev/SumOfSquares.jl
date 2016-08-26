@@ -17,7 +17,7 @@ context("With solver $(typeof(solver))") do
   m = JuMP.Model(solver = solver)
 
   # The Lyapunov function V(x):
-  @SOSvariable m V >= 0 [x1^2, x2^2, x3^2]
+  @SOSvariable m V [x1^2, x2^2, x3^2]
 
   @SOSconstraint m V >= x1^2+x2^2+x3^2
 
@@ -30,11 +30,5 @@ context("With solver $(typeof(solver))") do
 
   @fact status --> :Optimal
 
-  # SOSTools doc:
-  # expected = 3.0922 * x1^2 + 2.2885 * x2^2 + x3^2
-  # What I get with SCS
-  expected = 3.937089849725135x1^2 + 1.089493395427901x2^2 + 1.1692659364561195x3^2
-  obtained = VecPolynomial(getvalue(V))
-  # With Mosek it is exactly 0 but with SCS it is only approximally zero
-  @fact isapprox(removemonomials(obtained, [x1^2, x2^2, x3^2]), zero(VecPolynomial{Float64})) --> true
+  @fact removemonomials(getvalue(V), [x1^2, x2^2, x3^2]) --> zero(VecPolynomial{Float64})
 end; end; end

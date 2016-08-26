@@ -4,10 +4,17 @@ using Base.Meta
 
 export @SOSvariable, @SOSconstraint, getslack
 
-function freshmatpoly(m::JuMP.Model, Z::MonomialVector)
+function freshmatpoly(m::JuMP.Model, Z::Union{MonomialVector,Vector})
   MatPolynomial{JuMP.Variable}((i,j) -> Variable(m, -Inf, Inf, :Cont), Z)
 end
 
+function freshvecpoly(m::JuMP.Model, Z::Union{MonomialVector,Vector})
+  VecPolynomial{JuMP.Variable}((i) -> Variable(m, -Inf, Inf, :Cont), Z)
+end
+
+function getvalue(p::VecPolynomial{JuMP.Variable})
+  VecPolynomial(map(getvalue, p.a), p.x)
+end
 function getvalue(p::MatPolynomial{JuMP.Variable})
   MatPolynomial(map(getvalue, p.Q), p.x)
 end
@@ -81,7 +88,11 @@ macro SOSvariable(args...)
   escvarname  = esc(getname(var))
 
   # process keyword arguments
+  gram = false
   for ex in kwargs
+    if ex == :GramMonomials
+      gram = true
+    end
     JuMP.variable_error(args, "Unrecognized keyword argument $kwarg")
   end
 
@@ -99,10 +110,27 @@ macro SOSvariable(args...)
   if isa(var,Symbol)
     # Easy case - a single variable
     return JuMP.assert_validmodel(m, quote
-      $Z = getmonomialsforcertificate($x)
-      # The coefficients of a monomial not in Z do not all have to be zero, only their sum
-      $variable = freshmatpoly($m, $Z)
-      addpolyeqzeroconstraint($m, removemonomials(VecPolynomial($variable), $x))
+      if $sos
+        if $gram
+          $Z = $x
+        else
+          $Z = getmonomialsforcertificate($x)
+        end
+        # The coefficients of a monomial not in Z do not all have to be zero, only their sum
+        $variable = freshmatpoly($m, $Z)
+        @show $variable.Q
+        @show $variable.x
+        addpolyeqzeroconstraint($m, removemonomials(VecPolynomial($variable), $x))
+      else
+        if $gram
+          # We do not want to enforce p(x) = Z(x)^T Q Z(x) to be SOS
+          # So we can just compute the monomials of p(x)
+          $Z = dot($x, $x).x
+        else
+          $Z = $x
+        end
+        $variable = freshvecpoly($m, $Z)
+      end
       $escvarname = $variable
     end)
   else

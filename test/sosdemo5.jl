@@ -21,7 +21,7 @@ context("With solver $(typeof(solver))") do
   M = U*V';
 
   # Constructing A(x)'s
-  A = Vector{Matrix{Float64}}(4)
+  A = Vector{VecPolynomial{Float64}}(4)
   gam = 0.8724;
 
   Z = monomials(vartable, 1)
@@ -32,13 +32,14 @@ context("With solver $(typeof(solver))") do
   end
 
 
-  m0 = JuMP.Model(solver = solver)
+  m = JuMP.Model(solver = solver)
 
   # -- Q(x)'s -- : sums of squares
   # Monomial vector: [x1; ... x8]
   Q = Vector{MatPolynomial{JuMP.Variable}}(4)
+  @show Z
   for i = 1:4
-    @SOSvariable m tmp >= 0 Z
+    @SOSvariable m tmp >= 0 Z :GramMonomials
     Q[i] = tmp
   end
 

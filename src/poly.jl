@@ -2,7 +2,7 @@ export Term, VecPolynomial, MatPolynomial, SOSDecomposition, getmat, removemonom
 import Base.eltype, Base.zero
 
 abstract TermType{T} <: PolyType
-zero(t::TermType) = VecPolynomial(Int[], MonomialVector(vars(t), Vector{Vector{Int}}()))
+zero{T}(t::TermType{T}) = VecPolynomial(T[], MonomialVector(vars(t), Vector{Vector{Int}}()))
 zero{T<:TermType}(::Type{T}) = VecPolynomial(Int[], MonomialVector(PolyVar[], Vector{Vector{Int}}()))
 zero{T}(::Type{TermType{T}}) = VecPolynomial(T[], MonomialVector(PolyVar[], Vector{Vector{Int}}()))
 
@@ -69,10 +69,17 @@ VecPolynomial{T}(a::Vector{T}, x::MonomialVector) = VecPolynomial{T}(a, x)
 VecPolynomial(a::Vector, x::Vector) = VecPolynomial(a, MonomialVector(x))
 
 VecPolynomial(x) = VecPolynomial(Term(x))
+VecPolynomial{T}(p::VecPolynomial{T}) = p
 VecPolynomial{T}(t::Term{T}) = VecPolynomial{T}([t.α], [t.x])
 Base.convert{T}(::Type{VecPolynomial{T}}, x) = VecPolynomial(Term{T}(x))
 Base.convert{T}(::Type{VecPolynomial{T}}, t::Term) = VecPolynomial{T}([T(t.α)], [t.x])
 Base.convert{T}(::Type{VecPolynomial{T}}, p::VecPolynomial{T}) = p
+
+function (::Type{VecPolynomial{T}}){T}(f::Function, x::MonomialVector)
+  a = T[f(i) for i in 1:length(x)]
+  VecPolynomial{T}(a, x)
+end
+(::Type{VecPolynomial{T}}){T}(f::Function, x::Vector) = VecPolynomial{T}(f, MonomialVector(x))
 
 eltype{T}(p::VecPolynomial{T}) = T
 
@@ -151,23 +158,27 @@ function getindex(p::MatPolynomial, I::NTuple{2,Int})
 end
 
 function VecPolynomial{T}(p::MatPolynomial{T})
-  n = length(p.x)
-  N = trimap(n, n, n)
-  Z = Vector{Vector{Int}}(N)
-  U = typeof(2*p.Q[1] + p.Q[1])
-  a = Vector{U}(N)
-  for i in 1:n
-    for j in i:n
-      k = trimap(i, j, n)
-      Z[k] = p.x.Z[i] + p.x.Z[j]
-      if i == j
-        a[k] = p.Q[k]
-      else
-        a[k] = 2*p.Q[k]
+  if isempty(p.Q)
+    zero(VecPolynomial{T})
+  else
+    n = length(p.x)
+    N = trimap(n, n, n)
+    Z = Vector{Vector{Int}}(N)
+    U = typeof(2*p.Q[1] + p.Q[1])
+    a = Vector{U}(N)
+    for i in 1:n
+      for j in i:n
+        k = trimap(i, j, n)
+        Z[k] = p.x.Z[i] + p.x.Z[j]
+        if i == j
+          a[k] = p.Q[k]
+        else
+          a[k] = 2*p.Q[k]
+        end
       end
     end
+    vecpolynomialclean(p.x.vars, a, Z)
   end
-  vecpolynomialclean(p.x.vars, a, Z)
 end
 TermContainer(p::MatPolynomial) = VecPolynomial(p)
 
