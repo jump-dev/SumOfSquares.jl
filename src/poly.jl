@@ -19,11 +19,11 @@ Term(x::Monomial) = Term{Int}(x)
 Term(x::PolyVar) = Term(Monomial(x))
 TermContainer{T<:Union{Monomial,PolyVar}}(x::T) = Term(x)
 Term{T}(α::T) = Term{T}(α, Monomial())
-(::Type{Term{T}}){T}(t::Term{T}) = t
-(::Type{Term{T}}){T}(t::Term) = Term{T}(T(t.α), t.x)
-(::Type{Term{T}}){T}(x::Monomial) = Term{T}(one(T), x)
-(::Type{Term{T}}){T}(x::PolyVar) = Term{T}(Monomial(x))
-(::Type{Term{T}}){T}(α) = Term(T(α))
+Base.convert{T}(::Type{Term{T}}, t::Term{T}) = t
+Base.convert{T}(::Type{Term{T}}, t::Term) = Term{T}(T(t.α), t.x)
+Base.convert{T}(::Type{Term{T}}, x::Monomial) = Term{T}(one(T), x)
+Base.convert{T}(::Type{Term{T}}, x::PolyVar) = Term{T}(Monomial(x))
+Base.convert{T}(::Type{Term{T}}, α) = Term(T(α))
 
 eltype{T}(p::Term{T}) = T
 

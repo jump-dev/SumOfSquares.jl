@@ -1,4 +1,4 @@
-export PolyVar, Monomial, MonomialVector, @polyvar
+export PolyVar, Monomial, MonomialVector, @polyvar, monomials
 
 abstract PolyType
 abstract MonomialContainer <: PolyType
@@ -58,8 +58,24 @@ type MonomialVector <: MonomialContainer
     new(vars, Z)
   end
 end
-function MonomialVector(vars::Vector{PolyVar}, degs, filter::Function = x->true)
-  n = length(vars)
+
+function getindex(x::MonomialVector, I)
+  MonomialVector(x.vars, x.Z[I])
+end
+function getindex(x::MonomialVector, i::Integer)
+  Monomial(x.vars, x.Z[i])
+end
+length(x::MonomialVector) = length(x.Z)
+isempty(x::MonomialVector) = length(x) == 0
+start(::MonomialVector) = 1
+done(x::MonomialVector, state) = length(x) < state
+next(x::MonomialVector, state) = (Monomial(x.vars, x.Z[state]), state+1)
+
+vars{T<:Union{Monomial,MonomialVector}}(x::T) = x.vars
+
+nvars(x::MonomialContainer) = length(vars(x))
+
+function getZfordegs(n, degs, filter::Function)
   Z = Vector{Vector{Int}}()
   for deg in degs
     z = zeros(Int, n)
@@ -85,25 +101,19 @@ function MonomialVector(vars::Vector{PolyVar}, degs, filter::Function = x->true)
       end
     end
   end
-  MonomialVector(vars, Z)
+  Z
+end
+
+function MonomialVector(vars::Vector{PolyVar}, degs, filter::Function = x->true)
+  MonomialVector(vars, getZfordegs(length(vars), degs, filter))
 end
 MonomialVector(vars::Vector{PolyVar}, degs::Int, filter::Function = x->true) = MonomialVector(vars, [degs], filter)
-
-function getindex(x::MonomialVector, I)
-  MonomialVector(x.vars, x.Z[I])
+function monomials(vars::Vector{PolyVar}, degs, filter::Function = x->true)
+  Z = getZfordegs(length(vars), degs, filter)
+  [Monomial(vars, z) for z in Z]
 end
-function getindex(x::MonomialVector, i::Integer)
-  Monomial(x.vars, x.Z[i])
-end
-length(x::MonomialVector) = length(x.Z)
-isempty(x::MonomialVector) = length(x) == 0
-start(::MonomialVector) = 1
-done(x::MonomialVector, state) = length(x) < state
-next(x::MonomialVector, state) = (Monomial(x.vars, x.Z[state]), state+1)
+monomials(vars::Vector{PolyVar}, degs::Int, filter::Function = x->true) = monomials(vars, [degs], filter)
 
-vars{T<:Union{Monomial,MonomialVector}}(x::T) = x.vars
-
-nvars(x::MonomialContainer) = length(vars(x))
 
 function myunion(varsvec::Vector{Vector{PolyVar}})
   n = length(varsvec)
