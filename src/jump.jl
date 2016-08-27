@@ -4,11 +4,13 @@ using Base.Meta
 
 export @SOSvariable, @SOSconstraint, getslack
 
-function freshmatpoly(m::JuMP.Model, Z::Union{MonomialVector,Vector})
-  MatPolynomial{JuMP.Variable}((i,j) -> Variable(m, -Inf, Inf, :Cont), Z)
+function freshsos(m::JuMP.Model, Z::Union{MonomialVector,Vector})
+  p = MatPolynomial{JuMP.Variable}((i,j) -> Variable(m, -Inf, Inf, :Cont), Z)
+  push!(m.varCones, (:SDP, p.Q[1].col:p.Q[end].col))
+  p
 end
 
-function freshvecpoly(m::JuMP.Model, Z::Union{MonomialVector,Vector})
+function freshpoly(m::JuMP.Model, Z::Union{MonomialVector,Vector})
   VecPolynomial{JuMP.Variable}((i) -> Variable(m, -Inf, Inf, :Cont), Z)
 end
 
@@ -25,8 +27,7 @@ function addpolyeqzeroconstraint(m::JuMP.Model, p)
 end
 function addsosconstraint(m::JuMP.Model, p)
   Z = getmonomialsforcertificate(p.x)
-  slack = freshmatpoly(m, Z)
-  push!(m.varCones, (:SDP, slack.Q[1].col:slack.Q[end].col))
+  slack = freshsos(m, Z)
   lincons = addpolyeqzeroconstraint(m, p - slack)
   SOSConstraintRef(slack, lincons)
 end
@@ -141,7 +142,7 @@ macro SOSvariable(args...)
           $Z = getmonomialsforcertificate($x)
         end
         # The coefficients of a monomial not in Z do not all have to be zero, only their sum
-        $variable = freshmatpoly($m, $Z)
+        $variable = freshsos($m, $Z)
         if !$gram
           addpolyeqzeroconstraint($m, removemonomials(VecPolynomial($variable), $x))
         end
@@ -153,7 +154,7 @@ macro SOSvariable(args...)
         else
           $Z = $x
         end
-        $variable = freshvecpoly($m, $Z)
+        $variable = freshpoly($m, $Z)
       end
       $escvarname = $variable
     end)

@@ -43,10 +43,12 @@ context("With solver $(typeof(solver))") do
 
     # -- r's -- : constant sum of squares
     Z = monomials(vartable, 0)
-    r = Matrix{MatPolynomial{JuMP.Variable}}(4,4)
+    #r = Matrix{MatPolynomial{JuMP.Variable}}(4,4) # FIXME doesn't work with 1x1 SDP matrix :(
+    r = Matrix{JuMP.Variable}(4,4)
     for i = 1:4
         for j = (i+1):4
-          @SOSvariable m tmp >= 0 Z
+          #@SOSvariable m tmp >= 0 Z
+          @variable m tmp >= 0
           r[i,j] = tmp
         end
     end

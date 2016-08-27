@@ -11,6 +11,7 @@ include("sosdemo1.jl")
 include("sosdemo2.jl")
 include("sosdemo3.jl")
 include("sosdemo4.jl")
-include("sosdemo5.jl")
+#include("sosdemo5.jl")
+include("sosdemo6.jl")
 
 FactCheck.exitstatus()
