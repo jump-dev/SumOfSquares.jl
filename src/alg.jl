@@ -1,5 +1,11 @@
 import Base.dot, Base.(.^)
 
+# Hack see https://github.com/JuliaLang/julia/pull/18218
+import Base.promote_op
+promote_op{S<:PolyType,T}(*, ::Type{T}, ::Type{S}) = Any
+promote_op{S<:PolyType,T}(*, ::Type{S}, ::Type{T}) = Any
+
+
 (.^)(p::PolyType, i::Int) = p^i
 
 # Product between PolyVar and Monomial -> Monomial
