@@ -1,4 +1,4 @@
-import Base.dot, Base.(.^)
+import Base.dot, Base.(.-), Base.(.^)
 
 # Hack see https://github.com/JuliaLang/julia/pull/18218
 import Base.promote_op
@@ -6,6 +6,8 @@ promote_op{S<:PolyType,T}(*, ::Type{T}, ::Type{S}) = Any
 promote_op{S<:PolyType,T}(*, ::Type{S}, ::Type{T}) = Any
 
 
+(.-)(p::PolyType, α) = p-α
+(.-)(α, p::PolyType) = α-p
 (.^)(p::PolyType, i::Int) = p^i
 
 # Product between PolyVar and Monomial -> Monomial
@@ -158,6 +160,7 @@ function plusorminus{S,T}(x::TermContainer{S}, y::TermContainer{T}, isplus)
   U = promote_type(S, T)
   a = Vector{U}()
   Z = Vector{Vector{Int}}()
+  # FIXME not sorted
   for (i, tc) in enumerate([x,y])
     for (j, t) in enumerate(tc)
       added = false

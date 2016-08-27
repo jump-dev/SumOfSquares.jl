@@ -5,14 +5,13 @@
 facts("SOSDEMO6") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
-  @polyvar x1 x2 x3 x4 x5
-  x = [x1, x2, x3, x4, x5]
+  @polyvar x[1:5]
 
   # Number of cuts
-  f = 2.5 - 0.5*x1*x2 - 0.5*x2*x3 - 0.5*x3*x4 - 0.5*x4*x5 - 0.5*x5*x1
+  f = 2.5 - 0.5*x[1]*x[2] - 0.5*x[2]*x[3] - 0.5*x[3]*x[4] - 0.5*x[4]*x[5] - 0.5*x[5]*x[1]
 
   # Boolean constraints
-  bc = [x1^2 - 1, x2^2 - 1, x3^2 - 1, x4^2 - 1, x5^2 - 1]
+  bc = x.^2 - 1
 
   for (gamma, expected) in [(3.9, :Infeasible), (4, :Optimal)]
 

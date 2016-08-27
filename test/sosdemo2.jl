@@ -7,28 +7,28 @@ using Calculus
 facts("SOSDEMO2") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
-  @polyvar x1 x2 x3
+  @polyvar x[1:3]
 
   # Constructing the vector field dx/dt = f
-  f = [-x1^3-x1*x3^2,
-      -x2-x1^2*x2,
-      -x3+3*x1^2*x3-3*x3/(x3^2+1)]
+  f = [-x[1]^3-x[1]*x[3]^2,
+      -x[2]-x[1]^2*x[2],
+      -x[3]+3*x[1]^2*x[3]-3*x[3]/(x[3]^2+1)]
 
   m = JuMP.Model(solver = solver)
 
   # The Lyapunov function V(x):
-  @SOSvariable m V [x1^2, x2^2, x3^2]
+  Z = x.^2
+  @SOSvariable m V Z
 
-  @SOSconstraint m V >= x1^2+x2^2+x3^2
+  @SOSconstraint m V >= sum(x.^2)
 
-  # dV/dx*(x3^2+1)*f <= 0
-  x = [x1, x2, x3]
-  P = dot(differentiate(V, x), f)*(x3^2+1)
+  # dV/dx*(x[3]^2+1)*f <= 0
+  P = dot(differentiate(V, x), f)*(x[3]^2+1)
   @SOSconstraint m P <= 0
 
   status = solve(m)
 
   @fact status --> :Optimal
 
-  @fact removemonomials(getvalue(V), [x1^2, x2^2, x3^2]) --> zero(VecPolynomial{Float64})
+  @fact removemonomials(getvalue(V), Z) --> zero(VecPolynomial{Float64})
 end; end; end

@@ -5,8 +5,7 @@
 facts("SOSDEMO5") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
-  @polyvar x1 x2 x3 x4 x5 x6 x7 x8
-  vartable = [x1, x2, x3, x4, x5, x6, x7, x8]
+  @polyvar x[1:8]
 
   # The matrix under consideration
   alpha = 3 + sqrt(3);
@@ -24,7 +23,7 @@ context("With solver $(typeof(solver))") do
   A = Vector{VecPolynomial{Float64}}(4)
 
   for (gam, expected) in [(0.8723, :Infeasible), (0.8724, :Optimal)]
-    Z = monomials(vartable, 1)
+    Z = monomials(x, 1)
     for i = 1:4
         H = M[i,:]*M[i,:]' - (gam^2)*sparse([i],[i],[1],4,4)
         H = [real(H) -imag(H); imag(H) real(H)]
@@ -42,7 +41,7 @@ context("With solver $(typeof(solver))") do
     end
 
     # -- r's -- : constant sum of squares
-    Z = monomials(vartable, 0)
+    Z = monomials(x, 0)
     #r = Matrix{MatPolynomial{JuMP.Variable}}(4,4) # FIXME doesn't work with 1x1 SDP matrix :(
     r = Matrix{JuMP.Variable}(4,4)
     for i = 1:4
@@ -65,7 +64,7 @@ context("With solver $(typeof(solver))") do
         end
     end
     # Constant term: I(x) = -(x1^4 + ... + x8^4)
-    I = -sum(vartable.^4)
+    I = -sum(x.^4)
     expr = expr + I
 
     @SOSconstraint m expr >= 0

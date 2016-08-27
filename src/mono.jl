@@ -1,10 +1,29 @@
-export PolyVar, Monomial, MonomialVector, @polyvar, monomials
+export PolyVar, Monomial, MonomialVector, @polyvar, monomials, polyvecvar
 
 abstract PolyType
 abstract MonomialContainer <: PolyType
 
+function polyvecvar(prefix, idxset)
+  [PolyVar("$(prefix * string(i))") for i in idxset]
+end
+
+function buildpolyvar(var)
+  if isa(var, Symbol)
+    esc(:($var = PolyVar($"$var")))
+  else
+    isa(var, Expr) || error("Expected $var to be a variable name")
+    isexpr(var, :ref) || error("Expected $var to be of the form varname[idxset]")
+    length(var.args) == 2 || error("Expected $var to have one index set")
+    #tmp = gensym()
+    varname = var.args[1]
+    prefix = string(var.args[1])
+    idxset = var.args[2]
+    esc(:($varname = polyvecvar($prefix, $idxset)))
+  end
+end
+
 macro polyvar(args...)
-  reduce((x,y) -> :($x; $y), :(), [esc(:($arg = PolyVar($"$arg"))) for arg in args])
+  reduce((x,y) -> :($x; $y), :(), [buildpolyvar(arg) for arg in args])
 end
 
 # TODO equality should be between name ?
