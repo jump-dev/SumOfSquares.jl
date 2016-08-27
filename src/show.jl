@@ -3,18 +3,22 @@ function show(io::IO, x::PolyVar)
 end
 
 function show(io::IO, x::Monomial)
-  needsep = false
-  for i in 1:nvars(x)
-    if x.z[i] > 0
-      if needsep
-        print(io, '*')
-      end
-      show(io, x.vars[i])
-      if x.z[i] > 1
-        print(io, '^')
-        print(io, x.z[i])
-      else
-        needsep = true
+  if sum(abs(x.z)) == 0
+    show(io, 1)
+  else
+    needsep = false
+    for i in 1:nvars(x)
+      if x.z[i] > 0
+        if needsep
+          print(io, '*')
+        end
+        show(io, x.vars[i])
+        if x.z[i] > 1
+          print(io, '^')
+          print(io, x.z[i])
+        else
+          needsep = true
+        end
       end
     end
   end

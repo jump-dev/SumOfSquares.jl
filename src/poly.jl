@@ -116,10 +116,10 @@ function removemonomials(p::VecPolynomial, x::MonomialVector)
   j = 1
   I = Int[]
   for (i,t) in enumerate(p)
-    while x[j] < t.x
+    while j <= length(x) && x[j] < t.x
       j += 1
     end
-    if x[j] != t.x
+    if j > length(x) || x[j] != t.x
       push!(I, i)
     end
   end

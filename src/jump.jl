@@ -87,13 +87,27 @@ macro SOSvariable(args...)
   quotvarname = quot(getname(var))
   escvarname  = esc(getname(var))
 
+  monotype = :None
+
   # process keyword arguments
   gram = false
   for ex in kwargs
-    if ex == :GramMonomials
-      gram = true
+    kwarg = ex.args[1]
+    if kwarg == :grammonomials
+      if monotype != :None
+        error("Monomials given twice")
+      end
+      monotype = :Gram
+      x = esc(ex.args[2])
+    elseif kwarg == :monomials
+      if monotype != :None
+        error("Monomials given twice")
+      end
+      monotype = :Classic
+      x = esc(ex.args[2])
+    else
+      JuMP.variable_error(args, "Unrecognized keyword argument $kwarg")
     end
-    JuMP.variable_error(args, "Unrecognized keyword argument $kwarg")
   end
 
   # Determine variable type (if present).
@@ -103,9 +117,19 @@ macro SOSvariable(args...)
   elseif length(extra) > 1
     JuMP.variable_error(args, "Too many extra argument: only expected monomial vector")
   else
+    if monotype != :None
+      error("Monomials given twice")
+    end
+    monotype = sos ? :Gram : :Classic
     x = esc(extra[1])
   end
   Z = gensym()
+
+  if monotype == :None
+    error("Monomials not given")
+  end
+
+  gram = monotype == :Gram
 
   if isa(var,Symbol)
     # Easy case - a single variable
@@ -118,9 +142,9 @@ macro SOSvariable(args...)
         end
         # The coefficients of a monomial not in Z do not all have to be zero, only their sum
         $variable = freshmatpoly($m, $Z)
-        @show $variable.Q
-        @show $variable.x
-        addpolyeqzeroconstraint($m, removemonomials(VecPolynomial($variable), $x))
+        if !$gram
+          addpolyeqzeroconstraint($m, removemonomials(VecPolynomial($variable), $x))
+        end
       else
         if $gram
           # We do not want to enforce p(x) = Z(x)^T Q Z(x) to be SOS

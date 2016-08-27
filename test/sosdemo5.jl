@@ -22,56 +22,55 @@ context("With solver $(typeof(solver))") do
 
   # Constructing A(x)'s
   A = Vector{VecPolynomial{Float64}}(4)
-  gam = 0.8724;
 
-  Z = monomials(vartable, 1)
-  for i = 1:4
-      H = M[i,:]*M[i,:]' - (gam^2)*sparse([i],[i],[1],4,4)
-      H = [real(H) -imag(H); imag(H) real(H)]
-      A[i] = dot(Z, H*Z)
+  for (gam, expected) in [(0.8723, :Infeasible), (0.8724, :Optimal)]
+    Z = monomials(vartable, 1)
+    for i = 1:4
+        H = M[i,:]*M[i,:]' - (gam^2)*sparse([i],[i],[1],4,4)
+        H = [real(H) -imag(H); imag(H) real(H)]
+        A[i] = dot(Z, H*Z)
+    end
+
+    m = JuMP.Model(solver = solver)
+
+    # -- Q(x)'s -- : sums of squares
+    # Monomial vector: [x1; ... x8]
+    Q = Vector{MatPolynomial{JuMP.Variable}}(4)
+    for i = 1:4
+      @SOSvariable m tmp >= 0 Z
+      Q[i] = tmp
+    end
+
+    # -- r's -- : constant sum of squares
+    Z = monomials(vartable, 0)
+    r = Matrix{MatPolynomial{JuMP.Variable}}(4,4)
+    for i = 1:4
+        for j = (i+1):4
+          @SOSvariable m tmp >= 0 Z
+          r[i,j] = tmp
+        end
+    end
+
+    # Constraint : -sum(Qi(x)*Ai(x)) - sum(rij*Ai(x)*Aj(x)) + I(x) >= 0
+    expr = 0
+    # Adding term
+    for i = 1:4
+        expr -= A[i]*Q[i]
+    end
+    for i = 1:4
+        for j = (i+1):4
+            expr -= A[i]*A[j]*r[i,j]
+        end
+    end
+    # Constant term: I(x) = -(x1^4 + ... + x8^4)
+    I = -sum(vartable.^4)
+    expr = expr + I
+
+    @SOSconstraint m expr >= 0
+
+    status = solve(m)
+
+    # Program is feasible, thus 0.8724 is an upper bound for mu.
+    @fact status --> expected
   end
-
-
-  m = JuMP.Model(solver = solver)
-
-  # -- Q(x)'s -- : sums of squares
-  # Monomial vector: [x1; ... x8]
-  Q = Vector{MatPolynomial{JuMP.Variable}}(4)
-  @show Z
-  for i = 1:4
-    @SOSvariable m tmp >= 0 Z :GramMonomials
-    Q[i] = tmp
-  end
-
-  # -- r's -- : constant sum of squares
-  Z = monomials(vartable, 0)
-  r = Matrix{MatPolynomial{JuMP.Variable}}(4,4)
-  for i = 1:4
-      for j = (i+1):4
-        @SOSvariable m tmp >= 0 Z
-        r[i,j] = tmp
-      end
-  end
-
-  # Constraint : -sum(Qi(x)*Ai(x)) - sum(rij*Ai(x)*Aj(x)) + I(x) >= 0
-  expr = 0
-  # Adding term
-  for i = 1:4
-      expr -= A[i]*Q[i]
-  end
-  for i = 1:4
-      for j = (i+1):4
-          expr -= A[i]*A[j]*r[i,j]
-      end
-  end
-  # Constant term: I(x) = -(x1^4 + ... + x8^4)
-  I = -sum(vartable.^4)
-  expr = expr + I
-
-  @SOSconstraint m expr >= 0
-
-  status = solve(m)
-
-  # Program is feasible, thus 0.8724 is an upper bound for mu.
-  @fact status --> :Optimal
 end; end; end

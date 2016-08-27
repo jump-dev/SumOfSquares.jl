@@ -205,3 +205,5 @@ iszero(p::MatPolynomial) = isempty(p.x)
 
 (-)(x::PolyVar) = Term(-1, Monomial(x))
 (-)(x::Monomial) = Term(-1, x)
+(-)(t::Term) = Term(-t.α, t.x)
+(-)(p::VecPolynomial) = VecPolynomial(-p.a, p.x)
