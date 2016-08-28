@@ -42,15 +42,11 @@ function (*)(x::Monomial, y::Monomial)
   if x.vars == y.vars
     Monomial(x.vars, x.z + y.z)
   else
-    if x.vars == y.vars
-      Monomial(x.vars, x.z+y.z)
-    else
-      allvars, maps = myunion([x.vars, y.vars])
-      z = zeros(Int, length(allvars))
-      z[maps[1]] += x.z
-      z[maps[2]] += y.z
-      Monomial(allvars, z)
-    end
+    allvars, maps = myunion([x.vars, y.vars])
+    z = zeros(Int, length(allvars))
+    z[maps[1]] += x.z
+    z[maps[2]] += y.z
+    Monomial(allvars, z)
   end
 end
 
@@ -75,7 +71,7 @@ end
 *(x::Term, y::Term) = Term(x.α*y.α, x.x*y.x)
 *(p::VecPolynomial, t::Term) = t * p
 function *(t::Term, p::VecPolynomial)
-  if iszero(p)
+  if iszero(t)
     zero(p)
   else
     n = length(p)

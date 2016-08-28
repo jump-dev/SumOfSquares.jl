@@ -5,7 +5,7 @@ function differentiate{T}(p::VecPolynomial{T}, x::PolyVar)
   # grlex order preserved
   i = findfirst(vars(p), x)
   if i == 0
-    0
+    zero(p)
   else
     keep = find([z[i] > 0 for z in p.x.Z])
     Z = [copy(p.x.Z[i]) for i in keep]
