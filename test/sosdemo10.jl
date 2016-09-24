@@ -27,7 +27,7 @@ context("With solver $(typeof(solver))") do
 
   Sc = [theta^2-s*(gamma-p) g0+g1; g0+g1 1]
 
-  @SOSconstraint m Sc >= eps * eye(2)
+  @SOSconstraint m eps * eye(2) ⪯ Sc
 
   status = solve(m)
 

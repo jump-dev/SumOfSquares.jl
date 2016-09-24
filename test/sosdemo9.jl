@@ -14,7 +14,7 @@ context("With solver $(typeof(solver))") do
   # Test if P(x1,x2,x3) is an SOS matrix
   m = JuMP.Model(solver = solver)
   # TODO return H so that P = H.'*H
-  @SOSconstraint m P >= 0
+  @SOSconstraint m P ⪰ 0
 
   status = solve(m)
   @fact status --> :Optimal
