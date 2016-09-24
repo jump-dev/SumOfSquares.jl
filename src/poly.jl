@@ -1,12 +1,16 @@
-export Term, VecPolynomial, MatPolynomial, SOSDecomposition, getmat, removemonomials
-import Base.eltype, Base.zero
+export Term, VecPolynomial, MatPolynomial, SOSDecomposition, getmat, removemonomials, TermType
+import Base.eltype, Base.zero, Base.one
 
 abstract TermType{T} <: PolyType
 zero{T}(t::TermType{T}) = VecPolynomial(T[], MonomialVector(vars(t), Vector{Vector{Int}}()))
-zero{T<:TermType}(::Type{T}) = VecPolynomial(Int[], MonomialVector(PolyVar[], Vector{Vector{Int}}()))
-zero{T}(::Type{TermType{T}}) = VecPolynomial(T[], MonomialVector(PolyVar[], Vector{Vector{Int}}()))
+zero{T<:TermType}(::Type{T}) = VecPolynomial(eltype(T)[], MonomialVector(PolyVar[], Vector{Vector{Int}}()))
+one{T}(t::TermType{T}) = Term(one(T), Monomial(vars(t), zeros(Int, length(vars(t)))))
+one{T<:TermType}(::Type{T}) = Term(one(eltype(T)), Monomial(PolyVar[], Int[]))
 
 abstract TermContainer{T} <: TermType{T}
+
+eltype{T<:TermType}(::Type{T}) = T.parameters[1]
+eltype{T}(p::TermType{T}) = T
 
 # Invariant:
 # α is nonzero (otherwise, just keep zero(T) and drop the monomial x)
@@ -24,8 +28,6 @@ Base.convert{T}(::Type{Term{T}}, t::Term) = Term{T}(T(t.α), t.x)
 Base.convert{T}(::Type{Term{T}}, x::Monomial) = Term{T}(one(T), x)
 Base.convert{T}(::Type{Term{T}}, x::PolyVar) = Term{T}(Monomial(x))
 Base.convert{T}(::Type{Term{T}}, α) = Term(T(α))
-
-eltype{T}(p::Term{T}) = T
 
 vars(t::Term) = vars(t.x)
 
@@ -64,6 +66,7 @@ type VecPolynomial{T} <: TermContainer{T}
   end
 end
 (::Type{VecPolynomial{T}}){T}(a::Vector{T}, x::Vector) = VecPolynomial{T}(a, MonomialVector(x))
+(::Type{VecPolynomial{T}}){S,T}(a::Vector{S}, x::Vector) = VecPolynomial{T}(Vector{T}(a), MonomialVector(x))
 
 VecPolynomial{T}(a::Vector{T}, x::MonomialVector) = VecPolynomial{T}(a, x)
 VecPolynomial(a::Vector, x::Vector) = VecPolynomial(a, MonomialVector(x))
@@ -74,14 +77,13 @@ VecPolynomial{T}(t::Term{T}) = VecPolynomial{T}([t.α], [t.x])
 Base.convert{T}(::Type{VecPolynomial{T}}, x) = VecPolynomial(Term{T}(x))
 Base.convert{T}(::Type{VecPolynomial{T}}, t::Term) = VecPolynomial{T}([T(t.α)], [t.x])
 Base.convert{T}(::Type{VecPolynomial{T}}, p::VecPolynomial{T}) = p
+Base.convert{S,T}(::Type{VecPolynomial{T}}, p::VecPolynomial{S}) = VecPolynomial(Vector{T}(p.a), p.x)
 
 function (::Type{VecPolynomial{T}}){T}(f::Function, x::MonomialVector)
   a = T[f(i) for i in 1:length(x)]
   VecPolynomial{T}(a, x)
 end
 (::Type{VecPolynomial{T}}){T}(f::Function, x::Vector) = VecPolynomial{T}(f, MonomialVector(x))
-
-eltype{T}(p::VecPolynomial{T}) = T
 
 function vecpolynomialclean{T}(vars::Vector{PolyVar}, adup::Vector{T}, Zdup::Vector{Vector{Int}})
   σ = sortperm(Zdup)

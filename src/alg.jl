@@ -1,14 +1,17 @@
-import Base.dot, Base.(.-), Base.(.^)
+import Base.dot, Base.(.+), Base.(.-), Base.(.*), Base.(./), Base.(.^)
 
-# Hack see https://github.com/JuliaLang/julia/pull/18218
-import Base.promote_op
-promote_op{S<:PolyType,T}(*, ::Type{T}, ::Type{S}) = Any
-promote_op{S<:PolyType,T}(*, ::Type{S}, ::Type{T}) = Any
-
-
+(.+)(p::PolyType, α) = p+α
+(.+)(α, p::PolyType) = α+p
 (.-)(p::PolyType, α) = p-α
 (.-)(α, p::PolyType) = α-p
+(.*)(p::PolyType, α) = p*α
+(.*)(α, p::PolyType) = α*p
+(./)(p::PolyType, α) = p/α
+(./)(α, p::PolyType) = α/p
 (.^)(p::PolyType, i::Int) = p^i
+
+import Base.transpose
+Base.transpose(p::PolyType) = p
 
 # Product between PolyVar and Monomial -> Monomial
 function (*)(x::PolyVar, y::PolyVar)
