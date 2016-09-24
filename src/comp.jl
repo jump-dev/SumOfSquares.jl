@@ -43,6 +43,9 @@ function (==)(x::Monomial, y::Monomial)
   mycomp(x, y) == 0
 end
 
+(==)(p::TermContainer, y) = p == TermContainer(y)
+(==)(y, p::TermContainer) = TermContainer(y) == p
+
 function (==)(p::TermContainer, q::TermContainer)
   # terms should be sorted and without zeros
   for (tp,tq) in zip(p,q)

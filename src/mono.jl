@@ -1,5 +1,7 @@
 export PolyVar, Monomial, MonomialVector, @polyvar, monomials, polyvecvar
 
+import Base.copy
+
 abstract PolyType
 abstract MonomialContainer <: PolyType
 
@@ -27,9 +29,10 @@ macro polyvar(args...)
 end
 
 # TODO equality should be between name ?
-type PolyVar <: MonomialContainer
+immutable PolyVar <: MonomialContainer
   name::AbstractString
 end
+copy(x::PolyVar) = x
 
 vars(x::PolyVar) = [x]
 nvars(::PolyVar) = 1
@@ -58,6 +61,8 @@ Monomial(x::PolyVar) = Monomial([x], [1])
 Monomial() = Monomial(Vector{PolyVar}(), Vector{Int}())
 deg(x::Monomial) = sum(x.z)
 
+copy(m::Monomial) = Monomial(copy(m.vars), copy(m.z))
+
 length(::Monomial) = 1
 isempty(::Monomial) = false
 start(::Monomial) = false
@@ -77,6 +82,8 @@ type MonomialVector <: MonomialContainer
     new(vars, Z)
   end
 end
+
+copy(m::MonomialVector) = MonomialVector(copy(m.vars), copy(m.Z))
 
 function getindex(x::MonomialVector, I)
   MonomialVector(x.vars, x.Z[I])

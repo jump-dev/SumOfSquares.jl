@@ -37,8 +37,13 @@ function show(io::IO, x::MonomialVector)
 end
 
 function Base.show(io::IO, t::Term)
-  print(io, t.α)
-  print(io, t.x)
+  cst = sum(abs(t.x.z)) == 0
+  if t.α != 1 || cst
+    print(io, t.α)
+  end
+  if !cst
+    print(io, t.x)
+  end
 end
 
 function Base.show(io::IO, p::VecPolynomial)

@@ -29,6 +29,9 @@ Base.convert{T}(::Type{Term{T}}, x::Monomial) = Term{T}(one(T), x)
 Base.convert{T}(::Type{Term{T}}, x::PolyVar) = Term{T}(Monomial(x))
 Base.convert{T}(::Type{Term{T}}, α) = Term(T(α))
 
+Base.convert{T<:TermContainer}(::Type{T}, t::Term) = Term{eltype(T)}(t)
+Base.convert(::Type{Any}, t::Term) = t
+
 vars(t::Term) = vars(t.x)
 
 length(::Term) = 1
@@ -68,6 +71,8 @@ end
 (::Type{VecPolynomial{T}}){T}(a::Vector{T}, x::Vector) = VecPolynomial{T}(a, MonomialVector(x))
 (::Type{VecPolynomial{T}}){S,T}(a::Vector{S}, x::Vector) = VecPolynomial{T}(Vector{T}(a), MonomialVector(x))
 
+Base.copy{T}(p::VecPolynomial{T}) = VecPolynomial{T}(copy(p.a), copy(p.x))
+
 VecPolynomial{T}(a::Vector{T}, x::MonomialVector) = VecPolynomial{T}(a, x)
 VecPolynomial(a::Vector, x::Vector) = VecPolynomial(a, MonomialVector(x))
 
@@ -78,6 +83,21 @@ Base.convert{T}(::Type{VecPolynomial{T}}, x) = VecPolynomial(Term{T}(x))
 Base.convert{T}(::Type{VecPolynomial{T}}, t::Term) = VecPolynomial{T}([T(t.α)], [t.x])
 Base.convert{T}(::Type{VecPolynomial{T}}, p::VecPolynomial{T}) = p
 Base.convert{S,T}(::Type{VecPolynomial{T}}, p::VecPolynomial{S}) = VecPolynomial(Vector{T}(p.a), p.x)
+
+Base.convert{T<:TermContainer}(::Type{T}, p::VecPolynomial) = VecPolynomial{eltype(T)}(p)
+Base.convert(::Type{Any}, p::VecPolynomial) = p
+
+function Base.convert{S}(::Type{S}, p::TermContainer)
+  s = zero(S)
+  for t in p
+    if sum(abs(t.x.z)) > 0
+      # The polynomial is not constant
+      throw(InexactError())
+    end
+    s += S(t.α)
+  end
+  s
+end
 
 function (::Type{VecPolynomial{T}}){T}(f::Function, x::MonomialVector)
   a = T[f(i) for i in 1:length(x)]
