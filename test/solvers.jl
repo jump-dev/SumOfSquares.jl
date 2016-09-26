@@ -16,5 +16,6 @@ scs = try_import(:SCS)
 sdp_solvers = Any[]
 # Need Mosek 8 for sosdemo3 to pass
 mos && push!(sdp_solvers, Mosek.MosekSolver(LOG=0))
-# Need 54000 iterations for sosdemo3 to pass
-scs && push!(sdp_solvers, SCS.SCSSolver(eps=1e-6, max_iters=55000, verbose=0))
+# Need 54000 iterations for sosdemo3 to pass on Linux 64 bits
+# With 55000, sosdemo3 passes for every platform except Windows 64 bits on AppVeyor
+scs && push!(sdp_solvers, SCS.SCSSolver(eps=1e-6, max_iters=60000, verbose=0))
