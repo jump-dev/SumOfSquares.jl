@@ -4,6 +4,7 @@ using FactCheck
 
 include("solvers.jl")
 
+include("alg.jl")
 include("subs.jl")
 
 include("motzkin.jl")

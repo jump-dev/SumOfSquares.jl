@@ -44,8 +44,10 @@ function (==)(x::Monomial, y::Monomial)
   mycomp(x, y) == 0
 end
 
-(==)(p::TermContainer, y) = p == TermContainer(y)
+(==)(p::PolyType, y) = y == p
+
 (==)(y, p::TermContainer) = TermContainer(y) == p
+(==)(y::PolyType, p::TermContainer) = TermContainer(y) == p
 
 function (==)(p::TermContainer, q::TermContainer)
   # terms should be sorted and without zeros
@@ -63,6 +65,9 @@ function (==)(p::TermContainer, q::TermContainer)
   end
   true
 end
+
+(==)(p::RationalPoly, q::RationalPoly) = p.num*q.deno == q.num*p.deno
+(==)(p::PolyType, q::RationalPoly) = p*q.den == q.num
 
 isless(x::PolyVar, y::PolyVar) = isless(x.name, y.name)
 

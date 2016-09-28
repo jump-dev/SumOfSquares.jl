@@ -1,7 +1,7 @@
 export RationalPoly
 import Base.+, Base.-, Base.*, Base./
 
-immutable RationalPoly{S,T}
+immutable RationalPoly{S,T} <: PolyType
   num::TermContainer{S}
   den::TermContainer{T}
 end
@@ -18,6 +18,10 @@ end
 function (/){S,T}(num::TermContainer{S}, den::TermContainer{T})
   RationalPoly{S,T}(num, den)
 end
+(/)(num::TermContainer, den::PolyType) = num / TermContainer(den)
+(/)(num::PolyType, den::TermContainer) = TermContainer(num) / den
+(/)(num::PolyType, den) = num * (1/den)
+(/)(num, den::PolyType) = TermContainer(num) / den
 
 function (+)(r::RationalPoly, s::RationalPoly)
   (r.num*s.den + r.den*s.num) / (r.den * s.den)
@@ -32,6 +36,7 @@ end
 (-)(p::PolyType, s::RationalPoly) = (p * s.den - s.num) / s.den
 (-)(s::RationalPoly, p::PolyType) = (s.num - p * s.den) / s.den
 
+(*)(r::RationalPoly, s::RationalPoly) = (r.num*s.num) / (r.den*s.den)
 function (*)(p::TermContainer, r::RationalPoly)
   if p == r.den
     r.num
@@ -41,6 +46,10 @@ function (*)(p::TermContainer, r::RationalPoly)
 end
 (*)(r::RationalPoly, p::Term) = p * r
 (*)(r::RationalPoly, p::VecPolynomial) = p * r
+(*)(p::PolyType, r::RationalPoly) = TermContainer(p) * r
+(*)(r::RationalPoly, p::PolyType) = r * TermContainer(p)
+(*)(α, r::RationalPoly) = TermContainer(α) * TermContainer(p)
+(*)(r::RationalPoly, α) = r * TermContainer(α)
 
 zero(r::RationalPoly) = zero(r.num)
 zero{T<:RationalPoly}(::Type{T}) = zero(VecPolynomial)

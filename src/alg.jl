@@ -1,3 +1,9 @@
+# Multiple Dispatch strategy:
+# Polytype op Any
+# for each concrete type T
+# Any op T # ambig with Polytype op Any
+# PolyType op T # breaks ambig
+
 import Base.dot, Base.(.+), Base.(.-), Base.(.*), Base.(./), Base.(.^)
 
 (.+)(p::PolyType, α) = p+α

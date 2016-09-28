@@ -21,7 +21,6 @@ end
 Term(t::Term) = t
 Term(x::Monomial) = Term{Int}(x)
 Term(x::PolyVar) = Term(Monomial(x))
-TermContainer{T}(α::T) = Term{T}(α, Monomial())
 TermContainer{T<:Union{Monomial,PolyVar}}(x::T) = Term(x)
 Term{T}(α::T) = Term{T}(α, Monomial())
 Base.convert{T}(::Type{Term{T}}, t::Term{T}) = t
@@ -29,6 +28,10 @@ Base.convert{T}(::Type{Term{T}}, t::Term) = Term{T}(T(t.α), t.x)
 Base.convert{T}(::Type{Term{T}}, x::Monomial) = Term{T}(one(T), x)
 Base.convert{T}(::Type{Term{T}}, x::PolyVar) = Term{T}(Monomial(x))
 Base.convert{T}(::Type{Term{T}}, α) = Term(T(α))
+
+Base.convert{T}(::Type{TermContainer{T}}, α::T) = Term{T}(α, Monomial())
+Base.convert{S,T}(::Type{TermContainer{T}}, α::S) = TermContainer{T}(T(α))
+TermContainer{T}(α::T) = TermContainer{T}(α)
 
 Base.convert{T<:TermContainer}(::Type{T}, t::Term) = Term{eltype(T)}(t)
 Base.convert(::Type{Any}, t::Term) = t
@@ -85,7 +88,7 @@ Base.convert{T}(::Type{VecPolynomial{T}}, t::Term) = VecPolynomial{T}([T(t.α)],
 Base.convert{T}(::Type{VecPolynomial{T}}, p::VecPolynomial{T}) = p
 Base.convert{S,T}(::Type{VecPolynomial{T}}, p::VecPolynomial{S}) = VecPolynomial(Vector{T}(p.a), p.x)
 
-Base.convert{T<:TermContainer}(::Type{T}, p::VecPolynomial) = VecPolynomial{eltype(T)}(p)
+Base.convert{T}(::Type{TermContainer{T}}, p::VecPolynomial) = VecPolynomial{T}(p)
 Base.convert(::Type{Any}, p::VecPolynomial) = p
 
 function Base.convert{S}(::Type{S}, p::TermContainer)
