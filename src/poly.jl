@@ -21,6 +21,7 @@ end
 Term(t::Term) = t
 Term(x::Monomial) = Term{Int}(x)
 Term(x::PolyVar) = Term(Monomial(x))
+TermContainer{T}(α::T) = Term{T}(α, Monomial())
 TermContainer{T<:Union{Monomial,PolyVar}}(x::T) = Term(x)
 Term{T}(α::T) = Term{T}(α, Monomial())
 Base.convert{T}(::Type{Term{T}}, t::Term{T}) = t

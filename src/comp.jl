@@ -1,4 +1,5 @@
 import Base.==, Base.isless, Base.isapprox
+export isapproxzero
 
 # graded lex ordering
 function mycomp(x::Monomial, y::Monomial)
@@ -92,6 +93,14 @@ function isapproxzero(x; ztol::Real=1e-6)
   -ztol < x < ztol
 end
 
+function isapproxzero(p::VecPolynomial; ztol::Real=1e-6)
+  isapprox(p, zero(p), ztol=ztol)
+end
+
+function isapproxzero(p::RationalPoly; ztol::Real=1e-6)
+  isapproxzero(p.num, ztol=ztol)
+end
+
 function isapprox{S,T}(p::VecPolynomial{S}, q::VecPolynomial{T}; rtol::Real=Base.rtoldefault(S, T), atol::Real=0, ztol::Real=1e-6)
   i = j = 1
   while i <= length(p.x) || j <= length(q.x)
@@ -129,3 +138,9 @@ function isapprox{S,T}(p::SOSDecomposition{S}, q::SOSDecomposition{T}; rtol::Rea
     true
   end
 end
+
+isapprox{S,T,U,V}(p::RationalPoly{S,T}, q::RationalPoly{U,V}; rtol::Real=Base.rtoldefault(promote_op(*, U, T), promote_op(*, S, V)), atol::Real=0, ztol::Real=1e-6) = isapprox(p.num*q.den, q.num*p.den, rtol=rtol, atol=atol, ztol=ztol)
+isapprox{S,T,U}(p::RationalPoly{S,T}, q::TermContainer{U}; rtol::Real=Base.rtoldefault(promote_op(*, U, T), S), atol::Real=0, ztol::Real=1e-6) = isapprox(p.num, q*p.den, rtol=rtol, atol=atol, ztol=ztol)
+isapprox{S,T,U}(p::TermContainer{U}, q::RationalPoly{S,T}; rtol::Real=Base.rtoldefault(promote_op(*, U, T), S), atol::Real=0, ztol::Real=1e-6) = isapprox(p*q.den, q.num, rtol=rtol, atol=atol, ztol=ztol)
+isapprox(p::RationalPoly, q; atol::Real=0, ztol::Real=1e-6) = isapprox(p, TermContainer(q), atol=atol, ztol=ztol)
+isapprox(p, q::RationalPoly; atol::Real=0, ztol::Real=1e-6) = isapprox(TermContainer(p), q, atol=atol, ztol=ztol)
