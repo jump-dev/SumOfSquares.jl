@@ -1,6 +1,8 @@
 facts("Substitution") do
   @polyvar x[1:3]
 
+  a = (x[1])([x[2]], [x[1]])
+  b = x[2]
   @fact (x[1])([x[2]], [x[1]]) == x[2] --> true
 
   p = x[1]*x[2]*x[3]

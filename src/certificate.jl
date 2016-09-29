@@ -1,5 +1,6 @@
 # Inspired from SOSTools
 import Base.extrema
+export getmonomialsforcertificate
 
 function extrema(f, itr)
   state = start(itr)
@@ -46,6 +47,7 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
     n = length(Z.Z[1])
     minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
     for i in 1:n
+      a, b = extrema(z->z[i], Z.Z)
       minmultideg[i], maxmultideg[i] = cfld(extrema(z->z[i], Z.Z), 2)
     end
     MonomialVector(vars(Z), mindeg:maxdeg, z -> reduce(&, true, minmultideg .<= z .<= maxmultideg))

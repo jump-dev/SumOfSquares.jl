@@ -69,6 +69,7 @@ start(::Monomial) = false
 done(::Monomial, state) = state
 next(x::Monomial, state) = (x, true)
 
+# Invariant: Always sorted and no zero vector
 type MonomialVector <: MonomialContainer
   vars::Vector{PolyVar}
   Z::Vector{Vector{Int}}

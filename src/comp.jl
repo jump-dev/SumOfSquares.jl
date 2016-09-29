@@ -9,8 +9,9 @@ function mycomp(x::Monomial, y::Monomial)
     degx - degy
   else
     i = j = 1
-    while i <= nvars(x)
-      @assert j <= nvars(y) # since they have same degree
+    # since they have the same degree,
+    # if we get j > nvars(y), the rest in x.z should be zeros
+    while i <= nvars(x) && j <= nvars(y)
       if x.vars[i] < y.vars[j]
         if x.z[i] == 0
           i += 1
@@ -36,15 +37,43 @@ end
 
 
 # TODO equality should be between name ?
+# Technique: the higher catch the calls when it is rhs
+# so p::PolyType == x::PolyVar -> x == p
+(==)(p::PolyType, y) = y == p
+
 function (==)(x::PolyVar, y::PolyVar)
   x === y
 end
+(==)(α, x::PolyVar) = false
+(==)(p::PolyType, x::PolyVar) = x == p
 
 function (==)(x::Monomial, y::Monomial)
   mycomp(x, y) == 0
 end
+(==)(α, x::Monomial) = false
+(==)(x::PolyVar, y::Monomial) = Monomial(x) == y
+(==)(p::PolyType, x::Monomial) = x == p
 
-(==)(p::PolyType, y) = y == p
+function (==)(x::MonomialVector, y::MonomialVector)
+  if length(x.Z) != length(y.Z)
+    return false
+  end
+  allvars, maps = myunion([vars(x), vars(y)])
+  # Should be sorted in the same order since the non-common
+  # polyvar should have exponent 0
+  for (a, b) in zip(x.Z, y.Z)
+    A = zeros(length(allvars))
+    B = zeros(length(allvars))
+    A[maps[1]] = a
+    B[maps[2]] = b
+    if A != B
+      return false
+    end
+  end
+  return true
+end
+(==)(α, x::MonomialVector) = false
+(==)(p::PolyType, x::MonomialVector) = false
 
 (==)(y, p::TermContainer) = TermContainer(y) == p
 (==)(y::PolyType, p::TermContainer) = TermContainer(y) == p
