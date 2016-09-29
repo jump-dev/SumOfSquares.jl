@@ -1,5 +1,6 @@
 # I do not use it but I import the function to add a method
 import Calculus.differentiate
+export differentiate
 
 function differentiate{T}(p::VecPolynomial{T}, x::PolyVar)
   # grlex order preserved

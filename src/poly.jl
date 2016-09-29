@@ -29,6 +29,7 @@ Base.convert{T}(::Type{Term{T}}, x::Monomial) = Term{T}(one(T), x)
 Base.convert{T}(::Type{Term{T}}, x::PolyVar) = Term{T}(Monomial(x))
 Base.convert{T}(::Type{Term{T}}, α) = Term(T(α))
 
+Base.convert{T}(::Type{TermContainer{T}}, x::Union{Monomial,PolyVar}) = Term{T}(x)
 Base.convert{T}(::Type{TermContainer{T}}, α::T) = Term{T}(α, Monomial())
 Base.convert{S,T}(::Type{TermContainer{T}}, α::S) = TermContainer{T}(T(α))
 TermContainer{T}(α::T) = TermContainer{T}(α)
