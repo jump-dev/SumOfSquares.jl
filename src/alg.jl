@@ -8,12 +8,16 @@ import Base.dot, Base.(.+), Base.(.-), Base.(.*), Base.(./), Base.(.^)
 
 (.+)(p::PolyType, α) = p+α
 (.+)(α, p::PolyType) = α+p
+(.+)(p::PolyType, q::PolyType) = p+q
 (.-)(p::PolyType, α) = p-α
 (.-)(α, p::PolyType) = α-p
+(.-)(p::PolyType, q::PolyType) = p-q
 (.*)(p::PolyType, α) = p*α
 (.*)(α, p::PolyType) = α*p
+(.*)(p::PolyType, q::PolyType) = p*q
 (./)(p::PolyType, α) = p/α
 (./)(α, p::PolyType) = α/p
+(./)(p::PolyType, q::PolyType) = p/q
 (.^)(p::PolyType, i::Int) = p^i
 
 import Base.transpose
