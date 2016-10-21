@@ -43,6 +43,10 @@ function (p::VecPolynomial)(x::Vector, varorder)
   q
 end
 
+function (p::MatPolynomial)(x::Vector, varorder)
+    VecPolynomial(p)(x, varorder)
+end
+
 function (q::RationalPoly)(x::Vector, varorder)
   q.num(x, varorder) / q.den(x, varorder)
 end

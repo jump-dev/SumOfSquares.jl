@@ -1,5 +1,5 @@
 using JuMP
-import JuMP: getvalue, validmodel, addtoexpr_reorder
+import JuMP: getvalue, getdual, validmodel, addtoexpr_reorder
 using Base.Meta
 
 export @SOSvariable, @SOSconstraint, getslack
@@ -21,6 +21,20 @@ function getvalue(p::MatPolynomial{JuMP.Variable})
   MatPolynomial(map(getvalue, p.Q), p.x)
 end
 
+type SOSConstraintRef
+  slack::MatPolynomial{JuMP.Variable}
+  lincons::Vector{JuMP.ConstraintRef{JuMP.Model,JuMP.GenericRangeConstraint{JuMP.GenericAffExpr{Float64,JuMP.Variable}}}}
+  x::MonomialVector
+end
+
+function getslack(c::SOSConstraintRef)
+  getvalue(c.slack)
+end
+function getdual(c::SOSConstraintRef)
+  a = [getdual(lc) for lc in c.lincons]
+  PseudoExpectation(a, c.x)
+end
+
 function addpolyeqzeroconstraint(m::JuMP.Model, p)
   constraints = [JuMP.constructconstraint!(t.α, :(==)) for t in p]
   JuMP.addVectorizedConstraint(m, constraints)
@@ -37,9 +51,11 @@ end
 function addsosconstraint(m::JuMP.Model, p)
   Z = getmonomialsforcertificate(p.x)
   slack = freshsos(m, Z)
-  lincons = addpolyeqzeroconstraint(m, p - slack)
-  SOSConstraintRef(slack, lincons)
+  q = p - slack
+  lincons = addpolyeqzeroconstraint(m, q)
+  SOSConstraintRef(slack, lincons, q.x)
 end
+
 
 macro SOSvariable(args...)
   length(args) <= 1 &&
@@ -170,15 +186,6 @@ macro SOSvariable(args...)
   else
     JuMP.variable_error(args, "Invalid syntax for variable name: $(string(var))")
   end
-end
-
-type SOSConstraintRef
-  slack::MatPolynomial{JuMP.Variable}
-  lincons::Vector{JuMP.ConstraintRef{JuMP.Model,JuMP.GenericRangeConstraint{JuMP.GenericAffExpr{Float64,JuMP.Variable}}}}
-end
-
-function getslack(c::SOSConstraintRef)
-  getvalue(c.slack)
 end
 
 macro SOSconstraint(m, x)

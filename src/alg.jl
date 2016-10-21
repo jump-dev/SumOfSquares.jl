@@ -204,8 +204,10 @@ end
 
 (+)(x::TermContainer, y::MatPolynomial) = x + VecPolynomial(y)
 (+)(x::MatPolynomial, y::TermContainer) = VecPolynomial(x) + y
+(+)(x::MatPolynomial, y::MatPolynomial) = VecPolynomial(x) + VecPolynomial(y)
 (-)(x::TermContainer, y::MatPolynomial) = x - VecPolynomial(y)
 (-)(x::MatPolynomial, y::TermContainer) = VecPolynomial(x) - y
+(-)(x::MatPolynomial, y::MatPolynomial) = VecPolynomial(x) - VecPolynomial(y)
 
 iszero{T}(x::T) = x == zero(T)
 iszero(t::Term) = iszero(t.α)
