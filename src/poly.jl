@@ -175,6 +175,10 @@ function (::Type{MatPolynomial{T}}){T}(f::Function, x::MonomialVector)
 end
 (::Type{MatPolynomial{T}}){T}(f::Function, x::Vector) = MatPolynomial{T}(f, MonomialVector(x))
 
+function MatPolynomial{T}(Q::Matrix{T}, x::MonomialVector)
+  MatPolynomial{T}((i,j) -> Q[i,j], x)
+end
+
 function getindex(p::MatPolynomial, I::NTuple{2,Int})
   i, j = I
   if i < j

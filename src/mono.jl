@@ -57,9 +57,10 @@ type Monomial <: MonomialContainer
     new(vars, z)
   end
 end
-Monomial(x::PolyVar) = Monomial([x], [1])
-Monomial() = Monomial(Vector{PolyVar}(), Vector{Int}())
+Monomial() = Monomial(PolyVar[], Int[])
 deg(x::Monomial) = sum(x.z)
+
+Base.convert(::Type{Monomial}, x::PolyVar) = Monomial([x], [1])
 
 copy(m::Monomial) = Monomial(copy(m.vars), copy(m.z))
 

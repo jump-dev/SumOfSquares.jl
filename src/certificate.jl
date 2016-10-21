@@ -1,6 +1,6 @@
 # Inspired from SOSTools
 import Base.extrema
-export getmonomialsforcertificate
+export getmonomialsforcertificate, randpsd, randsos
 
 function extrema(f, itr)
   state = start(itr)
@@ -56,3 +56,22 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
   end
 end
 getmonomialsforcertificate(Z::Vector, sparse=:No) = getmonomialsforcertificate(MonomialVector(Z), sparse)
+
+function randpsd(n, eps=0.1)
+  Q = randn(n,n)
+  Q' * Diagonal(eps + abs(randn(n))) * Q
+end
+
+function randsos(Z::MonomialVector, monotype=:Classic, eps=0.1)
+  if monotype == :Classic
+    x = getmonomialsforcertificate(Z)
+  elseif monotype == :Gram
+    x = Z
+  else
+    throw(ArgumentError())
+  end
+  n = length(x)
+  MatPolynomial(randpsd(n), x)
+end
+
+randsos(Z::Vector, monotype=:Classic, eps=0.1) = randsos(MonomialVector(Z), monotype, eps)
