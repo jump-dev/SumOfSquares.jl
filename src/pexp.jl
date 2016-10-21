@@ -27,6 +27,12 @@ end
 
 PseudoExpectation{T}(a::Vector{T}, x::MonomialVector) = PseudoExpectation{T}(a, x)
 
+function zeta{T}(v::Vector{T}, x::MonomialVector, varorder::Vector{PolyVar})
+  PseudoExpectation(T[m(v, varorder) for m in x], x)
+end
+
+ζ(v::Vector, x::MonomialVector, varorder::Vector{PolyVar}) = zeta(v, x, varorder)
+
 function dot(pexp::PseudoExpectation, p::TermContainer)
   i = 1
   s = 0
