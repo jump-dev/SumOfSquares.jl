@@ -2,8 +2,6 @@
 # SOSDEMO2 --- Lyapunov Function Search
 # Section 3.2 of SOSTOOLS User's Manual
 
-using Calculus
-
 facts("SOSDEMO2") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
