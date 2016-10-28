@@ -30,13 +30,13 @@ context("With solver $(typeof(solver))") do
         A[i] = dot(Z, H*Z)
     end
 
-    m = JuMP.Model(solver = solver)
+    m = SOSModel(solver = solver)
 
     # -- Q(x)'s -- : sums of squares
     # Monomial vector: [x1; ... x8]
     Q = Vector{MatPolynomial{JuMP.Variable}}(4)
     for i = 1:4
-      @SOSvariable m tmp >= 0 Z
+      @polyvariable m tmp >= 0 Z
       Q[i] = tmp
     end
 
@@ -46,7 +46,7 @@ context("With solver $(typeof(solver))") do
     r = Matrix{JuMP.Variable}(4,4)
     for i = 1:4
         for j = (i+1):4
-          #@SOSvariable m tmp >= 0 Z
+          #@polyvariable m tmp >= 0 Z
           @variable m tmp >= 0
           r[i,j] = tmp
         end
@@ -67,7 +67,7 @@ context("With solver $(typeof(solver))") do
     I = -sum(x.^4)
     expr = expr + I
 
-    @SOSconstraint m expr >= 0
+    @polyconstraint m expr >= 0
 
     status = solve(m)
 

@@ -1,7 +1,3 @@
-using JuMP
-import JuMP: getvalue, getdual, validmodel, addtoexpr_reorder
-using Base.Meta
-
 export @SOSvariable, @SOSconstraint, getslack
 
 function freshsos(m::JuMP.Model, Z::Union{MonomialVector,Vector})

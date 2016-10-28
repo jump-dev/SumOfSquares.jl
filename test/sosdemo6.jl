@@ -2,6 +2,7 @@
 # SOSDEMO6 --- MAX CUT
 # Section 3.6 of SOSTOOLS User's Manual
 
+# Currently does not work with Mosek, see https://github.com/JuliaOpt/Mosek.jl/issues/98
 facts("SOSDEMO6") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
@@ -15,20 +16,20 @@ context("With solver $(typeof(solver))") do
 
   for (gamma, expected) in [(3.9, :Infeasible), (4, :Optimal)]
 
-    m = JuMP.Model(solver = solver)
+    m = SOSModel(solver = solver)
 
     Z = monomials(x, 0:1)
     p = Vector{Any}(6)
-    @SOSvariable m p1 >= 0 Z
+    @polyvariable m p1 >= 0 Z
 
     Z = monomials(x, 0:2)
     p = Vector{VecPolynomial{Variable}}(5)
     for i in 1:5
-      @SOSvariable m tmp Z
+      @polyvariable m tmp Z
       p[i] = tmp
     end
 
-    @SOSconstraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
+    @polyconstraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
 
     status = solve(m)
 

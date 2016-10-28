@@ -13,9 +13,9 @@ context("With solver $(typeof(solver))") do
   for i in 1:10
     p = randsos(x)
 
-    m = JuMP.Model(solver = solver)
+    m = SOSModel(solver = solver)
 
-    @SOSconstraint m p >= 0
+    @polyconstraint m p >= 0
 
     status = solve(m)
 

@@ -18,13 +18,13 @@ context("With solver $(typeof(solver))") do
   xsJxs = dot(xs, J*xs)
   r = sum(xs)
 
-  m0 = JuMP.Model(solver = solver)
-  @SOSconstraint m0 xsJxs >= 0
+  m0 = SOSModel(solver = solver)
+  @polyconstraint m0 xsJxs >= 0
   status = solve(m0)
   @fact status --> :Infeasible
 
-  m1 = JuMP.Model(solver = solver)
-  @SOSconstraint m1 r*xsJxs >= 0
+  m1 = SOSModel(solver = solver)
+  @polyconstraint m1 r*xsJxs >= 0
   status = solve(m1)
   @fact status --> :Optimal
   # Program is feasible. The matrix J is copositive

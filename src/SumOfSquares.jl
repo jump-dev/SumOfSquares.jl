@@ -4,17 +4,27 @@ module SumOfSquares
 
 import Base.show, Base.length, Base.getindex, Base.vect, Base.isless, Base.isempty, Base.start, Base.done, Base.next, Base.convert, Base.dot
 
-include("mono.jl")
-include("poly.jl")
-include("rational.jl")
-include("pexp.jl")
-include("promote.jl")
-include("comp.jl")
-include("alg.jl")
-include("diff.jl")
-include("subs.jl")
-include("show.jl")
+using MultivariatePolynomials
+
+# Not JuMP specific
 include("certificate.jl")
-include("jump.jl")
+
+# JuMP specific
+using JuMP
+import JuMP: getvalue, getdual, validmodel, addtoexpr_reorder
+
+export SOS, SOSModel
+
+type SOS
+end
+
+function SOSModel(;solver=MathProgBase.defaultSDPsolver)
+    m = Model(solver=solver)
+    m.ext[:poly] = SOS()
+    return m
+end
+
+include("variable.jl")
+include("constraint.jl")
 
 end # module

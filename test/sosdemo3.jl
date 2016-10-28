@@ -7,7 +7,7 @@ for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
   @polyvar x1 x2
 
-  m = JuMP.Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   @variable m γ
 
@@ -20,7 +20,7 @@ context("With solver $(typeof(solver))") do
 
   f = (1+f1^2*f2)*(30+f3^2*f4)
 
-  @SOSconstraint m f >= γ
+  @polyconstraint m f >= γ
 
   @objective m Max γ
 

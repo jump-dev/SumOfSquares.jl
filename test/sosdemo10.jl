@@ -14,20 +14,20 @@ context("With solver $(typeof(solver))") do
   g0 = 2*x1
   theta = 1
 
-  m = JuMP.Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   # FIXME s should be sos ?
   # in SOSTools doc it is said to be SOS
   # but in the demo it is not constrained so
   Z = monomials(x, 0:4)
-  @SOSvariable m s Z
+  @polyvariable m s Z
 
   Z = monomials(x, 2:3)
-  @SOSvariable m g1 Z
+  @polyvariable m g1 Z
 
   Sc = [theta^2-s*(gamma-p) g0+g1; g0+g1 1]
 
-  @SOSconstraint m eps * eye(2) ⪯ Sc
+  @polyconstraint m eps * eye(2) ⪯ Sc
 
   status = solve(m)
 
