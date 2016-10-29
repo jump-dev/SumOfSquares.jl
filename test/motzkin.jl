@@ -3,7 +3,7 @@ for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
   @polyvar x y
 
-  m = SOSModel(solver = solver)
+  m = Model(solver = solver)
 
   p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
 
@@ -13,7 +13,7 @@ context("With solver $(typeof(solver))") do
 
   @fact status --> :Infeasible
 
-  M = SOSModel(solver = solver)
+  M = Model(solver = solver)
 
   q = (x^2 + y^2) * p
 

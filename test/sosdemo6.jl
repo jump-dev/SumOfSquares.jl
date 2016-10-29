@@ -16,7 +16,7 @@ context("With solver $(typeof(solver))") do
 
   for (gamma, expected) in [(3.9, :Infeasible), (4, :Optimal)]
 
-    m = SOSModel(solver = solver)
+    m = Model(solver = solver)
 
     Z = monomials(x, 0:1)
     p = Vector{Any}(6)

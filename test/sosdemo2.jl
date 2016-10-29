@@ -12,7 +12,7 @@ context("With solver $(typeof(solver))") do
       -x[2]-x[1]^2*x[2],
       -x[3]+3*x[1]^2*x[3]-3*x[3]/(x[3]^2+1)]
 
-  m = SOSModel(solver = solver)
+  m = Model(solver = solver)
 
   # The Lyapunov function V(x):
   Z = x.^2

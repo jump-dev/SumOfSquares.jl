@@ -3,7 +3,7 @@ for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
   @polyvar x y z
 
-  m = SOSModel(solver = solver)
+  m = Model(solver = solver)
 
   C = [x^2+2y^2 -x*y -x*z;
        -x*y y^2+2z^2 -y*z;

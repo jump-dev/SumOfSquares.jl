@@ -30,7 +30,7 @@ context("With solver $(typeof(solver))") do
         A[i] = dot(Z, H*Z)
     end
 
-    m = SOSModel(solver = solver)
+    m = Model(solver = solver)
 
     # -- Q(x)'s -- : sums of squares
     # Monomial vector: [x1; ... x8]

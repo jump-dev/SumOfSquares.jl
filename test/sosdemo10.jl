@@ -14,7 +14,7 @@ context("With solver $(typeof(solver))") do
   g0 = 2*x1
   theta = 1
 
-  m = SOSModel(solver = solver)
+  m = Model(solver = solver)
 
   # FIXME s should be sos ?
   # in SOSTools doc it is said to be SOS

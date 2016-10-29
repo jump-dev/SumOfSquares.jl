@@ -7,7 +7,7 @@ for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
   @polyvar x1 x2
 
-  m = SOSModel(solver = solver)
+  m = Model(solver = solver)
 
   @variable m γ
 

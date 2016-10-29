@@ -13,7 +13,7 @@ context("With solver $(typeof(solver))") do
   for i in 1:10
     p = randsos(x)
 
-    m = SOSModel(solver = solver)
+    m = Model(solver = solver)
 
     @polyconstraint m p >= 0
 

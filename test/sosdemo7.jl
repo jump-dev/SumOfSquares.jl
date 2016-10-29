@@ -11,7 +11,7 @@ context("With solver $(typeof(solver))") do
 
   Z = monomials(x, 0:ndeg-1)
 
-  m = SOSModel(solver = solver)
+  m = Model(solver = solver)
 
   @polyvariable m p1 Z
 

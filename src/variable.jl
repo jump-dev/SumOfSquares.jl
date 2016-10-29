@@ -1,6 +1,6 @@
 export createpoly, createnonnegativepoly
 
-function createpoly(m::JuMP.Model, ::SOS, monotype::Symbol, x::Union{MonomialVector,Vector})
+function createpoly(m::JuMP.Model, monotype::Symbol, x::Union{MonomialVector,Vector})
     if monotype == :Default
         monotype = :Classic
     end
@@ -13,7 +13,7 @@ function createpoly(m::JuMP.Model, ::SOS, monotype::Symbol, x::Union{MonomialVec
     VecPolynomial{JuMP.Variable}((i) -> Variable(m, -Inf, Inf, :Cont), Z)
 end
 
-function createnonnegativepoly(m::JuMP.Model, ::SOS, monotype::Symbol, x::Union{MonomialVector,Vector})
+function createnonnegativepoly(m::JuMP.Model, monotype::Symbol, x::Union{MonomialVector,Vector})
     if monotype == :Default
         monotype = :Gram
     end

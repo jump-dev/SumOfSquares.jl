@@ -18,12 +18,12 @@ context("With solver $(typeof(solver))") do
   xsJxs = dot(xs, J*xs)
   r = sum(xs)
 
-  m0 = SOSModel(solver = solver)
+  m0 = Model(solver = solver)
   @polyconstraint m0 xsJxs >= 0
   status = solve(m0)
   @fact status --> :Infeasible
 
-  m1 = SOSModel(solver = solver)
+  m1 = Model(solver = solver)
   @polyconstraint m1 r*xsJxs >= 0
   status = solve(m1)
   @fact status --> :Optimal
