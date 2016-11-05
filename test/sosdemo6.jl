@@ -2,7 +2,6 @@
 # SOSDEMO6 --- MAX CUT
 # Section 3.6 of SOSTOOLS User's Manual
 
-# Currently does not work with Mosek, see https://github.com/JuliaOpt/Mosek.jl/issues/98
 facts("SOSDEMO6") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
