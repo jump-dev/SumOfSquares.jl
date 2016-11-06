@@ -5,5 +5,42 @@
 [![Coverage Status](https://coveralls.io/repos/blegat/SumOfSquares.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/blegat/SumOfSquares.jl?branch=master)
 [![codecov.io](http://codecov.io/github/blegat/SumOfSquares.jl/coverage.svg?branch=master)](http://codecov.io/github/blegat/SumOfSquares.jl?branch=master)
 
-This packages contains useful utilities to add support for Sum of Squares Programming in a modelling tool in Julia.
-The file `jump.jl` contains a JuMP extension to support Sum of Squares Programming.
+This packages contains the Sum of Squares reformulation for polynomial optimization.
+When used in conjunction with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/blegat/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
+Enabling the creation of sum of squares variables and constraints.
+
+The following example shows how to find lower bounds for the Goldstein-Price function using this package with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/blegat/PolyJuMP.jl).
+
+```julia
+using MultivariatePolynomials
+using JuMP
+using PolyJuMP
+using SumOfSquares
+
+# Create symbolic variables (not JuMP decision variables)
+@polyvar x1 x2
+
+# Create a JuMP model with the default SDP solver (you should have at least one installed)
+m = Model()
+
+# Create a JuMP decision variable for the lower bound
+@variable m γ
+
+# f(x) is the Goldstein-Price function
+f1 = x1+x2+1
+f2 = 19-14*x1+3*x1^2-14*x2+6*x1*x2+3*x2^2
+f3 = 2*x1-3*x2
+f4 = 18-32*x1+12*x1^2+48*x2-36*x1*x2+27*x2^2
+
+f = (1+f1^2*f2)*(30+f3^2*f4)
+
+# Constraints f(x) - γ to be sum of squares
+@polyconstraint m f >= γ
+
+@objective m Max γ
+
+status = solve(m)
+
+# The lower bound found is 3
+println(getobjectivevalue(m))
+```
