@@ -1,15 +1,15 @@
 # Sum of Squares Programming for Julia.
 
-[![Build Status](https://travis-ci.org/blegat/SumOfSquares.jl.svg?branch=master)](https://travis-ci.org/blegat/SumOfSquares.jl)
+[![Build Status](https://travis-ci.org/JuliaOpt/SumOfSquares.jl.svg?branch=master)](https://travis-ci.org/JuliaOpt/SumOfSquares.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/3ulippbi7387sf9o/branch/master?svg=true)](https://ci.appveyor.com/project/blegat/sumofsquares-jl/branch/master)
-[![Coverage Status](https://coveralls.io/repos/blegat/SumOfSquares.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/blegat/SumOfSquares.jl?branch=master)
+[![Coverage Status](https://coveralls.io/repos/JuliaOpt/SumOfSquares.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/JuliaOpt/SumOfSquares.jl?branch=master)
 [![codecov.io](http://codecov.io/github/blegat/SumOfSquares.jl/coverage.svg?branch=master)](http://codecov.io/github/blegat/SumOfSquares.jl?branch=master)
 
 This packages contains the Sum of Squares reformulation for polynomial optimization.
-When used in conjunction with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/blegat/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
+When used in conjunction with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
 Enabling the creation of sum of squares variables and constraints.
 
-The following example shows how to find lower bounds for the Goldstein-Price function using this package with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/blegat/PolyJuMP.jl).
+The following example shows how to find lower bounds for the Goldstein-Price function using this package with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/JuliaOpt/PolyJuMP.jl).
 
 ```julia
 using MultivariatePolynomials
