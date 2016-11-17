@@ -28,7 +28,7 @@ function getslack(c::SOSConstraintRef)
 end
 function getdual(c::SOSConstraintRef)
   a = [getdual(lc) for lc in c.lincons]
-  PseudoExpectation(a, c.x)
+  Measure(a, c.x)
 end
 
 function addpolyeqzeroconstraint(m::JuMP.Model, p)
