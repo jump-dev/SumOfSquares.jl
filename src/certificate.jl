@@ -57,21 +57,26 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
 end
 getmonomialsforcertificate(Z::Vector, sparse=:No) = getmonomialsforcertificate(MonomialVector(Z), sparse)
 
-function randpsd(n, eps=0.1)
+function randpsd(n; r=n, eps=0.1)
   Q = randn(n,n)
-  Q' * Diagonal(eps + abs(randn(n))) * Q
+  d = zeros(Float64, n)
+  d[1:r] = eps + abs(randn(r))
+  Q' * Diagonal(d) * Q
 end
 
-function randsos(Z::MonomialVector, monotype=:Classic, eps=0.1)
+function randsos(Z::MonomialVector; r=-1, monotype=:Classic, eps=0.1)
   if monotype == :Classic
     x = getmonomialsforcertificate(Z)
   elseif monotype == :Gram
     x = Z
   else
-    throw(ArgumentError())
+    throw(ArgumentError("Monotype $monotype not known"))
   end
   n = length(x)
-  MatPolynomial(randpsd(n), x)
+  if r < 0
+      r = n
+  end
+  MatPolynomial(randpsd(n, r=r, eps=eps), x)
 end
 
-randsos(Z::Vector, monotype=:Classic, eps=0.1) = randsos(MonomialVector(Z), monotype, eps)
+randsos(Z::Vector; r=-1, monotype=:Classic, eps=0.1) = randsos(MonomialVector(Z), r=r, monotype=monotype, eps=eps)
