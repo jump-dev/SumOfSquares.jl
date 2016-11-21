@@ -13,12 +13,7 @@ include("certificate.jl")
 using JuMP
 import JuMP: getvalue, getdual, validmodel, addtoexpr_reorder
 
-export SOS, SOSModel
-
-type SOS
-end
-
-function SOSModel(;solver=MathProgBase.defaultSDPsolver)
+function Model(;solver=MathProgBase.defaultSDPsolver)
     m = Model(solver=solver)
     m.ext[:poly] = SOS()
     return m
