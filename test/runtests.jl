@@ -7,6 +7,7 @@ using FactCheck
 include("solvers.jl")
 
 include("certificate.jl")
+include("constraint.jl")
 
 include("motzkin.jl")
 include("choi.jl")

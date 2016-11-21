@@ -13,12 +13,6 @@ include("certificate.jl")
 using JuMP
 import JuMP: getvalue, getdual, validmodel, addtoexpr_reorder
 
-function Model(;solver=MathProgBase.defaultSDPsolver)
-    m = Model(solver=solver)
-    m.ext[:poly] = SOS()
-    return m
-end
-
 include("variable.jl")
 include("constraint.jl")
 
