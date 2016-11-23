@@ -12,7 +12,7 @@ include("constraint.jl")
 include("motzkin.jl")
 
 # SOSTools demos
-include("sosdemo1.jl")
+include("sospoly.jl")
 include("sosdemo2.jl")
 include("sosdemo3.jl")
 include("sosdemo4.jl")
