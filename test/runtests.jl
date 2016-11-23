@@ -5,6 +5,8 @@ using PolyJuMP
 using FactCheck
 
 include("solvers.jl")
+include("rationalsos.jl")
+error()
 
 include("certificate.jl")
 include("constraint.jl")
