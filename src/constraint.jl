@@ -16,7 +16,7 @@ function getdual(c::SOSConstraint)
     Measure(a, c.x)
 end
 
-function addpolyeqzeroconstraint(m::JuMP.Model, p)
+function addpolyeqzeroconstraint(m::JuMP.Model, p, domain)
     constraints = [JuMP.constructconstraint!(t.α, :(==)) for t in p]
     JuMP.addVectorizedConstraint(m, constraints)
 end
@@ -30,10 +30,10 @@ function addpolynonnegativeconstraint(m::JuMP.Model, P::Matrix)
     p = dot(y, P*y)
     addpolynonnegativeconstraint(m, p)
 end
-function addpolynonnegativeconstraint(m::JuMP.Model, p)
+function addpolynonnegativeconstraint(m::JuMP.Model, p, domain)
     Z = getmonomialsforcertificate(p.x)
     slack = createnonnegativepoly(m, :Gram, Z)
     q = p - slack
-    lincons = addpolyeqzeroconstraint(m, q)
+    lincons = addpolyeqzeroconstraint(m, q, domain)
     SOSConstraint(slack, lincons, q.x)
 end
