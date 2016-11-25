@@ -1,3 +1,5 @@
+using Polyhedra
+
 # Inspired from SOSTools
 import Base.extrema
 export getmonomialsforcertificate, randpsd, randsos
@@ -21,9 +23,10 @@ end
 
 cfld(x::NTuple{2,Int}, n) = (cld(x[1], 2), fld(x[2], 2))
 
-# TODO sparse with Newton polytope (Polyhedra.jl for convex hull)
-function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
-    if sparse == :No
+function getmonomialsforcertificate(x::MonomialVector, lib=nothing)
+    n = length(x.Z[1])
+    mindeg, maxdeg = cfld(extrema(map(sum, x.Z)), 2)
+    if lib === nothing
         # Cheap approximation of the convex hull as the approximation of:
         #
         # z such that mindeg < sum(z) < maxdeg
@@ -43,19 +46,23 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
         # | +----+
         # | ^---------- minmultideg
         # +---------
-        mindeg, maxdeg = cfld(extrema(map(sum, Z.Z)), 2)
-        n = length(Z.Z[1])
         minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
         for i in 1:n
-            a, b = extrema(z->z[i], Z.Z)
-            minmultideg[i], maxmultideg[i] = cfld(extrema(z->z[i], Z.Z), 2)
+            a, b = extrema(z->z[i], x.Z)
+            minmultideg[i], maxmultideg[i] = cfld(extrema(z->z[i], x.Z), 2)
         end
-        MonomialVector(vars(Z), mindeg:maxdeg, z -> reduce(&, true, minmultideg .<= z .<= maxmultideg))
+        MonomialVector(vars(x), mindeg:maxdeg, z -> reduce(&, true, minmultideg .<= z .<= maxmultideg))
     else
-        error("Not supported yet :(")
+        Zm = Matrix{Int}(length(x), n)
+        for (i, z) in enumerate(x.Z)
+            Zm[i,:] = z
+        end
+        vrep = SimpleVRepresentation(Zm)
+        newtonpoly = polyhedron(vrep, lib)
+        MonomialVector(vars(x), mindeg:maxdeg, z -> 2*z in newtonpoly)
     end
 end
-getmonomialsforcertificate(Z::Vector, sparse=:No) = getmonomialsforcertificate(MonomialVector(Z), sparse)
+getmonomialsforcertificate(Z::Vector, lib=nothing) = getmonomialsforcertificate(MonomialVector(Z), lib)
 
 function randpsd(n; r=n, eps=0.1)
     Q = randn(n,n)
