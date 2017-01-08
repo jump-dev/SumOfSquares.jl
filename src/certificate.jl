@@ -23,7 +23,9 @@ end
 
 cfld(x::NTuple{2,Int}, n) = (cld(x[1], 2), fld(x[2], 2))
 
-function getmonomialsforcertificate(x::MonomialVector, lib=nothing)
+function getmonomialsforcertificate(x::MonomialVector, parts::Vector, libs::Vector)
+    @assert length(parts) == length(libs)
+    for i in 1:length(parts)
     n = length(x.Z[1])
     mindeg, maxdeg = cfld(extrema(map(sum, x.Z)), 2)
     if lib === nothing
