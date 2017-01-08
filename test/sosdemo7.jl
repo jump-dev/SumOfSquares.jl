@@ -5,27 +5,30 @@
 facts("SOSDEMO7") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
-  ndeg = 8   # Degree of Chebyshev polynomial
+    if !isscs(solver)
+        ndeg = 8   # Degree of Chebyshev polynomial
 
-  @polyvar x
+        @polyvar x
 
-  Z = monomials(x, 0:ndeg-1)
+        Z = monomials([x], 0:ndeg-1)
 
-  m = Model(solver = solver)
+        m = Model(solver = solver)
 
-  @polyvariable m p1 Z
+        @variable m γ
+        @polyvariable m p1 Z
 
-  p = p1 + gam * x^ndeg # the leading coeff of p is gam
+        p = p1 + γ * x^ndeg # the leading coeff of p is γ
 
-  @polyconstraint m p <= 1 domain=[x>=-1, x<=1]
-  @polyconstraint m p >= -1 domain=[x>=-1, x<=1]
+        @polyconstraint(m, p <= 1, domain = x >= -1 && x <= 1)
+        @polyconstraint(m, p >= -1, domain = x >= -1 && x <= 1)
 
-  @objective m Max gam
+        @objective m Max γ
 
-  status = solve(m)
+        status = solve(m)
 
-  @fact status --> :Optimal
+        @fact status --> :Optimal
 
-  @show getvalue(p)
-  @show getvalue(gam)
+        @fact isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1) --> true
+        @fact isapprox(getvalue(γ), 128) --> true
+    end
 end; end; end

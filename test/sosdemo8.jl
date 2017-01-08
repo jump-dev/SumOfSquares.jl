@@ -5,47 +5,43 @@
 facts("SOSDEMO8") do
 for solver in sdp_solvers
 context("With solver $(typeof(solver))") do
-  @polyvar x
+    @polyvar x
 
-  # The probability adds up to one.
-  m0 = 1
+    # The probability adds up to one.
+    μ0 = 1
+    # Mean
+    μ1  = 1
+    # Variance
+    σ = 1/2
+    # E(x^2)
+    μ2 = σ^2+μ1^2
+    # Support of the random variable
+    R = [0,5]
 
-  # Mean
-  m1  = 1
+    # Event whose probability we want to bound
+    E = [4,5]
 
-  # Variance
-  sig = 1/2
+    m = Model()
 
-  # E(x^2)
-  m2 = sig^2+m1^2
+    @variable m a
+    @variable m b
+    @variable m c
 
-  # Support of the random variable
-  R = [0,5]
+    P = a + b*x + c*x^2
 
-  # Event whose probability we want to bound
-  E = [4,5]
+    # Nonnegative on the support
+    @polyconstraint(m, P >= 0, domain = 0 <= x && x <= 5)
 
-  m = Model()
+    # Greater than one on the event
+    @polyconstraint(m, P >= 1, domain = 4 <= x && x <= 5)
 
-  @variable m a
-  @variable m b
-  @variable m c
+    # The bound
+    bnd =  a * μ0 + b * μ1 + c * μ2
 
-  P = a + b*x + c*x^2
+    @objective m Min bnd
 
-  # Nonnegative on the support
-  @polyconstrant m P >= 0 R
+    status = solve(m)
 
-  # Greater than one on the event
-  @polyconstrant m P >= 1 E
-
-  # The bound
-  bnd =  a * m0 + b * m1 + c * m2
-
-  @objective m Min bnd
-
-  status = solve(m)
-
-  BND = getvalue(bnd,16)
-  PP = getvalue(P)
+    @fact isapprox(getobjectivevalue(m), 1/37, rtol=1e-7) --> true
+    @fact isapprox(getvalue(P), ((12/37)x-11/37)^2, rtol=1e-3) --> true
 end; end; end

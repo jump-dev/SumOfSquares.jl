@@ -43,7 +43,7 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
         # | +----+
         # | ^---------- minmultideg
         # +---------
-        mindeg, maxdeg = cfld(extrema(map(sum, Z.Z)), 2)
+        mindeg, maxdeg = cfld(extdeg(Z), 2)
         n = length(Z.Z[1])
         minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
         for i in 1:n
