@@ -21,7 +21,7 @@ context("With solver $(typeof(solver))") do
         M = U*V';
 
         # Constructing A(x)'s
-        A = Vector{VecPolynomial{Float64}}(4)
+        A = Vector{Polynomial{true, Float64}}(4)
 
         for (gam, expected) in [(0.8723, :Infeasible), (0.8724, :Optimal)]
             Z = monomials(x, 1)
@@ -35,7 +35,7 @@ context("With solver $(typeof(solver))") do
 
             # -- Q(x)'s -- : sums of squares
             # Monomial vector: [x1; ... x8]
-            Q = Vector{MatPolynomial{JuMP.Variable}}(4)
+            Q = Vector{MatPolynomial{true, JuMP.Variable}}(4)
             for i = 1:4
                 @polyvariable m tmp >= 0 Z
                 Q[i] = tmp

@@ -22,7 +22,7 @@ context("With solver $(typeof(solver))") do
     @polyvariable m p1 >= 0 Z
 
     Z = monomials(x, 0:2)
-    p = Vector{VecPolynomial{Variable}}(5)
+    p = Vector{Polynomial{true, Variable}}(5)
     for i in 1:5
       @polyvariable m tmp Z
       p[i] = tmp

@@ -1,10 +1,10 @@
 export getslack, addpolyeqzeroconstraint, addpolynonnegativeconstraint
 import JuMP.getdual, PolyJuMP.getslack
 
-type SOSConstraint
-    slack::MatPolynomial{JuMP.Variable}
+type SOSConstraint{C}
+    slack::MatPolynomial{C, JuMP.Variable}
     lincons::Vector{JuMP.ConstraintRef{JuMP.Model,JuMP.GenericRangeConstraint{JuMP.GenericAffExpr{Float64,JuMP.Variable}}}}
-    x::MonomialVector
+    x::MonomialVector{C}
 end
 
 function getslack(c::SOSConstraint)
@@ -22,15 +22,18 @@ function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
     JuMP.addVectorizedConstraint(m, constraints)
 end
 
-function addpolynonnegativeconstraint(m::JuMP.Model, P::Matrix, domain::BasicSemialgebraicSet)
+function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::BasicSemialgebraicSet)
     n = Base.LinAlg.checksquare(P)
     if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
     end
-    y = polyvecvar(string(gensym()), 1:n)
+    y = polyvecvar(PolyVar{C}, string(gensym()), 1:n)
     p = dot(y, P*y)
     addpolynonnegativeconstraint(m, p, domain)
 end
+addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, domain::BasicSemialgebraicSet) = matconstraux(PolyVar{false}, m, P, domain)
+addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::BasicSemialgebraicSet) = matconstraux(PolyVar{true}, m, P, domain)
+
 function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
     # TODO We might want to add this as a function in MultivariatePolynomials.jl
     mindeg, maxdeg = extdeg(p)

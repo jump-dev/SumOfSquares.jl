@@ -8,9 +8,8 @@ facts("Random SOS should be SOS") do
     for solver in sdp_solvers
         context("With solver $(typeof(solver))") do
             @polyvar x y
-            x = [Monomial(), x, y, x^2, y^2, x*y]
+            x = [1, x, y, x^2, y^2, x*y]
             @fact_throws ArgumentError randsos(x, monotype=:Unknown)
-            @fact typeof(x) --> Vector{Monomial}
             for i in 1:10
                 for monotype in [:Classic, :Gram]
                     p = randsos(x, monotype=monotype)

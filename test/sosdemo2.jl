@@ -28,5 +28,5 @@ context("With solver $(typeof(solver))") do
 
   @fact status --> :Optimal
 
-  @fact removemonomials(getvalue(V), Z) --> zero(VecPolynomial{Float64})
+  @fact removemonomials(getvalue(V), Z) --> zero(Polynomial{true, Float64})
 end; end; end
