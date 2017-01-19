@@ -12,6 +12,8 @@ end
 mos = try_import(:Mosek)
 scs = try_import(:SCS)
 
+isscs(solver) = contains(string(typeof(solver)),"SCSSolver")
+
 # Semidefinite solvers
 sdp_solvers = Any[]
 # Need at least Mosek 8 for sosdemo3 to pass; see:
