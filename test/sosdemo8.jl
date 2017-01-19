@@ -21,7 +21,7 @@ context("With solver $(typeof(solver))") do
     # Event whose probability we want to bound
     E = [4,5]
 
-    m = Model()
+    m = Model(solver = solver)
 
     @variable m a
     @variable m b
@@ -42,6 +42,6 @@ context("With solver $(typeof(solver))") do
 
     status = solve(m)
 
-    @fact isapprox(getobjectivevalue(m), 1/37, rtol=1e-7) --> true
+    @fact isapprox(getobjectivevalue(m), 1/37, rtol=1e-6) --> true
     @fact isapprox(getvalue(P), ((12/37)x-11/37)^2, rtol=1e-3) --> true
 end; end; end
