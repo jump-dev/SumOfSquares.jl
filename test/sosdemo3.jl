@@ -2,9 +2,7 @@
 # SOSDEMO3 --- Bound on Global Extremum
 # Section 3.3 of SOSTOOLS User's Manual
 
-facts("SOSDEMO3") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO3 with $solver" for solver in sdp_solvers
   @polyvar x1 x2
 
   m = Model(solver = solver)
@@ -26,7 +24,7 @@ context("With solver $(typeof(solver))") do
 
   status = solve(m)
 
-  @fact status --> :Optimal
+  @test status == :Optimal || (iscsdp(solver) && status == :Suboptimal)
 
-  @fact getobjectivevalue(m) --> roughly(3; rtol=1e-3)
-end; end; end
+  @test isapprox(getobjectivevalue(m), 3; rtol=1e-3)
+end

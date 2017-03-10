@@ -2,9 +2,7 @@
 # SOSDEMO4 --- Matrix Copositivity
 # Section 3.4 of SOSTOOLS User's Manual
 
-facts("SOSDEMO4") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO4 with $solver" for solver in sdp_solvers
   @polyvar x[1:5]
 
   # The matrix under consideration
@@ -21,12 +19,11 @@ context("With solver $(typeof(solver))") do
   m0 = Model(solver = solver)
   @polyconstraint m0 xsJxs >= 0
   status = solve(m0)
-  @fact status --> :Infeasible
+  @test status == :Infeasible
 
   m1 = Model(solver = solver)
   @polyconstraint m1 r*xsJxs >= 0
   status = solve(m1)
-  @fact status --> :Optimal
+  @test status == :Optimal
   # Program is feasible. The matrix J is copositive
-
-end; end; end
+end

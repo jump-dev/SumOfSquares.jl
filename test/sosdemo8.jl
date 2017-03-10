@@ -2,9 +2,7 @@
 # SOSDEMO8 --- Bounds in Probability
 # Section 3.8 of SOSTOOLS User's Manual
 
-facts("SOSDEMO8") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO8 with $solver" for solver in sdp_solvers
     @polyvar x
 
     # The probability adds up to one.
@@ -42,6 +40,6 @@ context("With solver $(typeof(solver))") do
 
     status = solve(m)
 
-    @fact isapprox(getobjectivevalue(m), 1/37, rtol=1e-6) --> true
-    @fact isapprox(getvalue(P), ((12/37)x-11/37)^2, rtol=1e-3) --> true
-end; end; end
+    @test isapprox(getobjectivevalue(m), 1/37, rtol=1e-6)
+    @test isapprox(getvalue(P), ((12/37)x-11/37)^2, rtol=1e-3)
+end

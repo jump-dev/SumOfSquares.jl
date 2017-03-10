@@ -2,9 +2,7 @@
 # SOSDEMO10 --- Set containment
 # Section 3.10 of SOSTOOLS User's Manual
 
-facts("SOSDEMO10") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO10 with $solver" for solver in sdp_solvers
   @polyvar x1 x2
   x = [x1, x2]
 
@@ -32,8 +30,8 @@ context("With solver $(typeof(solver))") do
   status = solve(m)
 
   # Program is feasible, { x |((g0+g1) + theta)(theta - (g0+g1)) >=0 } contains { x | p <= gamma }
-  @fact status --> :Optimal
+  @test status == :Optimal || (iscsdp(solver) && status == :Suboptimal)
 
   #@show getvalue(s)
   #@show getvalue(g1)
-end; end; end
+end

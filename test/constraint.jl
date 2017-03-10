@@ -1,5 +1,5 @@
-facts("Non-symmetric matrix SOS constraint") do
+@testset "Non-symmetric matrix SOS constraint with $solver" for solver in sdp_solvers
     @polyvar x
     m = Model()
-    @fact_throws ArgumentError addpolynonnegativeconstraint(m, [1 x; -x 0], BasicSemialgebraicSet())
+    @test_throws ArgumentError addpolynonnegativeconstraint(m, [1 x; -x 0], BasicSemialgebraicSet())
 end

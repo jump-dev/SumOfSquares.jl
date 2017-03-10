@@ -1,6 +1,4 @@
-facts("Motzkin") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "Motzkin with $solver" for solver in sdp_solvers
   @polyvar x y
 
   m = Model(solver = solver)
@@ -11,7 +9,7 @@ context("With solver $(typeof(solver))") do
 
   status = solve(m)
 
-  @fact status --> :Infeasible
+  @test status == :Infeasible
 
   M = Model(solver = solver)
 
@@ -21,5 +19,5 @@ context("With solver $(typeof(solver))") do
 
   status = solve(M)
 
-  @fact status --> :Optimal
-end; end; end
+  @test status == :Optimal
+end

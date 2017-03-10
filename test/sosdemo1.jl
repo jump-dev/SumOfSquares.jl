@@ -2,9 +2,7 @@
 # SOSDEMO1 --- Sum of Squares Test
 # Section 3.1 of SOSTOOLS User's Manual
 
-facts("SOSDEMO1") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO1 with $solver" for solver in sdp_solvers
   @polyvar x y
 
   m = Model(solver = solver)
@@ -20,18 +18,18 @@ context("With solver $(typeof(solver))") do
 
   status = solve(m)
 
-  @fact status --> :Optimal
+  @test status == :Optimal
 
   q = getslack(soscon)
   Q = getmat(q)
-  @fact issymmetric(Q) --> true
-  @fact isapprox(Q[1, 1], 2, rtol=1e-5) --> true
-  @fact isapprox(Q[1, 2], 1, rtol=1e-5) --> true
-  @fact isapprox(Q[3, 3], 5, rtol=1e-5) --> true
-  @fact abs(Q[2, 3]) < 1e-5 --> true
-  @fact isapprox(Q[2, 2] + 2Q[1, 3], -1, rtol=1e-5) --> true
+  @test issymmetric(Q)
+  @test isapprox(Q[1, 1], 2, rtol=1e-5)
+  @test isapprox(Q[1, 2], 1, rtol=1e-5)
+  @test isapprox(Q[3, 3], 5, rtol=1e-5)
+  @test abs(Q[2, 3]) < 1e-5
+  @test isapprox(Q[2, 2] + 2Q[1, 3], -1, rtol=1e-5)
   sosdec = SOSDecomposition(q)
-  @fact isapprox(sum(sosdec.ps.^2), p; rtol=1e-4) --> true
+  @test isapprox(sum(sosdec.ps.^2), p; rtol=1e-4)
 
   M = Model(solver = solver)
 
@@ -41,7 +39,7 @@ context("With solver $(typeof(solver))") do
 
   status = solve(M)
 
-  @fact status --> :Optimal
+  @test status == :Optimal
 
   # p should be MatPolynomial([1, 0, -1/2, 0, -1, 1, 0, -2/3, 0, 4/3, 0, 0, 2, 0, 4], [y, x, x*y, x*y^2, x^2*y^3])
-end; end; end
+end

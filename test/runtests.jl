@@ -2,7 +2,7 @@ using MultivariatePolynomials
 using JuMP
 using SumOfSquares
 using PolyJuMP
-using FactCheck
+using Base.Test
 
 include("solvers.jl")
 
@@ -20,5 +20,3 @@ include("sosdemo5.jl")
 include("sosdemo6.jl")
 include("domain.jl")
 include("sosmatrix.jl")
-
-FactCheck.exitstatus()

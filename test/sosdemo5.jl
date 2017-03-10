@@ -2,9 +2,7 @@
 # SOSDEMO5 --- Upper bound for the structured singular value mu
 # Section 3.5 of SOSTOOLS User's Manual
 
-facts("SOSDEMO5") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO5 with $solver" for solver in sdp_solvers
     if !isscs(solver)
         @polyvar x[1:8]
 
@@ -73,7 +71,7 @@ context("With solver $(typeof(solver))") do
             status = solve(m)
 
             # Program is feasible, thus 0.8724 is an upper bound for mu.
-            @fact status --> expected
+            @test status == expected
         end
     end
-end; end; end
+end

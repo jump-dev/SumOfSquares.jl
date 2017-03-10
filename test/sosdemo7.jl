@@ -2,9 +2,7 @@
 # SOSDEMO7 --- Chebyshev polynomials
 # Section 3.7 of SOSTOOLS User's Manual
 
-facts("SOSDEMO7") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO7 with $solver" for solver in sdp_solvers
     if !isscs(solver)
         ndeg = 8   # Degree of Chebyshev polynomial
 
@@ -26,9 +24,9 @@ context("With solver $(typeof(solver))") do
 
         status = solve(m)
 
-        @fact status --> :Optimal
+        @test status == :Optimal
 
-        @fact isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1) --> true
-        @fact isapprox(getvalue(γ), 128) --> true
+        @test isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1)
+        @test isapprox(getvalue(γ), 128)
     end
-end; end; end
+end

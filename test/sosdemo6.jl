@@ -2,9 +2,7 @@
 # SOSDEMO6 --- MAX CUT
 # Section 3.6 of SOSTOOLS User's Manual
 
-facts("SOSDEMO6") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "SOSDEMO6 with $solver" for solver in sdp_solvers
   @polyvar x[1:5]
 
   # Number of cuts
@@ -32,6 +30,6 @@ context("With solver $(typeof(solver))") do
 
     status = solve(m)
 
-    @fact status --> expected
+    @test status == expected
   end
-end; end; end
+end

@@ -1,6 +1,4 @@
-facts("Choi") do
-for solver in sdp_solvers
-context("With solver $(typeof(solver))") do
+@testset "Choi with $solver" for solver in sdp_solvers
   @polyvar x y z
 
   m = Model(solver = solver)
@@ -12,5 +10,5 @@ context("With solver $(typeof(solver))") do
   @polyconstraint m C >= 0
 
   status = solve(m)
-  @fact status --> :Infeasible
-end; end; end
+  @test status == :Infeasible
+end
