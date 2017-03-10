@@ -9,7 +9,6 @@ julia:
 notifications:
   email: false
 before_script:
-  - julia -e 'Pkg.clone("git://github.com/blegat/MultivariatePolynomials.jl.git")'
   - julia -e 'Pkg.clone("git://github.com/JuliaOpt/PolyJuMP.jl.git")'
 # uncomment the following lines to override the default test script
 #script:
