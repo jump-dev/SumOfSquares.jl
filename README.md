@@ -1,9 +1,9 @@
 # Sum of Squares Programming for Julia.
 
-[![Build Status](https://travis-ci.org/JuliaOpt/SumOfSquares.jl.svg?branch=master)](https://travis-ci.org/JuliaOpt/SumOfSquares.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/3ulippbi7387sf9o/branch/master?svg=true)](https://ci.appveyor.com/project/blegat/sumofsquares-jl/branch/master)
-[![Coverage Status](https://coveralls.io/repos/github/JuliaOpt/SumOfSquares.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaOpt/SumOfSquares.jl?branch=master)
-[![codecov.io](http://codecov.io/github/JuliaOpt/SumOfSquares.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaOpt/SumOfSquares.jl?branch=master)
+| **PackageEvaluator** | **Build Status** |
+|:--------------------:|:----------------:|
+| [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] |
+| [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] |
 
 This packages contains the Sum of Squares reformulation for polynomial optimization.
 When used in conjunction with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
@@ -44,3 +44,17 @@ status = solve(m)
 # The lower bound found is 3
 println(getobjectivevalue(m))
 ```
+
+[pkg-0.5-img]: http://pkg.julialang.org/badges/SumOfSquares_0.5.svg
+[pkg-0.5-url]: http://pkg.julialang.org/?pkg=SumOfSquares
+[pkg-0.6-img]: http://pkg.julialang.org/badges/SumOfSquares_0.6.svg
+[pkg-0.6-url]: http://pkg.julialang.org/?pkg=SumOfSquares
+
+[build-img]: https://travis-ci.org/JuliaOpt/SumOfSquares.jl.svg?branch=master
+[build-url]: https://travis-ci.org/JuliaOpt/SumOfSquares.jl
+[winbuild-img]: https://ci.appveyor.com/api/projects/status/o49y96hl1xl5aytn?svg=true
+[winbuild-url]: https://ci.appveyor.com/project/JuliaOpt/sumofsquares-jl
+[coveralls-img]: https://coveralls.io/repos/github/JuliaOpt/SumOfSquares.jl/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/JuliaOpt/SumOfSquares.jl?branch=master
+[codecov-img]: http://codecov.io/github/JuliaOpt/SumOfSquares.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/JuliaOpt/SumOfSquares.jl?branch=master
