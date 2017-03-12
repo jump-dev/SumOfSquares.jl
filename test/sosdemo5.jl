@@ -29,7 +29,7 @@
                 A[i] = dot(Z, H*Z)
             end
 
-            m = Model(solver = solver)
+            m = SOSModel(solver = solver)
 
             # -- Q(x)'s -- : sums of squares
             # Monomial vector: [x1; ... x8]

@@ -1,7 +1,7 @@
 @testset "Motzkin with $solver" for solver in sdp_solvers
   @polyvar x y
 
-  m = Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
 
@@ -11,7 +11,7 @@
 
   @test status == :Infeasible
 
-  M = Model(solver = solver)
+  M = SOSModel(solver = solver)
 
   q = (x^2 + y^2) * p
 

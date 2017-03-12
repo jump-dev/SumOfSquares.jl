@@ -16,12 +16,12 @@
   xsJxs = dot(xs, J*xs)
   r = sum(xs)
 
-  m0 = Model(solver = solver)
+  m0 = SOSModel(solver = solver)
   @polyconstraint m0 xsJxs >= 0
   status = solve(m0)
   @test status == :Infeasible
 
-  m1 = Model(solver = solver)
+  m1 = SOSModel(solver = solver)
   @polyconstraint m1 r*xsJxs >= 0
   status = solve(m1)
   @test status == :Optimal

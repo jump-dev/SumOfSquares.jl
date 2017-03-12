@@ -10,7 +10,7 @@
       -x[2]-x[1]^2*x[2],
       -x[3]+3*x[1]^2*x[3]-3*x[3]/(x[3]^2+1)]
 
-  m = Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   # The Lyapunov function V(x):
   Z = x.^2

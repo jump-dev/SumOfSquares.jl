@@ -5,7 +5,7 @@
 @testset "SOSDEMO3 with $solver" for solver in sdp_solvers
   @polyvar x1 x2
 
-  m = Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   @variable m γ
 

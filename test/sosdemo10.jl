@@ -12,7 +12,7 @@
   g0 = 2*x1
   theta = 1
 
-  m = Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   # FIXME s should be sos ?
   # in SOSTools doc it is said to be SOS

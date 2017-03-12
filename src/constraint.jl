@@ -1,5 +1,4 @@
 export getslack, addpolyeqzeroconstraint, addpolynonnegativeconstraint
-import JuMP.getdual, PolyJuMP.getslack
 
 type SOSConstraint{C}
     slack::MatPolynomial{C, JuMP.Variable}
@@ -7,11 +6,7 @@ type SOSConstraint{C}
     x::MonomialVector{C}
 end
 
-function getslack(c::SOSConstraint)
-    getvalue(c.slack)
-end
-
-function getdual(c::SOSConstraint)
+function JuMP.getdual(c::SOSConstraint)
     a = [getdual(lc) for lc in c.lincons]
     Measure(a, c.x)
 end

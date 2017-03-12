@@ -5,13 +5,13 @@
     @polyvar x
     P = [x^2-2x+2 x; x x^2]
     # Example 3.77
-    m = Model(solver=solver)
+    m = SOSModel(solver=solver)
     @polyconstraint m P >= 0
     status = solve(m)
     @test status == :Optimal
     # Example 3.79
     @polyvar y[1:2]
-    M = Model(solver=solver)
+    M = SOSModel(solver=solver)
     @polyconstraint M dot(y, P*y) >= 0
     status = solve(M)
     @test status == :Optimal

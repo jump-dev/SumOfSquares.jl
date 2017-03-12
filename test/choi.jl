@@ -1,7 +1,7 @@
 @testset "Choi with $solver" for solver in sdp_solvers
   @polyvar x y z
 
-  m = Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   C = [x^2+2y^2 -x*y -x*z;
        -x*y y^2+2z^2 -y*z;

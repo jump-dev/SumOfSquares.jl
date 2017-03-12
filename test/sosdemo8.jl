@@ -19,7 +19,7 @@
     # Event whose probability we want to bound
     E = [4,5]
 
-    m = Model(solver = solver)
+    m = SOSModel(solver = solver)
 
     @variable m a
     @variable m b

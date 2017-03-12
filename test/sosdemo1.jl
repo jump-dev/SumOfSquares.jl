@@ -5,7 +5,7 @@
 @testset "SOSDEMO1 with $solver" for solver in sdp_solvers
   @polyvar x y
 
-  m = Model(solver = solver)
+  m = SOSModel(solver = solver)
 
   # Example 2.4 of
   # P. Parrilo and A. Jadbabaie
@@ -31,7 +31,7 @@
   sosdec = SOSDecomposition(q)
   @test isapprox(sum(sosdec.ps.^2), p; rtol=1e-4)
 
-  M = Model(solver = solver)
+  M = SOSModel(solver = solver)
 
   p = 4*x^4*y^6 + x^2 - x*y^2 + y^2
 

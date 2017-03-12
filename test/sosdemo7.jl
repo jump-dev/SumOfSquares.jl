@@ -10,7 +10,7 @@
 
         Z = monomials([x], 0:ndeg-1)
 
-        m = Model(solver = solver)
+        m = SOSModel(solver = solver)
 
         @variable m γ
         @polyvariable m p1 Z

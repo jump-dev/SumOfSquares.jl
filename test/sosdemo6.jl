@@ -13,7 +13,7 @@
 
   for (gamma, expected) in [(3.9, :Infeasible), (4, :Optimal)]
 
-    m = Model(solver = solver)
+    m = SOSModel(solver = solver)
 
     Z = monomials(x, 0:1)
     p = Vector{Any}(6)

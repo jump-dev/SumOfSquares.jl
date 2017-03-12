@@ -12,7 +12,7 @@ end
         for monotype in [:Classic, :Gram]
             p = randsos(x, monotype=monotype)
 
-            m = Model(solver = solver)
+            m = SOSModel(solver = solver)
 
             @polyconstraint m p >= 0
 
