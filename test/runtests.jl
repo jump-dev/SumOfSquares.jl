@@ -4,16 +4,18 @@ using SumOfSquares
 using PolyJuMP
 using Base.Test
 
+include("variable.jl")
+include("constraint.jl")
+
 include("solvers.jl")
 
 include("certificate.jl")
-include("constraint.jl")
 
 include("motzkin.jl")
 
 # SOSTools demos
 include("sospoly.jl")
-include("sosdemo2.jl")
+include("lyapunov.jl")
 include("sosdemo3.jl")
 include("sosdemo4.jl")
 include("sosdemo5.jl")

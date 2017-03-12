@@ -30,7 +30,6 @@ addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matri
 addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::BasicSemialgebraicSet) = matconstraux(PolyVar{true}, m, P, domain)
 
 function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
-    # TODO We might want to add this as a function in MultivariatePolynomials.jl
     mindeg, maxdeg = extdeg(p)
     for q in domain.p
         mindegq, maxdegq = extdeg(q)
@@ -44,6 +43,7 @@ function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebra
         s = createnonnegativepoly(m, :Gram,  MonomialVector(vars(p), mind:maxd))
         p -= s*q
     end
+    # FIXME If p is a MatPolynomial, p.x will not be correct
     Z = getmonomialsforcertificate(p.x)
     slack = createnonnegativepoly(m, :Gram, Z)
     q = p - slack
