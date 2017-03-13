@@ -21,7 +21,7 @@ include("constraint.jl")
 using PolyJuMP
 function SOSModel(; kwargs...)
     m = Model(; kwargs...)
-    setpolymodule(m, SumOfSquares)
+    setpolymodule!(m, SumOfSquares)
     m
 end
 
