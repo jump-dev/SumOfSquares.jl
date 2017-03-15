@@ -1,8 +1,7 @@
 # Inspired from SOSTools
-import Base.extrema
 export getmonomialsforcertificate, randpsd, randsos
 
-function extrema(f, itr)
+function map_extrema(f::Function, itr::AbstractVector)
     state = start(itr)
     it1, state = next(itr, state)
     mini = maxi = f(it1)
@@ -47,8 +46,8 @@ function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
         n = length(Z.Z[1])
         minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
         for i in 1:n
-            a, b = extrema(z->z[i], Z.Z)
-            minmultideg[i], maxmultideg[i] = cfld(extrema(z->z[i], Z.Z), 2)
+            a, b = map_extrema(z->z[i], Z.Z)
+            minmultideg[i], maxmultideg[i] = cfld(map_extrema(z->z[i], Z.Z), 2)
         end
         MonomialVector(vars(Z), mindeg:maxdeg, z -> reduce(&, true, minmultideg .<= z .<= maxmultideg))
     else
