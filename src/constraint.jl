@@ -17,6 +17,11 @@ function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
     JuMP.addVectorizedConstraint(m, constraints)
 end
 
+function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
+    @assert isempty(domain.p)
+    addpolyeqzeroconstraint(m, p, domain.V)
+end
+
 function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::BasicSemialgebraicSet)
     n = Base.LinAlg.checksquare(P)
     if !issymmetric(P)
