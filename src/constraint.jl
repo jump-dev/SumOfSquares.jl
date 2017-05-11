@@ -13,13 +13,18 @@ end
 
 function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
     @assert isempty(domain.p)
-    constraints = [JuMP.constructconstraint!(t.α, :(==)) for t in p]
+    constraints = [JuMP.constructconstraint!(AffExpr(t.α), :(==)) for t in p]
     JuMP.addVectorizedConstraint(m, constraints)
 end
 
 function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
-    @assert isempty(domain.p)
-    addpolyeqzeroconstraint(m, p, domain.V)
+    if isempty(domain.p)
+        addpolyeqzeroconstraint(m, p, domain.V)
+    else
+        addpolynonnegativeconstraint(m,  p, domain)
+        addpolynonnegativeconstraint(m, -p, domain)
+    end
+    nothing
 end
 
 function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::BasicSemialgebraicSet)
@@ -44,7 +49,7 @@ function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebra
         maxd = Int(ceil(maxd / 2))
         # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
         # so instead of `var(p)` we would have the union of them all
-        @assert vars(q) == vars(p)
+        @assert vars(q) ⊆ vars(p)
         s = createnonnegativepoly(m, :Gram,  MonomialVector(vars(p), mind:maxd))
         p -= s*q
     end
