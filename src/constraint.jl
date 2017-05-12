@@ -18,7 +18,6 @@ function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
 end
 
 function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
-    @assert isempty(domain.p)
     addpolynonnegativeconstraint(m,  p, domain)
     addpolynonnegativeconstraint(m, -p, domain)
     nothing
