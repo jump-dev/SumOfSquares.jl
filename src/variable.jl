@@ -12,7 +12,7 @@ function createpoly{C}(m::JuMP.Model, monotype::Symbol, x::MonomialVector{C}, ca
     end
     Polynomial{C, JuMP.Variable}((i) -> Variable(m, -Inf, Inf, category), Z)
 end
-createpoly(m::JuMP.Model, monotype::Symbol, x::Vector) = createpoly(m, monotype, MonomialVector(x))
+createpoly(m::JuMP.Model, monotype::Symbol, x::Vector, category::Symbol) = createpoly(m, monotype, MonomialVector(x), category)
 
 function createnonnegativepoly{C}(m::JuMP.Model, monotype::Symbol, x::MonomialVector{C}, category::Symbol)
     if isempty(x)
@@ -38,4 +38,4 @@ function createnonnegativepoly{C}(m::JuMP.Model, monotype::Symbol, x::MonomialVe
         p
     end
 end
-createnonnegativepoly(m::JuMP.Model, monotype::Symbol, x::Vector) = createnonnegativepoly(m, monotype, MonomialVector(x))
+createnonnegativepoly(m::JuMP.Model, monotype::Symbol, x::Vector, category::Symbol) = createnonnegativepoly(m, monotype, MonomialVector(x), category)
