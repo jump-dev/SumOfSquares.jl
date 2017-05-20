@@ -32,8 +32,19 @@ function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::B
     p = dot(y, P*y)
     addpolynonnegativeconstraint(m, p, domain)
 end
+addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, domain::AlgebraicSet) = matconstraux(PolyVar{false}, m, P, domain)
+addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::AlgebraicSet) = matconstraux(PolyVar{true}, m, P, domain)
 addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, domain::BasicSemialgebraicSet) = matconstraux(PolyVar{false}, m, P, domain)
 addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::BasicSemialgebraicSet) = matconstraux(PolyVar{true}, m, P, domain)
+
+function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
+    # FIXME If p is a MatPolynomial, p.x will not be correct
+    Z = getmonomialsforcertificate(p.x)
+    slack = createnonnegativepoly(m, :Gram, Z)
+    q = p - slack
+    lincons = addpolyeqzeroconstraint(m, q, domain)
+    SOSConstraint(slack, lincons, q.x)
+end
 
 function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
     mindeg, maxdeg = extdeg(p)
@@ -49,10 +60,5 @@ function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebra
         s = createnonnegativepoly(m, :Gram,  MonomialVector(vars(p), mind:maxd))
         p -= s*q
     end
-    # FIXME If p is a MatPolynomial, p.x will not be correct
-    Z = getmonomialsforcertificate(p.x)
-    slack = createnonnegativepoly(m, :Gram, Z)
-    q = p - slack
-    lincons = addpolyeqzeroconstraint(m, q, domain.V)
-    SOSConstraint(slack, lincons, q.x)
+    addpolynonnegativeconstraint(m, p, domain.V)
 end
