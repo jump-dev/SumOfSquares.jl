@@ -23,7 +23,7 @@ function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet
     nothing
 end
 
-function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::BasicSemialgebraicSet)
+function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::AbstractBasicSemialgebraicSet)
     n = Base.LinAlg.checksquare(P)
     if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
@@ -40,7 +40,7 @@ addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix
 function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
     # FIXME If p is a MatPolynomial, p.x will not be correct
     Z = getmonomialsforcertificate(p.x)
-    slack = createnonnegativepoly(m, :Gram, Z)
+    slack = createnonnegativepoly(m, :Gram, Z, :Cont)
     q = p - slack
     lincons = addpolyeqzeroconstraint(m, q, domain)
     SOSConstraint(slack, lincons, q.x)
@@ -57,7 +57,7 @@ function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebra
         # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
         # so instead of `var(p)` we would have the union of them all
         @assert vars(q) ⊆ vars(p)
-        s = createnonnegativepoly(m, :Gram,  MonomialVector(vars(p), mind:maxd))
+        s = createnonnegativepoly(m, :Gram,  MonomialVector(vars(p), mind:maxd), :Cont)
         p -= s*q
     end
     addpolynonnegativeconstraint(m, p, domain.V)
