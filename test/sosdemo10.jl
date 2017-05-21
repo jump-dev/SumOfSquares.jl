@@ -18,10 +18,10 @@
   # in SOSTools doc it is said to be SOS
   # but in the demo it is not constrained so
   Z = monomials(x, 0:4)
-  @polyvariable m s Z
+  @variable m s Poly(Z)
 
   Z = monomials(x, 2:3)
-  @polyvariable m g1 Z
+  @variable m g1 Poly(Z)
 
   Sc = [theta^2-s*(gamma-p) g0+g1; g0+g1 1]
 

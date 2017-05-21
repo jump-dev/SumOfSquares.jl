@@ -14,7 +14,7 @@
 
   # The Lyapunov function V(x):
   Z = x.^2
-  @polyvariable m V Z
+  @variable m V Poly(Z)
 
   @constraint m V >= sum(x.^2)
 

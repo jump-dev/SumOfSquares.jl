@@ -34,22 +34,12 @@
             # -- Q(x)'s -- : sums of squares
             # Monomial vector: [x1; ... x8]
             Q = Vector{MatPolynomial{true, JuMP.Variable}}(4)
-            for i = 1:4
-                @polyvariable m tmp >= 0 Z
-                Q[i] = tmp
-            end
+            @variable m Q[1:4] >= 0 Poly{true}(Z)
 
             # -- r's -- : constant sum of squares
             Z = monomials(x, 0)
             #r = Matrix{MatPolynomial{JuMP.Variable}}(4,4) # FIXME doesn't work with 1x1 SDP matrix :(
-            r = Matrix{JuMP.Variable}(4,4)
-            for i = 1:4
-                for j = (i+1):4
-                    #@polyvariable m tmp >= 0 Z
-                    @variable m tmp >= 0
-                    r[i,j] = tmp
-                end
-            end
+            @variable m r[i=1:4,j=(i+1):4] >= 0
 
             # Constraint : -sum(Qi(x)*Ai(x)) - sum(rij*Ai(x)*Aj(x)) + I(x) >= 0
             expr = 0

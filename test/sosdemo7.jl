@@ -13,7 +13,7 @@
         m = SOSModel(solver = solver)
 
         @variable m γ
-        @polyvariable m p1 Z
+        @variable m p1 Poly(Z)
 
         p = p1 + γ * x^ndeg # the leading coeff of p is γ
 
