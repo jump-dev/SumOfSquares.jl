@@ -13,7 +13,8 @@ notifications:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 #  - julia -e 'Pkg.clone(pwd()); Pkg.build("SumOfSquares"); Pkg.test("SumOfSquares"; coverage=true)'
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
 before_script:
