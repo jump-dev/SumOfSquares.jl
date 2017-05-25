@@ -18,6 +18,7 @@ before_install:
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
 before_script:
+  - julia -e 'Pkg.clone("git://github.com/blegat/MultivariatePolynomials.jl.git")'
   - julia -e 'Pkg.clone("git://github.com/JuliaOpt/PolyJuMP.jl.git")'
 after_success:
   # push coverage results to Coveralls

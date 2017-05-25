@@ -11,10 +11,16 @@ function JuMP.getdual(c::SOSConstraint)
     Measure(a, c.x)
 end
 
-function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
-    @assert isempty(domain.p)
+function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::FullSpace)
     constraints = [JuMP.constructconstraint!(AffExpr(t.α), :(==)) for t in p]
     JuMP.addVectorizedConstraint(m, constraints)
+end
+
+function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
+    if !isempty(domain.p)
+        warn("Equality on algebraic set has not been implemented yet, ignoring the domain")
+    end
+    addpolyeqzeroconstraint(m, p, FullSpace())
 end
 
 function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
@@ -32,18 +38,28 @@ function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::A
     p = dot(y, P*y)
     addpolynonnegativeconstraint(m, p, domain)
 end
-addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, domain::AlgebraicSet) = matconstraux(PolyVar{false}, m, P, domain)
-addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::AlgebraicSet) = matconstraux(PolyVar{true}, m, P, domain)
-addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, domain::BasicSemialgebraicSet) = matconstraux(PolyVar{false}, m, P, domain)
-addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::BasicSemialgebraicSet) = matconstraux(PolyVar{true}, m, P, domain)
 
-function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
+for T in (FullSpace, AlgebraicSet, BasicSemialgebraicSet)
+    @eval begin
+        addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, domain::$T) = matconstraux(PolyVar{false}, m, P, domain)
+        addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::$T) = matconstraux(PolyVar{true}, m, P, domain)
+    end
+end
+
+function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::FullSpace)
     # FIXME If p is a MatPolynomial, p.x will not be correct
     Z = getmonomialsforcertificate(p.x)
     slack = createnonnegativepoly(m, :Gram, Z, :Cont)
     q = p - slack
     lincons = addpolyeqzeroconstraint(m, q, domain)
     SOSConstraint(slack, lincons, q.x)
+end
+
+function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
+    if !isempty(domain.p)
+        warn("Equality on algebraic set has not been implemented yet, ignoring the domain")
+    end
+    addpolynonnegativeconstraint(m, p, FullSpace())
 end
 
 function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
