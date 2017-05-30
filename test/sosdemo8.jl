@@ -28,10 +28,10 @@
     P = a + b*x + c*x^2
 
     # Nonnegative on the support
-    @polyconstraint(m, P >= 0, domain = 0 <= x && x <= 5)
+    @constraint(m, P >= 0, domain = (@set 0 <= x && x <= 5))
 
     # Greater than one on the event
-    @polyconstraint(m, P >= 1, domain = 4 <= x && x <= 5)
+    @constraint(m, P >= 1, domain = (@set 4 <= x && x <= 5))
 
     # The bound
     bnd =  a * μ0 + b * μ1 + c * μ2

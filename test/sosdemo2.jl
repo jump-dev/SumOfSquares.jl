@@ -16,11 +16,11 @@
   Z = x.^2
   @polyvariable m V Z
 
-  @polyconstraint m V >= sum(x.^2)
+  @constraint m V >= sum(x.^2)
 
   # dV/dx*(x[3]^2+1)*f <= 0
   P = dot(differentiate(V, x), f)*(x[3]^2+1)
-  @polyconstraint m P <= 0
+  @constraint m P <= 0
 
   status = solve(m)
 

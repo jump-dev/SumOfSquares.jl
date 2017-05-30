@@ -66,7 +66,7 @@
             I = -sum(x.^4)
             expr = expr + I
 
-            @polyconstraint m expr >= 0
+            @constraint m expr >= 0
 
             status = solve(m)
 

@@ -14,7 +14,7 @@ end
 
             m = SOSModel(solver = solver)
 
-            @polyconstraint m p >= 0
+            @constraint m p >= 0
 
             status = solve(m)
 

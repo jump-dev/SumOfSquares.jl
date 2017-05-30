@@ -17,8 +17,9 @@
 
         p = p1 + γ * x^ndeg # the leading coeff of p is γ
 
-        @polyconstraint(m, p <= 1, domain = x >= -1 && x <= 1)
-        @polyconstraint(m, p >= -1, domain = x >= -1 && x <= 1)
+        dom = @set x >= -1 && x <= 1
+        @constraint(m, p <= 1, domain = dom)
+        @constraint(m, p >= -1, domain = dom)
 
         @objective m Max γ
 

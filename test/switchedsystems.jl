@@ -21,9 +21,9 @@
         @polyvariable(m, p, grammonomials = X)
         # p strictly positive
         q = sum(x.^(2*d))
-        @polyconstraint m p >= q
-        c1 = @polyconstraint m p(A1 * x, x) <= γ^(2*d) * p
-        c2 = @polyconstraint m p(A2 * x, x) <= γ^(2*d) * p
+        @constraint m p >= q
+        c1 = @constraint m p(A1 * x, x) <= γ^(2*d) * p
+        c2 = @constraint m p(A2 * x, x) <= γ^(2*d) * p
 
         @test expected_status == solve(m; suppress_warnings=true)
 

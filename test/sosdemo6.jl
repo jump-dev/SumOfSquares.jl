@@ -26,7 +26,7 @@
       p[i] = tmp
     end
 
-    @polyconstraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
+    @constraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
 
     status = solve(m)
 

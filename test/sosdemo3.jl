@@ -18,7 +18,7 @@
 
   f = (1+f1^2*f2)*(30+f3^2*f4)
 
-  @polyconstraint m f >= γ
+  @constraint m f >= γ
 
   @objective m Max γ
 
