@@ -10,15 +10,12 @@ using MultivariatePolynomials
 
 include("certificate.jl")
 
-# JuMP specific
-using JuMP
+using PolyJuMP, JuMP
 import JuMP: validmodel, addtoexpr_reorder
 
 include("variable.jl")
 include("constraint.jl")
 
-# PolyJuMP specific
-using PolyJuMP
 function SOSModel(; kwargs...)
     m = Model(; kwargs...)
     setpolymodule!(m, SumOfSquares)

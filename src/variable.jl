@@ -1,41 +1,44 @@
-export createpoly, createnonnegativepoly
+export polytype, createpoly, createnonnegativepoly
 
-function createpoly{C}(m::JuMP.Model, monotype::Symbol, x::MonomialVector{C}, category::Symbol)
-    if monotype == :Default
-        monotype = :Classic
-    end
-    gram = monotype == :Gram
-    if gram
-        Z = (sum(x)^2).x
-    else
-        Z = x
-    end
-    Polynomial{C, JuMP.Variable}((i) -> Variable(m, -Inf, Inf, category), Z)
+polytype{C}(m::JuMP.Model, x::MonomialVector{C}) = Polynomial{C, JuMP.Variable}
+polytype(m::JuMP.Model, x::Vector) = polytype(m, MonomialVector(x))
+polytype(m::JuMP.Model, p::Poly) = polytype(m, p.x)
+
+function createpoly{C}(m::JuMP.Model, x::MonomialVector{C}, category::Symbol)
+    Polynomial{C, JuMP.Variable}((i) -> Variable(m, -Inf, Inf, category), x)
 end
-createpoly(m::JuMP.Model, monotype::Symbol, x::Vector, category::Symbol) = createpoly(m, monotype, MonomialVector(x), category)
+createpoly(m::JuMP.Model, x::Vector, category::Symbol) = createpoly(m, MonomialVector(x), category)
+function createpoly(m::JuMP.Model, p::Union{Poly{false, :Default}, Poly{false, :Classic}}, category::Symbol)
+    createpoly(m, p.x, category)
+end
+function createpoly(m::JuMP.Model, p::Poly{false, :Gram}, category::Symbol)
+    createpoly(m, (sum(p.x)^2).x, category)
+end
 
-function createnonnegativepoly{C}(m::JuMP.Model, monotype::Symbol, x::MonomialVector{C}, category::Symbol)
+nonnegativepolytype{C}(m::JuMP.Model, x::MonomialVector{C}) = MatPolynomial{C, JuMP.Variable}
+nonnegativepolytype(m::JuMP.Model, x::Vector) = nonnegativepolytype(m, MonomialVector(x))
+nonnegativepolytype(m::JuMP.Model, p::Poly) = nonnegativepolytype(m, p.x)
+
+function createnonnegativepoly{C}(m::JuMP.Model, x::MonomialVector{C}, category::Symbol)
     if isempty(x)
         # Need MultivariatePolynomials v0.0.2
         #zero(MatPolynomial{C, JuMP.Variable})
         MatPolynomial(JuMP.Variable[], x)
     else
-        if monotype == :Default
-            monotype = :Gram
-        end
-        gram = monotype == :Gram
-        if gram
-            Z = x
-        else
-            Z = getmonomialsforcertificate(x)
-        end
-        p = MatPolynomial{C, JuMP.Variable}((i, j) -> Variable(m, -Inf, Inf, category), Z)
+        p = MatPolynomial{C, JuMP.Variable}((i, j) -> Variable(m, -Inf, Inf, category), x)
         push!(m.varCones, (:SDP, p.Q[1].col:p.Q[end].col))
-        if !gram
-            # The coefficients of a monomial not in Z do not all have to be zero, only their sum
-            addpolyeqzeroconstraint(m, removemonomials(Polynomial(p), x))
-        end
         p
     end
 end
-createnonnegativepoly(m::JuMP.Model, monotype::Symbol, x::Vector, category::Symbol) = createnonnegativepoly(m, monotype, MonomialVector(x), category)
+function createnonnegativepoly(m::JuMP.Model, x::Vector, category::Symbol)
+    createnonnegativepoly(m, MonomialVector(x), category)
+end
+function createnonnegativepoly(m::JuMP.Model, p::Union{Poly{true, :Default}, Poly{true, :Gram}}, category::Symbol)
+    createnonnegativepoly(m, p.x, category)
+end
+function createnonnegativepoly(m::JuMP.Model, p::Poly{true, :Classic}, category::Symbol)
+    p = createnonnegativepoly(m, getmonomialsforcertificate(p.x), category)
+    # The coefficients of a monomial not in Z do not all have to be zero, only their sum
+    addpolyeqzeroconstraint(m, removemonomials(Polynomial(p), p.x))
+    p
+end

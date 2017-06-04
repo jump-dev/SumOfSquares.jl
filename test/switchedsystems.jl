@@ -18,7 +18,7 @@
     function testlyap(d, γ, expected_status)
         m = SOSModel(solver = solver)
         X = monomials(x, d)
-        @polyvariable(m, p, grammonomials = X)
+        @variable m p Poly{false, :Gram}(X)
         # p strictly positive
         q = sum(x.^(2*d))
         @constraint m p >= q

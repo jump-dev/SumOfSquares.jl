@@ -16,15 +16,10 @@
     m = SOSModel(solver = solver)
 
     Z = monomials(x, 0:1)
-    p = Vector{Any}(6)
-    @polyvariable m p1 >= 0 Z
+    @variable m p1 >= 0 Poly{true}(Z)
 
     Z = monomials(x, 0:2)
-    p = Vector{Polynomial{true, Variable}}(5)
-    for i in 1:5
-      @polyvariable m tmp Z
-      p[i] = tmp
-    end
+    @variable m p[1:5] Poly(Z)
 
     @constraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
 
