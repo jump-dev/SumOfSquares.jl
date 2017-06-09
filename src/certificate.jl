@@ -59,7 +59,7 @@ getmonomialsforcertificate(Z::Vector, sparse=:No) = getmonomialsforcertificate(M
 function randpsd(n; r=n, eps=0.1)
     Q = randn(n,n)
     d = zeros(Float64, n)
-    d[1:r] = eps + abs(randn(r))
+    d[1:r] = eps + abs.(randn(r))
     Q' * Diagonal(d) * Q
 end
 
