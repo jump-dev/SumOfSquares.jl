@@ -25,7 +25,7 @@
 
   Sc = [theta^2-s*(gamma-p) g0+g1; g0+g1 1]
 
-  @polyconstraint m eps * eye(2) ⪯ Sc
+  @SDconstraint m eps * eye(2) ⪯ Sc
 
   status = solve(m)
 

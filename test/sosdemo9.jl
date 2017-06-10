@@ -11,7 +11,7 @@
   # Test if P(x1,x2,x3) is an SOS matrix
   m = SOSModel(solver = solver)
   # TODO return H so that P = H.'*H
-  @polyconstraint m P ⪰ 0
+  @SDconstraint m P ⪰ 0
 
   status = solve(m)
   @test status == :Optimal

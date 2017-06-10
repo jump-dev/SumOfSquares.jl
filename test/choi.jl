@@ -7,7 +7,7 @@
        -x*y y^2+2z^2 -y*z;
        -x*z -y*z z^2+2x^2]
 
-  @polyconstraint m C >= 0
+  @SDconstraint m C >= 0
 
   status = solve(m)
   @test status == :Infeasible

@@ -6,7 +6,7 @@
     P = [x^2-2x+2 x; x x^2]
     # Example 3.77
     m = SOSModel(solver=solver)
-    @polyconstraint m P >= 0
+    @SDconstraint m P >= 0
     status = solve(m)
     @test status == :Optimal
     # Example 3.79
