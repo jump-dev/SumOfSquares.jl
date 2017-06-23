@@ -58,3 +58,8 @@ println(getobjectivevalue(m))
 [coveralls-url]: https://coveralls.io/github/JuliaOpt/SumOfSquares.jl?branch=master
 [codecov-img]: http://codecov.io/github/JuliaOpt/SumOfSquares.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/JuliaOpt/SumOfSquares.jl?branch=master
+
+Some presentations on, or using, SumOfSquares:
+  * [Benoit Legat at the JuMP Meetup 2017](http://www.juliaopt.org/developersmeetup/legat.pdf)
+  * [Joey Huchette at SIAM Opt 2017](https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit?usp=sharing)
+  
