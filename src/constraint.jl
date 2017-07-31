@@ -1,9 +1,9 @@
 export SOSCone, getslack, addpolyconstraint!
 
-type SOSCone end
+struct SOSCone end
 const NonNegPolySubCones = Union{NonNegPoly, SOSCone}
 
-type SOSConstraint{C}
+struct SOSConstraint{C}
     slack::MatPolynomial{C, JuMP.Variable}
     lincons::Vector{JuMP.ConstraintRef{JuMP.Model,JuMP.GenericRangeConstraint{JuMP.GenericAffExpr{Float64,JuMP.Variable}}}}
     x::MonomialVector{C}
