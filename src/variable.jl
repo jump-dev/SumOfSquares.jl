@@ -12,7 +12,7 @@ function createpoly(m::JuMP.Model, p::Union{Poly{false, :Default}, Poly{false, :
     createpoly(m, p.x, category)
 end
 function createpoly(m::JuMP.Model, p::Poly{false, :Gram}, category::Symbol)
-    createpoly(m, (sum(p.x)^2).x, category)
+    createpoly(m, (monomials(sum(p.x)^2)), category)
 end
 
 nonnegativepolytype{C}(m::JuMP.Model, x::MonomialVector{C}) = MatPolynomial{C, JuMP.Variable}
@@ -37,8 +37,8 @@ function createnonnegativepoly(m::JuMP.Model, p::Union{Poly{true, :Default}, Pol
     createnonnegativepoly(m, p.x, category)
 end
 function createnonnegativepoly(m::JuMP.Model, p::Poly{true, :Classic}, category::Symbol)
-    p = createnonnegativepoly(m, getmonomialsforcertificate(p.x), category)
+    p = createnonnegativepoly(m, getmonomialsforcertificate(p), category)
     # The coefficients of a monomial not in Z do not all have to be zero, only their sum
-    addpolyeqzeroconstraint(m, removemonomials(Polynomial(p), p.x))
+    addpolyeqzeroconstraint(m, removemonomials(Polynomial(p), monomials(p)), FullSpace())
     p
 end

@@ -18,43 +18,59 @@ function map_extrema(f::Function, itr::AbstractVector)
     mini, maxi
 end
 
+# Cheap approximation of the convex hull as the approximation of:
+#
+# z such that mindeg < sum(z) < maxdeg
+# |\
+# |#\ <-------- sum(z) = maxdeg
+# |##\
+# |\<-\-------- sum(z) = mindeg
+# | \##\
+# +---------
 cfld(x::NTuple{2,Int}, n) = (cld(x[1], 2), fld(x[2], 2))
+# and:
+#
+# z such that minmultideg < z < maxmultideg
+# | +----+ <--- maxmultideg
+# | |####|
+# | |####|
+# | +----+
+# | ^---------- minmultideg
+# +---------
+struct CheapOuterLibrary <: PolyhedraLibrary end
+struct CheapOuterPolytope{N, T} <: Polyhedron{N, T}
+    minmultideg::Vector{Int}
+    maxmultideg::Vector{Int}
+end
+function newtonpolytope(Z::MonomialVector, lib::CheapOuterLibrary)
+    n = length(Z.Z[1])
+    minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
+    for i in 1:n
+        a, b = map_extrema(z->z[i], Z.Z)
+        minmultideg[i], maxmultideg[i] = cfld(map_extrema(z->z[i], Z.Z), 2)
+    end
+    CheapOuterPolytope{n, Int}(minmultideg, maxmultideg)
+end
+function Base.in(z::Vector{Int}, p::CheapOuterPolytope)
+    reduce(&, true, p.minmultideg .<= z .<= p.maxmultideg)
+end
+
+function newtonpolytope(Z::MonomialVector, lib::PolyhedraLibrary)
+    V = reduce(vcat, Matrix{Int}(0, 2), Z.Z.')
+    vr = SimpleVRepresentation(V)
+    polyhedron(vr, lib)
+end
 
 # TODO sparse with Newton polytope (Polyhedra.jl for convex hull)
-function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
-    if sparse == :No
-        # Cheap approximation of the convex hull as the approximation of:
-        #
-        # z such that mindeg < sum(z) < maxdeg
-        # |\
-        # |#\ <-------- sum(z) = maxdeg
-        # |##\
-        # |\<-\-------- sum(z) = mindeg
-        # | \##\
-        # +---------
-        #
-        # and:
-        #
-        # z such that minmultideg < z < maxmultideg
-        # | +----+ <--- maxmultideg
-        # | |####|
-        # | |####|
-        # | +----+
-        # | ^---------- minmultideg
-        # +---------
-        mindeg, maxdeg = cfld(extdeg(Z), 2)
-        n = length(Z.Z[1])
-        minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
-        for i in 1:n
-            a, b = map_extrema(z->z[i], Z.Z)
-            minmultideg[i], maxmultideg[i] = cfld(map_extrema(z->z[i], Z.Z), 2)
-        end
-        MonomialVector(vars(Z), mindeg:maxdeg, z -> reduce(&, true, minmultideg .<= z .<= maxmultideg))
-    else
-        error("Not supported yet :(")
-    end
+function getmonomialsforcertificate(Z::MonomialVector, lib::PolyhedraLibrary)
+    p = newtonpolytope(Z, lib)
+    mindeg, maxdeg = cfld(extdeg(Z), 2)
+    MonomialVector(vars(Z), mindeg:maxdeg, z -> z in p)
 end
-getmonomialsforcertificate(Z::Vector, sparse=:No) = getmonomialsforcertificate(MonomialVector(Z), sparse)
+getmonomialsforcertificate(Z::Vector, libs...) = getmonomialsforcertificate(MonomialVector(Z), libs...)
+getmonomialsforcertificate(p::Polynomial, libs...) = getmonomialsforcertificate(monomials(p), libs...)
+
+getmonomialsforcertificate(porZ) = getmonomialsforcertificate(porZ, CheapOuterLibrary())
 
 function randpsd(n; r=n, eps=0.1)
     Q = randn(n,n)

@@ -47,12 +47,11 @@ for T in (FullSpace, AlgebraicSet, BasicSemialgebraicSet)
 end
 
 function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::FullSpace)
-    # FIXME If p is a MatPolynomial, p.x will not be correct
-    Z = getmonomialsforcertificate(p.x)
+    Z = getmonomialsforcertificate(p)
     slack = createnonnegativepoly(m, Z, :Cont)
     q = p - slack
     lincons = addpolyeqzeroconstraint(m, q, domain)
-    SOSConstraint(slack, lincons, q.x)
+    SOSConstraint(slack, lincons, monomials(q))
 end
 
 function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::AlgebraicSet)

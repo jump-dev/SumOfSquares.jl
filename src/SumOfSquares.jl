@@ -7,6 +7,7 @@ export SOSModel
 import Base.show, Base.length, Base.getindex, Base.vect, Base.isless, Base.isempty, Base.start, Base.done, Base.next, Base.convert, Base.dot
 
 using MultivariatePolynomials
+using Polyhedra
 
 include("certificate.jl")
 
