@@ -52,7 +52,7 @@ end
 function addpolyconstraint!(m::JuMP.Model, p, ::Union{NonNegPoly, SOSCone}, domain::FullSpace)
     # FIXME If p is a MatPolynomial, p.x will not be correct
     Z = getmonomialsforcertificate(p.x)
-    slack = createnonnegativepoly(m, Z, :Cont)
+    slack = createpoly(m, Poly{true}(Z), :Cont)
     q = p - slack
     lincons = addpolyconstraint!(m, q, ZeroPoly(), domain)
     SOSConstraint(slack, lincons, q.x)
@@ -76,7 +76,7 @@ function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::B
         # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
         # so instead of `var(p)` we would have the union of them all
         @assert vars(q) ⊆ vars(p)
-        s = createnonnegativepoly(m, MonomialVector(vars(p), mind:maxd), :Cont)
+        s = createpoly(m, Poly{true}(MonomialVector(vars(p), mind:maxd)), :Cont)
         p -= s*q
     end
     addpolyconstraint!(m, p, set, domain.V)
