@@ -11,7 +11,7 @@ end
 @testset "Example 3.35 with $solver" for solver in sdp_solvers
     @polyvar x
     m = SOSModel(solver=solver)
-    @constraint m x^4+4x^3+6x^2+4x+5 >= 0
+    @constraint m x^4+4x^3+6x^2+4x+5 in SOSCone() # equivalent to >= 0
     status = solve(m)
     @test status == :Optimal
     # p(x) = (x^2+2x)^2 + 2(1+x)^2 + 3

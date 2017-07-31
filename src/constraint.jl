@@ -1,4 +1,7 @@
-export getslack, addpolyeqzeroconstraint, addpolynonnegativeconstraint
+export SOSCone, getslack, addpolyconstraint!
+
+type SOSCone end
+const NonNegPolySubCones = Union{NonNegPoly, SOSCone}
 
 type SOSConstraint{C}
     slack::MatPolynomial{C, JuMP.Variable}
@@ -11,21 +14,21 @@ function JuMP.getdual(c::SOSConstraint)
     Measure(a, c.x)
 end
 
-function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::FullSpace)
+function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::FullSpace)
     constraints = [JuMP.constructconstraint!(AffExpr(t.α), :(==)) for t in p]
     JuMP.addVectorizedConstraint(m, constraints)
 end
 
-function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
+function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::AlgebraicSet)
     if !isempty(domain.p)
         warn("Equality on algebraic set has not been implemented yet, ignoring the domain")
     end
-    addpolyeqzeroconstraint(m, p, FullSpace())
+    addpolyconstraint!(m, p, FullSpace())
 end
 
-function addpolyeqzeroconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
-    addpolynonnegativeconstraint(m,  p, domain)
-    addpolynonnegativeconstraint(m, -p, domain)
+function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::BasicSemialgebraicSet)
+    addpolyconstraint!(m,  p, NonNegPoly(), domain)
+    addpolyconstraint!(m, -p, NonNegPoly(), domain)
     nothing
 end
 
@@ -36,33 +39,33 @@ function matconstraux{C}(::Type{PolyVar{C}}, m::JuMP.Model, P::Matrix, domain::A
     end
     y = polyvecvar(PolyVar{C}, string(gensym()), 1:n)
     p = dot(y, P*y)
-    addpolynonnegativeconstraint(m, p, domain)
+    addpolyconstraint!(m, p, NonNegPoly(), domain)
 end
 
 for T in (FullSpace, AlgebraicSet, BasicSemialgebraicSet)
     @eval begin
-        addpolynonnegativeconstraint{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, domain::$T) = matconstraux(PolyVar{false}, m, P, domain)
-        addpolynonnegativeconstraint{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, domain::$T) = matconstraux(PolyVar{true}, m, P, domain)
+        addpolyconstraint!{T<:VectorOfPolyType{false}}(m::JuMP.Model, P::Matrix{T}, ::PSDCone, domain::$T) = matconstraux(PolyVar{false}, m, P, domain)
+        addpolyconstraint!{T<:VectorOfPolyType{true}}(m::JuMP.Model, P::Matrix{T}, ::PSDCone, domain::$T) = matconstraux(PolyVar{true}, m, P, domain)
     end
 end
 
-function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::FullSpace)
+function addpolyconstraint!(m::JuMP.Model, p, ::Union{NonNegPoly, SOSCone}, domain::FullSpace)
     # FIXME If p is a MatPolynomial, p.x will not be correct
     Z = getmonomialsforcertificate(p.x)
     slack = createnonnegativepoly(m, Z, :Cont)
     q = p - slack
-    lincons = addpolyeqzeroconstraint(m, q, domain)
+    lincons = addpolyconstraint!(m, q, ZeroPoly(), domain)
     SOSConstraint(slack, lincons, q.x)
 end
 
-function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::AlgebraicSet)
+function addpolyconstraint!(m::JuMP.Model, p, s::NonNegPolySubCones, domain::AlgebraicSet)
     if !isempty(domain.p)
         warn("Equality on algebraic set has not been implemented yet, ignoring the domain")
     end
-    addpolynonnegativeconstraint(m, p, FullSpace())
+    addpolyconstraint!(m, p, s, FullSpace())
 end
 
-function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebraicSet)
+function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::BasicSemialgebraicSet)
     mindeg, maxdeg = extdeg(p)
     for q in domain.p
         mindegq, maxdegq = extdeg(q)
@@ -76,5 +79,5 @@ function addpolynonnegativeconstraint(m::JuMP.Model, p, domain::BasicSemialgebra
         s = createnonnegativepoly(m, MonomialVector(vars(p), mind:maxd), :Cont)
         p -= s*q
     end
-    addpolynonnegativeconstraint(m, p, domain.V)
+    addpolyconstraint!(m, p, set, domain.V)
 end
