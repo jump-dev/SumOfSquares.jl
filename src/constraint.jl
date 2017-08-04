@@ -1,10 +1,30 @@
-export SOSCone, getslack, addpolyconstraint!
+export DSOSCone, SDSOSCone, SOSCone, getslack, addpolyconstraint!
+export CoDSOSCone, CoSDSOSCone, CoSOSCone
+
+struct DSOSCone end
+struct CoDSOSCone end
+_varconetype(::DSOSCone) = DSOSPoly
+_nococone(::CoDSOSCone) = DSOSCone()
+
+struct SDSOSCone end
+struct CoSDSOSCone end
+_varconetype(::SDSOSCone) = SDSOSPoly
+_nococone(::CoSDSOSCone) = SDSOSCone()
 
 struct SOSCone end
-const NonNegPolySubCones = Union{NonNegPoly, SOSCone}
+struct CoSOSCone end
+_varconetype(::SOSCone) = SOSPoly
+_nococone(::CoSOSCone) = SOSCone()
 
-struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}}
-    slack::MatPolynomial{JuMP.Variable, MT, MVT}
+_varconetype(::NonNegPoly) = Poly{true}
+
+const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone, NonNegPoly}
+const CoSOSLikeCones = Union{CoDSOSCone, CoSDSOSCone, CoSOSCone}
+const NonNegPolySubCones = Union{CoSOSLikeCones, SOSLikeCones}
+
+struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar}
+    # JS is AffExpr for CoSOS and is Variable for SOS
+    slack::MatPolynomial{JS, MT, MVT}
     lincons::Vector{JuMP.ConstraintRef{JuMP.Model,JuMP.GenericRangeConstraint{JuMP.GenericAffExpr{Float64,JuMP.Variable}}}}
     x::MVT
 end
@@ -39,10 +59,22 @@ function addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::PSDCone, domain::Abs
     addpolyconstraint!(m, p, NonNegPoly(), domain)
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, ::NonNegPolySubCones, domain::AbstractAlgebraicSet)
+function _createslack(m, x, set::SOSLikeCones)
+    createpoly(m, _varconetype(set)(x), :Cont)
+end
+function _matposynomial(m, x)
+    p = _matpolynomial(m, x, :Cont)
+    push!(m.varCones, (:NonNeg, p.Q[1].col:p.Q[end].col))
+    p
+end
+function _createslack(m, x, set::CoSOSLikeCones)
+    _matplus(_createslack(m, x, _nococone(set)), _matposynomial(m, x))
+end
+
+function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::AbstractAlgebraicSet)
     r = rem(p, ideal(domain))
     X = getmonomialsforcertificate(monomials(r))
-    slack = createpoly(m, Poly{true}(X), :Cont)
+    slack = _createslack(m, X, set)
     q = r - slack
     lincons = addpolyconstraint!(m, q, ZeroPoly(), domain)
     SOSConstraint(slack, lincons, monomials(q))
@@ -59,7 +91,7 @@ function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::B
         # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
         # so instead of `variable(p)` we would have the union of them all
         @assert variables(q) ⊆ variables(p)
-        s = createpoly(m, Poly{true}(monomials(variables(p), mind:maxd)), :Cont)
+        s = createpoly(m, _varconetype(set)(monomials(variables(p), mind:maxd)), :Cont)
         p -= s*q
     end
     addpolyconstraint!(m, p, set, domain.V)
