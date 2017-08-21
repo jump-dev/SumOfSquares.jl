@@ -1,5 +1,9 @@
 export polytype, createpoly, SOSPoly
 
+function JuMP.getvalue{C}(p::MatPolynomial{JuMP.Variable})
+    MatPolynomial(map(getvalue, p.Q), p.x)
+end
+
 struct SOSPoly{MT, MV} <: PolyJuMP.AbstractPoly
     x::MV
 end
