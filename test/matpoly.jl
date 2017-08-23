@@ -1,4 +1,4 @@
-@test "MatPolynomial tests" begin
+@testset "MatPolynomial tests" begin
     @testset "MatPolynomial" begin
         @polyvar x y
         P = MatPolynomial{Int}((i,j) -> i + j, [x^2, x*y, y^2])
@@ -46,15 +46,16 @@
 
         @test MatPolynomial([2 3; 3 2], [x, y]) == 2x^2 + 2y^2 + 6x*y
 
-        mp = MatPolynomial{true,Int}((i,j) -> i+j, [x])
+        mp = MatPolynomial{Int}((i,j) -> i+j, [x])
         @test norm(mp) == norm(mp, 2) == 2.0
 
+        @polyvar v[1:3]
         P = [1 2 3; 2 4 5; 3 5 6]
-        p = MatPolynomial(P, x)
+        p = MatPolynomial(P, v)
         #@inferred p(x => ones(3))
-        @test p(x => ones(3)) == 31
+        @test p(v => ones(3)) == 31
         #@inferred subs(p, x => ones(3))
-        @test subs(p, x => ones(3)) == 31
+        @test subs(p, v => ones(3)) == 31
     end
     @testset "SOSDecomposition" begin
         @polyvar x y
@@ -67,7 +68,7 @@
 #       @test isapprox(MatPolynomial(SOSDecomposition(P)), P)
         @test sprint(show, SOSDecomposition([x+y, x-y])) == "(x + y)^2 + (x - y)^2"
         @testset "SOSDecomposition equality" begin
-            Mod.@polyvar x y
+            @polyvar x y
             @test !isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x+y]))
             @test !isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x+y, x+y]))
             @test isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x+y, x-y]))

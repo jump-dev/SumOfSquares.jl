@@ -1,7 +1,7 @@
 @testset "Monomial selection for certificate" begin
     @polyvar x y
     @test_throws ErrorException getmonomialsforcertificate([x*y, y^2], :Sparse)
-    @test getmonomialsforcertificate([x*y, y^2]) == MonomialVector([y])
+    @test getmonomialsforcertificate([x*y, y^2]) == [y]
 end
 
 @testset "Random SOS should be SOS with $solver" for solver in sdp_solvers

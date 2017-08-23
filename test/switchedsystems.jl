@@ -22,8 +22,8 @@
         # p strictly positive
         q = sum(x.^(2*d))
         @constraint m p >= q
-        c1 = @constraint m p(A1 * x, x) <= γ^(2*d) * p
-        c2 = @constraint m p(A2 * x, x) <= γ^(2*d) * p
+        c1 = @constraint m p(x => A1 * x) <= γ^(2*d) * p
+        c2 = @constraint m p(x => A2 * x) <= γ^(2*d) * p
 
         @test expected_status == solve(m; suppress_warnings=true)
 
@@ -33,7 +33,7 @@
 
             # The dual constraint should work on any polynomial.
             # Let's test it with q
-            lhs = dot(μ1, q(A1 * x, x)) + dot(μ2, q(A2 * x, x))
+            lhs = dot(μ1, q(x => A1 * x)) + dot(μ2, q(x => A2 * x))
             rhs = dot(μ1, q) + dot(μ2, q)
             @test 1e-6 * max(abs(lhs), abs(rhs)) + lhs >= rhs
         end
