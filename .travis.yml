@@ -18,6 +18,9 @@ before_install:
     fi
 before_script:
   - julia -e 'Pkg.clone("git://github.com/blegat/MultivariatePolynomials.jl.git")'
+  - julia -e 'Pkg.clone("git://github.com/blegat/SemialgebraicSets.jl.git")'
+  - julia -e 'Pkg.clone("git://github.com/blegat/MultivariateMoments.jl.git")'
+  - julia -e 'Pkg.clone("git://github.com/blegat/DynamicPolynomials.jl.git")'
   - julia -e 'Pkg.clone("git://github.com/JuliaOpt/PolyJuMP.jl.git")'
 after_success:
   # push coverage results to Coveralls

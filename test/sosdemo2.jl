@@ -13,13 +13,13 @@
   m = SOSModel(solver = solver)
 
   # The Lyapunov function V(x):
-  Z = x.^2
+  Z = vec(x).^2
   @variable m V Poly(Z)
 
   @constraint m V >= sum(x.^2)
 
   # dV/dx*(x[3]^2+1)*f <= 0
-  P = dot(differentiate(V, x), f)*(x[3]^2+1)
+  P = dot(differentiate(V, x), f).num # the denominator is x[3]^2+1
   @constraint m P <= 0
 
   status = solve(m)

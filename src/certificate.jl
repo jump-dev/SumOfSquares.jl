@@ -18,43 +18,42 @@ function map_extrema(f::Function, itr::AbstractVector)
     mini, maxi
 end
 
-cfld(x::NTuple{2,Int}, n) = (cld(x[1], 2), fld(x[2], 2))
+cfld(x::NTuple{2,Int}, n) = (cld(x[1], n), fld(x[2], n))
 
 # TODO sparse with Newton polytope (Polyhedra.jl for convex hull)
-function getmonomialsforcertificate(Z::MonomialVector, sparse=:No)
+function _getmonomialsforcertificate(X::AbstractVector{<:AbstractMonomial}, sparse=:No)
     if sparse == :No
         # Cheap approximation of the convex hull as the approximation of:
         #
-        # z such that mindeg < sum(z) < maxdeg
+        # z such that mindegree < sum(z) < maxdegree
         # |\
-        # |#\ <-------- sum(z) = maxdeg
+        # |#\ <-------- sum(z) = maxdegree
         # |##\
-        # |\<-\-------- sum(z) = mindeg
+        # |\<-\-------- sum(z) = mindegree
         # | \##\
         # +---------
         #
         # and:
         #
         # z such that minmultideg < z < maxmultideg
-        # | +----+ <--- maxmultideg
+        # | +----+ <--- maxmultidegree
         # | |####|
         # | |####|
         # | +----+
-        # | ^---------- minmultideg
+        # | ^---------- minmultidegree
         # +---------
-        mindeg, maxdeg = cfld(extdeg(Z), 2)
-        n = length(Z.Z[1])
+        mindeg, maxdeg = cfld(extdegree(X), 2)
+        n = nvariables(X)
         minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
         for i in 1:n
-            a, b = map_extrema(z->z[i], Z.Z)
-            minmultideg[i], maxmultideg[i] = cfld(map_extrema(z->z[i], Z.Z), 2)
+            minmultideg[i], maxmultideg[i] = cfld(map_extrema(m -> exponents(m)[i], X), 2)
         end
-        MonomialVector(vars(Z), mindeg:maxdeg, z -> reduce(&, true, minmultideg .<= z .<= maxmultideg))
+        monomials(variables(X), mindeg:maxdeg, m -> reduce(&, true, minmultideg .<= exponents(m) .<= maxmultideg))
     else
         error("Not supported yet :(")
     end
 end
-getmonomialsforcertificate(Z::Vector, sparse=:No) = getmonomialsforcertificate(MonomialVector(Z), sparse)
+getmonomialsforcertificate(X::AbstractVector, sparse=:No) = _getmonomialsforcertificate(monovec(X), sparse)
 
 function randpsd(n; r=n, eps=0.1)
     Q = randn(n,n)
@@ -63,11 +62,11 @@ function randpsd(n; r=n, eps=0.1)
     Q' * Diagonal(d) * Q
 end
 
-function randsos(Z::MonomialVector; r=-1, monotype=:Classic, eps=0.1)
+function _randsos(X::AbstractVector{<:AbstractMonomial}; r=-1, monotype=:Classic, eps=0.1)
     if monotype == :Classic
-        x = getmonomialsforcertificate(Z)
+        x = getmonomialsforcertificate(X)
     elseif monotype == :Gram
-        x = Z
+        x = X
     else
         throw(ArgumentError("Monotype $monotype not known"))
     end
@@ -78,4 +77,4 @@ function randsos(Z::MonomialVector; r=-1, monotype=:Classic, eps=0.1)
     MatPolynomial(randpsd(n, r=r, eps=eps), x)
 end
 
-randsos(Z::Vector; r=-1, monotype=:Classic, eps=0.1) = randsos(MonomialVector(Z), r=r, monotype=monotype, eps=eps)
+randsos(X::AbstractVector; kws...) = _randsos(monovec(X); kws...)
