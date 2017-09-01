@@ -64,28 +64,11 @@ function Base.show(io::IO, p::SOSDecomposition)
     end
 end
 
-function permcomp(f, m)
-    picked = IntSet()
-    for i in 1:m
-        k = 0
-        for j in 1:m
-            if !(j in picked) && f(i, j)
-                k = j
-                break
-            end
-        end
-        if k == 0
-            return false
-        end
-        push!(picked, k)
-    end
-    true
-end
 function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
     m = length(p.ps)
     if length(q.ps) != m
         false
     else
-        permcomp((i, j) -> isapprox(p.ps[i], q.ps[j]; kwargs...), m)
+        MultivariateMoments.permcomp((i, j) -> isapprox(p.ps[i], q.ps[j]; kwargs...), m)
     end
 end
