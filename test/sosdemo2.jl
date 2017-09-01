@@ -26,5 +26,5 @@
 
   @test status == :Optimal
 
-  @test removemonomials(getvalue(V), Z) == zero(Polynomial{true, Float64})
+  @test iszero(removemonomials(getvalue(V), Z))
 end

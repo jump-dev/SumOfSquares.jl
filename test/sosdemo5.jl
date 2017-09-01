@@ -18,16 +18,15 @@
         V = [0 a; b -b; c -im*c; -im*f -d];
         M = U*V';
 
-        # Constructing A(x)'s
-        A = Vector{Polynomial{true, Float64}}(4)
-
         for (gam, expected) in [(0.8723, :Infeasible), (0.8724, :Optimal)]
             Z = monomials(x, 1)
-            for i = 1:4
+
+            function build_A(i)
                 H = M[i,:]*M[i,:]' - (gam^2)*sparse([i],[i],[1],4,4)
                 H = [real(H) -imag(H); imag(H) real(H)]
-                A[i] = dot(Z, H*Z)
+                dot(Z, H*Z)
             end
+            A = build_A.(1:4)
 
             m = SOSModel(solver = solver)
 

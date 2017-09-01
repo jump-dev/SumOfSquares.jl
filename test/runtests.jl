@@ -5,8 +5,26 @@ using Base.Test
 
 using MultivariatePolynomials
 using SemialgebraicSets
-using DynamicPolynomials
-#using TypedPolynomials
+
+# Taken from JuMP/test/solvers.jl
+function try_import(name::Symbol)
+    try
+        @eval import $name
+        return true
+    catch e
+        return false
+    end
+end
+
+if try_import(:TypedPolynomials)
+    import TypedPolynomials.@polyvar
+else
+    if try_import(:DynamicPolynomials)
+        import DynamicPolynomials.@polyvar
+    else
+        error("No polynomial implementation installed : Please install TypedPolynomials or DynamicPolynomials")
+    end
+end
 
 include("matpoly.jl")
 

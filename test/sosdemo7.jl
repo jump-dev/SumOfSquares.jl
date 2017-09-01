@@ -8,7 +8,7 @@
 
         @polyvar x
 
-        Z = monomials([x], 0:ndeg-1)
+        Z = monomials((x,), 0:ndeg-1)
 
         m = SOSModel(solver = solver)
 

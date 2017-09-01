@@ -12,7 +12,7 @@
     # Example 3.79
     @polyvar y[1:2]
     M = SOSModel(solver=solver)
-    @constraint M dot(y, P*y) >= 0
+    @constraint M dot(vec(y), P*vec(y)) >= 0
     status = solve(M)
     @test status == :Optimal
 end

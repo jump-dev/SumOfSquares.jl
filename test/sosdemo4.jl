@@ -12,7 +12,7 @@
        1  1 -1  1 -1;
       -1  1  1 -1  1]
 
-  xs = x.^2
+  xs = vec(x).^2
   xsJxs = dot(xs, J*xs)
   r = sum(xs)
 
