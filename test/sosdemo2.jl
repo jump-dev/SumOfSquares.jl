@@ -13,7 +13,7 @@
   m = SOSModel(solver = solver)
 
   # The Lyapunov function V(x):
-  Z = x.^2
+  Z = vec(x).^2
   @variable m V Poly(Z)
 
   @constraint m V >= sum(x.^2)

@@ -33,7 +33,7 @@
 
             # -- Q(x)'s -- : sums of squares
             # Monomial vector: [x1; ... x8]
-            Q = Vector{MatPolynomial{true, JuMP.Variable}}(4)
+            Q = Vector{MatPolynomial{JuMP.Variable, monomialtype(x[1]), monovectype(x[1])}}(4)
             @variable m Q[1:4] >= 0 Poly{true}(Z)
 
             # -- r's -- : constant sum of squares

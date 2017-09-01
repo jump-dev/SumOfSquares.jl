@@ -1,5 +1,8 @@
 export MatPolynomial
 
+import MultivariateMoments: trimat, SymMatrix, getmat
+export getmat
+
 #struct SymMatrix{T} <: AbstractMatrix{T}
 #    Q::Vector{T}
 #    n

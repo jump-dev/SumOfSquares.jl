@@ -27,7 +27,7 @@
 
         @test status == :Optimal
 
-        @test isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1)
+        @test isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
         @test isapprox(getvalue(γ), 128)
     end
 end

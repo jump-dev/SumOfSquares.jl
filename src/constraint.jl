@@ -15,7 +15,7 @@ function JuMP.getdual(c::SOSConstraint)
 end
 
 function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::FullSpace)
-    constraints = [JuMP.constructconstraint!(AffExpr(t.α), :(==)) for t in p]
+    constraints = JuMP.constructconstraint!.(AffExpr.(coefficients(p)), :(==))
     JuMP.addVectorizedConstraint(m, constraints)
 end
 

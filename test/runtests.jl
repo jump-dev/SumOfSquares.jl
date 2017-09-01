@@ -5,8 +5,8 @@ using Base.Test
 
 using MultivariatePolynomials
 using SemialgebraicSets
-#using DynamicPolynomials
-using TypedPolynomials
+using DynamicPolynomials
+#using TypedPolynomials
 
 include("matpoly.jl")
 

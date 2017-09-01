@@ -9,7 +9,7 @@ function try_import(name::Symbol)
     end
 end
 
-mos = false && try_import(:Mosek)
+mos = try_import(:Mosek)
 csd = false && try_import(:CSDP)
 scs = try_import(:SCS)
 
