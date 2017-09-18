@@ -16,12 +16,6 @@ before_install:
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
-before_script:
-  - julia -e 'Pkg.clone("git://github.com/blegat/MultivariatePolynomials.jl.git")'
-  - julia -e 'Pkg.clone("git://github.com/blegat/SemialgebraicSets.jl.git")'
-  - julia -e 'Pkg.clone("git://github.com/blegat/MultivariateMoments.jl.git")'
-  - julia -e 'Pkg.clone("git://github.com/blegat/DynamicPolynomials.jl.git")'
-  - julia -e 'Pkg.clone("git://github.com/JuliaOpt/PolyJuMP.jl.git")'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("SumOfSquares")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
