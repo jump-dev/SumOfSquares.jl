@@ -10,7 +10,7 @@ function try_import(name::Symbol)
 end
 
 mos = try_import(:Mosek)
-csd = false && try_import(:CSDP)
+csd = try_import(:CSDP)
 scs = try_import(:SCS)
 
 isscs(solver) = contains(string(typeof(solver)),"SCSSolver")
