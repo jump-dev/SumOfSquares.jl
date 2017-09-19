@@ -28,6 +28,7 @@ build_script:
   - IF EXIST .git\shallow (git fetch --unshallow)
   - C:\projects\julia\bin\julia -e "versioninfo();
       Pkg.add(\"SemialgebraicSets\"); Pkg.checkout(\"SemialgebraicSets\");
+      Pkg.checkout(\"MultivariatePolynomials\");
       Pkg.clone(pwd(), \"SumOfSquares\"); Pkg.build(\"SumOfSquares\")"
 
 test_script:

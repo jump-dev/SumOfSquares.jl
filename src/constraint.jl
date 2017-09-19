@@ -19,7 +19,7 @@ function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::FullSpace)
     JuMP.addVectorizedConstraint(m, constraints)
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::AlgebraicSet)
+function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::AbstractAlgebraicSet)
     addpolyconstraint!(m, rem(p, ideal(domain)), s, FullSpace())
 end
 
@@ -41,8 +41,8 @@ end
 
 function addpolyconstraint!(m::JuMP.Model, p, ::NonNegPolySubCones, domain::AbstractAlgebraicSet)
     r = rem(p, ideal(domain))
-    Z = getmonomialsforcertificate(monomials(r))
-    slack = createpoly(m, Poly{true}(Z), :Cont)
+    X = getmonomialsforcertificate(monomials(r))
+    slack = createpoly(m, Poly{true}(X), :Cont)
     q = r - slack
     lincons = addpolyconstraint!(m, q, ZeroPoly(), domain)
     SOSConstraint(slack, lincons, monomials(q))
