@@ -19,11 +19,8 @@ function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::FullSpace)
     JuMP.addVectorizedConstraint(m, constraints)
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::AlgebraicSet)
-    if !isempty(domain.p)
-        warn("Equality on algebraic set has not been implemented yet, ignoring the domain")
-    end
-    addpolyconstraint!(m, p, FullSpace())
+function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::AbstractAlgebraicSet)
+    addpolyconstraint!(m, rem(p, ideal(domain)), s, FullSpace())
 end
 
 function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::BasicSemialgebraicSet)
@@ -42,20 +39,13 @@ function addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::PSDCone, domain::Abs
     addpolyconstraint!(m, p, NonNegPoly(), domain)
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, ::Union{NonNegPoly, SOSCone}, domain::FullSpace)
-    # FIXME If p is a MatPolynomial, p.x will not be correct
-    Z = getmonomialsforcertificate(monomials(p))
-    slack = createpoly(m, Poly{true}(Z), :Cont)
-    q = p - slack
+function addpolyconstraint!(m::JuMP.Model, p, ::NonNegPolySubCones, domain::AbstractAlgebraicSet)
+    r = rem(p, ideal(domain))
+    X = getmonomialsforcertificate(monomials(r))
+    slack = createpoly(m, Poly{true}(X), :Cont)
+    q = r - slack
     lincons = addpolyconstraint!(m, q, ZeroPoly(), domain)
     SOSConstraint(slack, lincons, monomials(q))
-end
-
-function addpolyconstraint!(m::JuMP.Model, p, s::NonNegPolySubCones, domain::AlgebraicSet)
-    if !isempty(equalities(domain))
-        warn("Equality on algebraic set has not been implemented yet, ignoring the domain")
-    end
-    addpolyconstraint!(m, p, s, FullSpace())
 end
 
 function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::BasicSemialgebraicSet)
