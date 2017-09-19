@@ -18,7 +18,7 @@ before_install:
     fi
 before_script:
   - julia -e 'Pkg.add("SemialgebraicSets"); Pkg.checkout("SemialgebraicSets")'
-  - julia -e 'Pkg.checkout(\"MultivariatePolynomials\")'
+  - julia -e 'Pkg.checkout("MultivariatePolynomials")'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("SumOfSquares")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
