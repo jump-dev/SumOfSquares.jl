@@ -1,4 +1,5 @@
 julia 0.6
 MultivariatePolynomials 0.1.0
+MultivariateMoments
 JuMP
 PolyJuMP 0.1.0
