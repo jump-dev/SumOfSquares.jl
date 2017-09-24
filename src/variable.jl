@@ -59,18 +59,26 @@ function _constraintmatpoly!(m, p, ::DSOSPoly)
         @constraint m 2Q[i, i] >= sum(Q[i, :])
     end
     # If n > 1, this is implied by the constraint but it doesn't hurt to add the variable cone
-    push!(m.varCones, (:NonNeg, map(i -> p[i, i].col, 1:n)))
+    # Adding things on varCones makes JuMP think that it is SDP
+    # push!(m.varCones, (:NonNeg, map(i -> p[i, i].col, 1:n)))
 end
 function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, category::Symbol)
     if isempty(x)
         zero(polytype(m, SOSPoly(x)))
     else
-        MatPolynomial{JuMP.Variable}((i, j) -> Variable(m, -Inf, Inf, category), x)
+        if length(x) == 1
+            # 1x1 matrix is SDP iff its only entry is nonnegative
+            # We handle this case here and do not create any SDP constraint
+            lb = 0.
+        else
+            lb = -Inf
+        end
+        MatPolynomial{JuMP.Variable}((i, j) -> Variable(m, lb, Inf, category), x)
     end
 end
 function _createpoly(m::JuMP.Model, set::PosPoly, x::AbstractVector{<:AbstractMonomial}, category::Symbol)
     p = _matpolynomial(m, x, category)
-    if !isempty(x)
+    if length(x) > 1
         _constraintmatpoly!(m, p, set)
     end
     p

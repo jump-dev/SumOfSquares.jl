@@ -22,10 +22,10 @@ const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone, NonNegPoly}
 const CoSOSLikeCones = Union{CoDSOSCone, CoSDSOSCone, CoSOSCone}
 const NonNegPolySubCones = Union{CoSOSLikeCones, SOSLikeCones}
 
-struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar}
+struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint}
     # JS is AffExpr for CoSOS and is Variable for SOS
     slack::MatPolynomial{JS, MT, MVT}
-    lincons::Vector{JuMP.ConstraintRef{JuMP.Model,JuMP.GenericRangeConstraint{JuMP.GenericAffExpr{Float64,JuMP.Variable}}}}
+    lincons::Vector{JuMP.ConstraintRef{JuMP.Model, JC}}
     x::MVT
 end
 
@@ -35,7 +35,7 @@ function JuMP.getdual(c::SOSConstraint)
 end
 
 function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::FullSpace)
-    constraints = JuMP.constructconstraint!.(AffExpr.(coefficients(p)), :(==))
+    constraints = JuMP.constructconstraint!.(coefficients(p), :(==))
     JuMP.addVectorizedConstraint(m, constraints)
 end
 
@@ -64,7 +64,7 @@ function _createslack(m, x, set::SOSLikeCones)
 end
 function _matposynomial(m, x)
     p = _matpolynomial(m, x, :Cont)
-    push!(m.varCones, (:NonNeg, p.Q[1].col:p.Q[end].col))
+    m.colLower[map(q -> q.col, p.Q)] = 0.
     p
 end
 function _createslack(m, x, set::CoSOSLikeCones)
