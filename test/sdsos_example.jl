@@ -10,7 +10,7 @@
     @polyvar x[1:3]
     vx = monomials(x, 4) # Degree 4 homogeneous
     # Coefficient of polynomial
-    cp = 15:-1:1
+    cp = collect(15:-1:1) # TODO remove collect once DynamicPolynomials is released
     p = polynomial(cp, vx)
 
 
