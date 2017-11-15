@@ -2,6 +2,7 @@ using MultivariatePolynomials
 using JuMP
 using PolyJuMP
 using SumOfSquares
+using DynamicPolynomials
 
 # Create symbolic variables (not JuMP decision variables)
 @polyvar x1 x2
