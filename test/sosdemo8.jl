@@ -38,8 +38,9 @@
 
     @objective m Min bnd
 
-    status = solve(m)
+    solve(m)
+    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 
-    @test isapprox(getobjectivevalue(m), 1/37, rtol=1e-5)
-    @test isapprox(getvalue(P), ((12/37)x-11/37)^2, rtol=1e-3)
+    @test isapprox(JuMP.objectivevalue(m), 1/37, rtol=1e-5)
+    @test isapprox(JuMP.resultvalue(P), ((12/37)x-11/37)^2, rtol=1e-3)
 end

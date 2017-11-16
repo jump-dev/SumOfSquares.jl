@@ -18,7 +18,7 @@
         V = [0 a; b -b; c -im*c; -im*f -d];
         M = U*V';
 
-        for (gam, expected) in [(0.8723, :Infeasible), (0.8724, :Optimal)]
+        for (gam, expected) in ((0.8723, MOI.InfeasiblePoint), (0.8724, MOI.FeasiblePoint))
             Z = monomials(x, 1)
 
             function build_A(i)
@@ -57,10 +57,10 @@
 
             @constraint m expr >= 0
 
-            status = solve(m)
+            solve(m)
 
             # Program is feasible, thus 0.8724 is an upper bound for mu.
-            @test status == expected
+            @test JuMP.primalstatus(m) == expected
         end
     end
 end

@@ -23,11 +23,11 @@
 
         @objective m Max γ
 
-        status = solve(m)
+        solve(m)
 
-        @test status == :Optimal
+        @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 
-        @test isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
-        @test isapprox(getvalue(γ), 128)
+        @test isapprox(JuMP.resultvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
+        @test isapprox(JuMP.resultvalue(γ), 128)
     end
 end

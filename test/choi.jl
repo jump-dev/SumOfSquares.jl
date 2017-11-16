@@ -9,6 +9,6 @@
 
   @SDconstraint m C >= 0
 
-  status = solve(m)
-  @test status == :Infeasible
+  solve(m)
+  @test JuMP.primalstatus(m) == MOI.InfeasiblePoint
 end

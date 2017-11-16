@@ -7,6 +7,13 @@ julia:
   - 0.6
 notifications:
   email: false
+before_script:
+  - julia -e 'Pkg.add("JuMP")'
+  - julia -e 'Pkg.add("PolyJuMP")'
+  - julia -e 'Pkg.clone("https://github.com/JuliaOpt/MathOptInterface.jl.git")'
+  - julia -e 'Pkg.clone("https://github.com/JuliaOpt/MathOptInterfaceUtilities.jl.git")'
+  - julia -e 'Pkg.checkout("JuMP", "jump/moi")'
+  - julia -e 'Pkg.checkout("PolyJuMP", "moi")'
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi

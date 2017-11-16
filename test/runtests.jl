@@ -1,3 +1,5 @@
+using MathOptInterface
+const MOI = MathOptInterface
 using JuMP
 using SumOfSquares
 using PolyJuMP
@@ -37,7 +39,7 @@ include("certificate.jl")
 
 include("motzkin.jl")
 
-## SOSTools demos
+# SOSTools demos
 include("sospoly.jl")
 include("lyapunov.jl")
 include("sosdemo3.jl")
