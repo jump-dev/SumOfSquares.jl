@@ -32,14 +32,14 @@
         else
             @test JuMP.primalstatus(m) == MOI.InfeasiblePoint
             @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
-#            μ1 = getdual(c1)
-#            μ2 = getdual(c2)
-#
-#            # The dual constraint should work on any polynomial.
-#            # Let's test it with q
-#            lhs = dot(μ1, q(x => A1 * vec(x))) + dot(μ2, q(x => A2 * vec(x)))
-#            rhs = dot(μ1, q) + dot(μ2, q)
-#            @test 1e-6 * max(abs(lhs), abs(rhs)) + lhs >= rhs
+            μ1 = JuMP.resultdual(c1)
+            μ2 = JuMP.resultdual(c2)
+
+            # The dual constraint should work on any polynomial.
+            # Let's test it with q
+            lhs = dot(μ1, q(x => A1 * vec(x))) + dot(μ2, q(x => A2 * vec(x)))
+            rhs = dot(μ1, q) + dot(μ2, q)
+            @test 1e-6 * max(abs(lhs), abs(rhs)) + lhs >= rhs
         end
     end
     testlyap(1, √2 - 1e-1, false)

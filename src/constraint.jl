@@ -36,10 +36,7 @@ end
 
 certificate_monomials(c::SOSConstraint) = c.slack.x
 
-function JuMP.getdual(c::SOSConstraint)
-    a = [getdual(lc) for lc in c.lincons]
-    Measure(a, c.x)
-end
+JuMP.resultdual(c::SOSConstraint) = JuMP.resultdual(c.zero_constraint)
 
 PolyJuMP.getslack(c::SOSConstraint) = JuMP.resultvalue(c.slack)
 JuMP.getdual(c::SOSConstraint) = getdual(c.zero_constraint)
