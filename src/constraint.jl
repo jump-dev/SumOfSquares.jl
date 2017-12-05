@@ -31,7 +31,6 @@ const SOSSubCones = Union{CoSOSLikeCones, SOSLikeCones}
 struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, F<:MOI.AbstractVectorFunction} <: PolyJuMP.ConstraintDelegate
     # JS is AffExpr for CoSOS and is Variable for SOS
     slack::MatPolynomial{JS, MT, MVT}
-    zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, JC}
 end
 
 certificate_monomials(c::SOSConstraint) = c.slack.x
