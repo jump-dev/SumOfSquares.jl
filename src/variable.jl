@@ -23,17 +23,6 @@ polytype(m::JuMP.Model, p, X::AbstractVector) = _polytype(m, p, monovec(X))
 
 _polytype(m::JuMP.Model, ::Poly{false}, x::AbstractVector{MT}) where MT<:AbstractMonomial = polynomialtype(MT, JuMP.Variable)
 
-# x should be sorted and without duplicates
-function _createpoly(m::JuMP.Model, ::Poly{false}, x::AbstractVector{<:AbstractMonomial}, category::Symbol)
-    polynomial((i) -> Variable(m, -Inf, Inf, category), x)
-end
-function createpoly(m::JuMP.Model, p::Union{Poly{false, :Default}, Poly{false, :Classic}}, category::Symbol)
-    _createpoly(m, p, monovec(p.x), category)
-end
-function createpoly(m::JuMP.Model, p::Poly{false, :Gram}, category::Symbol)
-    _createpoly(m, p, monomials(sum(p.x)^2), category)
-end
-
 # Sum-of-Squares polynomial
 
 _polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MVT}

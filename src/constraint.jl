@@ -37,21 +37,6 @@ function JuMP.getdual(c::SOSConstraint)
     MultivariateMoments.measure(a, c.x)
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::FullSpace)
-    constraints = JuMP.constructconstraint!.(coefficients(p), :(==))
-    JuMP.addVectorizedConstraint(m, constraints)
-end
-
-function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::AbstractAlgebraicSet)
-    addpolyconstraint!(m, rem(p, ideal(domain)), s, FullSpace())
-end
-
-function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::BasicSemialgebraicSet)
-    addpolyconstraint!(m,  p, NonNegPoly(), domain)
-    addpolyconstraint!(m, -p, NonNegPoly(), domain)
-    nothing
-end
-
 function addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::PSDCone, domain::AbstractBasicSemialgebraicSet) where PT <: APL
     n = Base.LinAlg.checksquare(P)
     if !issymmetric(P)
