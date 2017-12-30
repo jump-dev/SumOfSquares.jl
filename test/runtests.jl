@@ -16,11 +16,11 @@ function try_import(name::Symbol)
     end
 end
 
-if try_import(:TypedPolynomials)
-    import TypedPolynomials.@polyvar
+if try_import(:DynamicPolynomials)
+    import DynamicPolynomials.@polyvar
 else
-    if try_import(:DynamicPolynomials)
-        import DynamicPolynomials.@polyvar
+    if try_import(:TypedPolynomials)
+        import TypedPolynomials.@polyvar
     else
         error("No polynomial implementation installed : Please install TypedPolynomials or DynamicPolynomials")
     end
