@@ -16,13 +16,6 @@ end
 
 const PosPoly{MT, MV} = Union{DSOSPoly{MT, MV}, SDSOSPoly{MT, MV}, SOSPoly{MT, MV}, Poly{true, MT, MV}}
 
-polytype(m::JuMP.Model, p) = _polytype(m, p, p.x)
-polytype(m::JuMP.Model, p, X::AbstractVector) = _polytype(m, p, monovec(X))
-
-# Free polynomial
-
-_polytype(m::JuMP.Model, ::Poly{false}, x::AbstractVector{MT}) where MT<:AbstractMonomial = polynomialtype(MT, JuMP.Variable)
-
 # Sum-of-Squares polynomial
 
 _polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MVT}
