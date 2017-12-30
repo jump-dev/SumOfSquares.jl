@@ -16,9 +16,10 @@ end
 
 const PosPoly{MT, MV} = Union{DSOSPoly{MT, MV}, SDSOSPoly{MT, MV}, SOSPoly{MT, MV}, Poly{true, MT, MV}}
 
-# Sum-of-Squares polynomial
+polytype(args...) = PolyJuMP.polytype(args...)
+polytype(m::JuMP.Model, p::PosPoly) = polytype(m, p, p.x)
 
-_polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MVT}
+polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MVT}
 
 function _constraintmatpoly!(m, p, ::Union{SOSPoly, Poly{true}})
     push!(m.varCones, (:SDP, [p.Q[i, j].col for i in 1:size(p.Q, 1) for j in i:size(p.Q, 2)]))
@@ -74,3 +75,6 @@ function createpoly(m::JuMP.Model, pp::PosPoly{:Classic}, category::Symbol)
     addpolyconstraint!(m, removemonomials(Polynomial(p), p.x), ZeroPoly(), FullSpace())
     p
 end
+
+# Defer other methods to defaults in PolyJuMP
+createpoly(args...) = PolyJuMP.createpoly(args...)

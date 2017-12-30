@@ -21,7 +21,6 @@ include("sosdec.jl")
 include("certificate.jl")
 
 using PolyJuMP, JuMP
-using PolyJuMP.DefaultModule
 import JuMP: validmodel, addtoexpr_reorder
 
 include("variable.jl")

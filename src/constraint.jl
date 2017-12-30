@@ -89,3 +89,6 @@ function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::B
     end
     addpolyconstraint!(m, p, set, domain.V)
 end
+
+# Defer other methods to defaults in PolyJuMP
+addpolyconstraint!(args...) = PolyJuMP.addpolyconstraint!(args...)
