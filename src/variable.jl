@@ -39,7 +39,7 @@ end
 _polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MVT}
 
 function _constraintmatpoly!(m, p, ::Union{SOSPoly, Poly{true}})
-    push!(m.varCones, (:SDP, p.Q[1].col:p.Q[end].col))
+    push!(m.varCones, (:SDP, [p.Q[i, j].col for i in 1:size(p.Q, 1) for j in i:size(p.Q, 2)]))
 end
 function _constraintmatpoly!(m, p, ::DSOSPoly)
     n = length(p.x)
