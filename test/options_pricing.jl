@@ -22,7 +22,6 @@ using MultivariateMoments
         @objective m Min dot(μ, p)
         status = solve(m)
         @test status == :Optimal
-        @show getobjectivevalue(m)
         getobjectivevalue(m)
     end
 
