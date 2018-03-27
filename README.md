@@ -1,9 +1,9 @@
 # Sum of Squares Programming for Julia.
 
-| **PackageEvaluator** | **Build Status** | **Social** |
-|:--------------------:|:----------------:|:----------:|
-| [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] | [![Gitter][gitter-img]][gitter-url] |
-| [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] |
+| **PackageEvaluator** | **Build Status** | **Social** | **References to cite** |
+|:--------------------:|:----------------:|:----------:|:----------------------:|
+| [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] | [![Gitter][gitter-img]][gitter-url] | [![DOI][zenodo-img]][zenodo-url] |
+| [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | |
 
 This packages contains the Sum of Squares reformulation for polynomial optimization.
 When used in conjunction with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
@@ -46,6 +46,11 @@ status = solve(m)
 println(getobjectivevalue(m))
 ```
 
+Some presentations on, or using, SumOfSquares:
+  * [Benoit Legat at the JuMP Meetup 2017](http://www.juliaopt.org/developersmeetup/legat.pdf)
+  * [Joey Huchette at SIAM Opt 2017](https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit?usp=sharing)
+
+
 [pkg-0.5-img]: http://pkg.julialang.org/badges/SumOfSquares_0.5.svg
 [pkg-0.5-url]: http://pkg.julialang.org/?pkg=SumOfSquares
 [pkg-0.6-img]: http://pkg.julialang.org/badges/SumOfSquares_0.6.svg
@@ -64,6 +69,5 @@ println(getobjectivevalue(m))
 [gitter-img]: https://badges.gitter.im/JuliaOpt/SumOfSquares.jl.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
-Some presentations on, or using, SumOfSquares:
-  * [Benoit Legat at the JuMP Meetup 2017](http://www.juliaopt.org/developersmeetup/legat.pdf)
-  * [Joey Huchette at SIAM Opt 2017](https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit?usp=sharing)
+[zenodo-url]: https://doi.org/10.5281/zenodo.1208672
+[zenodo-img]: https://zenodo.org/badge/DOI/10.5281/zenodo.1208672.svg
