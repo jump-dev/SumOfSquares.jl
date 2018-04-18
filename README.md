@@ -6,10 +6,14 @@
 | [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | |
 
 This packages contains the Sum of Squares reformulation for polynomial optimization.
-When used in conjunction with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
+When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
 Enabling the creation of sum of squares variables and constraints.
 
-The following example shows how to find lower bounds for the Goldstein-Price function using this package with [MultivariatePolynomial.jl](https://github.com/blegat/MultivariatePolynomials.jl) and [PolyJuMP.jl](https://github.com/JuliaOpt/PolyJuMP.jl).
+Some presentations on, or using, SumOfSquares:
+  * [Benoit Legat at the JuMP Meetup 2017](http://www.juliaopt.org/developersmeetup/legat.pdf)
+  * [Joey Huchette at SIAM Opt 2017](https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit?usp=sharing)
+
+The following example shows how to find lower bounds for the Goldstein-Price function using this package with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl).
 
 ```julia
 using MultivariatePolynomials
@@ -17,12 +21,13 @@ using JuMP
 using PolyJuMP
 using SumOfSquares
 using DynamicPolynomials
+using Mosek
 
 # Create symbolic variables (not JuMP decision variables)
 @polyvar x1 x2
 
-# Create a JuMP model with the default SDP solver (you should have at least one installed)
-m = Model()
+# Create a Sum of Squares JuMP model with the Mosek solver
+m = SOSModel(solver = MosekSolver())
 
 # Create a JuMP decision variable for the lower bound
 @variable m γ
@@ -36,7 +41,7 @@ f4 = 18-32*x1+12*x1^2+48*x2-36*x1*x2+27*x2^2
 f = (1+f1^2*f2)*(30+f3^2*f4)
 
 # Constraints f(x) - γ to be sum of squares
-@polyconstraint m f >= γ
+@constraint m f >= γ
 
 @objective m Max γ
 
@@ -45,11 +50,6 @@ status = solve(m)
 # The lower bound found is 3
 println(getobjectivevalue(m))
 ```
-
-Some presentations on, or using, SumOfSquares:
-  * [Benoit Legat at the JuMP Meetup 2017](http://www.juliaopt.org/developersmeetup/legat.pdf)
-  * [Joey Huchette at SIAM Opt 2017](https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit?usp=sharing)
-
 
 [pkg-0.5-img]: http://pkg.julialang.org/badges/SumOfSquares_0.5.svg
 [pkg-0.5-url]: http://pkg.julialang.org/?pkg=SumOfSquares

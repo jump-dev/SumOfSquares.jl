@@ -3,12 +3,13 @@ using JuMP
 using PolyJuMP
 using SumOfSquares
 using DynamicPolynomials
+using Mosek
 
 # Create symbolic variables (not JuMP decision variables)
 @polyvar x1 x2
 
-# Create a JuMP model with the default SDP solver (you should have at least one installed)
-m = Model()
+# Create a Sum of Squares JuMP model with the Mosek solver
+m = SOSModel(solver = MosekSolver())
 
 # Create a JuMP decision variable for the lower bound
 @variable m γ
@@ -22,7 +23,7 @@ f4 = 18-32*x1+12*x1^2+48*x2-36*x1*x2+27*x2^2
 f = (1+f1^2*f2)*(30+f3^2*f4)
 
 # Constraints f(x) - γ to be sum of squares
-@polyconstraint m f >= γ
+@constraint m f >= γ
 
 @objective m Max γ
 
