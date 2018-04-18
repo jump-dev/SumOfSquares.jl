@@ -1,9 +1,9 @@
 # Sum of Squares Programming for Julia.
 
-| **PackageEvaluator** | **Build Status** | **Social** | **References to cite** |
-|:--------------------:|:----------------:|:----------:|:----------------------:|
-| [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] | [![Gitter][gitter-img]][gitter-url] | [![DOI][zenodo-img]][zenodo-url] |
-| [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | |
+| **Documentation** | **PackageEvaluator** | **Build Status** | **Social** | **References to cite** |
+|:-----------------:|:--------------------:|:----------------:|:----------:|:----------------------:|
+| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] | [![Gitter][gitter-img]][gitter-url] | [![DOI][zenodo-img]][zenodo-url] |
+| [![][docs-latest-img]][docs-latest-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | |
 
 This packages contains the Sum of Squares reformulation for polynomial optimization.
 When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
@@ -50,6 +50,11 @@ status = solve(m)
 # The lower bound found is 3
 println(getobjectivevalue(m))
 ```
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
+[docs-stable-url]: https://juliaopt.github.io/SumOfSquares.jl/stable
+[docs-latest-url]: https://juliaopt.github.io/SumOfSquares.jl/latest
 
 [pkg-0.5-img]: http://pkg.julialang.org/badges/SumOfSquares_0.5.svg
 [pkg-0.5-url]: http://pkg.julialang.org/?pkg=SumOfSquares
