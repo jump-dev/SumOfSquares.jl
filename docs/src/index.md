@@ -51,6 +51,6 @@ println(getobjectivevalue(m))
 
 ## Contents
 ```@contents
-Pages = ["installation.md", "representation.md", "polyhedron.md", "redundancy.md", "projection.md", "optimization.md", "utilities.md"]
+Pages = ["sumofsquares.md", "variables.md", "constraints.md"]
 Depth = 2
 ```
