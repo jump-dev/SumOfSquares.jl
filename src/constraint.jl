@@ -1,5 +1,6 @@
-export DSOSCone, SDSOSCone, SOSCone, getslack, addpolyconstraint!
+export DSOSCone, SDSOSCone, SOSCone
 export CoDSOSCone, CoSDSOSCone, CoSOSCone
+export getslack, certificate_monomials, addpolyconstraint!
 
 struct DSOSCone end
 struct CoDSOSCone end
@@ -28,6 +29,8 @@ struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP
     lincons::Vector{JuMP.ConstraintRef{JuMP.Model, JC}}
     x::MVT
 end
+
+certificate_monomials(c::SOSConstraint) = c.slack.x
 
 function JuMP.getdual(c::SOSConstraint)
     a = [getdual(lc) for lc in c.lincons]
@@ -80,19 +83,24 @@ function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::A
     SOSConstraint(slack, lincons, monomials(q))
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::BasicSemialgebraicSet)
-    mindeg, maxdeg = extdegree(p)
+function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::BasicSemialgebraicSet;
+                            mindegree=MultivariatePolynomials.mindegree(p),
+                            maxdegree=MultivariatePolynomials.maxdegree(p))
     for q in domain.p
-        mindegq, maxdegq = extdegree(q)
-        mind = mindeg - mindegq
-        maxd = maxdeg - maxdegq
-        mind = max(0, Int(floor(mind / 2)))
-        maxd = Int(ceil(maxd / 2))
+        mindegree_q, maxdegree_q = extdegree(q)
+        # extdegree's that s^2 should have so that s^2 * p has degrees between mindegree and maxdegree
+        mindegree_s2 = mindegree - mindegree_q
+        maxdegree_s2 = maxdegree - maxdegree_q
+        # extdegree's for s
+        mindegree_s = max(0, div(mindegree_s2, 2))
+        # If maxdegree_s2 is odd, div(maxdegree_s2,2) would make s^2 have degree up to maxdegree_s2-1
+        # for this reason, we take div(maxdegree_s2+1,2) so that s^2 have degree up to maxdegree_s2+1
+        maxdegree_s = div(maxdegree_s2 + 1, 2)
         # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
         # so instead of `variable(p)` we would have the union of them all
         @assert variables(q) ⊆ variables(p)
-        s = createpoly(m, _varconetype(set)(monomials(variables(p), mind:maxd)), :Cont)
-        p -= s*q
+        s2 = createpoly(m, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), :Cont)
+        p -= s2 * q
     end
     addpolyconstraint!(m, p, set, domain.V)
 end
