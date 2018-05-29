@@ -6,6 +6,7 @@ using SemialgebraicSets
 using MultivariateMoments
 
 @testset "Polynomial Optimization example with $solver" for solver in sdp_solvers
+    isscs(solver) && continue
     @polyvar x y
     p = x^3 - x^2 + 2x*y -y^2 + y^3
     S = @set x >= 0 && y >= 0 && x + y >= 1
