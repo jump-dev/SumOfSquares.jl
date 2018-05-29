@@ -19,7 +19,6 @@ before_install:
 
 before_script:
   - julia -e 'Pkg.clone("https://github.com/JuliaOpt/PolyJuMP.jl.git")'
-  - julia -e 'Pkg.checkout("PolyJuMP", "bl/kwargs")'
 
 after_success:
   # push coverage results to Coveralls
