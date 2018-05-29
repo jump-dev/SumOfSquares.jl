@@ -34,7 +34,7 @@ certificate_monomials(c::SOSConstraint) = c.slack.x
 
 function JuMP.getdual(c::SOSConstraint)
     a = [getdual(lc) for lc in c.lincons]
-    Measure(a, c.x)
+    measure(a, c.x)
 end
 
 function addpolyconstraint!(m::JuMP.Model, p, s::ZeroPoly, domain::FullSpace)
