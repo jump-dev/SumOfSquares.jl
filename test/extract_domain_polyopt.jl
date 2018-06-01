@@ -24,7 +24,7 @@ using MultivariateMoments
         # TODO replace by -getdual(c) when MultivariateMoments v0.0.2 is released
         #      and also update examples/Polynomial_Optimization.ipynb
         μ = -1 * getdual(c)
-        X = certificate_monomials(PolyJuMP.getdelegate(c, :CertMono))
+        X = certificate_monomials(PolyJuMP.getdelegate(c))
         ν = matmeasure(μ, X)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)
