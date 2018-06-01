@@ -32,8 +32,4 @@ function SOSModel(; kwargs...)
     m
 end
 
-function PolyJuMP.getslack(c::SOSConstraint)
-    getvalue(c.slack)
-end
-
 end # module
