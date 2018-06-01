@@ -20,23 +20,20 @@ _nococone(::CoSOSCone) = SOSCone()
 
 struct SOSMatrixCone <: PolyJuMP.PolynomialSet end
 
-const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone, NonNegPoly}
+const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone}
 const CoSOSLikeCones = Union{CoDSOSCone, CoSDSOSCone, CoSOSCone}
-const NonNegPolySubCones = Union{CoSOSLikeCones, SOSLikeCones}
+const SOSSubCones = Union{CoSOSLikeCones, SOSLikeCones}
 
 struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint} <: PolyJuMP.ConstraintDelegate
     # JS is AffExpr for CoSOS and is Variable for SOS
     slack::MatPolynomial{JS, MT, MVT}
-    lincons::Vector{JuMP.ConstraintRef{JuMP.Model, JC}}
-    x::MVT
+    zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, JC}
 end
 
 certificate_monomials(c::SOSConstraint) = c.slack.x
 
-function JuMP.getdual(c::SOSConstraint)
-    a = [getdual(lc) for lc in c.lincons]
-    MultivariateMoments.measure(a, c.x)
-end
+PolyJuMP.getslack(c::SOSConstraint) = getvalue(c.slack)
+JuMP.getdual(c::SOSConstraint) = getdual(c.zero_constraint)
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet) where PT <: APL
     n = Base.LinAlg.checksquare(P)
@@ -45,7 +42,7 @@ function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCo
     end
     y = [similarvariable(PT, gensym()) for i in 1:n]
     p = dot(y, P * y)
-    PolyJuMP.addpolyconstraint!(m, p, NonNegPoly(), domain)
+    PolyJuMP.addpolyconstraint!(m, p, SOSCone(), domain)
 end
 
 function _createslack(m, x, set::SOSLikeCones)
@@ -60,16 +57,16 @@ function _createslack(m, x, set::CoSOSLikeCones)
     _matplus(_createslack(m, x, _nococone(set)), _matposynomial(m, x))
 end
 
-function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::AbstractAlgebraicSet)
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::AbstractAlgebraicSet)
     r = rem(p, ideal(domain))
     X = getmonomialsforcertificate(monomials(r))
     slack = _createslack(m, X, set)
     q = r - slack
-    lincons = PolyJuMP.addpolyconstraint!(m, q, ZeroPoly(), domain)
-    SOSConstraint(slack, lincons, monomials(q))
+    zero_constraint = PolyJuMP.addpolyconstraint!(m, q, ZeroPoly(), domain)
+    SOSConstraint(slack, zero_constraint)
 end
 
-function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::BasicSemialgebraicSet;
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::BasicSemialgebraicSet;
                             mindegree=MultivariatePolynomials.mindegree(p),
                             maxdegree=MultivariatePolynomials.maxdegree(p))
     for q in domain.p
