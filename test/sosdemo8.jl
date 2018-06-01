@@ -40,6 +40,6 @@
 
     status = solve(m)
 
-    @test isapprox(getobjectivevalue(m), 1/37, rtol=1e-6)
+    @test isapprox(getobjectivevalue(m), 1/37, rtol=1e-5)
     @test isapprox(getvalue(P), ((12/37)x-11/37)^2, rtol=1e-3)
 end
