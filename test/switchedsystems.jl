@@ -11,6 +11,7 @@
 # The JSR is √2
 
 @testset "[PJ08] Example 2.8 with $solver" for solver in sdp_solvers
+    isscs(solver) && continue
     @polyvar x[1:2]
     A1 = [1 0; 1 0]
     A2 = [0 1; 0 -1]
