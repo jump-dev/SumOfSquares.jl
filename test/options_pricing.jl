@@ -10,8 +10,8 @@ using MultivariateMoments
     @polyvar x y z
     σ = [184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
     X = [x^2, x*y, x*z, y^2, y*z, z^2, x, y, z, 1]
-    μ = Measure([σ + 44.21^2; 44.21 * ones(3); 1],
-                X)
+    μ = MultivariateMoments.measure([σ + 44.21^2; 44.21 * ones(3); 1],
+                                    X)
     function optionspricing(K, cone)
         m = SOSModel(solver = solver)
         @variable m p Poly(X)
