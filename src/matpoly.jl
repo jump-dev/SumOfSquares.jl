@@ -87,14 +87,14 @@ end
 
 const APL = AbstractPolynomialLike
 
-(+)(x::APL, y::MatPolynomial) = x + polynomial(y)
-(+)(x::MatPolynomial, y::APL) = polynomial(x) + y
-(+)(x::MatPolynomial, y::MatPolynomial) = polynomial(x) + polynomial(y)
-(-)(x::APL, y::MatPolynomial) = x - polynomial(y)
-(-)(x::MatPolynomial, y::APL) = polynomial(x) - y
-(-)(x::MatPolynomial, y::MatPolynomial) = polynomial(x) - polynomial(y)
-(==)(p::APL, q::MatPolynomial) = p == polynomial(q)
-(==)(p::MatPolynomial, q::MatPolynomial) = iszero(p - q)
+Base.:(+)(x::APL, y::MatPolynomial) = x + polynomial(y)
+Base.:(+)(x::MatPolynomial, y::APL) = polynomial(x) + y
+Base.:(+)(x::MatPolynomial, y::MatPolynomial) = polynomial(x) + polynomial(y)
+Base.:(-)(x::APL, y::MatPolynomial) = x - polynomial(y)
+Base.:(-)(x::MatPolynomial, y::APL) = polynomial(x) - y
+Base.:(-)(x::MatPolynomial, y::MatPolynomial) = polynomial(x) - polynomial(y)
+Base.:(==)(p::APL, q::MatPolynomial) = p == polynomial(q)
+Base.:(==)(p::MatPolynomial, q::MatPolynomial) = iszero(p - q)
 function Base.isapprox(p::MatPolynomial, q::MatPolynomial; kwargs...)
     p.x == q.x && isapprox(p.Q, q.Q; kwargs...)
 end

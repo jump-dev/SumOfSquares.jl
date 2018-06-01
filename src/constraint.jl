@@ -1,29 +1,30 @@
 export DSOSCone, SDSOSCone, SOSCone
 export CoDSOSCone, CoSDSOSCone, CoSOSCone
-export getslack, certificate_monomials, addpolyconstraint!
+export SOSMatrixCone
+export getslack, certificate_monomials
 
-struct DSOSCone end
-struct CoDSOSCone end
+struct DSOSCone <: PolyJuMP.PolynomialSet end
+struct CoDSOSCone <: PolyJuMP.PolynomialSet end
 _varconetype(::DSOSCone) = DSOSPoly
 _nococone(::CoDSOSCone) = DSOSCone()
 
-struct SDSOSCone end
-struct CoSDSOSCone end
+struct SDSOSCone <: PolyJuMP.PolynomialSet end
+struct CoSDSOSCone <: PolyJuMP.PolynomialSet end
 _varconetype(::SDSOSCone) = SDSOSPoly
 _nococone(::CoSDSOSCone) = SDSOSCone()
 
-struct SOSCone end
-struct CoSOSCone end
+struct SOSCone <: PolyJuMP.PolynomialSet end
+struct CoSOSCone <: PolyJuMP.PolynomialSet end
 _varconetype(::SOSCone) = SOSPoly
 _nococone(::CoSOSCone) = SOSCone()
 
-_varconetype(::NonNegPoly) = Poly{true}
+struct SOSMatrixCone <: PolyJuMP.PolynomialSet end
 
 const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone, NonNegPoly}
 const CoSOSLikeCones = Union{CoDSOSCone, CoSDSOSCone, CoSOSCone}
 const NonNegPolySubCones = Union{CoSOSLikeCones, SOSLikeCones}
 
-struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint}
+struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint} <: PolyJuMP.ConstraintDelegate
     # JS is AffExpr for CoSOS and is Variable for SOS
     slack::MatPolynomial{JS, MT, MVT}
     lincons::Vector{JuMP.ConstraintRef{JuMP.Model, JC}}
@@ -37,14 +38,14 @@ function JuMP.getdual(c::SOSConstraint)
     MultivariateMoments.measure(a, c.x)
 end
 
-function addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::PSDCone, domain::AbstractBasicSemialgebraicSet) where PT <: APL
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet) where PT <: APL
     n = Base.LinAlg.checksquare(P)
     if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
     end
     y = [similarvariable(PT, gensym()) for i in 1:n]
     p = dot(y, P * y)
-    addpolyconstraint!(m, p, NonNegPoly(), domain)
+    PolyJuMP.addpolyconstraint!(m, p, NonNegPoly(), domain)
 end
 
 function _createslack(m, x, set::SOSLikeCones)
@@ -59,16 +60,16 @@ function _createslack(m, x, set::CoSOSLikeCones)
     _matplus(_createslack(m, x, _nococone(set)), _matposynomial(m, x))
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::AbstractAlgebraicSet)
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::AbstractAlgebraicSet)
     r = rem(p, ideal(domain))
     X = getmonomialsforcertificate(monomials(r))
     slack = _createslack(m, X, set)
     q = r - slack
-    lincons = addpolyconstraint!(m, q, ZeroPoly(), domain)
+    lincons = PolyJuMP.addpolyconstraint!(m, q, ZeroPoly(), domain)
     SOSConstraint(slack, lincons, monomials(q))
 end
 
-function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::BasicSemialgebraicSet;
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::BasicSemialgebraicSet;
                             mindegree=MultivariatePolynomials.mindegree(p),
                             maxdegree=MultivariatePolynomials.maxdegree(p))
     for q in domain.p
@@ -87,8 +88,5 @@ function addpolyconstraint!(m::JuMP.Model, p, set::NonNegPolySubCones, domain::B
         s2 = createpoly(m, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), :Cont)
         p -= s2 * q
     end
-    addpolyconstraint!(m, p, set, domain.V)
+    PolyJuMP.addpolyconstraint!(m, p, set, domain.V)
 end
-
-# Defer other methods to defaults in PolyJuMP
-addpolyconstraint!(args...) = PolyJuMP.addpolyconstraint!(args...)

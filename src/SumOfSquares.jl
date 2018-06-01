@@ -4,12 +4,6 @@ module SumOfSquares
 
 export SOSModel
 
-import Base.show, Base.length, Base.getindex, Base.vect, Base.isless, Base.isempty, Base.start, Base.done, Base.next, Base.convert, Base.dot
-import Base: *, +, -, /, ^, ==,
-    promote_rule, convert, show, isless, size, getindex,
-    one, zero, transpose, isapprox, @pure, dot, copy
-
-
 using MultivariatePolynomials
 const MP = MultivariatePolynomials
 using MultivariateMoments
@@ -25,6 +19,12 @@ import JuMP: validmodel, addtoexpr_reorder
 
 include("variable.jl")
 include("constraint.jl")
+
+function setdefaults!(data::PolyJuMP.Data)
+    PolyJuMP.setdefault!(data, PolyJuMP.Poly{true}, SOSPoly)
+    PolyJuMP.setdefault!(data, PolyJuMP.NonNegPoly, SOSCone)
+    PolyJuMP.setdefault!(data, PolyJuMP.NonNegPolyMatrix, SOSMatrixCone)
+end
 
 function SOSModel(; kwargs...)
     m = Model(; kwargs...)
