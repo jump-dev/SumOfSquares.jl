@@ -20,7 +20,6 @@ before_install:
 before_script:
   - julia -e 'Pkg.add("PolyJuMP")'
   - julia -e 'Pkg.checkout("PolyJuMP")'
-  - julia -e 'Pkg.checkout("PolyJuMP", "default-module")'
 
 after_success:
   # push coverage results to Coveralls
