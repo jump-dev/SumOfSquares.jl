@@ -31,10 +31,10 @@ using MultivariateMoments
         @test isnull(atoms) == !found
         if !isnull(atoms)
             η = get(atoms)
-            @test η.λ[1] ≈ 1/2 atol=1e-2
-            @test η.λ[2] ≈ 1/2 atol=1e-2
-            @test isapprox(η.support[1], [0, 1], atol=1e-2) || isapprox(η.support[1], [1, 0], atol=1e-2)
-            @test isapprox(η.support[2], [0, 1], atol=1e-2) || isapprox(η.support[2], [1, 0], atol=1e-2)
+            @test η.atoms[1].weight ≈ 1/2 atol=1e-2
+            @test η.atoms[2].weight ≈ 1/2 atol=1e-2
+            @test isapprox(η.atoms[1].center, [0, 1], atol=1e-2) || isapprox(η.atoms[1].center, [1, 0], atol=1e-2)
+            @test isapprox(η.atoms[2].center, [0, 1], atol=1e-2) || isapprox(η.atoms[2].center, [1, 0], atol=1e-2)
         end
     end
 end
