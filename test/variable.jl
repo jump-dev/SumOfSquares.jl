@@ -2,8 +2,8 @@
     @polyvar x
     X = emptymonovec(typeof(x^2))
     m = SOSModel()
-    @inferred PolyJuMP.createpoly(m, SOSPoly{:Gram}(X), :Cont)
-    @test PolyJuMP.createpoly(m, SOSPoly{:Gram}(X), :Cont) == 0
+    @inferred PolyJuMP.createpoly(m, SOSPoly(X), :Cont)
+    @test PolyJuMP.createpoly(m, SOSPoly(X), :Cont) == 0
 end
 @testset "MatPolynomial getvalue" begin
     m = JuMP.Model()

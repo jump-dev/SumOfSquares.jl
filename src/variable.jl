@@ -6,24 +6,22 @@ end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
     @eval begin
-        struct $poly{MS, MT<:MultivariatePolynomials.AbstractMonomial, MV<:AbstractVector{MT}} <: PolyJuMP.AbstractPoly
-            x::MV
+        struct $poly{PB<:PolyJuMP.AbstractPolynomialBasis} <: PolyJuMP.AbstractPoly
+            polynomial_basis::PB
         end
-        $poly{MS}(x::AbstractVector{MT}) where {MS, MT} = $poly{MS, MT, typeof(x)}(x)
-        $poly{MS}(x) where MS = $poly{MS}(monovec(x))
-        $poly(x) = $poly{:Default}(x)
+        $poly(x::AbstractVector{<:MultivariatePolynomials.AbstractPolynomialLike}) = $poly(MonomialBasis(x))
     end
 end
 
-const PosPoly{MT, MV} = Union{DSOSPoly{MT, MV}, SDSOSPoly{MT, MV}, SOSPoly{MT, MV}}
+const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
-JuMP.variabletype(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.x)
-PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MVT}
+JuMP.variabletype(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
+PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:AbstractMonomial, MV<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MV}
 
-function _constraintmatpoly!(m, p, ::Union{SOSPoly, Poly{true}})
+function _constraintmatpoly!(m, p::MatPolynomial, ::SOSPoly)
     push!(m.varCones, (:SDP, [p.Q[i, j].col for i in 1:size(p.Q, 1) for j in i:size(p.Q, 2)]))
 end
-function _constraintmatpoly!(m, p, ::DSOSPoly)
+function _constraintmatpoly!(m, p::MatPolynomial, ::DSOSPoly)
     n = length(p.x)
     Q = Matrix{JuMP.Variable}(n, n)
     for i in 1:n
@@ -58,21 +56,15 @@ function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, category::Symb
         MatPolynomial{JuMP.Variable}((i, j) -> Variable(m, lb, Inf, category), x)
     end
 end
-function _createpoly(m::JuMP.Model, set::PosPoly, x::AbstractVector{<:AbstractMonomial}, category::Symbol)
-    p = _matpolynomial(m, x, category)
-    if length(x) > 1
+function _createpoly(m::JuMP.Model, set::PosPoly, basis::PolyJuMP.MonomialBasis, category::Symbol)
+    p = _matpolynomial(m, basis.monomials, category)
+    if length(basis.monomials) > 1
         _constraintmatpoly!(m, p, set)
     end
     p
 end
-function PolyJuMP.createpoly(m::JuMP.Model, p::Union{PosPoly{:Default}, PosPoly{:Gram}}, category::Symbol)
-    _createpoly(m, p, monovec(p.x), category)
-end
-function PolyJuMP.createpoly(m::JuMP.Model, pp::PosPoly{:Classic}, category::Symbol)
-    p = _createpoly(m, pp, getmonomialsforcertificate(pp.x), category)
-    # The coefficients of a monomial not in Z do not all have to be zero, only their sum
-    addpolyconstraint!(m, removemonomials(Polynomial(p), p.x), ZeroPoly(), FullSpace())
-    p
+function PolyJuMP.createpoly(m::JuMP.Model, p::PosPoly, category::Symbol)
+    _createpoly(m, p, p.polynomial_basis, category)
 end
 
 # Defer other methods to defaults in PolyJuMP
