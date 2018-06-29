@@ -23,7 +23,7 @@ using MultivariateMoments
         @test JuMP.objectivevalue(m) ≈ 0 atol=1e-4
 
         μ = JuMP.resultdual(c)
-        X = certificate_monomials(PolyJuMP.getdelegate(c))
+        X = certificate_monomials(c)
         ν = matmeasure(μ, X)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)

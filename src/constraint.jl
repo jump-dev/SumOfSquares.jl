@@ -34,6 +34,7 @@ struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP
     zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, F}
 end
 
+certificate_monomials(c::PolyJuMP.PolyConstraintRef) = certificate_monomials(PolyJuMP.getdelegate(c))
 certificate_monomials(c::SOSConstraint) = c.slack.x
 
 JuMP.resultdual(c::SOSConstraint) = JuMP.resultdual(c.zero_constraint)
