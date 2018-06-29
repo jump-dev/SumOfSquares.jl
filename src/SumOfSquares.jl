@@ -21,7 +21,6 @@ include("variable.jl")
 include("constraint.jl")
 
 function setdefaults!(data::PolyJuMP.Data)
-    PolyJuMP.setdefault!(data, PolyJuMP.Poly{true}, SOSPoly)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPoly, SOSCone)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPolyMatrix, SOSMatrixCone)
 end

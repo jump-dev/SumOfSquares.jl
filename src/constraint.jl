@@ -35,14 +35,14 @@ certificate_monomials(c::SOSConstraint) = c.slack.x
 PolyJuMP.getslack(c::SOSConstraint) = getvalue(c.slack)
 JuMP.getdual(c::SOSConstraint) = getdual(c.zero_constraint)
 
-function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet) where PT <: APL
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis) where PT <: APL
     n = Base.LinAlg.checksquare(P)
     if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
     end
     y = [similarvariable(PT, gensym()) for i in 1:n]
     p = dot(y, P * y)
-    PolyJuMP.addpolyconstraint!(m, p, SOSCone(), domain)
+    PolyJuMP.addpolyconstraint!(m, p, SOSCone(), domain, basis)
 end
 
 function _createslack(m, x, set::SOSLikeCones)
@@ -57,16 +57,16 @@ function _createslack(m, x, set::CoSOSLikeCones)
     _matplus(_createslack(m, x, _nococone(set)), _matposynomial(m, x))
 end
 
-function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::AbstractAlgebraicSet)
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::AbstractAlgebraicSet, basis)
     r = rem(p, ideal(domain))
     X = getmonomialsforcertificate(monomials(r))
     slack = _createslack(m, X, set)
     q = r - slack
-    zero_constraint = PolyJuMP.addpolyconstraint!(m, q, ZeroPoly(), domain)
+    zero_constraint = PolyJuMP.addpolyconstraint!(m, q, ZeroPoly(), domain, basis)
     SOSConstraint(slack, zero_constraint)
 end
 
-function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::BasicSemialgebraicSet;
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::BasicSemialgebraicSet, basis;
                             mindegree=MultivariatePolynomials.mindegree(p),
                             maxdegree=MultivariatePolynomials.maxdegree(p))
     for q in domain.p
@@ -85,5 +85,5 @@ function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain:
         s2 = createpoly(m, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), :Cont)
         p -= s2 * q
     end
-    PolyJuMP.addpolyconstraint!(m, p, set, domain.V)
+    PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis)
 end

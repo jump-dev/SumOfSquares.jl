@@ -18,8 +18,7 @@
     expected_ub = [√2, 1]
     function testlyap(d, γ, expected_status)
         m = SOSModel(solver = solver)
-        X = monomials(x, d)
-        @variable m p Poly{false, :Gram}(X)
+        @variable m p Poly(monomials(x, 2d))
         # p strictly positive
         q = sum(x.^(2*d))
         @constraint m p >= q

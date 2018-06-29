@@ -16,7 +16,7 @@
     m = SOSModel(solver = solver)
 
     Z = monomials(x, 0:1)
-    @variable m p1 >= 0 SOSPoly(Z)
+    @variable m p1 SOSPoly(Z)
 
     Z = monomials(x, 0:2)
     @variable m p[1:5] Poly(Z)
