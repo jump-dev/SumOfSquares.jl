@@ -2,7 +2,7 @@
 # SOSDEMO7 --- Chebyshev polynomials
 # Section 3.7 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO7 with $solver" for solver in sdp_solvers
+@testset "SOSDEMO7 with $(typeof(solver))" for solver in sdp_solvers
     isscs(solver) || continue
     ndeg = 8   # Degree of Chebyshev polynomial
 
@@ -10,7 +10,8 @@
 
     Z = monomials((x,), 0:ndeg-1)
 
-    m = SOSModel(solver = solver)
+    MOI.empty!(solver)
+    m = SOSModel(optimizer=solver)
 
     @variable m γ
     @variable m p1 Poly(Z)

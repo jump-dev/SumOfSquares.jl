@@ -1,6 +1,7 @@
 @testset "Creating polynomial with empty MonomialVector" begin
     @polyvar x
     X = emptymonovec(typeof(x^2))
+    MOI.empty!(solver)
     m = SOSModel()
     @inferred PolyJuMP.createpoly(m, SOSPoly(X), false, false)
     @test PolyJuMP.createpoly(m, SOSPoly(X), false, false) == 0

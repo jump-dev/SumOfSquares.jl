@@ -2,7 +2,7 @@
 # SOSDEMO5 --- Upper bound for the structured singular value mu
 # Section 3.5 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO5 with $solver" for solver in sdp_solvers
+@testset "SOSDEMO5 with $(typeof(solver))" for solver in sdp_solvers
     if !isscs(solver)
         @polyvar x[1:8]
 
@@ -28,7 +28,8 @@
             end
             A = build_A.(1:4)
 
-            m = SOSModel(solver = solver)
+            MOI.empty!(solver)
+            m = SOSModel(optimizer=solver)
 
             # -- Q(x)'s -- : sums of squares
             # Monomial vector: [x1; ... x8]

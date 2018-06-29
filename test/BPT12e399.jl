@@ -4,10 +4,11 @@
 # Semidefinite Optimization and Convex Algebraic Geometry
 # Society for Industrial and Applied Mathematics, 2012
 
-@testset "[BPT12] Example 3.99 with $solver" for solver in sdp_solvers
+@testset "[BPT12] Example 3.99 with $(typeof(solver))" for solver in sdp_solvers
+    MOI.empty!(solver)
     @polyvar x y
 
-    m = SOSModel(solver = solver)
+    m = SOSModel(optimizer=solver)
 
     @variable m α
 

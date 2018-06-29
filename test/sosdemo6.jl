@@ -2,7 +2,7 @@
 # SOSDEMO6 --- MAX CUT
 # Section 3.6 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO6 with $solver" for solver in sdp_solvers
+@testset "SOSDEMO6 with $(typeof(solver))" for solver in sdp_solvers
     @polyvar x[1:5]
 
     # Number of cuts
@@ -13,7 +13,8 @@
 
     for (gamma, feasible) in [(3.9, false), (4, true)]
 
-        m = SOSModel(solver = solver)
+        MOI.empty!(solver)
+        m = SOSModel(optimizer=solver)
 
         Z = monomials(x, 0:1)
         @variable m p1 SOSPoly(Z)

@@ -10,14 +10,15 @@
 # SIAM Journal on Matrix Analysis & Applications, 1998, 19, 487
 # The JSR is √2
 
-@testset "[PJ08] Example 2.8 with $solver" for solver in sdp_solvers
+@testset "[PJ08] Example 2.8 with $(typeof(solver))" for solver in sdp_solvers
     isscs(solver) && continue
     @polyvar x[1:2]
     A1 = [1 0; 1 0]
     A2 = [0 1; 0 -1]
     expected_ub = [√2, 1]
     function testlyap(d, γ, feasible::Bool)
-        m = SOSModel(solver = solver)
+        MOI.empty!(solver)
+        m = SOSModel(optimizer=solver)
         @variable m p Poly(monomials(x, 2d))
         # p strictly positive
         q = sum(x.^(2*d))

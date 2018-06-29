@@ -2,7 +2,7 @@
 # SOSDEMO2 --- Lyapunov Function Search
 # Section 3.2 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO2 with $solver" for solver in sdp_solvers
+@testset "SOSDEMO2 with $(typeof(solver))" for solver in sdp_solvers
     @polyvar x[1:3]
 
     # Constructing the vector field dx/dt = f
@@ -10,7 +10,8 @@
          -x[2]-x[1]^2*x[2],
     -x[3]+3*x[1]^2*x[3]-3*x[3]/(x[3]^2+1)]
 
-    m = SOSModel(solver = solver)
+    MOI.empty!(solver)
+    m = SOSModel(optimizer=solver)
 
     # The Lyapunov function V(x):
     Z = vec(x).^2
