@@ -5,8 +5,6 @@
 # Society for Industrial and Applied Mathematics, 2012
 
 @testset "[BPT12] Example 3.99 with $solver" for solver in sdp_solvers
-    # Failing because of https://github.com/JuliaOpt/SemidefiniteOptInterface.jl/issues/18
-    iscsdp(solver()) && continue
     @polyvar x y
 
     m = SOSModel(solver = solver)

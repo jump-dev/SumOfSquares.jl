@@ -3,8 +3,6 @@
 # Section 3.3 of SOSTOOLS User's Manual
 
 @testset "SOSDEMO3 with $solver" for solver in sdp_solvers
-    # Failing because of https://github.com/JuliaOpt/SemidefiniteOptInterface.jl/issues/18
-    iscsdp(solver()) && continue
     @polyvar x1 x2
 
     m = SOSModel(solver = solver)
