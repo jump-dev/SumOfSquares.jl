@@ -10,14 +10,15 @@
 # SIAM Journal on Matrix Analysis & Applications, 1998, 19, 487
 # The JSR is √2
 
-@testset "[PJ08] Example 2.8 with $solver" for solver in sdp_solvers
+@testset "[PJ08] Example 2.8 with $(typeof(solver))" for solver in sdp_solvers
     isscs(solver) && continue
     @polyvar x[1:2]
     A1 = [1 0; 1 0]
     A2 = [0 1; 0 -1]
     expected_ub = [√2, 1]
-    function testlyap(d, γ, expected_status)
-        m = SOSModel(solver = solver)
+    function testlyap(d, γ, feasible::Bool)
+        MOI.empty!(solver)
+        m = SOSModel(optimizer=solver)
         @variable m p Poly(monomials(x, 2d))
         # p strictly positive
         q = sum(x.^(2*d))
@@ -25,11 +26,14 @@
         c1 = @constraint m p(x => A1 * vec(x)) <= γ^(2*d) * p
         c2 = @constraint m p(x => A2 * vec(x)) <= γ^(2*d) * p
 
-        @test expected_status == solve(m; suppress_warnings=true)
+        JuMP.optimize(m)
 
-        if expected_status == :Infeasible
-            μ1 = getdual(c1)
-            μ2 = getdual(c2)
+        if feasible
+            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+        else
+            @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
+            μ1 = JuMP.resultdual(c1)
+            μ2 = JuMP.resultdual(c2)
 
             # The dual constraint should work on any polynomial.
             # Let's test it with q
@@ -38,8 +42,8 @@
             @test 1e-6 * max(abs(lhs), abs(rhs)) + lhs >= rhs
         end
     end
-    testlyap(1, √2 - 1e-4, :Infeasible)
-    testlyap(1, √2 + 1e-3, :Optimal)
-    testlyap(2, 1 - 1e-3, :Infeasible)
-    testlyap(2, 1 + 1e-2, :Optimal)
+    testlyap(1, √2 - 1e-1, false)
+    testlyap(1, √2 + 1e-1, true)
+    testlyap(2, 1 - 1e-1, false)
+    testlyap(2, 1 + 1e-1, true)
 end

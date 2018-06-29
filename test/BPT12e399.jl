@@ -4,10 +4,11 @@
 # Semidefinite Optimization and Convex Algebraic Geometry
 # Society for Industrial and Applied Mathematics, 2012
 
-@testset "[BPT12] Example 3.99 with $solver" for solver in sdp_solvers
+@testset "[BPT12] Example 3.99 with $(typeof(solver))" for solver in sdp_solvers
+    MOI.empty!(solver)
     @polyvar x y
 
-    m = SOSModel(solver = solver)
+    m = SOSModel(optimizer=solver)
 
     @variable m α
 
@@ -15,17 +16,18 @@
 
     @objective m Max α
 
-    status = solve(m)
+    JuMP.optimize(m)
 
-    @test status == :Optimal
+    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 
-    @test getvalue(α) ≈ 6 atol=1e-6
+    @test JuMP.resultvalue(α) ≈ 6 atol=1e-6
 
-    @objective m Min α
-
-    status = solve(m)
-
-    @test status == :Optimal
-
-    @test getvalue(α) ≈ -6 atol=1e-6
+    # FIXME JuMP does not support modification once loaded on jump/moi yet
+#    @objective m Min α
+#
+#    JuMP.optimize(m)
+#
+#    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+#
+#    @test JuMP.resultvalue(α) ≈ -6 atol=1e-6
 end

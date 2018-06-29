@@ -1,23 +1,25 @@
-@testset "Motzkin with $solver" for solver in sdp_solvers
-  @polyvar x y
+@testset "Motzkin with $(typeof(solver))" for solver in sdp_solvers
+    @polyvar x y
 
-  m = SOSModel(solver = solver)
+    MOI.empty!(solver)
+    m = SOSModel(optimizer=solver)
 
-  p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
+    p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
 
-  @constraint m p >= 0
+    @constraint m p >= 0
 
-  status = solve(m)
+    JuMP.optimize(m)
 
-  @test status == :Infeasible
+    @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
 
-  M = SOSModel(solver = solver)
+    MOI.empty!(solver)
+    M = SOSModel(optimizer=solver)
 
-  q = (x^2 + y^2) * p
+    q = (x^2 + y^2) * p
 
-  @constraint M q >= 0
+    @constraint M q >= 0
 
-  status = solve(M)
+    JuMP.optimize(M)
 
-  @test status == :Optimal
+    @test JuMP.primalstatus(M) == MOI.FeasiblePoint
 end

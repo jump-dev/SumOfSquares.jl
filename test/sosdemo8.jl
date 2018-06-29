@@ -2,7 +2,7 @@
 # SOSDEMO8 --- Bounds in Probability
 # Section 3.8 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO8 with $solver" for solver in sdp_solvers
+@testset "SOSDEMO8 with $(typeof(solver))" for solver in sdp_solvers
     @polyvar x
 
     # The probability adds up to one.
@@ -19,7 +19,8 @@
     # Event whose probability we want to bound
     E = [4,5]
 
-    m = SOSModel(solver = solver)
+    MOI.empty!(solver)
+    m = SOSModel(optimizer=solver)
 
     @variable m a
     @variable m b
@@ -38,8 +39,9 @@
 
     @objective m Min bnd
 
-    status = solve(m)
+    JuMP.optimize(m)
+    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 
-    @test isapprox(getobjectivevalue(m), 1/37, rtol=1e-5)
-    @test isapprox(getvalue(P), ((12/37)x-11/37)^2, rtol=1e-3)
+    @test isapprox(JuMP.objectivevalue(m), 1/37, rtol=1e-5)
+    @test isapprox(JuMP.resultvalue(P), ((12/37)x-11/37)^2, rtol=1e-3)
 end

@@ -5,7 +5,7 @@
 
 using MultivariateMoments
 
-@testset "Options Pricing with $solver" for solver in sdp_solvers
+@testset "Options Pricing with $(typeof(solver))" for solver in sdp_solvers
     isscs(solver) && continue
     @polyvar x y z
     σ = [184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
@@ -13,16 +13,17 @@ using MultivariateMoments
     μ = measure([σ + 44.21^2; 44.21 * ones(3); 1],
                 X)
     function optionspricing(K, cone)
-        m = SOSModel(solver = solver)
+        MOI.empty!(solver)
+        m = SOSModel(optimizer=solver)
         @variable m p Poly(X)
         @constraint m p in cone
         @constraint m p - (x - K) in cone
         @constraint m p - (y - K) in cone
         @constraint m p - (z - K) in cone
         @objective m Min dot(μ, p)
-        status = solve(m)
-        @test status == :Optimal
-        getobjectivevalue(m)
+        JuMP.optimize(m)
+        @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+        JuMP.objectivevalue(m)
     end
 
     K = [30, 35, 40, 45, 50]

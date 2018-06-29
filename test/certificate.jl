@@ -4,7 +4,7 @@
     @test getmonomialsforcertificate([x*y, y^2]) == [y]
 end
 
-@testset "Random SOS should be SOS with $solver" for solver in sdp_solvers
+@testset "Random SOS should be SOS with $(typeof(solver))" for solver in sdp_solvers
     @polyvar x y
     x = [1, x, y, x^2, y^2, x*y]
     @test_throws ArgumentError randsos(x, monotype=:Unknown)
@@ -12,13 +12,14 @@ end
         for monotype in [:Classic, :Gram]
             p = randsos(x, monotype=monotype)
 
-            m = SOSModel(solver = solver)
+            MOI.empty!(solver)
+            m = SOSModel(optimizer=solver)
 
             @constraint m p >= 0
 
-            status = solve(m)
+            JuMP.optimize(m)
 
-            @test status == :Optimal
+            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
         end
     end
 end

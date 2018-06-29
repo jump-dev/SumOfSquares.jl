@@ -1,4 +1,8 @@
+using MathOptInterface
+const MOI = MathOptInterface
+
 export DSOSCone, SDSOSCone, SOSCone
+
 export CoDSOSCone, CoSDSOSCone, CoSOSCone
 export SOSMatrixCone
 export getslack, certificate_monomials
@@ -24,16 +28,18 @@ const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone}
 const CoSOSLikeCones = Union{CoDSOSCone, CoSDSOSCone, CoSOSCone}
 const SOSSubCones = Union{CoSOSLikeCones, SOSLikeCones}
 
-struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint} <: PolyJuMP.ConstraintDelegate
+struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, F<:MOI.AbstractVectorFunction} <: PolyJuMP.ConstraintDelegate
     # JS is AffExpr for CoSOS and is Variable for SOS
     slack::MatPolynomial{JS, MT, MVT}
-    zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, JC}
+    zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, F}
 end
 
+certificate_monomials(c::PolyJuMP.PolyConstraintRef) = certificate_monomials(PolyJuMP.getdelegate(c))
 certificate_monomials(c::SOSConstraint) = c.slack.x
 
-PolyJuMP.getslack(c::SOSConstraint) = getvalue(c.slack)
-JuMP.getdual(c::SOSConstraint) = getdual(c.zero_constraint)
+JuMP.resultdual(c::SOSConstraint) = JuMP.resultdual(c.zero_constraint)
+
+PolyJuMP.getslack(c::SOSConstraint) = JuMP.resultvalue(c.slack)
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis) where PT <: APL
     n = Base.LinAlg.checksquare(P)
@@ -46,11 +52,13 @@ function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCo
 end
 
 function _createslack(m, x, set::SOSLikeCones)
-    createpoly(m, _varconetype(set)(x), :Cont)
+    createpoly(m, _varconetype(set)(x), false, false)
 end
 function _matposynomial(m, x)
-    p = _matpolynomial(m, x, :Cont)
-    m.colLower[map(q -> q.col, p.Q)] = 0.
+    p = _matpolynomial(m, x, false, false)
+    for q in p.Q
+        JuMP.setlowerbound(q, 0)
+    end
     p
 end
 function _createslack(m, x, set::CoSOSLikeCones)
@@ -82,7 +90,7 @@ function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain:
         # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
         # so instead of `variable(p)` we would have the union of them all
         @assert variables(q) ⊆ variables(p)
-        s2 = createpoly(m, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), :Cont)
+        s2 = createpoly(m, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), false, false)
         p -= s2 * q
     end
     PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis)

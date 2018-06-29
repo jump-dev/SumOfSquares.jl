@@ -2,32 +2,32 @@
 # SOSDEMO7 --- Chebyshev polynomials
 # Section 3.7 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO7 with $solver" for solver in sdp_solvers
-    if !isscs(solver)
-        ndeg = 8   # Degree of Chebyshev polynomial
+@testset "SOSDEMO7 with $(typeof(solver))" for solver in sdp_solvers
+    isscs(solver) || continue
+    ndeg = 8   # Degree of Chebyshev polynomial
 
-        @polyvar x
+    @polyvar x
 
-        Z = monomials((x,), 0:ndeg-1)
+    Z = monomials((x,), 0:ndeg-1)
 
-        m = SOSModel(solver = solver)
+    MOI.empty!(solver)
+    m = SOSModel(optimizer=solver)
 
-        @variable m γ
-        @variable m p1 Poly(Z)
+    @variable m γ
+    @variable m p1 Poly(Z)
 
-        p = p1 + γ * x^ndeg # the leading coeff of p is γ
+    p = p1 + γ * x^ndeg # the leading coeff of p is γ
 
-        dom = @set x >= -1 && x <= 1
-        @constraint(m, p <= 1, domain = dom)
-        @constraint(m, p >= -1, domain = dom)
+    dom = @set x >= -1 && x <= 1
+    @constraint(m, p <= 1, domain = dom)
+    @constraint(m, p >= -1, domain = dom)
 
-        @objective m Max γ
+    @objective m Max γ
 
-        status = solve(m)
+    JuMP.optimize(m)
 
-        @test status == :Optimal
+    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 
-        @test isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
-        @test isapprox(getvalue(γ), 128)
-    end
+    @test isapprox(JuMP.resultvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
+    @test isapprox(JuMP.resultvalue(γ), 128)
 end
