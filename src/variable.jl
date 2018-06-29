@@ -1,6 +1,6 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
-function JuMP.resultvalue(p::MatPolynomial{JuMP.Variable})
+function JuMP.resultvalue(p::MatPolynomial{JuMP.VariableRef})
     MatPolynomial(map(JuMP.resultvalue, p.Q), p.x)
 end
 
@@ -16,24 +16,24 @@ end
 const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
 JuMP.variabletype(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
-PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:AbstractMonomial, MV<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MV}
+PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:AbstractMonomial, MV<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MV}
 
 # Sum-of-Squares polynomial
 
-_polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.Variable, MT, MVT}
+_polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MVT}
 
 function _constraintmatpoly!(m, p::MatPolynomial, ::SOSPoly)
-    JuMP.addconstraint(m, JuMP.SDVariableConstraint(p.Q))
+    JuMP.addconstraint(m, JuMP.VectorOfVariablesConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
 end
 function _constraintmatpoly!(m, p::MatPolynomial, ::DSOSPoly)
     n = length(p.x)
-    Q = Matrix{JuMP.Variable}(n, n)
+    Q = Matrix{JuMP.VariableRef}(n, n)
     for i in 1:n
         for j in 1:n
             if i == j
                 Q[i, j] = p[i, j]
             else
-                Q[j, i] = Q[i, j] = Variable(m)
+                Q[j, i] = Q[i, j] = JuMP.VariableRef(m)
                 @constraint m Q[i, j] >= p[i, j]
                 @constraint m Q[i, j] >= -p[i, j]
             end
@@ -51,7 +51,7 @@ function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, binary::Bool, 
         zero(JuMP.variabletype(m, SOSPoly(x)))
     else
         function _newvar(i, j)
-            v = Variable(m)
+            v = JuMP.VariableRef(m)
             if length(x) == 1
                 # 1x1 matrix is SDP iff its only entry is nonnegative
                 # We handle this case here and do not create any SDP constraint
@@ -65,7 +65,7 @@ function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, binary::Bool, 
             end
             v
         end
-        MatPolynomial{JuMP.Variable}(_newvar, x)
+        MatPolynomial{JuMP.VariableRef}(_newvar, x)
     end
 end
 function _createpoly(m::JuMP.Model, set::PosPoly, basis::PolyJuMP.MonomialBasis, binary::Bool, integer::Bool)

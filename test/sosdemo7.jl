@@ -3,6 +3,8 @@
 # Section 3.7 of SOSTOOLS User's Manual
 
 @testset "SOSDEMO7 with $solver" for solver in sdp_solvers
+    # Failing because of https://github.com/JuliaOpt/SemidefiniteOptInterface.jl/issues/18
+    iscsdp(solver()) && continue
     if !isscs(solver)
         ndeg = 8   # Degree of Chebyshev polynomial
 
@@ -23,7 +25,7 @@
 
         @objective m Max γ
 
-        solve(m)
+        JuMP.optimize(m)
 
         @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 

@@ -19,7 +19,7 @@
         @variable m γ
         @constraint m p - γ*sum(x .* x)^2 in cone
         @objective m Max γ
-        solve(m)
+        JuMP.optimize(m)
         @test JuMP.primalstatus(m) == MOI.FeasiblePoint
         JuMP.objectivevalue(m)
     end

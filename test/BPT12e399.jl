@@ -5,6 +5,8 @@
 # Society for Industrial and Applied Mathematics, 2012
 
 @testset "[BPT12] Example 3.99 with $solver" for solver in sdp_solvers
+    # Failing because of https://github.com/JuliaOpt/SemidefiniteOptInterface.jl/issues/18
+    iscsdp(solver()) && continue
     @polyvar x y
 
     m = SOSModel(solver = solver)
@@ -15,7 +17,7 @@
 
     @objective m Max α
 
-    solve(m)
+    JuMP.optimize(m)
 
     @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 
@@ -24,7 +26,7 @@
     # FIXME JuMP does not support modification once loaded on jump/moi yet
 #    @objective m Min α
 #
-#    solve(m)
+#    JuMP.optimize(m)
 #
 #    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 #

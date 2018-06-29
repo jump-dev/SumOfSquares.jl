@@ -15,7 +15,6 @@ include("sosdec.jl")
 include("certificate.jl")
 
 using PolyJuMP, JuMP
-import JuMP: validmodel, addtoexpr_reorder
 
 include("variable.jl")
 include("constraint.jl")

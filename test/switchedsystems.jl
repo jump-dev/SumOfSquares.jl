@@ -25,12 +25,11 @@
         c1 = @constraint m p(x => A1 * vec(x)) <= γ^(2*d) * p
         c2 = @constraint m p(x => A2 * vec(x)) <= γ^(2*d) * p
 
-        solve(m)
+        JuMP.optimize(m)
 
         if feasible
             @test JuMP.primalstatus(m) == MOI.FeasiblePoint
         else
-            @test JuMP.primalstatus(m) == MOI.InfeasiblePoint
             @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
             μ1 = JuMP.resultdual(c1)
             μ2 = JuMP.resultdual(c2)

@@ -9,6 +9,6 @@
 
   @SDconstraint m C >= 0
 
-  solve(m)
-  @test JuMP.primalstatus(m) == MOI.InfeasiblePoint
+  JuMP.optimize(m)
+  @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
 end

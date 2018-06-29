@@ -11,7 +11,7 @@
     # Boolean constraints
     bc = vec(x).^2 - 1
 
-    for (gamma, expected) in [(3.9, MOI.InfeasiblePoint), (4, MOI.FeasiblePoint)]
+    for (gamma, feasible) in [(3.9, false), (4, true)]
 
         m = SOSModel(solver = solver)
 
@@ -23,8 +23,12 @@
 
         @constraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
 
-        solve(m)
+        JuMP.optimize(m)
 
-        @test JuMP.primalstatus(m) == expected
+        if feasible
+            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+        else
+            @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
+        end
     end
 end

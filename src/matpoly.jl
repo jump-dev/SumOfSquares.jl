@@ -48,6 +48,7 @@ Base.zero(::Type{MatPolynomial{T, MT, MVT}}) where {T, MT, MVT} = MatPolynomial{
 Base.iszero(p::MatPolynomial) = iszero(polynomial(p))
 
 Base.getindex(p::MatPolynomial, I...) = getindex(p.Q, I...)
+Base.copy(p::MatPolynomial) = MatPolynomial(copy(p.Q), copy(p.x))
 
 MultivariateMoments.getmat(p::MatPolynomial{T}) where {T} = p.Q
 

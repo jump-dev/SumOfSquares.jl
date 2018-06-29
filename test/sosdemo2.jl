@@ -22,7 +22,7 @@
     P = dot(differentiate(V, x), f).num # the denominator is x[3]^2+1
     @constraint m P <= 0
 
-    solve(m)
+    JuMP.optimize(m)
 
     @test JuMP.primalstatus(m) == MOI.FeasiblePoint
 
