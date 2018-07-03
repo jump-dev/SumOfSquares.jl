@@ -9,7 +9,6 @@ notifications:
   email: false
 before_script:
   - julia -e 'Pkg.add("JuMP")'
-  - julia -e 'Pkg.add("PolyJuMP")'
   - julia -e 'Pkg.checkout("JuMP")'
 # uncomment the following lines to override the default test script
 #script:
@@ -20,10 +19,6 @@ before_install:
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
-
-before_script:
-  - julia -e 'Pkg.add("PolyJuMP")'
-  - julia -e 'Pkg.checkout("PolyJuMP")'
 
 after_success:
   # push coverage results to Coveralls
