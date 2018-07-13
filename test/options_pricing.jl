@@ -27,10 +27,12 @@ using MultivariateMoments
     end
 
     K = [30, 35, 40, 45, 50]
-    dsos_codsos_exp = [132.63, 132.63, 132.63, 132.63, 132.63]
-    sos_cosos_exp = [21.51, 17.17, 13.20, 9.85, 7.30]
+    dsos_codsos_exp   = [132.63, 132.63, 132.63, 132.63, 132.63]
+    sdsos_cosdsos_exp = [ 21.51,  17.17,  13.20,   9.85,   7.30]
+    sos_cosos_exp = sdsos_cosdsos_exp
     for i in eachindex(K)
-        @test optionspricing(K[i], CoDSOSCone()) ≈ dsos_codsos_exp[i] atol=1e-2
-        @test optionspricing(K[i], CoSOSCone()) ≈ sos_cosos_exp[i] atol=1e-2
+        @test optionspricing(K[i], CoDSOSCone())  ≈ dsos_codsos_exp[i]   atol=1e-2
+        @test optionspricing(K[i], CoSDSOSCone()) ≈ sdsos_cosdsos_exp[i] atol=1e-2
+        @test optionspricing(K[i], CoSOSCone())   ≈ sos_cosos_exp[i]     atol=1e-2
     end
 end

@@ -25,22 +25,40 @@ _polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:Ab
 function _constraintmatpoly!(m, p::MatPolynomial, ::SOSPoly)
     JuMP.addconstraint(m, JuMP.VectorOfVariablesConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
 end
-function _constraintmatpoly!(m, p::MatPolynomial, ::DSOSPoly)
+function _constraintmatpoly!(model, p::MatPolynomial, ::SDSOSPoly)
+    n = length(p.x)
+    T = JuMP.GenericAffExpr{Float64, JuMP.VariableRef}
+    Q = SymMatrix{T}(Vector{T}(p.Q.Q), n)
+    for i in 1:n
+        for j in i+1:n
+            Mii = @variable(model)
+            JuMP.add_to_expression!(Q[i, i], -1.0, Mii)
+            Mij = @variable(model)
+            JuMP.add_to_expression!(Q[i, j], -1.0, Mij)
+            Mjj = @variable(model)
+            JuMP.add_to_expression!(Q[j, j], -1.0, Mjj)
+            #@constraint model Mii + Mjj ≥ 0
+            @constraint(model, [Mii + Mjj, 2Mij, Mii - Mjj] in MOI.SecondOrderCone(3))
+        end
+    end
+    @constraint(model, Q.Q .== 0)
+end
+function _constraintmatpoly!(model, p::MatPolynomial, ::DSOSPoly)
     n = length(p.x)
     Q = Matrix{JuMP.VariableRef}(n, n)
     for i in 1:n
-        for j in 1:n
+        for j in i:n
             if i == j
                 Q[i, j] = p[i, j]
             else
-                Q[j, i] = Q[i, j] = JuMP.VariableRef(m)
-                @constraint m Q[i, j] >= p[i, j]
-                @constraint m Q[i, j] >= -p[i, j]
+                Q[j, i] = Q[i, j] = JuMP.VariableRef(model)
+                @constraint model Q[i, j] >= p[i, j]
+                @constraint model Q[i, j] >= -p[i, j]
             end
         end
     end
     for i in 1:n
-        @constraint m 2Q[i, i] >= sum(Q[i, :])
+        @constraint model 2Q[i, i] >= sum(Q[i, :])
     end
     # If n > 1, this is implied by the constraint but it doesn't hurt to add the variable cone
     # Adding things on varCones makes JuMP think that it is SDP
