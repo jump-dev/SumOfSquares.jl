@@ -58,7 +58,7 @@ variables and `x` and `y` which are *polynomial* variables.
 
 In order to create a sum-of-squares polynomial variable, the syntax is exactly
 the same except `SOSPoly` should be used instead of `Poly`.
-For instance, the following code creates a ``3 \\times 4`` matrix of
+For instance, the following code creates a ``3 \times 4`` matrix of
 sum-of-squares polynomial variables:
 ```julia
 using SumOfSquares
@@ -80,6 +80,8 @@ Finally, to create scaled-diagonally-dominant-sum-of-squares polynomial
 variables (see [Definition 2, AM17]), use `DSOSPoly(X)`. This creates a
 scaled diagonally dominant matrix of variables `Q` and sets the polynomial
 variables as the value of `X' * Q * X`.
+
+### References
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
