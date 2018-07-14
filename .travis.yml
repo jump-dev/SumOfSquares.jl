@@ -10,6 +10,8 @@ notifications:
 before_script:
   - julia -e 'Pkg.add("JuMP")'
   - julia -e 'Pkg.checkout("JuMP")'
+  - julia -e 'Pkg.add("PolyJuMP")'
+  - julia -e 'Pkg.checkout("PolyJuMP")'
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
