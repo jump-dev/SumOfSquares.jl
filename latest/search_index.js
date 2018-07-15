@@ -72,4 +72,44 @@ var documenterSearchIndex = {"docs": [
     "text": "[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.[Las09] Lasserre, J. B. Moments, positive polynomials and their applications World Scientific, 2009[Lau09] Laurent, M. Sums of squares, moment matrices and optimization over polynomials Emerging applications of algebraic geometry, Springer, 2009, 157-270"
 },
 
+{
+    "location": "variables.html#",
+    "page": "Variables",
+    "title": "Variables",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "variables.html#Polynomial-and-Sum-of-Squares-variables-1",
+    "page": "Variables",
+    "title": "Polynomial and Sum-of-Squares variables",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "variables.html#Polynomial-variables-1",
+    "page": "Variables",
+    "title": "Polynomial variables",
+    "category": "section",
+    "text": "While JuMP allows to create decision variables representing a number whose value needs to be optimized upon by the optimizer, PolyJuMP allows to create polynomial decision variables. In order to do that, we first need to create polynomial variables with the @polyvar macro:using DynamicPolynomials # or TypedPolynomials, pick your favorite\n@polyvar x yNote that these should not be confused with JuMP\'s decision variables which are created using the @variable macro. The polynomial decision variable that will be created need to be parametrized by a polynomial basis of finite size. For instance, if we want to find a quadratic polynomial, we can parametrize it with all monomials of degree between 0 and 2. Generating a vector with such monomials can be achieved through the monomials function:using MultivariatePolynomials\nX = monomials([x, y], 0:2)We can now create our polynomial variable p as follows:using PolyJuMP\n@variable(model, p, Poly(X))This creates a vector of decision variables a and sets p as the scalar product between a and X.Just like with classical JuMP\'s decision variables, containers of polynomial variables can be created as follows:using PolyJuMP\n@variable(model, p[1:3, 1:4], Poly(X))       # Creates a Matrix\n@variable(model, p[[:a, :b], -2:2], Poly(X)) # Creates a JuMPArray\n@variable(model, p[i=1:3, j=i:3], Poly(X))   # Creates a DictFor more flexibility, polynomials parametrized by decision variables can also be created \"by hand\" for instance as follows:@variable(model, α)\n@variable(model, β)\np = α*x^2 + (α+β)*y^2*x + β*y^3The coefficients of the polynomial can even be quadratic, e.g.@variable(model, α)\n@variable(model, β)\np = (3α^2+β)*x^2 + (α*β+2β)*y^2*x + β*y^3Let me stress again the distinction between α and β which are decision variables and x and y which are polynomial variables."
+},
+
+{
+    "location": "variables.html#Nonnegative-polynomial-variables-1",
+    "page": "Variables",
+    "title": "Nonnegative polynomial variables",
+    "category": "section",
+    "text": "In order to create a sum-of-squares polynomial variable, the syntax is exactly the same except SOSPoly should be used instead of Poly. For instance, the following code creates a 3 times 4 matrix of sum-of-squares polynomial variables:using SumOfSquares\n@variable(model, p[1:3, 1:4], SOSPoly(X))There is however an important difference between the signification of the vector of monomials X between Poly and SOSPoly. For SOSPoly, it creates a positive semidefinite matrix of variables Q and sets p as the value of X\' * Q * X. That is, for instance, if X contains all the monomials of degree 2, then all the monomials of p will have degree 4 (i.e. p will be a quartic form).Similarly, to create diagonally-dominant-sum-of-squares polynomial variables (see [Definition 2, AM17]), use DSOSPoly(X). This creates a diagonally dominant matrix of variables Q and sets the polynomial variables as the value of X\' * Q * X.Finally, to create scaled-diagonally-dominant-sum-of-squares polynomial variables (see [Definition 2, AM17]), use DSOSPoly(X). This creates a scaled diagonally dominant matrix of variables Q and sets the polynomial variables as the value of X\' * Q * X."
+},
+
+{
+    "location": "variables.html#References-1",
+    "page": "Variables",
+    "title": "References",
+    "category": "section",
+    "text": "[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017"
+},
+
 ]}
