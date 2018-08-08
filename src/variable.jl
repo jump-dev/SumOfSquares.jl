@@ -22,25 +22,63 @@ PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV
 
 _polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MVT}
 
-function _constraintmatpoly!(m, p::MatPolynomial, ::SOSPoly)
+"""
+    constraint_matpoly!(model::JuMP.AbstractModel, p::MatPolynomial, ::Union{SOSPoly, SDSOSPoly, DSOSPoly})
+
+Constraints matrix of `p` to be
+
+* positive semidefinite if the third argument is of type `SOSPoly`,
+* scaled diagonally dominant if the third argument is of type `SDSOSPoly`, or
+* diagonally dominant if the third argument is of type `DSOSPoly`.
+
+See Definition 4 of [AM17] for a precise definition of the last two items.
+
+[AM17] Ahmadi, A. A. & Majumdar, A.
+*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
+ArXiv e-prints, 2017
+"""
+function constraint_matpoly! end
+
+function constraint_matpoly!(m, p::MatPolynomial, ::SOSPoly)
     JuMP.addconstraint(m, JuMP.VectorOfVariablesConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
 end
-function _constraintmatpoly!(m, p::MatPolynomial, ::DSOSPoly)
+function constraint_matpoly!(model, p::MatPolynomial, ::SDSOSPoly)
+    # `p.Q` is SDD iff it is the sum of psd matrices Mij that are zero except for
+    # entries ii, ij and jj [Lemma 9, AM17].
+    n = length(p.x)
+    T = JuMP.GenericAffExpr{Float64, JuMP.VariableRef}
+    # `Q[r, c]` will contain the expression `p.Q[r, c] - sum Mij[r, c]`
+    Q = SymMatrix{T}(Vector{T}(p.Q.Q), n)
+    for i in 1:n
+        for j in i+1:n
+            Mii = @variable(model)
+            JuMP.add_to_expression!(Q[i, i], -1.0, Mii)
+            Mij = @variable(model)
+            JuMP.add_to_expression!(Q[i, j], -1.0, Mij)
+            Mjj = @variable(model)
+            JuMP.add_to_expression!(Q[j, j], -1.0, Mjj)
+            # PSD constraints on 2x2 matrices are SOC representable
+            @constraint(model, [Mii + Mjj, 2Mij, Mii - Mjj] in MOI.SecondOrderCone(3))
+        end
+    end
+    @constraint(model, Q.Q .== 0)
+end
+function constraint_matpoly!(model, p::MatPolynomial, ::DSOSPoly)
     n = length(p.x)
     Q = Matrix{JuMP.VariableRef}(n, n)
     for i in 1:n
-        for j in 1:n
+        for j in i:n
             if i == j
                 Q[i, j] = p[i, j]
             else
-                Q[j, i] = Q[i, j] = JuMP.VariableRef(m)
-                @constraint m Q[i, j] >= p[i, j]
-                @constraint m Q[i, j] >= -p[i, j]
+                Q[j, i] = Q[i, j] = JuMP.VariableRef(model)
+                @constraint model Q[i, j] >= p[i, j]
+                @constraint model Q[i, j] >= -p[i, j]
             end
         end
     end
     for i in 1:n
-        @constraint m 2Q[i, i] >= sum(Q[i, :])
+        @constraint model 2Q[i, i] >= sum(Q[i, :])
     end
     # If n > 1, this is implied by the constraint but it doesn't hurt to add the variable cone
     # Adding things on varCones makes JuMP think that it is SDP
@@ -71,7 +109,7 @@ end
 function _createpoly(m::JuMP.Model, set::PosPoly, basis::PolyJuMP.MonomialBasis, binary::Bool, integer::Bool)
     p = _matpolynomial(m, basis.monomials, binary, integer)
     if length(basis.monomials) > 1
-        _constraintmatpoly!(m, p, set)
+        constraint_matpoly!(m, p, set)
     end
     p
 end

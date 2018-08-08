@@ -25,6 +25,7 @@
         JuMP.objectivevalue(m)
     end
 
-    @test sdsos_example(DSOSCone()) ≈ -11/3 rtol=1e-5
-    @test sdsos_example(SOSCone()) ≈ -0.184667 rtol=1e-5
+    @test sdsos_example(DSOSCone())  ≈ -11/3     rtol=1e-5
+    @test sdsos_example(SDSOSCone()) ≈ -3.172412 rtol=1e-5
+    @test sdsos_example(SOSCone())   ≈ -0.184667 rtol=1e-5
 end
