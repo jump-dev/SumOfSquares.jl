@@ -5,6 +5,12 @@
 | [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] | [![Gitter][gitter-img]][gitter-url] | [![DOI][zenodo-img]][zenodo-url] |
 | [![][docs-latest-img]][docs-latest-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | |
 
+**Important note**: The most recently tagged version of this package works with
+most recently tagged version of [JuMP](https://github.com/JuliaOpt/JuMP.jl),
+i.e. JuMP v0.18.x. The
+in-development version of this package works with the in-development version of
+[JuMP](https://github.com/JuliaOpt/JuMP.jl), i.e. JuMP 0.19-.
+
 This packages contains the Sum of Squares reformulation for polynomial optimization.
 When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
 Enabling the creation of sum of squares variables and constraints.
