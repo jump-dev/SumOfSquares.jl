@@ -81,7 +81,42 @@ variables (see [Definition 2, AM17]), use `DSOSPoly(X)`. This creates a
 scaled diagonally dominant matrix of variables `Q` and sets the polynomial
 variables as the value of `X' * Q * X`.
 
+## Choosing a polynomial basis
+
+In the previous section, we show how to create polynomial variables from a
+monomial basis. However, the monomial basis is only a particular case of
+polynomial basis and while using a different basis of the same space of
+polynomial is would give an equivalent program, it might be more stable
+numerically (see [Section 3.1.5, BPT12]).
+
+For instance, creating an univariate cubic polynomial variable `p` using the
+Chebyshev basis can be done as follows:
+```julia
+using PolyJuMP
+cheby_basis = FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])
+@variable(model, p, Poly(cheby_basis))
+```
+and to create a quadratic form variable `q` using the *scaled monomial* basis
+(see [Section 3.1.5, BPT12]), use the following:
+```julia
+using MultivariatePolynomials
+X = monomials([x], 2)
+using PolyJuMP
+scaled_basis = ScaledMonomialBasis(X)
+@variable(model, q, Poly(scaled_basis))
+```
+which is equivalent to
+```julia
+using PolyJuMP
+scaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])
+@variable(model, q, Poly(scaled_basis))
+```
+
 ### References
+
+[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
+*Semidefinite Optimization and Convex Algebraic Geometry*.
+Society for Industrial and Applied Mathematics, 2012.
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
