@@ -2,11 +2,10 @@
 # SOSDEMO1 --- Sum of Squares Test
 # Section 3.1 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO1 with $(typeof(solver))" for solver in sdp_solvers
+@testset "SOSDEMO1 with $(factory.constructor)" for factory in sdp_factories
     @polyvar x y
 
-    MOI.empty!(solver)
-    m = SOSModel(optimizer=solver)
+    m = SOSModel(factory)
 
     # Example 2.4 of
     # P. Parrilo and A. Jadbabaie
@@ -32,8 +31,7 @@
     sosdec = SOSDecomposition(q)
     @test isapprox(sum(sosdec.ps.^2), p; rtol=1e-4, ztol=1e-6)
 
-    MOI.empty!(solver)
-    M = SOSModel(optimizer=solver)
+    M = SOSModel(factory)
 
     p = 4*x^4*y^6 + x^2 - x*y^2 + y^2
 

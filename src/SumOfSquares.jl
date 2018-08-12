@@ -24,10 +24,10 @@ function setdefaults!(data::PolyJuMP.Data)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPolyMatrix, SOSMatrixCone)
 end
 
-function SOSModel(; kwargs...)
-    m = Model(; kwargs...)
-    setpolymodule!(m, SumOfSquares)
-    m
+function SOSModel(args...; kwargs...)
+    model = Model(args...; kwargs...)
+    setpolymodule!(model, SumOfSquares)
+    model
 end
 
 end # module

@@ -2,7 +2,7 @@
 # SOSDEMO10 --- Set containment
 # Section 3.10 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO10 with $(typeof(solver))" for solver in sdp_solvers
+@testset "SOSDEMO10 with $(factory.constructor)" for factory in sdp_factories
     @polyvar x[1:2]
 
     eps = 1e-6
@@ -11,8 +11,7 @@
     g0 = 2*x[1]
     theta = 1
 
-    MOI.empty!(solver)
-    m = SOSModel(optimizer=solver)
+    m = SOSModel(factory)
 
     # FIXME s should be sos ?
     # in SOSTools doc it is said to be SOS

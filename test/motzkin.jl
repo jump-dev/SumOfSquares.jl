@@ -1,8 +1,7 @@
-@testset "Motzkin with $(typeof(solver))" for solver in sdp_solvers
+@testset "Motzkin with $(factory.constructor)" for factory in sdp_factories
     @polyvar x y
 
-    MOI.empty!(solver)
-    m = SOSModel(optimizer=solver)
+    m = SOSModel(factory)
 
     p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
 
@@ -12,8 +11,7 @@
 
     @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
 
-    MOI.empty!(solver)
-    M = SOSModel(optimizer=solver)
+    M = SOSModel(factory)
 
     q = (x^2 + y^2) * p
 

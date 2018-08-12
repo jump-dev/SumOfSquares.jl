@@ -6,7 +6,7 @@
 # DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization
 # 2017
 
-@testset "[AM17] Section 4.1 with $(typeof(solver))" for solver in sdp_solvers
+@testset "[AM17] Section 4.1 with $(factory.constructor)" for factory in sdp_factories
     @polyvar x[1:3]
     vx = monomials(x, 4) # Degree 4 homogeneous
     # Coefficient of polynomial
@@ -15,8 +15,7 @@
 
 
     function sdsos_example(cone)
-        MOI.empty!(solver)
-        m = SOSModel(optimizer=solver)
+        m = SOSModel(factory)
         @variable m γ
         @constraint m p - γ*sum(x .* x)^2 in cone
         @objective m Max γ

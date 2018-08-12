@@ -1,8 +1,7 @@
-@testset "Choi with $(typeof(solver))" for solver in sdp_solvers
+@testset "Choi with $(factory.constructor)" for factory in sdp_factories
     @polyvar x y z
 
-    MOI.empty!(solver)
-    m = SOSModel(optimizer=solver)
+    m = SOSModel(factory)
 
     C = [x^2+2y^2 -x*y -x*z;
          -x*y y^2+2z^2 -y*z;

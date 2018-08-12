@@ -2,7 +2,7 @@
 # SOSDEMO4 --- Matrix Copositivity
 # Section 3.4 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO4 with $(typeof(solver))" for solver in sdp_solvers
+@testset "SOSDEMO4 with $(factory.constructor)" for factory in sdp_factories
     @polyvar x[1:5]
 
     # The matrix under consideration
@@ -16,14 +16,12 @@
     xsJxs = dot(xs, J*xs)
     r = sum(xs)
 
-    MOI.empty!(solver)
-    m0 = SOSModel(optimizer=solver)
+    m0 = SOSModel(factory)
     @constraint m0 xsJxs >= 0
     JuMP.optimize(m0)
     @test JuMP.dualstatus(m0) == MOI.InfeasibilityCertificate
 
-    MOI.empty!(solver)
-    m1 = SOSModel(optimizer=solver)
+    m1 = SOSModel(factory)
     @constraint m1 r*xsJxs >= 0
     JuMP.optimize(m1)
     @test JuMP.primalstatus(m1) == MOI.FeasiblePoint

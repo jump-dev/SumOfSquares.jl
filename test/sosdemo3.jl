@@ -2,11 +2,10 @@
 # SOSDEMO3 --- Bound on Global Extremum
 # Section 3.3 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO3 with $(typeof(solver))" for solver in sdp_solvers
+@testset "SOSDEMO3 with $(factory.constructor)" for factory in sdp_factories
     @polyvar x1 x2
 
-    MOI.empty!(solver)
-    m = SOSModel(optimizer=solver)
+    m = SOSModel(factory)
 
     @variable m γ
 

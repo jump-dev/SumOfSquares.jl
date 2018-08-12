@@ -5,15 +5,14 @@ using SumOfSquares
 using SemialgebraicSets
 using MultivariateMoments
 
-@testset "Polynomial Optimization example with $(typeof(solver))" for solver in sdp_solvers
-    isscs(solver) && continue
+@testset "Polynomial Optimization example with $(factory.constructor)" for factory in sdp_factories
+    isscs(factory) && continue
     @polyvar x y
     p = x^3 - x^2 + 2x*y -y^2 + y^3
     S = @set x >= 0 && y >= 0 && x + y >= 1
 
     for (maxdeg, found) in [(3, false), (4, true), (5, true)]
-        MOI.empty!(solver)
-        m = SOSModel(optimizer=solver)
+        m = SOSModel(factory)
         @variable m α
         @objective m Max α
         c = @constraint m p >= α domain = S maxdegree = maxdeg

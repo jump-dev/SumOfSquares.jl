@@ -2,7 +2,7 @@
 # SOSDEMO8 --- Bounds in Probability
 # Section 3.8 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO8 with $(typeof(solver))" for solver in sdp_solvers
+@testset "SOSDEMO8 with $(factory.constructor)" for factory in sdp_factories
     @polyvar x
 
     # The probability adds up to one.
@@ -19,8 +19,7 @@
     # Event whose probability we want to bound
     E = [4,5]
 
-    MOI.empty!(solver)
-    m = SOSModel(optimizer=solver)
+    m = SOSModel(factory)
 
     @variable m a
     @variable m b
