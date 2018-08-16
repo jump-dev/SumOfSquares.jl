@@ -105,11 +105,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "variables.html#Choosing-a-polynomial-basis-1",
+    "page": "Variables",
+    "title": "Choosing a polynomial basis",
+    "category": "section",
+    "text": "In the previous section, we show how to create polynomial variables from a monomial basis. However, the monomial basis is only a particular case of polynomial basis and while using a different basis of the same space of polynomial is would give an equivalent program, it might be more stable numerically (see [Section 3.1.5, BPT12]).For instance, creating an univariate cubic polynomial variable p using the Chebyshev basis can be done as follows:using PolyJuMP\ncheby_basis = FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])\n@variable(model, p, Poly(cheby_basis))and to create a quadratic form variable q using the scaled monomial basis (see [Section 3.1.5, BPT12]), use the following:using MultivariatePolynomials\nX = monomials([x], 2)\nusing PolyJuMP\nscaled_basis = ScaledMonomialBasis(X)\n@variable(model, q, Poly(scaled_basis))which is equivalent tousing PolyJuMP\nscaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])\n@variable(model, q, Poly(scaled_basis))"
+},
+
+{
     "location": "variables.html#References-1",
     "page": "Variables",
     "title": "References",
     "category": "section",
-    "text": "[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017"
+    "text": "[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017"
 },
 
 ]}
