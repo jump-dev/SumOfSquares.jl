@@ -120,4 +120,76 @@ var documenterSearchIndex = {"docs": [
     "text": "[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017"
 },
 
+{
+    "location": "constraints.html#",
+    "page": "Constraints",
+    "title": "Constraints",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "constraints.html#Constraints-1",
+    "page": "Constraints",
+    "title": "Constraints",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "constraints.html#Equality-constraints-between-polynomials-1",
+    "page": "Constraints",
+    "title": "Equality constraints between polynomials",
+    "category": "section",
+    "text": "Equality between polynomials in PolyJuMP uses the same syntax as equality between affine or quadratic expression in JuMP. For instance, creating two quadratic n-variate polynomials p and q that must sum up to one can be done as follows:using DynamicPolynomials\n@polyvar x[1:n]\nusing MultivariatePolynomials\nX = monomials(x, 0:2)\nusing PolyJuMP\n@variable(model, p, Poly(X))\n@variable(model, q, Poly(X))\n@constraint(model, p + q == 1)Vectorized constraints can also be used as well as vector of constraints, named constraints, ... For instance instance, if P and Q are two n times n matrices of polynomials, the following constraints the sum of rows and columns to match@constraint(model, con[i=1:n], sum(P[i, :]) == sum(Q[:, i]))and con[i] contains the reference to the constraint between the ith row of P and the ith column of Q."
+},
+
+{
+    "location": "constraints.html#Inequality-constraints-between-polynomials-1",
+    "page": "Constraints",
+    "title": "Inequality constraints between polynomials",
+    "category": "section",
+    "text": "Polynomials can be constrained to be sum-of-squares with the in syntax. For instance, to constraints a polynomial p to be sum-of-squares, do@constraint(model, p in SOSCone())"
+},
+
+{
+    "location": "constraints.html#Automatically-interpreting-polynomial-nonnegativity-as-a-sum-of-squares-constraint-1",
+    "page": "Constraints",
+    "title": "Automatically interpreting polynomial nonnegativity as a sum-of-squares constraint",
+    "category": "section",
+    "text": "As detailed in When is nonnegativity equivalent to sum of squares ?, the nonnegativity of a polynomial is not equivalent to the existence of a sum-of-squares decomposition. However, if explicitely specified, nonnegativity constraints can be automatically interpreted as sum-of-squares constraints. The simplest way to do that is to create the model withmodel = SOSModel(...)instead ofmodel = Model(...)An alternative equivalent way is to call setpolymodule! after creating the model:setpolymodule!(model, SumOfSquares)This second approach may be useful if the SumOfSquares JuMP extension need to be used with another JuMP extension that also has a special model constructor. A third alternative is the following:PolyJuMP.setdefault!(model, PolyJuMP.NonNegPoly, SOSCone)\nPolyJuMP.setdefault!(model, PolyJuMP.NonNegPolyMatrix, SOSMatrixCone)This approach adds the flexibility to choose the default cone forconstraints of the form @constraint(mode, ..., some_polynomial ≥ other_polynomial, ...) which is the cone given as default to PolyJuMP.NonNegPoly; and\nconstraints of the form @constraint(mode, ..., some_matrix_of_polynomial in PSDCone(), ...) or @SDconstraint(mode, ..., some_matrix_of_polynomial ⪰ other_matrix_of_polynomial, ...) which is the cone given as default to PolyJuMP.NonNegPolyMatrix.For instance, to use the diagonally-dominant-sum-of-squares cone (see [Definition 2, AM17]) for the first type of contraints, doPolyJuMP.setdefault!(model, PolyJuMP.NonNegPoly, DSOSCone)"
+},
+
+{
+    "location": "constraints.html#Changing-the-polynomial-basis-1",
+    "page": "Constraints",
+    "title": "Changing the polynomial basis",
+    "category": "section",
+    "text": "As introduced in Choosing a polynomial basis, there may be numerical advantages to use another basis than the standard monomial basis when creating polynomial variables. Similarly, other polynomial basis can be used for polynomial constraints. However, for constraints, the polynomial space is determined by the polynomial constrained to be nonnegative. For instance, consider the constraint:@constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y)where α and β are JuMP decision variables and x and y are polynomial variables. Since the polynomial is a quadratic form, the sum-of-squares certificate is also a quadratic form (see [Section~3.3.4, BPT12]). Hence the default polynomial basis used for the [Nonnegative polynomial variables] certificate is MonomialBasis([x, y]), that is, we search for a positive semidefinite matrix Q such that * x^2 +  * y^2 - ( - ) * x * y = X^top Q Xwhere X = (x y).As the polynomial space is determined by the polynomial being constrained, only the basis type need to be given.For instance, to use the scaled monomial basis, use@constraint(model, p ≥ q, basis = ScaledMonomialBasis)"
+},
+
+{
+    "location": "constraints.html#Polynomial-nonnegativity-on-a-subset-of-the-space-1",
+    "page": "Constraints",
+    "title": "Polynomial nonnegativity on a subset of the space",
+    "category": "section",
+    "text": "By default, the constraint@constraint(model, x^3 - x^2 + 2x*y -y^2 + y^3 >= α)constrains the polynomial to be nonnegative for every real numbers x and y. However, the set of points (x, y) for which the polynomial is constrained to be nonnegative can be specified by the domain keyword:using SemialgebraicSets\nS = @set x >= 0 && y >= 0 && x + y >= 1\n@constraint(model, x^3 - x^2 + 2x*y -y^2 + y^3 >= α, domain = S)See this notebook for a detailed example."
+},
+
+{
+    "location": "constraints.html#Dual-of-polynomial-constraints-1",
+    "page": "Constraints",
+    "title": "Dual of polynomial constraints",
+    "category": "section",
+    "text": "The dual of a polynomial constraint cref is a moment serie μ as defined in MultivariateMoments. The dual can be obtained with the JuMP.resultdual function as with classical dual values in JuMP. The matrix of moment can be obtaine as follows:μ = JuMP.resultdual(cref)\nν = matmeasure(μ, certificate_monomials(cref))The extractatoms function of MultivariateMoments can be used to check if there exists an atomic measure (i.e. a measure that is a sum of Dirac measures) for that has the moments given in ν. This can be used for instance in polynomial optimization (see this notebook) or stability analysis (see this notebook)."
+},
+
+{
+    "location": "constraints.html#References-1",
+    "page": "Constraints",
+    "title": "References",
+    "category": "section",
+    "text": "[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017"
+},
+
 ]}
