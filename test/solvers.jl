@@ -31,4 +31,4 @@ iscsdp(factory) = contains(string(factory.constructor), "CSDP")
 # Need 54000 iterations for sosdemo3 to pass on Linux 64 bits
 # With 55000, sosdemo3 passes for every platform except Windows 64 bits on AppVeyor
 scs && push!(sdp_factories, SCS.SCSOptimizer(eps=1e-6, max_iters=60000, verbose=0))
-iscsdp(factory) = contains(string(factory.constructor), "SCS")
+isscs(factory) = contains(string(factory.constructor), "SCS")
