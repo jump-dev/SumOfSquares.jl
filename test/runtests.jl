@@ -1,7 +1,11 @@
 using JuMP
 using SumOfSquares
 using PolyJuMP
-using Base.Test
+
+using Compat
+using Compat.Test
+using Compat.LinearAlgebra
+using Compat.SparseArrays
 
 using MultivariatePolynomials
 using SemialgebraicSets

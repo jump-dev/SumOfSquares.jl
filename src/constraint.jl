@@ -36,7 +36,7 @@ PolyJuMP.getslack(c::SOSConstraint) = getvalue(c.slack)
 JuMP.getdual(c::SOSConstraint) = getdual(c.zero_constraint)
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis) where PT <: APL
-    n = Base.LinAlg.checksquare(P)
+    n = Compat.LinearAlgebra.checksquare(P)
     if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
     end
@@ -50,7 +50,7 @@ function _createslack(m, x, set::SOSLikeCones)
 end
 function _matposynomial(m, x)
     p = _matpolynomial(m, x, :Cont)
-    m.colLower[map(q -> q.col, p.Q)] = 0.
+    m.colLower[map(q -> q.col, p.Q)] .= 0.0
     p
 end
 function _createslack(m, x, set::CoSOSLikeCones)

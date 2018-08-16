@@ -9,6 +9,9 @@ const MP = MultivariatePolynomials
 using MultivariateMoments
 using SemialgebraicSets
 
+using Compat
+using Compat.LinearAlgebra
+
 include("matpoly.jl")
 include("sosdec.jl")
 

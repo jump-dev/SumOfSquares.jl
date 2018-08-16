@@ -44,11 +44,12 @@ function _getmonomialsforcertificate(X::AbstractVector{<:AbstractMonomial}, spar
         # +---------
         mindeg, maxdeg = cfld(extdegree(X), 2)
         n = nvariables(X)
-        minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
+        minmultideg, maxmultideg = Vector{Int}(undef, n), Vector{Int}(undef, n)
         for i in 1:n
             minmultideg[i], maxmultideg[i] = cfld(map_extrema(m -> exponents(m)[i], X), 2)
         end
-        monomials(variables(X), mindeg:maxdeg, m -> reduce(&, true, minmultideg .<= exponents(m) .<= maxmultideg))
+        monomials(variables(X), mindeg:maxdeg,
+                  m -> all(minmultideg .<= exponents(m) .<= maxmultideg))
     else
         error("Not supported yet :(")
     end
@@ -58,7 +59,7 @@ getmonomialsforcertificate(X::AbstractVector, sparse=:No) = _getmonomialsforcert
 function randpsd(n; r=n, eps=0.1)
     Q = randn(n,n)
     d = zeros(Float64, n)
-    d[1:r] = eps + abs.(randn(r))
+    d[1:r] = eps .+ abs.(randn(r))
     Q' * Diagonal(d) * Q
 end
 

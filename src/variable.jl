@@ -23,7 +23,7 @@ function _constraintmatpoly!(m, p::MatPolynomial, ::SOSPoly)
 end
 function _constraintmatpoly!(m, p::MatPolynomial, ::DSOSPoly)
     n = length(p.x)
-    Q = Matrix{JuMP.Variable}(n, n)
+    Q = Matrix{JuMP.Variable}(undef, n, n)
     for i in 1:n
         for j in 1:n
             if i == j
