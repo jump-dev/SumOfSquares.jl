@@ -28,8 +28,8 @@ using MultivariateMoments
         ν = matmeasure(μ, X)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)
-        @test isnull(atoms) == !found
-        if !isnull(atoms)
+        @test (atoms === nothing) == !found
+        if atoms !== nothing
             η = get(atoms)
             @test η.atoms[1].weight ≈ 1/2 atol=1e-2
             @test η.atoms[2].weight ≈ 1/2 atol=1e-2
