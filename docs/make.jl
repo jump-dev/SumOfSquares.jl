@@ -7,6 +7,7 @@ makedocs(
         "Index" => "index.md",
         "Sum-of-Squares Programming" => "sumofsquares.md",
         "Variables" => "variables.md",
+        "Constraints" => "constraints.md",
     ],
     # The following ensures that we only include the docstrings from
     # this module for functions define in Base that we overwrite.
