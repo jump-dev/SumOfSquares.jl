@@ -3,8 +3,6 @@
 # DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization
 # 2017
 
-using MultivariateMoments
-
 @testset "Options Pricing with $solver" for solver in sdp_solvers
     isscs(solver) && continue
     @polyvar x y z

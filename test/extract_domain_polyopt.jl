@@ -1,10 +1,5 @@
 # Test for the example https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb
 
-using JuMP
-using SumOfSquares
-using SemialgebraicSets
-using MultivariateMoments
-
 @testset "Polynomial Optimization example with $solver" for solver in sdp_solvers
     isscs(solver) && continue
     @polyvar x y
