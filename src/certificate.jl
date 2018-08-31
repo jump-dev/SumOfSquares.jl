@@ -1,21 +1,8 @@
 # Inspired from SOSTools
 export getmonomialsforcertificate, randpsd, randsos
 
-function map_extrema(f::Function, itr::AbstractVector)
-    state = start(itr)
-    it1, state = next(itr, state)
-    mini = maxi = f(it1)
-    while !done(itr, state)
-        it, state = next(itr, state)
-        fit = f(it)
-        if fit < mini
-            mini = fit
-        end
-        if fit > maxi
-            maxi = fit
-        end
-    end
-    mini, maxi
+function map_extrema(f::Function, itr)
+    return Compat.mapreduce(min, f, itr), Compat.mapreduce(max, f, itr)
 end
 
 cfld(x::NTuple{2,Int}, n) = (cld(x[1], n), fld(x[2], n))
@@ -44,11 +31,14 @@ function _getmonomialsforcertificate(X::AbstractVector{<:AbstractMonomial}, spar
         # +---------
         mindeg, maxdeg = cfld(extdegree(X), 2)
         n = nvariables(X)
-        minmultideg, maxmultideg = Vector{Int}(n), Vector{Int}(n)
+        minmultideg, maxmultideg = Vector{Int}(undef, n), Vector{Int}(undef, n)
         for i in 1:n
-            minmultideg[i], maxmultideg[i] = cfld(map_extrema(m -> exponents(m)[i], X), 2)
+            exponent_i(m) = exponents(m)[i]
+            minmultideg[i] = cld(Compat.mapreduce(exponent_i, min, X), 2)
+            maxmultideg[i] = fld(Compat.mapreduce(exponent_i, max, X), 2)
         end
-        monomials(variables(X), mindeg:maxdeg, m -> reduce(&, true, minmultideg .<= exponents(m) .<= maxmultideg))
+        monomials(variables(X), mindeg:maxdeg,
+                  m -> all(minmultideg .<= exponents(m) .<= maxmultideg))
     else
         error("Not supported yet :(")
     end
@@ -58,7 +48,7 @@ getmonomialsforcertificate(X::AbstractVector, sparse=:No) = _getmonomialsforcert
 function randpsd(n; r=n, eps=0.1)
     Q = randn(n,n)
     d = zeros(Float64, n)
-    d[1:r] = eps + abs.(randn(r))
+    d[1:r] = eps .+ abs.(randn(r))
     Q' * Diagonal(d) * Q
 end
 

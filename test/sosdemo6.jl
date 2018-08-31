@@ -9,7 +9,7 @@
   f = 2.5 - 0.5*x[1]*x[2] - 0.5*x[2]*x[3] - 0.5*x[3]*x[4] - 0.5*x[4]*x[5] - 0.5*x[5]*x[1]
 
   # Boolean constraints
-  bc = vec(x).^2 - 1
+  bc = vec(x).^2 .- 1
 
   for (gamma, expected) in [(3.9, :Infeasible), (4, :Optimal)]
 

@@ -1,10 +1,9 @@
-using JuMP
-using SumOfSquares
-using PolyJuMP
-using Base.Test
+using Compat
+using Compat.Test
+using Compat.LinearAlgebra
+using Compat.SparseArrays
 
 using MultivariatePolynomials
-using SemialgebraicSets
 
 # Taken from JuMP/test/solvers.jl
 function try_import(name::Symbol)
@@ -26,6 +25,10 @@ else
     end
 end
 
+using JuMP
+using PolyJuMP
+using SumOfSquares
+
 include("matpoly.jl")
 
 include("variable.jl")
@@ -37,7 +40,7 @@ include("certificate.jl")
 
 include("motzkin.jl")
 
-## SOSTools demos
+# SOSTools demos
 include("sospoly.jl")
 include("lyapunov.jl")
 include("sosdemo3.jl")

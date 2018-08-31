@@ -1,10 +1,5 @@
 # Test for the example https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb
 
-using JuMP
-using SumOfSquares
-using SemialgebraicSets
-using MultivariateMoments
-
 @testset "Polynomial Optimization example with $solver" for solver in sdp_solvers
     isscs(solver) && continue
     @polyvar x y
@@ -28,9 +23,9 @@ using MultivariateMoments
         ν = matmeasure(μ, X)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)
-        @test isnull(atoms) == !found
-        if !isnull(atoms)
-            η = get(atoms)
+        @test (atoms === nothing) == !found
+        if atoms !== nothing
+            η = atoms
             @test η.atoms[1].weight ≈ 1/2 atol=1e-2
             @test η.atoms[2].weight ≈ 1/2 atol=1e-2
             @test isapprox(η.atoms[1].center, [0, 1], atol=1e-2) || isapprox(η.atoms[1].center, [1, 0], atol=1e-2)

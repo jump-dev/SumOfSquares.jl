@@ -3,14 +3,12 @@
 # DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization
 # 2017
 
-using MultivariateMoments
-
 @testset "Options Pricing with $solver" for solver in sdp_solvers
     isscs(solver) && continue
     @polyvar x y z
     σ = [184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
     X = [x^2, x*y, x*z, y^2, y*z, z^2, x, y, z, 1]
-    μ = measure([σ + 44.21^2; 44.21 * ones(3); 1],
+    μ = measure([σ .+ 44.21^2; 44.21 * ones(3); 1],
                 X)
     function optionspricing(K, cone)
         m = SOSModel(solver = solver)

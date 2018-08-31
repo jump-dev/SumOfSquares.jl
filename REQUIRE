@@ -4,3 +4,5 @@ SemialgebraicSets 0.0.2
 MultivariateMoments 0.1.0
 JuMP 0.18 0.19
 PolyJuMP 0.2 0.3
+Compat 1.0
+Reexport
