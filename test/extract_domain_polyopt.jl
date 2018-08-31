@@ -30,7 +30,7 @@ using MultivariateMoments
         atoms = extractatoms(ν, ranktol)
         @test (atoms === nothing) == !found
         if atoms !== nothing
-            η = get(atoms)
+            η = atoms
             @test η.atoms[1].weight ≈ 1/2 atol=1e-2
             @test η.atoms[2].weight ≈ 1/2 atol=1e-2
             @test isapprox(η.atoms[1].center, [0, 1], atol=1e-2) || isapprox(η.atoms[1].center, [1, 0], atol=1e-2)
