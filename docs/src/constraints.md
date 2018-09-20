@@ -97,7 +97,7 @@ default polynomial basis used for the [Nonnegative polynomial variables]
 certificate is `MonomialBasis([x, y])`, that is, we search for a positive
 semidefinite matrix `Q` such that
 ```math
-α * x^2 + β * y^2 - (α - β) * x * y = X^\top Q X
+α x^2 + β y^2 - (α - β) x y = X^\top Q X
 ```
 where ``X = (x, y)``.
 
