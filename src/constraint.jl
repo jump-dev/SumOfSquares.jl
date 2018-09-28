@@ -43,7 +43,7 @@ PolyJuMP.getslack(c::SOSConstraint) = JuMP.result_value(c.slack)
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis) where PT <: APL
     n = Compat.LinearAlgebra.checksquare(P)
-    if !Compat.LinearAlgebra.issymmetric(P)
+    if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
     end
     y = [similarvariable(PT, gensym()) for i in 1:n]

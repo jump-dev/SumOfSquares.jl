@@ -45,7 +45,7 @@ function randpsd(n; r=n, eps=0.1)
     Q = randn(n,n)
     d = zeros(Float64, n)
     d[1:r] = eps .+ abs.(randn(r))
-    Q' * Compat.LinearAlgebra.Diagonal(d) * Q
+    Q' * Diagonal(d) * Q
 end
 
 function _randsos(X::AbstractVector{<:AbstractMonomial}; r=-1, monotype=:Classic, eps=0.1)
