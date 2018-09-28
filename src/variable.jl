@@ -93,13 +93,13 @@ function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, binary::Bool, 
             if length(x) == 1
                 # 1x1 matrix is SDP iff its only entry is nonnegative
                 # We handle this case here and do not create any SDP constraint
-                setlowerbound(v, 0)
+                set_lower_bound(v, 0)
             end
             if binary
-                setbinary(v)
+                set_binary(v)
             end
             if integer
-                setinteger(v)
+                set_integer(v)
             end
             v
         end

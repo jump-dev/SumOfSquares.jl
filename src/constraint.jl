@@ -57,7 +57,7 @@ end
 function _matposynomial(m, x)
     p = _matpolynomial(m, x, false, false)
     for q in p.Q
-        JuMP.setlowerbound(q, 0)
+        JuMP.set_lower_bound(q, 0)
     end
     p
 end

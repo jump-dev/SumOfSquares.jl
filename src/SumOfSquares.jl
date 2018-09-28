@@ -19,6 +19,7 @@ include("certificate.jl")
 
 using JuMP
 using PolyJuMP
+export Poly
 
 include("variable.jl")
 include("constraint.jl")
