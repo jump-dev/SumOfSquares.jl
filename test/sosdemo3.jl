@@ -22,9 +22,9 @@
 
     @objective m Max γ
 
-    JuMP.optimize(m)
+    JuMP.optimize!(m)
 
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint || JuMP.primalstatus(m) == MOI.NearlyFeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint || JuMP.primal_status(m) == MOI.NearlyFeasiblePoint
 
     @test isapprox(JuMP.objectivevalue(m), 3; rtol=1e-3)
 end

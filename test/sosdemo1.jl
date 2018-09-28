@@ -16,9 +16,9 @@
 
     soscon = @constraint m p >= 0
 
-    JuMP.optimize(m)
+    JuMP.optimize!(m)
 
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint
 
     q = getslack(soscon)
     Q = getmat(q)
@@ -37,9 +37,9 @@
 
     soscon = @constraint M p >= 0
 
-    JuMP.optimize(M)
+    JuMP.optimize!(M)
 
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint
 
     # p should be MatPolynomial([1, 0, -1/2, 0, -1, 1, 0, -2/3, 0, 4/3, 0, 0, 2, 0, 4], [y, x, x*y, x*y^2, x^2*y^3])
 end

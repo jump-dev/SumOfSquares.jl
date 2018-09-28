@@ -46,9 +46,13 @@ SOSDecomposition(p::MatPolynomial{C, T}) where {C, T} = SOSDecomposition{C, floa
 
 Base.length(p::SOSDecomposition) = length(p.ps)
 Base.isempty(p::SOSDecomposition) = isempty(p.ps)
-Base.start(p::SOSDecomposition) = start(p.ps)
-Base.done(p::SOSDecomposition, state) = done(p.ps, state)
-Base.next(p::SOSDecomposition, state) = next(p.ps, state)
+@static if VERSION < v"0.7-"
+    Base.start(p::SOSDecomposition) = start(p.ps)
+    Base.done(p::SOSDecomposition, state) = done(p.ps, state)
+    Base.next(p::SOSDecomposition, state) = next(p.ps, state)
+else
+    Base.iterate(p::SOSDecomposition, args...) = Base.iterate(p.ps, args...)
+end
 Base.getindex(p::SOSDecomposition, i::Int) = p.ps[i]
 
 (p::MatPolynomial)(s::MP.AbstractSubstitution...) = polynomial(p)(s...)

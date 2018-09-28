@@ -23,12 +23,12 @@
 
         @constraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
 
-        JuMP.optimize(m)
+        JuMP.optimize!(m)
 
         if feasible
-            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(m) == MOI.FeasiblePoint
         else
-            @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
+            @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
         end
     end
 end

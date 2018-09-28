@@ -9,6 +9,6 @@
 
     @SDconstraint m C >= 0
 
-    JuMP.optimize(m)
-    @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
+    JuMP.optimize!(m)
+    @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
 end

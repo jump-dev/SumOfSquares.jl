@@ -19,9 +19,9 @@
         @variable m γ
         @constraint m p - γ*sum(x .* x)^2 in cone
         @objective m Max γ
-        JuMP.optimize(m)
-        @test JuMP.primalstatus(m) == MOI.FeasiblePoint
-        JuMP.objectivevalue(m)
+        JuMP.optimize!(m)
+        @test JuMP.primal_status(m) == MOI.FeasiblePoint
+        JuMP.objective_value(m)
     end
 
     @test sdsos_example(DSOSCone())  ≈ -11/3     rtol=1e-5

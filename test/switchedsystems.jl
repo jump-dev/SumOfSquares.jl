@@ -25,14 +25,14 @@
         c1 = @constraint m p(x => A1 * vec(x)) <= γ^(2*d) * p
         c2 = @constraint m p(x => A2 * vec(x)) <= γ^(2*d) * p
 
-        JuMP.optimize(m)
+        JuMP.optimize!(m)
 
         if feasible
-            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(m) == MOI.FeasiblePoint
         else
-            @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
-            μ1 = JuMP.resultdual(c1)
-            μ2 = JuMP.resultdual(c2)
+            @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
+            μ1 = JuMP.result_dual(c1)
+            μ2 = JuMP.result_dual(c2)
 
             # The dual constraint should work on any polynomial.
             # Let's test it with q

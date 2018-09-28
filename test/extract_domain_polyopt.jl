@@ -17,11 +17,11 @@ using MultivariateMoments
         @objective m Max α
         c = @constraint m p >= α domain = S maxdegree = maxdeg
 
-        JuMP.optimize(m)
-        @test JuMP.terminationstatus(m) == MOI.Success
-        @test JuMP.objectivevalue(m) ≈ 0 atol=1e-4
+        JuMP.optimize!(m)
+        @test JuMP.termination_status(m) == MOI.Success
+        @test JuMP.objective_value(m) ≈ 0 atol=1e-4
 
-        μ = JuMP.resultdual(c)
+        μ = JuMP.result_dual(c)
         X = certificate_monomials(c)
         ν = matmeasure(μ, X)
         ranktol = 1e-3

@@ -20,9 +20,9 @@ using MultivariateMoments
         @constraint m p - (y - K) in cone
         @constraint m p - (z - K) in cone
         @objective m Min dot(μ, p)
-        JuMP.optimize(m)
-        @test JuMP.primalstatus(m) == MOI.FeasiblePoint
-        JuMP.objectivevalue(m)
+        JuMP.optimize!(m)
+        @test JuMP.primal_status(m) == MOI.FeasiblePoint
+        JuMP.objective_value(m)
     end
 
     K = [30, 35, 40, 45, 50]

@@ -1,7 +1,7 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
-function JuMP.resultvalue(p::MatPolynomial{JuMP.VariableRef})
-    MatPolynomial(map(JuMP.resultvalue, p.Q), p.x)
+function JuMP.result_value(p::MatPolynomial{JuMP.VariableRef})
+    MatPolynomial(map(JuMP.result_value, p.Q), p.x)
 end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
@@ -15,7 +15,7 @@ end
 
 const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
-JuMP.variabletype(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
+JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
 PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:AbstractMonomial, MV<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MV}
 
 # Sum-of-Squares polynomial
@@ -86,7 +86,7 @@ function constraint_matpoly!(model, p::MatPolynomial, ::DSOSPoly)
 end
 function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, binary::Bool, integer::Bool)
     if isempty(x)
-        zero(JuMP.variabletype(m, SOSPoly(x)))
+        zero(JuMP.variable_type(m, SOSPoly(x)))
     else
         function _newvar(i, j)
             v = JuMP.VariableRef(m)

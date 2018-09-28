@@ -16,9 +16,9 @@ end
 
             @constraint m p >= 0
 
-            JuMP.optimize(m)
+            JuMP.optimize!(m)
 
-            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(m) == MOI.FeasiblePoint
         end
     end
 end
