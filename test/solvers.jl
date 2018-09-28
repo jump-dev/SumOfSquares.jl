@@ -27,8 +27,8 @@ sdp_factories = JuMP.OptimizerFactory[]
 mos && push!(sdp_factories, with_optimizer(MathOptInterfaceMosek.MosekOptimizer, QUIET=true))
 # Currently, need to create a file param.csdp to avoid printing, see https://github.com/JuliaOpt/CSDP.jl/issues/15
 csd && push!(sdp_factories, with_opt(CSDP, printlevel=0))
-iscsdp(factory) = contains(string(factory.constructor), "CSDP")
+iscsdp(factory) = occursin("CSDP", string(factory.constructor))
 # Need 54000 iterations for sosdemo3 to pass on Linux 64 bits
 # With 55000, sosdemo3 passes for every platform except Windows 64 bits on AppVeyor
 scs && push!(sdp_factories, SCS.SCSOptimizer(eps=1e-6, max_iters=60000, verbose=0))
-isscs(factory) = contains(string(factory.constructor), "SCS")
+isscs(factory) = occursin("SCS", string(factory.constructor))

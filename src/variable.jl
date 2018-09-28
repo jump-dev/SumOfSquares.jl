@@ -40,7 +40,7 @@ ArXiv e-prints, 2017
 function constraint_matpoly! end
 
 function constraint_matpoly!(m, p::MatPolynomial, ::SOSPoly)
-    JuMP.addconstraint(m, JuMP.VectorOfVariablesConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
+    JuMP.add_constraint(m, JuMP.VectorOfVariablesConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
 end
 function constraint_matpoly!(model, p::MatPolynomial, ::SDSOSPoly)
     # `p.Q` is SDD iff it is the sum of psd matrices Mij that are zero except for
@@ -65,7 +65,7 @@ function constraint_matpoly!(model, p::MatPolynomial, ::SDSOSPoly)
 end
 function constraint_matpoly!(model, p::MatPolynomial, ::DSOSPoly)
     n = length(p.x)
-    Q = Matrix{JuMP.VariableRef}(n, n)
+    Q = Matrix{JuMP.VariableRef}(undef, n, n)
     for i in 1:n
         for j in i:n
             if i == j

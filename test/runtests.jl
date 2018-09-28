@@ -1,12 +1,11 @@
-using Compat, Compat.LinearAlgebra, Compat.Test
+using Compat, Compat.LinearAlgebra, Compat.SparseArrays, Compat.Test
 
 using MultivariatePolynomials
-using SemialgebraicSets
 
 using MathOptInterface
 const MOI = MathOptInterface
+
 using JuMP
-using PolyJuMP
 using SumOfSquares
 
 # Taken from JuMP/test/solvers.jl

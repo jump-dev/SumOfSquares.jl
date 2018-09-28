@@ -24,7 +24,7 @@
 
     Sc = [theta^2-s*(gamma-p) g0+g1; g0+g1 1]
 
-    @SDconstraint m eps * eye(2) ⪯ Sc
+    @SDconstraint m Matrix(eps * I, 2, 2) ⪯ Sc
 
     JuMP.optimize!(m)
 

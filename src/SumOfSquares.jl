@@ -4,17 +4,21 @@ module SumOfSquares
 
 export SOSModel
 
+using Compat
+
 using MultivariatePolynomials
 const MP = MultivariatePolynomials
-using MultivariateMoments
 using SemialgebraicSets
+export @set
+using MultivariateMoments
 
 include("matpoly.jl")
 include("sosdec.jl")
 
 include("certificate.jl")
 
-using PolyJuMP, JuMP
+using JuMP
+using PolyJuMP
 
 include("variable.jl")
 include("constraint.jl")
