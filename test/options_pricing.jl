@@ -10,7 +10,7 @@ using MultivariateMoments
     @polyvar x y z
     σ = [184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
     X = [x^2, x*y, x*z, y^2, y*z, z^2, x, y, z, 1]
-    μ = measure([σ + 44.21^2; 44.21 * ones(3); 1],
+    μ = measure([σ .+ 44.21^2; 44.21 * ones(3); 1],
                 X)
     function optionspricing(K, cone)
         m = SOSModel(factory)
@@ -20,9 +20,9 @@ using MultivariateMoments
         @constraint m p - (y - K) in cone
         @constraint m p - (z - K) in cone
         @objective m Min dot(μ, p)
-        JuMP.optimize(m)
-        @test JuMP.primalstatus(m) == MOI.FeasiblePoint
-        JuMP.objectivevalue(m)
+        JuMP.optimize!(m)
+        @test JuMP.primal_status(m) == MOI.FeasiblePoint
+        JuMP.objective_value(m)
     end
 
     K = [30, 35, 40, 45, 50]

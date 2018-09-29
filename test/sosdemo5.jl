@@ -32,7 +32,8 @@
 
         # -- Q(x)'s -- : sums of squares
         # Monomial vector: [x1; ... x8]
-        Q = Vector{MatPolynomial{JuMP.VariableRef, monomialtype(x[1]), monovectype(x[1])}}(4)
+        Q = Vector{MatPolynomial{JuMP.VariableRef, monomialtype(x[1]),
+                                 monovectype(x[1])}}(undef, 4)
         @variable m Q[1:4] SOSPoly(Z)
 
         # -- r's -- : constant sum of squares
@@ -57,13 +58,13 @@
 
         @constraint m expr >= 0
 
-        JuMP.optimize(m)
+        JuMP.optimize!(m)
 
         # Program is feasible, thus 0.8724 is an upper bound for mu.
         if feasible
-            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(m) == MOI.FeasiblePoint
         else
-            @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
+            @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
         end
     end
 end

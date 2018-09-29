@@ -13,6 +13,6 @@
     # TODO return H so that P = H.'*H
     @SDconstraint m P ⪰ 0
 
-    JuMP.optimize(m)
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+    JuMP.optimize!(m)
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint
 end

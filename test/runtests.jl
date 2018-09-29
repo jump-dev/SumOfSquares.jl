@@ -1,12 +1,12 @@
-using MathOptInterface
-const MOI = MathOptInterface
-using JuMP
-using SumOfSquares
-using PolyJuMP
-using Base.Test
+using Compat, Compat.LinearAlgebra, Compat.SparseArrays, Compat.Test
 
 using MultivariatePolynomials
-using SemialgebraicSets
+
+using MathOptInterface
+const MOI = MathOptInterface
+
+using JuMP
+using SumOfSquares
 
 # Taken from JuMP/test/solvers.jl
 function try_import(name::Symbol)

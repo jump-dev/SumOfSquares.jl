@@ -9,7 +9,7 @@
     f = 2.5 - 0.5*x[1]*x[2] - 0.5*x[2]*x[3] - 0.5*x[3]*x[4] - 0.5*x[4]*x[5] - 0.5*x[5]*x[1]
 
     # Boolean constraints
-    bc = vec(x).^2 - 1
+    bc = vec(x).^2 .- 1
 
     for (gamma, feasible) in [(3.9, false), (4, true)]
 
@@ -23,12 +23,12 @@
 
         @constraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
 
-        JuMP.optimize(m)
+        JuMP.optimize!(m)
 
         if feasible
-            @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(m) == MOI.FeasiblePoint
         else
-            @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
+            @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
         end
     end
 end

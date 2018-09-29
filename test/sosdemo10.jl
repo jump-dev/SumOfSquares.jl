@@ -24,13 +24,13 @@
 
     Sc = [theta^2-s*(gamma-p) g0+g1; g0+g1 1]
 
-    @SDconstraint m eps * eye(2) ⪯ Sc
+    @SDconstraint m Matrix(eps * I, 2, 2) ⪯ Sc
 
-    JuMP.optimize(m)
+    JuMP.optimize!(m)
 
     # Program is feasible, { x |((g0+g1) + theta)(theta - (g0+g1)) >=0 } contains { x | p <= gamma }
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint || JuMP.primalstatus(m) == MOI.NearlyFeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint || JuMP.primal_status(m) == MOI.NearlyFeasiblePoint
 
-    #@show JuMP.resultvalue(s)
-    #@show JuMP.resultvalue(g1)
+    #@show JuMP.result_value(s)
+    #@show JuMP.result_value(g1)
 end

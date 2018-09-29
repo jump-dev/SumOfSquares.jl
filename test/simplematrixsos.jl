@@ -7,12 +7,12 @@
     # Example 3.77
     m = SOSModel(factory)
     @SDconstraint m P >= 0
-    JuMP.optimize(m)
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+    JuMP.optimize!(m)
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint
     # Example 3.79
     @polyvar y[1:2]
     M = SOSModel(factory)
     @constraint M dot(vec(y), P*vec(y)) >= 0
-    JuMP.optimize(M)
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+    JuMP.optimize!(M)
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint
 end

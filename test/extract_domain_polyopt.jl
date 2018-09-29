@@ -2,7 +2,6 @@
 
 using JuMP
 using SumOfSquares
-using SemialgebraicSets
 using MultivariateMoments
 
 @testset "Polynomial Optimization example with $(factory.constructor)" for factory in sdp_factories
@@ -17,18 +16,18 @@ using MultivariateMoments
         @objective m Max α
         c = @constraint m p >= α domain = S maxdegree = maxdeg
 
-        JuMP.optimize(m)
-        @test JuMP.terminationstatus(m) == MOI.Success
-        @test JuMP.objectivevalue(m) ≈ 0 atol=1e-4
+        JuMP.optimize!(m)
+        @test JuMP.termination_status(m) == MOI.Success
+        @test JuMP.objective_value(m) ≈ 0 atol=1e-4
 
-        μ = JuMP.resultdual(c)
+        μ = JuMP.result_dual(c)
         X = certificate_monomials(c)
         ν = matmeasure(μ, X)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)
-        @test isnull(atoms) == !found
-        if !isnull(atoms)
-            η = get(atoms)
+        @test (atoms === nothing) == !found
+        if atoms !== nothing
+            η = atoms
             @test η.atoms[1].weight ≈ 1/2 atol=1e-2
             @test η.atoms[2].weight ≈ 1/2 atol=1e-2
             @test isapprox(η.atoms[1].center, [0, 1], atol=1e-2) || isapprox(η.atoms[1].center, [1, 0], atol=1e-2)

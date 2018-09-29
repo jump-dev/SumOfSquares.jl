@@ -38,9 +38,9 @@
 
     @objective m Min bnd
 
-    JuMP.optimize(m)
-    @test JuMP.primalstatus(m) == MOI.FeasiblePoint
+    JuMP.optimize!(m)
+    @test JuMP.primal_status(m) == MOI.FeasiblePoint
 
-    @test isapprox(JuMP.objectivevalue(m), 1/37, rtol=1e-5)
-    @test isapprox(JuMP.resultvalue(P), ((12/37)x-11/37)^2, rtol=1e-3)
+    @test isapprox(JuMP.objective_value(m), 1/37, rtol=1e-5)
+    @test isapprox(JuMP.result_value(P), ((12/37)x-11/37)^2, rtol=1e-3)
 end

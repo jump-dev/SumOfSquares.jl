@@ -1,7 +1,7 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
-function JuMP.resultvalue(p::MatPolynomial{JuMP.VariableRef})
-    MatPolynomial(map(JuMP.resultvalue, p.Q), p.x)
+function JuMP.result_value(p::MatPolynomial{JuMP.VariableRef})
+    MatPolynomial(map(JuMP.result_value, p.Q), p.x)
 end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
@@ -15,7 +15,7 @@ end
 
 const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
-JuMP.variabletype(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
+JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
 PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:AbstractMonomial, MV<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MV}
 
 # Sum-of-Squares polynomial
@@ -40,7 +40,7 @@ ArXiv e-prints, 2017
 function constraint_matpoly! end
 
 function constraint_matpoly!(m, p::MatPolynomial, ::SOSPoly)
-    JuMP.addconstraint(m, JuMP.VectorOfVariablesConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
+    JuMP.add_constraint(m, JuMP.VectorConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
 end
 function constraint_matpoly!(model, p::MatPolynomial, ::SDSOSPoly)
     # `p.Q` is SDD iff it is the sum of psd matrices Mij that are zero except for
@@ -65,7 +65,7 @@ function constraint_matpoly!(model, p::MatPolynomial, ::SDSOSPoly)
 end
 function constraint_matpoly!(model, p::MatPolynomial, ::DSOSPoly)
     n = length(p.x)
-    Q = Matrix{JuMP.VariableRef}(n, n)
+    Q = Matrix{JuMP.VariableRef}(undef, n, n)
     for i in 1:n
         for j in i:n
             if i == j
@@ -86,20 +86,20 @@ function constraint_matpoly!(model, p::MatPolynomial, ::DSOSPoly)
 end
 function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, binary::Bool, integer::Bool)
     if isempty(x)
-        zero(JuMP.variabletype(m, SOSPoly(x)))
+        zero(JuMP.variable_type(m, SOSPoly(x)))
     else
         function _newvar(i, j)
             v = JuMP.VariableRef(m)
             if length(x) == 1
                 # 1x1 matrix is SDP iff its only entry is nonnegative
                 # We handle this case here and do not create any SDP constraint
-                setlowerbound(v, 0)
+                set_lower_bound(v, 0)
             end
             if binary
-                setbinary(v)
+                set_binary(v)
             end
             if integer
-                setinteger(v)
+                set_integer(v)
             end
             v
         end

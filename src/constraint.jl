@@ -37,12 +37,12 @@ end
 certificate_monomials(c::PolyJuMP.PolyConstraintRef) = certificate_monomials(PolyJuMP.getdelegate(c))
 certificate_monomials(c::SOSConstraint) = c.slack.x
 
-JuMP.resultdual(c::SOSConstraint) = JuMP.resultdual(c.zero_constraint)
+JuMP.result_dual(c::SOSConstraint) = JuMP.result_dual(c.zero_constraint)
 
-PolyJuMP.getslack(c::SOSConstraint) = JuMP.resultvalue(c.slack)
+PolyJuMP.getslack(c::SOSConstraint) = JuMP.result_value(c.slack)
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis) where PT <: APL
-    n = Base.LinAlg.checksquare(P)
+    n = Compat.LinearAlgebra.checksquare(P)
     if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
     end
@@ -57,7 +57,7 @@ end
 function _matposynomial(m, x)
     p = _matpolynomial(m, x, false, false)
     for q in p.Q
-        JuMP.setlowerbound(q, 0)
+        JuMP.set_lower_bound(q, 0)
     end
     p
 end

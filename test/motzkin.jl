@@ -7,9 +7,9 @@
 
     @constraint m p >= 0
 
-    JuMP.optimize(m)
+    JuMP.optimize!(m)
 
-    @test JuMP.dualstatus(m) == MOI.InfeasibilityCertificate
+    @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
 
     M = SOSModel(factory)
 
@@ -17,7 +17,7 @@
 
     @constraint M q >= 0
 
-    JuMP.optimize(M)
+    JuMP.optimize!(M)
 
-    @test JuMP.primalstatus(M) == MOI.FeasiblePoint
+    @test JuMP.primal_status(M) == MOI.FeasiblePoint
 end

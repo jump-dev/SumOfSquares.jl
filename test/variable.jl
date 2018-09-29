@@ -1,3 +1,5 @@
+import PolyJuMP
+
 @testset "Creating polynomial with empty MonomialVector" begin
     @polyvar x
     X = emptymonovec(typeof(x^2))
@@ -5,7 +7,7 @@
     @inferred PolyJuMP.createpoly(m, SOSPoly(X), false, false)
     @test PolyJuMP.createpoly(m, SOSPoly(X), false, false) == 0
 end
-@testset "MatPolynomial resultvalue" begin
+@testset "MatPolynomial result_value" begin
     m = JuMP.Model()
     @variable m α
     @variable m β
@@ -13,5 +15,5 @@ end
     q = MatPolynomial([α β; β α], [x, y])
     JuMP.fix(α, 2)
     JuMP.fix(β, 3)
-    @test_broken JuMP.resultvalue(q) == 2x^2 + 2y^2 + 6x*y
+    @test_broken JuMP.result_value(q) == 2x^2 + 2y^2 + 6x*y
 end
