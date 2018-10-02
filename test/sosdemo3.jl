@@ -26,5 +26,5 @@
 
   @test status == :Optimal || (iscsdp(solver) && status == :Suboptimal)
 
-  @test isapprox(getobjectivevalue(m), 3; rtol=1e-3)
+  @test isapprox(getobjectivevalue(m), 3; rtol=(isscs(solver) ? 1e-2 : 1e-3))
 end

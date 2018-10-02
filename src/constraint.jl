@@ -1,7 +1,7 @@
 export DSOSCone, SDSOSCone, SOSCone
 export CoDSOSCone, CoSDSOSCone, CoSOSCone
 export SOSMatrixCone
-export getslack, certificate_monomials
+export getslack, certificate_monomials, lagrangian_multipliers
 
 struct DSOSCone <: PolyJuMP.PolynomialSet end
 struct CoDSOSCone <: PolyJuMP.PolynomialSet end
@@ -35,7 +35,10 @@ function SOSConstraint(slack::MatPolynomial{JS, MT, MVT},
     return SOSConstraint(slack, zero_constraint, MatPolynomial{JS, MT, MVT}[])
 end
 
+certificate_monomials(c::PolyJuMP.PolyConstraintRef) = certificate_monomials(PolyJuMP.getdelegate(c))
 certificate_monomials(c::SOSConstraint) = c.slack.x
+lagrangian_multipliers(c::PolyJuMP.PolyConstraintRef) = lagrangian_multipliers(PolyJuMP.getdelegate(c))
+lagrangian_multipliers(c::SOSConstraint) = c.lagrangian_multipliers
 
 PolyJuMP.getslack(c::SOSConstraint) = getvalue(c.slack)
 JuMP.getdual(c::SOSConstraint) = getdual(c.zero_constraint)
@@ -57,6 +60,7 @@ function _matposynomial(m, x)
     p = _matpolynomial(m, x, :Cont)
     m.colLower[map(q -> q.col, p.Q)] .= 0.0
     p
+
 end
 function _createslack(m, x, set::CoSOSLikeCones)
     _matplus(_createslack(m, x, _nococone(set)), _matposynomial(m, x))

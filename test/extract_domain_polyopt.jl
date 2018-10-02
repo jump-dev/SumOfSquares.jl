@@ -16,10 +16,14 @@
         @test status == :Optimal
         @test getobjectivevalue(m) ≈ 0 atol=1e-4
 
+        for λ in lagrangian_multipliers(c)
+            @test all(eigvals(Matrix(JuMP.getvalue(λ).Q)) .>= -1e-2)
+        end
+
         # TODO replace by -getdual(c) when MultivariateMoments v0.0.2 is released
         #      and also update examples/Polynomial_Optimization.ipynb
         μ = -1 * getdual(c)
-        X = certificate_monomials(PolyJuMP.getdelegate(c))
+        X = certificate_monomials(c)
         ν = matmeasure(μ, X)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)
