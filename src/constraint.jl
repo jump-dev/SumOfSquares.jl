@@ -24,10 +24,15 @@ const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone}
 const CoSOSLikeCones = Union{CoDSOSCone, CoSDSOSCone, CoSOSCone}
 const SOSSubCones = Union{CoSOSLikeCones, SOSLikeCones}
 
-struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint} <: PolyJuMP.ConstraintDelegate
+mutable struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint} <: PolyJuMP.ConstraintDelegate
     # JS is AffExpr for CoSOS and is Variable for SOS
     slack::MatPolynomial{JS, MT, MVT}
     zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, JC}
+    lagrangian_multipliers::Vector{MatPolynomial{JS, MT, MVT}}
+end
+function SOSConstraint(slack::MatPolynomial{JS, MT, MVT},
+                       zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, JC}) where {MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, JC<:JuMP.AbstractConstraint}
+    return SOSConstraint(slack, zero_constraint, MatPolynomial{JS, MT, MVT}[])
 end
 
 certificate_monomials(c::SOSConstraint) = c.slack.x
@@ -65,25 +70,27 @@ function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain:
     zero_constraint = PolyJuMP.addpolyconstraint!(m, q, ZeroPoly(), domain, basis)
     SOSConstraint(slack, zero_constraint)
 end
-
+function lagrangian_multiplier(model::JuMP.Model, p, set::SOSSubCones, q, mindegree::Integer, maxdegree::Integer)
+    mindegree_q, maxdegree_q = extdegree(q)
+    # extdegree's that s^2 should have so that s^2 * p has degrees between mindegree and maxdegree
+    mindegree_s2 = mindegree - mindegree_q
+    maxdegree_s2 = maxdegree - maxdegree_q
+    # extdegree's for s
+    mindegree_s = max(0, div(mindegree_s2, 2))
+    # If maxdegree_s2 is odd, div(maxdegree_s2,2) would make s^2 have degree up to maxdegree_s2-1
+    # for this reason, we take div(maxdegree_s2+1,2) so that s^2 have degree up to maxdegree_s2+1
+    maxdegree_s = div(maxdegree_s2 + 1, 2)
+    # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
+    # so instead of `variable(p)` we would have the union of them all
+    @assert variables(q) ⊆ variables(p)
+    return createpoly(model, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), :Cont)
+end
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::BasicSemialgebraicSet, basis;
-                            mindegree=MultivariatePolynomials.mindegree(p),
-                            maxdegree=MultivariatePolynomials.maxdegree(p))
-    for q in domain.p
-        mindegree_q, maxdegree_q = extdegree(q)
-        # extdegree's that s^2 should have so that s^2 * p has degrees between mindegree and maxdegree
-        mindegree_s2 = mindegree - mindegree_q
-        maxdegree_s2 = maxdegree - maxdegree_q
-        # extdegree's for s
-        mindegree_s = max(0, div(mindegree_s2, 2))
-        # If maxdegree_s2 is odd, div(maxdegree_s2,2) would make s^2 have degree up to maxdegree_s2-1
-        # for this reason, we take div(maxdegree_s2+1,2) so that s^2 have degree up to maxdegree_s2+1
-        maxdegree_s = div(maxdegree_s2 + 1, 2)
-        # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
-        # so instead of `variable(p)` we would have the union of them all
-        @assert variables(q) ⊆ variables(p)
-        s2 = createpoly(m, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), :Cont)
-        p -= s2 * q
-    end
-    PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis)
+                                     mindegree=MultivariatePolynomials.mindegree(p),
+                                     maxdegree=MultivariatePolynomials.maxdegree(p))
+    λ = lagrangian_multiplier.(Ref(m), p, Ref(set), domain.p, mindegree, maxdegree)
+    p -= dot(λ, domain.p)
+    constraint = PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis)
+    constraint.lagrangian_multipliers = λ
+    return constraint
 end

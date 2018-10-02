@@ -26,7 +26,6 @@ else
 end
 
 using JuMP
-using PolyJuMP
 using SumOfSquares
 
 include("matpoly.jl")

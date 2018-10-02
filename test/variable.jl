@@ -1,3 +1,5 @@
+import PolyJuMP
+
 @testset "Creating polynomial with empty MonomialVector" begin
     @polyvar x
     X = emptymonovec(typeof(x^2))
