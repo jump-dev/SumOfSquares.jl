@@ -14,8 +14,6 @@ before_install:
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
-before_script:
-    - julia -e 'if VERSION >= v"0.7-"; using Pkg; Pkg.add(PackageSpec(name="PolyJuMP", rev="release-0.2")); else Pkg.add("PolyJuMP"); Pkg.checkout("PolyJuMP", "release-0.2"); end'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("SumOfSquares")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
