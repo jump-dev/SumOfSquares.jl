@@ -3,31 +3,31 @@
 # Section 3.7 of SOSTOOLS User's Manual
 
 @testset "SOSDEMO7 with $solver" for solver in sdp_solvers
-    if !isscs(solver)
-        ndeg = 8   # Degree of Chebyshev polynomial
+    isscs(solver) && continue
 
-        @polyvar x
+    ndeg = 8   # Degree of Chebyshev polynomial
 
-        Z = monomials((x,), 0:ndeg-1)
+    @polyvar x
 
-        m = SOSModel(solver = solver)
+    Z = monomials((x,), 0:ndeg-1)
 
-        @variable m γ
-        @variable m p1 Poly(Z)
+    m = SOSModel(solver = solver)
 
-        p = p1 + γ * x^ndeg # the leading coeff of p is γ
+    @variable m γ
+    @variable m p1 Poly(Z)
 
-        dom = @set x >= -1 && x <= 1
-        @constraint(m, p <= 1, domain = dom)
-        @constraint(m, p >= -1, domain = dom)
+    p = p1 + γ * x^ndeg # the leading coeff of p is γ
 
-        @objective m Max γ
+    dom = @set x >= -1 && x <= 1
+    @constraint(m, p <= 1, domain = dom)
+    @constraint(m, p >= -1, domain = dom)
 
-        status = solve(m)
+    @objective m Max γ
 
-        @test status == :Optimal
+    status = solve(m)
 
-        @test isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
-        @test isapprox(getvalue(γ), 128)
-    end
+    @test status == :Optimal
+
+    @test isapprox(getvalue(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
+    @test isapprox(getvalue(γ), 128)
 end
