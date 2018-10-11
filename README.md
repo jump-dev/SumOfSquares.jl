@@ -7,9 +7,19 @@
 
 **Important note**: The most recently tagged version of this package works with
 most recently tagged version of [JuMP](https://github.com/JuliaOpt/JuMP.jl),
-i.e. JuMP v0.18.x. The
-in-development version of this package works with the in-development version of
-[JuMP](https://github.com/JuliaOpt/JuMP.jl), i.e. JuMP 0.19-.
+i.e. JuMP v0.18.x, to try this package with JuMP v0.18, simply do
+```julia
+] add SumOfSquares
+```
+The development of this package for JuMP v0.18.x is done in the `release-0.2`
+branch.
+The `master` branch of this package works with the JuMP v0.19-alpha. To try this
+package with JuMP v0.19-alpha, do:
+```julia
+] add JuMP#v0.19-alpha
+] add PolyJuMP#master
+] add SumOfSquares#master
+```
 
 This packages contains the Sum of Squares reformulation for polynomial optimization.
 When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for JuMP.
