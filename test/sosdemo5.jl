@@ -4,6 +4,7 @@
 
 @testset "SOSDEMO5 with $(factory.constructor)" for factory in sdp_factories
     isscs(factory) && continue
+    iscsdp(factory) && continue # Returns UnknownResultStatus: https://travis-ci.org/JuliaOpt/SumOfSquares.jl/jobs/440521195#L338
     @polyvar x[1:8]
 
     # The matrix under consideration
