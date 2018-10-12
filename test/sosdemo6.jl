@@ -11,24 +11,23 @@
     # Boolean constraints
     bc = vec(x).^2 .- 1
 
-    for (gamma, feasible) in [(3.9, false), (4, true)]
-
-        m = SOSModel(factory)
+    @testset "with γ=$γ it should be $(feasible ? "feasible" : "infeasible")" for (γ, feasible) in [(3.9, false), (4, true)]
+        model = SOSModel(factory)
 
         Z = monomials(x, 0:1)
-        @variable m p1 SOSPoly(Z)
+        @variable model p1 SOSPoly(Z)
 
         Z = monomials(x, 0:2)
-        @variable m p[1:5] Poly(Z)
+        @variable model p[1:5] Poly(Z)
 
-        @constraint m p1*(gamma-f) + dot(p, bc) >= (gamma-f)^2
+        @constraint model p1*(γ-f) + dot(p, bc) >= (γ-f)^2
 
-        JuMP.optimize!(m)
+        JuMP.optimize!(model)
 
         if feasible
-            @test JuMP.primal_status(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(model) == MOI.FeasiblePoint
         else
-            @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
+            @test JuMP.dual_status(model) == MOI.InfeasibilityCertificate
         end
     end
 end
