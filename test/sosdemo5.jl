@@ -4,7 +4,6 @@
 
 @testset "SOSDEMO5 with $(factory.constructor)" for factory in sdp_factories
     isscs(factory) && continue
-    iscsdp(factory) && continue # Returns UnknownResultStatus: https://travis-ci.org/JuliaOpt/SumOfSquares.jl/jobs/440521195#L338
     @polyvar x[1:8]
 
     # The matrix under consideration
@@ -19,11 +18,11 @@
     V = [0 a; b -b; c -im*c; -im*f -d];
     M = U*V';
 
-    for (gam, feasible) in ((0.8723, false), (0.8724, true))
+    @testset "with γ=$γ it should be $(feasible ? "feasible" : "infeasible")" for (γ, feasible) in ((0.8722, false), (0.8724, true))
         Z = monomials(x, 1)
 
         function build_A(i)
-            H = M[i,:]*M[i,:]' - (gam^2)*sparse([i],[i],[1],4,4)
+            H = M[i,:]*M[i,:]' - (γ^2)*sparse([i],[i],[1],4,4)
             H = [real(H) -imag(H); imag(H) real(H)]
             dot(Z, H*Z)
         end
