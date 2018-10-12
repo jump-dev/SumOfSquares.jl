@@ -27,11 +27,10 @@ jobs:
     - stage: "Documentation"
       julia: 1.0
       os: linux
-      before_script:
-        - julia -e 'if VERSION >= v"0.7-"; using Pkg; Pkg.add(PackageSpec(name="JuMP", rev="master")); else Pkg.add("JuMP"); Pkg.checkout("JuMP"); end'
-        - julia -e 'if VERSION >= v"0.7-"; using Pkg; Pkg.add(PackageSpec(name="PolyJuMP", rev="master")); else Pkg.add("PolyJuMP"); Pkg.checkout("PolyJuMP"); end'
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.instantiate();
+                                    Pkg.add(PackageSpec(name="JuMP", rev="master"));
+                                    Pkg.add(PackageSpec(name="PolyJuMP", rev="master"));
                                     Pkg.develop(PackageSpec(path=pwd()))'
         - julia --project=docs/ docs/make.jl
       after_success: skip
