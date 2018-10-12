@@ -7,10 +7,10 @@
 
     # The matrix under consideration
     J = [1 -1  1  1 -1;
-         -1  1 -1  1  1;
+        -1  1 -1  1  1;
          1 -1  1 -1  1;
          1  1 -1  1 -1;
-         -1  1  1 -1  1]
+        -1  1  1 -1  1]
 
     xs = vec(x).^2
     xsJxs = dot(xs, J*xs)
