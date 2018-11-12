@@ -1,7 +1,7 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
-function JuMP.result_value(p::MatPolynomial{JuMP.VariableRef})
-    MatPolynomial(map(JuMP.result_value, p.Q), p.x)
+function JuMP.value(p::MatPolynomial{JuMP.VariableRef})
+    MatPolynomial(map(JuMP.value, p.Q), p.x)
 end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)

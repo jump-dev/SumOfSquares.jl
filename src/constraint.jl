@@ -44,9 +44,9 @@ certificate_monomials(c::SOSConstraint) = c.slack.x
 lagrangian_multipliers(c::PolyJuMP.PolyConstraintRef) = lagrangian_multipliers(PolyJuMP.getdelegate(c))
 lagrangian_multipliers(c::SOSConstraint) = c.lagrangian_multipliers
 
-JuMP.result_dual(c::SOSConstraint) = JuMP.result_dual(c.zero_constraint)
+JuMP.dual(c::SOSConstraint) = JuMP.dual(c.zero_constraint)
 
-PolyJuMP.getslack(c::SOSConstraint) = JuMP.result_value(c.slack)
+PolyJuMP.getslack(c::SOSConstraint) = JuMP.value(c.slack)
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis) where PT <: APL
     n = Compat.LinearAlgebra.checksquare(P)

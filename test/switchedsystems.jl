@@ -31,8 +31,8 @@
             @test JuMP.primal_status(m) == MOI.FeasiblePoint
         else
             @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
-            μ1 = JuMP.result_dual(c1)
-            μ2 = JuMP.result_dual(c2)
+            μ1 = JuMP.dual(c1)
+            μ2 = JuMP.dual(c2)
 
             # The dual constraint should work on any polynomial.
             # Let's test it with q
