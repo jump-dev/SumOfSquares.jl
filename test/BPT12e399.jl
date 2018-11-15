@@ -19,7 +19,7 @@
 
     @test JuMP.primal_status(m) == MOI.FeasiblePoint
 
-    @test JuMP.result_value(α) ≈ 6 atol=1e-6
+    @test JuMP.value(α) ≈ 6 atol=1e-6
 
     # FIXME JuMP does not support modification once loaded on jump/moi yet
 #    @objective m Min α
@@ -28,5 +28,5 @@
 #
 #    @test JuMP.primal_status(m) == MOI.FeasiblePoint
 #
-#    @test JuMP.result_value(α) ≈ -6 atol=1e-6
+#    @test JuMP.value(α) ≈ -6 atol=1e-6
 end

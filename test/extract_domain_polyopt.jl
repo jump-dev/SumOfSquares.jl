@@ -21,10 +21,10 @@ using MultivariateMoments
         @test JuMP.objective_value(m) ≈ 0 atol=1e-4
 
         for λ in lagrangian_multipliers(c)
-            @test all(eigvals(Matrix(JuMP.result_value(λ).Q)) .>= -1e-2)
+            @test all(eigvals(Matrix(JuMP.value(λ).Q)) .>= -1e-2)
         end
 
-        μ = JuMP.result_dual(c)
+        μ = JuMP.dual(c)
         X = certificate_monomials(c)
         ν = matmeasure(μ, X)
         ranktol = 1e-3

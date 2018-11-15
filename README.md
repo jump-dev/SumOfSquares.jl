@@ -19,10 +19,10 @@ i.e. JuMP v0.18.x, to try this package with JuMP v0.18, simply do
 ```
 The development of this package for JuMP v0.18.x is done in the `release-0.2`
 branch.
-The `master` branch of this package works with the JuMP v0.19-alpha. To try this
-package with JuMP v0.19-alpha, do:
+The `master` branch of this package works with the JuMP master. To try this
+package with JuMP master, do:
 ```julia
-] add JuMP#v0.19-alpha
+] add JuMP#master
 ] add PolyJuMP#master
 ] add SumOfSquares#master
 ```
