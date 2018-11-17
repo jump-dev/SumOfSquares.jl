@@ -36,7 +36,7 @@ mutable struct SOSConstraint{MT <: AbstractMonomial, MVT <: AbstractVector{MT}, 
 end
 function SOSConstraint(slack::MatPolynomial{JS, MT, MVT},
                        zero_constraint::PolyJuMP.ZeroConstraint{MT, MVT, F}) where {MT <: AbstractMonomial, MVT <: AbstractVector{MT}, JS<:JuMP.AbstractJuMPScalar, F<:MOI.AbstractVectorFunction}
-    return SOSConstraint(slack, zero_constraint, MatPolynomial{JS, MT, MVT}[])
+    return SOSConstraint{MT, MVT, JS, F}(slack, zero_constraint, MatPolynomial{JS, MT, MVT}[])
 end
 
 certificate_monomials(c::PolyJuMP.PolyConstraintRef) = certificate_monomials(PolyJuMP.getdelegate(c))
