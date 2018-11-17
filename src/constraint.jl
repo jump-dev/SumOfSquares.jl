@@ -48,14 +48,28 @@ JuMP.dual(c::SOSConstraint) = JuMP.dual(c.zero_constraint)
 
 PolyJuMP.getslack(c::SOSConstraint) = JuMP.value(c.slack)
 
-function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis) where PT <: APL
+function quad_form(P::AbstractMatrix, x::AbstractVector)
+    q = zero(polynomialtype(eltype(P)))
+    n = length(x)
+    @assert size(P) == (n, n)
+    for j in 1:n
+        # The variables may be non-commutative in which case
+        # `x[i] * x[j] != x[j] * x[i]`
+        for i in 1:n
+            q += x[i] * P[i, j] * x[j]
+        end
+    end
+    return q
+end
+
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{<:APL}, ::SOSMatrixCone, domain::AbstractBasicSemialgebraicSet, basis)
     n = Compat.LinearAlgebra.checksquare(P)
     if !issymmetric(P)
         throw(ArgumentError("The polynomial matrix constrained to be SOS must be symmetric"))
     end
-    y = [similarvariable(PT, gensym()) for i in 1:n]
-    p = dot(y, P * y)
-    PolyJuMP.addpolyconstraint!(m, p, SOSCone(), domain, basis)
+    y = [similarvariable(eltype(P), gensym()) for i in 1:n]
+    q = quad_form(P, y)
+    PolyJuMP.addpolyconstraint!(m, q, SOSCone(), domain, basis)
 end
 
 function _createslack(m, x, set::SOSLikeCones)
