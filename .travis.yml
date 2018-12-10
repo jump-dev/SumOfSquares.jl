@@ -28,6 +28,7 @@ jobs:
       os: linux
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.instantiate();
+                                    Pkg.rm(PackageSpec(name="JuMP", mode=PackageMode(1)));
                                     Pkg.add(PackageSpec(name="JuMP", rev="master"));
                                     Pkg.add(PackageSpec(name="PolyJuMP", rev="master"));
                                     Pkg.develop(PackageSpec(path=pwd()))'
