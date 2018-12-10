@@ -4,7 +4,7 @@ module SumOfSquares
 
 export SOSModel
 
-using Compat, Compat.LinearAlgebra
+using LinearAlgebra
 
 using MultivariatePolynomials
 const MP = MultivariatePolynomials

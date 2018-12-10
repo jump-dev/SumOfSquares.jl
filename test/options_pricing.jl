@@ -7,7 +7,7 @@ using MultivariateMoments
 
 @testset "Options Pricing with $(factory.constructor)" for factory in sdp_factories
     isscs(factory) && continue
-    VERSION >= v"0.1-" && continue # see https://github.com/JuliaOpt/SumOfSquares.jl/issues/48
+    continue # see https://github.com/JuliaOpt/SumOfSquares.jl/issues/48
     @polyvar x y z
     σ = [184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
     X = [x^2, x*y, x*z, y^2, y*z, z^2, x, y, z, 1]

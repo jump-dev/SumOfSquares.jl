@@ -30,8 +30,8 @@ function _getmonomialsforcertificate(X::AbstractVector{<:AbstractMonomial}, spar
         minmultideg, maxmultideg = Vector{Int}(undef, n), Vector{Int}(undef, n)
         for i in 1:n
             exponent_i(m) = exponents(m)[i]
-            minmultideg[i] = cld(Compat.mapreduce(exponent_i, min, X), 2)
-            maxmultideg[i] = fld(Compat.mapreduce(exponent_i, max, X), 2)
+            minmultideg[i] = cld(mapreduce(exponent_i, min, X), 2)
+            maxmultideg[i] = fld(mapreduce(exponent_i, max, X), 2)
         end
         monomials(variables(X), mindeg:maxdeg,
                   m -> all(minmultideg .<= exponents(m) .<= maxmultideg))

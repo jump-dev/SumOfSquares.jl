@@ -1,4 +1,4 @@
-using Compat, Compat.LinearAlgebra, Compat.SparseArrays, Compat.Test
+using LinearAlgebra, SparseArrays, Test
 
 using MultivariatePolynomials
 

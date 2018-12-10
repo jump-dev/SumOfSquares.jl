@@ -36,11 +36,7 @@ function SOSDecomposition(p::MatPolynomial)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
     A = getmat(p)
-    @static if VERSION >= v"0.7-"
-        Q = cholesky(Matrix(A)).U
-    else
-        Q = chol(A)
-    end
+    Q = cholesky(Matrix(A)).U
     m = size(Q, 1)
     ps = [polynomial(Q[i,:], p.x) for i in 1:m]
     SOSDecomposition(ps)
@@ -50,13 +46,7 @@ SOSDecomposition(p::MatPolynomial{C, T}) where {C, T} = SOSDecomposition{C, floa
 
 Base.length(p::SOSDecomposition) = length(p.ps)
 Base.isempty(p::SOSDecomposition) = isempty(p.ps)
-@static if VERSION < v"0.7-"
-    Base.start(p::SOSDecomposition) = start(p.ps)
-    Base.done(p::SOSDecomposition, state) = done(p.ps, state)
-    Base.next(p::SOSDecomposition, state) = next(p.ps, state)
-else
-    Base.iterate(p::SOSDecomposition, args...) = Base.iterate(p.ps, args...)
-end
+Base.iterate(p::SOSDecomposition, args...) = Base.iterate(p.ps, args...)
 Base.getindex(p::SOSDecomposition, i::Int) = p.ps[i]
 
 (p::MatPolynomial)(s::MP.AbstractSubstitution...) = polynomial(p)(s...)
