@@ -19,13 +19,13 @@ using JuMP
 using PolyJuMP
 using SumOfSquares
 using DynamicPolynomials
-using Mosek
+using MathOptInterfaceMosek
 
 # Create symbolic variables (not JuMP decision variables)
 @polyvar x1 x2
 
-# Create a Sum of Squares JuMP model with the Mosek solver
-m = SOSModel(solver = MosekSolver())
+# Create a Sum of Squares JuMP model
+m = SOSModel()
 
 # Create a JuMP decision variable for the lower bound
 @variable m γ
@@ -43,10 +43,10 @@ f = (1+f1^2*f2)*(30+f3^2*f4)
 
 @objective m Max γ
 
-status = solve(m)
+optimize!(m, with_optimizer(MosekOptimizer))
 
 # The lower bound found is 3
-println(getobjectivevalue(m))
+println(JuMP.objective_value(m))
 ```
 
 ## Contents
