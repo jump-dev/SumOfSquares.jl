@@ -43,6 +43,7 @@ end
 MP.coefficienttype(::Type{<:MatPolynomial{T}}) where {T} = Base.promote_op(+, T, T)
 MP.polynomialtype(::Type{MatPolynomial{T, MT, MVT}}) where {T, MT, MVT} = polynomialtype(MT, coefficienttype(MatPolynomial{T, MT, MVT}))
 MP.polynomialtype(::Type{MatPolynomial{T, MT, MVT}}, ::Type{S}) where {S, T, MT, MVT} = polynomialtype(MT, S)
+MP.variables(p::MatPolynomial) = MP.variables(p.x)
 
 Base.zero(::Type{MatPolynomial{T, MT, MVT}}) where {T, MT, MVT} = MatPolynomial{T, MT, monovectype(MT)}(SymMatrix{T}(T[], 0), emptymonovec(MT))
 Base.iszero(p::MatPolynomial) = iszero(polynomial(p))
