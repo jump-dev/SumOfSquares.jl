@@ -2,6 +2,7 @@
     @testset "MatPolynomial" begin
         @polyvar x y
         P = MatPolynomial{Int}((i,j) -> i + j, [x^2, x*y, y^2])
+        @test variables(P) == [x, y]
         zP = zero(typeof(P))
         @test isempty(zP.Q)
         @test zP == 0
