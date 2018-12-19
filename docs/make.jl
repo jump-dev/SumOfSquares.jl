@@ -1,8 +1,9 @@
 using Documenter, SumOfSquares
 
 makedocs(
-    format = :html,
     sitename = "SumOfSquares",
+    # See https://github.com/JuliaDocs/Documenter.jl/issues/868
+    html_prettyurls = get(ENV, "CI", nothing) == "true",
     pages = [
         "Index" => "index.md",
         "Sum-of-Squares Programming" => "sumofsquares.md",
@@ -16,9 +17,4 @@ makedocs(
 
 deploydocs(
     repo   = "github.com/JuliaOpt/SumOfSquares.jl.git",
-    target = "build",
-    osname = "linux",
-    julia  = "1.0",
-    deps   = nothing,
-    make   = nothing
 )
