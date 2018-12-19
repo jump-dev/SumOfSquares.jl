@@ -21,8 +21,8 @@ using PolyJuMP
 
 Vectorized constraints can also be used as well as vector of constraints,
 named constraints, ...
-For instance instance, if `P` and `Q` are two ``n \times n`` matrices of
-polynomials, the following constraints the sum of rows and columns to match
+For instance, if `P` and `Q` are two ``n \times n`` matrices of
+polynomials, the following constraints the sum of rows and columns to match:
 ```julia
 @constraint(model, con[i=1:n], sum(P[i, :]) == sum(Q[:, i]))
 ```
@@ -32,7 +32,7 @@ of `P` and the `i`th column of `Q`.
 ## Inequality constraints between polynomials
 
 Polynomials can be constrained to be sum-of-squares with the `in` syntax.
-For instance, to constraints a polynomial `p` to be sum-of-squares, do
+For instance, to constrain a polynomial `p` to be sum-of-squares, do
 ```julia
 @constraint(model, p in SOSCone())
 ```
@@ -83,7 +83,7 @@ PolyJuMP.setdefault!(model, PolyJuMP.NonNegPoly, DSOSCone)
 
 As introduced in [Choosing a polynomial basis](@ref), there may be numerical
 advantages to use another basis than the standard monomial basis when creating
-polynomial variables. Similarly, other polynomial basis can be used for
+polynomial variables. Similarly, other polynomial bases can be used for
 polynomial constraints. However, for constraints, the polynomial space is
 determined by the polynomial constrained to be nonnegative. For instance,
 consider the constraint:
@@ -102,7 +102,7 @@ semidefinite matrix `Q` such that
 where ``X = (x, y)``.
 
 As the polynomial space is determined by the polynomial being constrained,
-only the basis *type* need to be given.For instance, to use the scaled monomial
+only the basis *type* needs to be given. For instance, to use the scaled monomial
 basis, use
 ```julia
 @constraint(model, p ≥ q, basis = ScaledMonomialBasis)
@@ -130,14 +130,14 @@ for a detailed example.
 The dual of a polynomial constraint `cref` is a moment serie `μ` as defined in
 [MultivariateMoments](https://github.com/JuliaAlgebra/MultivariateMoments.jl).
 The dual can be obtained with the `JuMP.resultdual` function as with classical
-dual values in JuMP. The matrix of moment can be obtaine as follows:
+dual values in JuMP. The matrix of moments can be obtained as follows:
 ```julia
 μ = JuMP.resultdual(cref)
 ν = matmeasure(μ, certificate_monomials(cref))
 ```
 The `extractatoms` function of [MultivariateMoments](https://github.com/JuliaAlgebra/MultivariateMoments.jl)
 can be used to check if there exists an *atomic* measure (i.e. a measure that is
-a sum of Dirac measures) for that has the moments given in `ν`.
+a sum of Dirac measures) that has the moments given in `ν`.
 This can be used for instance in polynomial optimization (see
 [this notebook](https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb))
 or stability analysis (see
