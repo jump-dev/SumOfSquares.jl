@@ -14,5 +14,6 @@
     @SDconstraint m P ⪰ 0
 
     JuMP.optimize!(m)
-    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT ||
+          JuMP.primal_status(m) == MOI.NEARLY_FEASIBLE_POINT
 end
