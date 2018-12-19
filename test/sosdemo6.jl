@@ -11,7 +11,7 @@
     # Boolean constraints
     bc = vec(x).^2 .- 1
 
-    @testset "with γ=$γ it should be $(feasible ? "feasible" : "infeasible")" for (γ, feasible) in [(3.9, false), (4, true)]
+    @testset "with γ=$γ it should be $(feasible ? "feasible" : "infeasible")" for (γ, feasible) in [(3.9, false), (4.1, true)]
         model = SOSModel(factory)
 
         Z = monomials(x, 0:1)
