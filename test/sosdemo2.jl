@@ -24,7 +24,7 @@
 
     JuMP.optimize!(m)
 
-    @test JuMP.primal_status(m) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 
     @test iszero(removemonomials(JuMP.value(V), Z))
 end

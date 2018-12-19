@@ -18,7 +18,7 @@
 
     JuMP.optimize!(m)
 
-    @test JuMP.primal_status(m) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 
     q = getslack(soscon)
     Q = getmat(q)
@@ -39,7 +39,7 @@
 
     JuMP.optimize!(M)
 
-    @test JuMP.primal_status(m) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 
     # p should be MatPolynomial([1, 0, -1/2, 0, -1, 1, 0, -2/3, 0, 4/3, 0, 0, 2, 0, 4], [y, x, x*y, x*y^2, x^2*y^3])
 end

@@ -29,7 +29,7 @@
     JuMP.optimize!(m)
 
     # Program is feasible, { x |((g0+g1) + theta)(theta - (g0+g1)) >=0 } contains { x | p <= gamma }
-    @test JuMP.primal_status(m) == MOI.FeasiblePoint || JuMP.primal_status(m) == MOI.NearlyFeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT || JuMP.primal_status(m) == MOI.NEARLY_FEASIBLE_POINT
 
     #@show JuMP.value(s)
     #@show JuMP.value(g1)

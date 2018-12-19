@@ -17,7 +17,7 @@ using MultivariateMoments
         c = @constraint m p >= α domain = S maxdegree = maxdeg
 
         JuMP.optimize!(m)
-        @test JuMP.termination_status(m) == MOI.Success
+        @test JuMP.termination_status(m) == MOI.OPTIMAL
         @test JuMP.objective_value(m) ≈ 0 atol=1e-4
 
         for λ in lagrangian_multipliers(c)
