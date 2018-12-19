@@ -4,13 +4,13 @@ using JuMP
 using PolyJuMP
 using SumOfSquares
 using DynamicPolynomials
-using Mosek
+using MathOptInterfaceMosek
 
 # Create symbolic variables (not JuMP decision variables)
 @polyvar x1 x2
 
-# Create a Sum of Squares JuMP model with the Mosek solver
-m = SOSModel(solver = MosekSolver())
+# Create a Sum of Squares JuMP model
+m = SOSModel()
 
 # Create a JuMP decision variable for the lower bound
 @variable m γ
@@ -28,7 +28,7 @@ f = (1+f1^2*f2)*(30+f3^2*f4)
 
 @objective m Max γ
 
-status = solve(m)
+optimize!(m, with_optimizer(MosekOptimizer))
 
 # The lower bound found is 3
-println(getobjectivevalue(m))</code></pre><h2><a class="nav-anchor" id="Contents-1" href="#Contents-1">Contents</a></h2><ul><li><a href="sumofsquares.html#Sum-of-Squares-Programming-1">Sum-of-Squares Programming</a></li><ul><li><a href="sumofsquares.html#Quadratic-forms-and-Semidefinite-programming-1">Quadratic forms and Semidefinite programming</a></li><li><a href="sumofsquares.html#Polynomial-nonnegativity-and-Semidefinite-programming-1">Polynomial nonnegativity and Semidefinite programming</a></li><li><a href="sumofsquares.html#When-is-nonnegativity-equivalent-to-sum-of-squares-?-1">When is nonnegativity equivalent to sum of squares ?</a></li></ul><li><a href="variables.html#Polynomial-and-Sum-of-Squares-variables-1">Polynomial and Sum-of-Squares variables</a></li><ul><li><a href="variables.html#Polynomial-variables-1">Polynomial variables</a></li><li><a href="variables.html#Nonnegative-polynomial-variables-1">Nonnegative polynomial variables</a></li><li><a href="variables.html#Choosing-a-polynomial-basis-1">Choosing a polynomial basis</a></li></ul><li><a href="constraints.html#Constraints-1">Constraints</a></li><ul><li><a href="constraints.html#Equality-constraints-between-polynomials-1">Equality constraints between polynomials</a></li><li><a href="constraints.html#Inequality-constraints-between-polynomials-1">Inequality constraints between polynomials</a></li><li><a href="constraints.html#Changing-the-polynomial-basis-1">Changing the polynomial basis</a></li><li><a href="constraints.html#Polynomial-nonnegativity-on-a-subset-of-the-space-1">Polynomial nonnegativity on a subset of the space</a></li><li><a href="constraints.html#Dual-of-polynomial-constraints-1">Dual of polynomial constraints</a></li></ul></ul><footer><hr/><a class="next" href="sumofsquares.html"><span class="direction">Next</span><span class="title">Sum-of-Squares Programming</span></a></footer></article></body></html>
+println(JuMP.objective_value(m))</code></pre><h2><a class="nav-anchor" id="Contents-1" href="#Contents-1">Contents</a></h2><ul><li><a href="sumofsquares.html#Sum-of-Squares-Programming-1">Sum-of-Squares Programming</a></li><ul><li><a href="sumofsquares.html#Quadratic-forms-and-Semidefinite-programming-1">Quadratic forms and Semidefinite programming</a></li><li><a href="sumofsquares.html#Polynomial-nonnegativity-and-Semidefinite-programming-1">Polynomial nonnegativity and Semidefinite programming</a></li><li><a href="sumofsquares.html#When-is-nonnegativity-equivalent-to-sum-of-squares-?-1">When is nonnegativity equivalent to sum of squares ?</a></li></ul><li><a href="variables.html#Polynomial-and-Sum-of-Squares-variables-1">Polynomial and Sum-of-Squares variables</a></li><ul><li><a href="variables.html#Polynomial-variables-1">Polynomial variables</a></li><li><a href="variables.html#Nonnegative-polynomial-variables-1">Nonnegative polynomial variables</a></li><li><a href="variables.html#Choosing-a-polynomial-basis-1">Choosing a polynomial basis</a></li></ul><li><a href="constraints.html#Constraints-1">Constraints</a></li><ul><li><a href="constraints.html#Equality-constraints-between-polynomials-1">Equality constraints between polynomials</a></li><li><a href="constraints.html#Inequality-constraints-between-polynomials-1">Inequality constraints between polynomials</a></li><li><a href="constraints.html#Changing-the-polynomial-basis-1">Changing the polynomial basis</a></li><li><a href="constraints.html#Polynomial-nonnegativity-on-a-subset-of-the-space-1">Polynomial nonnegativity on a subset of the space</a></li><li><a href="constraints.html#Dual-of-polynomial-constraints-1">Dual of polynomial constraints</a></li></ul></ul><footer><hr/><a class="next" href="sumofsquares.html"><span class="direction">Next</span><span class="title">Sum-of-Squares Programming</span></a></footer></article></body></html>
