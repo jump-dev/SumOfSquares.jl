@@ -25,7 +25,7 @@
 
     JuMP.optimize!(m)
 
-    @test JuMP.primal_status(m) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 
     @test isapprox(JuMP.value(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=1e-7, atol=1e-7)
     @test isapprox(JuMP.value(γ), 128)

@@ -20,11 +20,13 @@
         @constraint m p - γ*sum(x .* x)^2 in cone
         @objective m Max γ
         JuMP.optimize!(m)
-        @test JuMP.primal_status(m) == MOI.FeasiblePoint
+        @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
         JuMP.objective_value(m)
     end
 
     @test sdsos_example(DSOSCone())  ≈ -11/3     rtol=1e-5
-    @test sdsos_example(SDSOSCone()) ≈ -3.172412 rtol=1e-5
+    if !iscsdp(factory) # CSDP does not natively support SOC and uses a bridge that transforms it into SDP so it returns UNKNOWN_RESULT_STATUS on Travis
+        @test sdsos_example(SDSOSCone()) ≈ -3.172412 rtol=1e-5
+    end
     @test sdsos_example(SOSCone())   ≈ -0.184667 rtol=1e-5
 end

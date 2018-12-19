@@ -24,7 +24,7 @@
 
     JuMP.optimize!(m)
 
-    @test JuMP.primal_status(m) == MOI.FeasiblePoint || JuMP.primal_status(m) == MOI.NearlyFeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT || JuMP.primal_status(m) == MOI.NEARLY_FEASIBLE_POINT
 
     @test isapprox(JuMP.objective_value(m), 3; rtol=1e-3)
 end

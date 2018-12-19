@@ -19,11 +19,11 @@
     m0 = SOSModel(factory)
     @constraint m0 xsJxs >= 0
     JuMP.optimize!(m0)
-    @test JuMP.dual_status(m0) == MOI.InfeasibilityCertificate
+    @test JuMP.dual_status(m0) == MOI.INFEASIBILITY_CERTIFICATE
 
     m1 = SOSModel(factory)
     @constraint m1 r*xsJxs >= 0
     JuMP.optimize!(m1)
-    @test JuMP.primal_status(m1) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m1) == MOI.FEASIBLE_POINT
     # Program is feasible. The matrix J is copositive
 end

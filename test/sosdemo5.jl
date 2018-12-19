@@ -63,9 +63,9 @@
 
         # Program is feasible, thus 0.8724 is an upper bound for mu.
         if feasible
-            @test JuMP.primal_status(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
         else
-            @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
+            @test JuMP.dual_status(m) == MOI.INFEASIBILITY_CERTIFICATE
         end
     end
 end

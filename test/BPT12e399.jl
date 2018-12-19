@@ -17,7 +17,7 @@
 
     JuMP.optimize!(m)
 
-    @test JuMP.primal_status(m) == MOI.FeasiblePoint
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 
     @test JuMP.value(α) ≈ 6 atol=1e-6
 
@@ -26,7 +26,7 @@
 #
 #    JuMP.optimize!(m)
 #
-#    @test JuMP.primal_status(m) == MOI.FeasiblePoint
+#    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 #
 #    @test JuMP.value(α) ≈ -6 atol=1e-6
 end

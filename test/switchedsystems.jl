@@ -28,9 +28,9 @@
         JuMP.optimize!(m)
 
         if feasible
-            @test JuMP.primal_status(m) == MOI.FeasiblePoint
+            @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
         else
-            @test JuMP.dual_status(m) == MOI.InfeasibilityCertificate
+            @test JuMP.dual_status(m) == MOI.INFEASIBILITY_CERTIFICATE
             μ1 = JuMP.dual(c1)
             μ2 = JuMP.dual(c2)
 
