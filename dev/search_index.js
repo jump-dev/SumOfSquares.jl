@@ -1,7 +1,7 @@
 var documenterSearchIndex = {"docs": [
 
 {
-    "location": "index.html#",
+    "location": "#",
     "page": "Index",
     "title": "Index",
     "category": "page",
@@ -9,7 +9,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#SumOfSquares-–-Sum-of-Squares-Programming-for-Julia-1",
+    "location": "#SumOfSquares-–-Sum-of-Squares-Programming-for-Julia-1",
     "page": "Index",
     "title": "SumOfSquares –- Sum of Squares Programming for Julia",
     "category": "section",
@@ -17,7 +17,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Contents-1",
+    "location": "#Contents-1",
     "page": "Index",
     "title": "Contents",
     "category": "section",
@@ -25,7 +25,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "sumofsquares.html#",
+    "location": "sumofsquares/#",
     "page": "Sum-of-Squares Programming",
     "title": "Sum-of-Squares Programming",
     "category": "page",
@@ -33,7 +33,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "sumofsquares.html#Sum-of-Squares-Programming-1",
+    "location": "sumofsquares/#Sum-of-Squares-Programming-1",
     "page": "Sum-of-Squares Programming",
     "title": "Sum-of-Squares Programming",
     "category": "section",
@@ -41,7 +41,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "sumofsquares.html#Quadratic-forms-and-Semidefinite-programming-1",
+    "location": "sumofsquares/#Quadratic-forms-and-Semidefinite-programming-1",
     "page": "Sum-of-Squares Programming",
     "title": "Quadratic forms and Semidefinite programming",
     "category": "section",
@@ -49,7 +49,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "sumofsquares.html#Polynomial-nonnegativity-and-Semidefinite-programming-1",
+    "location": "sumofsquares/#Polynomial-nonnegativity-and-Semidefinite-programming-1",
     "page": "Sum-of-Squares Programming",
     "title": "Polynomial nonnegativity and Semidefinite programming",
     "category": "section",
@@ -57,7 +57,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "sumofsquares.html#When-is-nonnegativity-equivalent-to-sum-of-squares-?-1",
+    "location": "sumofsquares/#When-is-nonnegativity-equivalent-to-sum-of-squares-?-1",
     "page": "Sum-of-Squares Programming",
     "title": "When is nonnegativity equivalent to sum of squares ?",
     "category": "section",
@@ -65,7 +65,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "sumofsquares.html#References-1",
+    "location": "sumofsquares/#References-1",
     "page": "Sum-of-Squares Programming",
     "title": "References",
     "category": "section",
@@ -73,7 +73,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#",
+    "location": "variables/#",
     "page": "Variables",
     "title": "Variables",
     "category": "page",
@@ -81,7 +81,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#Polynomial-and-Sum-of-Squares-variables-1",
+    "location": "variables/#Polynomial-and-Sum-of-Squares-variables-1",
     "page": "Variables",
     "title": "Polynomial and Sum-of-Squares variables",
     "category": "section",
@@ -89,7 +89,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#Polynomial-variables-1",
+    "location": "variables/#Polynomial-variables-1",
     "page": "Variables",
     "title": "Polynomial variables",
     "category": "section",
@@ -97,7 +97,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#Nonnegative-polynomial-variables-1",
+    "location": "variables/#Nonnegative-polynomial-variables-1",
     "page": "Variables",
     "title": "Nonnegative polynomial variables",
     "category": "section",
@@ -105,7 +105,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#Choosing-a-polynomial-basis-1",
+    "location": "variables/#Choosing-a-polynomial-basis-1",
     "page": "Variables",
     "title": "Choosing a polynomial basis",
     "category": "section",
@@ -113,7 +113,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "variables.html#References-1",
+    "location": "variables/#References-1",
     "page": "Variables",
     "title": "References",
     "category": "section",
@@ -121,7 +121,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#",
+    "location": "constraints/#",
     "page": "Constraints",
     "title": "Constraints",
     "category": "page",
@@ -129,7 +129,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#Constraints-1",
+    "location": "constraints/#Constraints-1",
     "page": "Constraints",
     "title": "Constraints",
     "category": "section",
@@ -137,7 +137,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#Equality-constraints-between-polynomials-1",
+    "location": "constraints/#Equality-constraints-between-polynomials-1",
     "page": "Constraints",
     "title": "Equality constraints between polynomials",
     "category": "section",
@@ -145,7 +145,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#Inequality-constraints-between-polynomials-1",
+    "location": "constraints/#Inequality-constraints-between-polynomials-1",
     "page": "Constraints",
     "title": "Inequality constraints between polynomials",
     "category": "section",
@@ -153,7 +153,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#Automatically-interpreting-polynomial-nonnegativity-as-a-sum-of-squares-constraint-1",
+    "location": "constraints/#Automatically-interpreting-polynomial-nonnegativity-as-a-sum-of-squares-constraint-1",
     "page": "Constraints",
     "title": "Automatically interpreting polynomial nonnegativity as a sum-of-squares constraint",
     "category": "section",
@@ -161,7 +161,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#Changing-the-polynomial-basis-1",
+    "location": "constraints/#Changing-the-polynomial-basis-1",
     "page": "Constraints",
     "title": "Changing the polynomial basis",
     "category": "section",
@@ -169,7 +169,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#Polynomial-nonnegativity-on-a-subset-of-the-space-1",
+    "location": "constraints/#Polynomial-nonnegativity-on-a-subset-of-the-space-1",
     "page": "Constraints",
     "title": "Polynomial nonnegativity on a subset of the space",
     "category": "section",
@@ -177,7 +177,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#Dual-of-polynomial-constraints-1",
+    "location": "constraints/#Dual-of-polynomial-constraints-1",
     "page": "Constraints",
     "title": "Dual of polynomial constraints",
     "category": "section",
@@ -185,7 +185,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints.html#References-1",
+    "location": "constraints/#References-1",
     "page": "Constraints",
     "title": "References",
     "category": "section",
