@@ -106,16 +106,13 @@ function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, binary::Bool, 
         MatPolynomial{JuMP.VariableRef}(_newvar, x)
     end
 end
-function _createpoly(m::JuMP.Model, set::PosPoly, basis::PolyJuMP.MonomialBasis, binary::Bool, integer::Bool)
-    p = _matpolynomial(m, basis.monomials, binary, integer)
-    if length(basis.monomials) > 1
-        constraint_matpoly!(m, p, set)
+function JuMP.add_variable(model::JuMP.AbstractModel,
+                           v::PolyJuMP.Variable{<:PosPoly{<:PolyJuMP.MonomialBasis}},
+                           name::String="")
+    monos = v.p.polynomial_basis.monomials
+    p = _matpolynomial(model, monos, v.binary, v.integer)
+    if length(monos) > 1
+        constraint_matpoly!(model, p, v.p)
     end
-    p
+    return p
 end
-function PolyJuMP.createpoly(m::JuMP.Model, p::PosPoly, binary::Bool, integer::Bool)
-    _createpoly(m, p, p.polynomial_basis, binary, integer)
-end
-
-# Defer other methods to defaults in PolyJuMP
-createpoly(args...) = PolyJuMP.createpoly(args...)

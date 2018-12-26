@@ -3,9 +3,10 @@ import PolyJuMP
 @testset "Creating polynomial with empty MonomialVector" begin
     @polyvar x
     X = emptymonovec(typeof(x^2))
-    m = SOSModel()
-    @inferred PolyJuMP.createpoly(m, SOSPoly(X), false, false)
-    @test PolyJuMP.createpoly(m, SOSPoly(X), false, false) == 0
+    model = SOSModel()
+    v = PolyJuMP.Variable(SOSPoly(X), false, false)
+    @inferred JuMP.add_variable(model, v)
+    @test JuMP.add_variable(model, v) == 0
 end
 @testset "MatPolynomial JuMP.value" begin
     m = JuMP.Model()

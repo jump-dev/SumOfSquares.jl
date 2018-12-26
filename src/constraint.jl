@@ -58,8 +58,9 @@ function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCo
     PolyJuMP.addpolyconstraint!(m, p, SOSCone(), domain, basis)
 end
 
-function _createslack(m, x, set::SOSLikeCones)
-    createpoly(m, _varconetype(set)(x), false, false)
+function _createslack(model, x, set::SOSLikeCones)
+    JuMP.add_variable(model,
+                      PolyJuMP.Variable(_varconetype(set)(x), false, false))
 end
 function _matposynomial(m, x)
     p = _matpolynomial(m, x, false, false)
@@ -94,7 +95,9 @@ function lagrangian_multiplier(model::JuMP.Model, p, set::SOSSubCones, q, mindeg
     # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
     # so instead of `variable(p)` we would have the union of them all
     @assert variables(q) ⊆ variables(p)
-    return createpoly(model, _varconetype(set)(monomials(variables(p), mindegree_s:maxdegree_s)), false, false)
+    monos = monomials(variables(p), mindegree_s:maxdegree_s)
+    return JuMP.add_variable(model, PolyJuMP.Variable(_varconetype(set)(monos),
+                                                      false, false))
 end
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::BasicSemialgebraicSet, basis;
