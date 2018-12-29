@@ -3,38 +3,6 @@ export MatPolynomial
 import MultivariateMoments: trimat, SymMatrix, getmat
 export getmat
 
-#struct SymMatrix{T} <: AbstractMatrix{T}
-#    Q::Vector{T}
-#    n
-#end
-#
-## i < j
-#function trimap(i, j, n)
-#    div(n*(n+1), 2) - div((n-i+1)*(n-i+2), 2) + j-i+1
-#end
-#
-#function trimat(::Type{T}, f, n, σ) where {T}
-#    Q = Vector{T}(trimap(n, n, n))
-#    for i in 1:n
-#        for j in i:n
-#            Q[trimap(i, j, n)] = f(σ[i], σ[j])
-#        end
-#    end
-#    SymMatrix{T}(Q, n)
-#end
-#
-#Base.size(Q::SymMatrix) = (Q.n, Q.n)
-#
-#function Base.getindex(Q::SymMatrix, i, j)
-#    Q.Q[trimap(min(i, j), max(i, j), Q.n)]
-#end
-#function Base.getindex(Q::SymMatrix, k)
-#    i, j = divrem(k-1, Q.n)
-#    Q[i+1, j+1]
-#end
-#Base.getindex(Q::SymMatrix, I::Tuple) = Q[I...]
-#Base.getindex(Q::SymMatrix, I::CartesianIndex) = Q[I.I]
-
 struct MatPolynomial{T, MT <: AbstractMonomial, MVT <: AbstractVector{MT}} <: AbstractPolynomialLike{T} # should be AbstractPolynomialLike{eltype(T)} but it doesn't work
     Q::SymMatrix{T}
     x::MVT
