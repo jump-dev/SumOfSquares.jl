@@ -28,8 +28,14 @@
 
     JuMP.optimize!(m)
 
-    # Program is feasible, { x |((g0+g1) + theta)(theta - (g0+g1)) >=0 } contains { x | p <= gamma }
-    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT || JuMP.primal_status(m) == MOI.NEARLY_FEASIBLE_POINT
+    # Program is feasible, that is, the set
+    # { x |((g0+g1) + theta)(theta - (g0+g1)) >=0 }
+    # contains the set
+    # { x | p <= gamma }
+
+    # ALMOST_OPTIMAL and NEARLY_FEASIBLE_POINT for CSDP
+    @test JuMP.termination_status(m) in [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL]
+    @test JuMP.primal_status(m) in [MOI.FEASIBLE_POINT, MOI.NEARLY_FEASIBLE_POINT]
 
     #@show JuMP.value(s)
     #@show JuMP.value(g1)
