@@ -116,8 +116,8 @@ scaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])
 
 [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
 *Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, 2012.
+Society for Industrial and Applied Mathematics, **2012**.
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
-ArXiv e-prints, 2017
+ArXiv e-prints, **2017**.
