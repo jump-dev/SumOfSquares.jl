@@ -5,3 +5,4 @@ MultivariateMoments 0.1.0
 MathOptInterface 0.8
 JuMP 0.18.2+
 PolyJuMP 0.2 0.3
+Reexport

@@ -17,7 +17,9 @@ include("sosdec.jl")
 
 include("certificate.jl")
 
-using JuMP
+import Reexport
+
+Reexport.@reexport using JuMP
 using PolyJuMP
 export Poly
 
