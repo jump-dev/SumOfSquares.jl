@@ -14,6 +14,7 @@
     @SDconstraint m P ⪰ 0
 
     JuMP.optimize!(m)
-    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT ||
-          JuMP.primal_status(m) == MOI.NEARLY_FEASIBLE_POINT
+    @test JuMP.termination_status(m) == MOI.OPTIMAL
+    # NEARLY_FEASIBLE_POINT for CSDP
+    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 end

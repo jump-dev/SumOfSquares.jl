@@ -6,13 +6,17 @@
     P = [x^2-2x+2 x; x x^2]
     # Example 3.77
     m = SOSModel(factory)
-    @SDconstraint m P >= 0
+    mat_cref = @SDconstraint m P >= 0
     JuMP.optimize!(m)
+    @test JuMP.termination_status(m) == MOI.OPTIMAL
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
+    @test length(getslack(mat_cref).x) == 4
     # Example 3.79
     @polyvar y[1:2]
     M = SOSModel(factory)
-    @constraint M dot(vec(y), P*vec(y)) >= 0
+    cref = @constraint M dot(vec(y), P*vec(y)) >= 0
     JuMP.optimize!(M)
+    @test JuMP.termination_status(m) == MOI.OPTIMAL
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
+    @test length(getslack(cref).x) == 6
 end

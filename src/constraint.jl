@@ -55,7 +55,9 @@ function PolyJuMP.addpolyconstraint!(m::JuMP.Model, P::Matrix{PT}, ::SOSMatrixCo
     end
     y = [similarvariable(PT, gensym()) for i in 1:n]
     p = dot(y, P * y)
-    PolyJuMP.addpolyconstraint!(m, p, SOSCone(), domain, basis)
+    # TODO Newton_polytope=(y,) may not be the best idea if exact newton polytope computation is used.
+    #      See "Sum-of-Squares Matrices" notebook
+    PolyJuMP.addpolyconstraint!(m, p, SOSCone(), domain, basis; newton_polytope=(y,))
 end
 
 function _createslack(model, x, set::SOSLikeCones)
@@ -73,9 +75,9 @@ function _createslack(m, x, set::CoSOSLikeCones)
     _matplus(_createslack(m, x, _nococone(set)), _matposynomial(m, x))
 end
 
-function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::AbstractAlgebraicSet, basis)
+function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::AbstractAlgebraicSet, basis; newton_polytope=tuple())
     r = rem(p, ideal(domain))
-    X = getmonomialsforcertificate(monomials(r))
+    X = monomials_half_newton_polytope(monomials(r), newton_polytope)
     slack = _createslack(m, X, set)
     q = r - slack
     zero_constraint = PolyJuMP.addpolyconstraint!(m, q, ZeroPoly(), domain, basis)
@@ -102,10 +104,10 @@ end
 
 function PolyJuMP.addpolyconstraint!(m::JuMP.Model, p, set::SOSSubCones, domain::BasicSemialgebraicSet, basis;
                                      mindegree=MultivariatePolynomials.mindegree(p),
-                                     maxdegree=MultivariatePolynomials.maxdegree(p))
+                                     maxdegree=MultivariatePolynomials.maxdegree(p), kws...)
     λ = lagrangian_multiplier.(Ref(m), p, Ref(set), domain.p, mindegree, maxdegree)
     p -= dot(λ, domain.p)
-    constraint = PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis)
+    constraint = PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis; kws...)
     constraint.lagrangian_multipliers = λ
     return constraint
 end
