@@ -39,7 +39,7 @@ ArXiv e-prints, 2017
 """
 function constraint_matpoly! end
 
-function constraint_matpoly!(m, p::MatPolynomial, ::SOSPoly)
+function constraint_matpoly!(model::JuMP.AbstractModel, p::MatPolynomial, ::SOSPoly)
     JuMP.add_constraint(m, JuMP.VectorConstraint(p.Q.Q, MOI.PositiveSemidefiniteConeTriangle(length(p.x))))
 end
 function constraint_matpoly!(model, p::MatPolynomial, ::SDSOSPoly)
@@ -106,6 +106,19 @@ function _matpolynomial(m, x::AbstractVector{<:AbstractMonomial}, binary::Bool, 
         MatPolynomial{JuMP.VariableRef}(_newvar, x)
     end
 end
+
+"""
+    matrix_polynomial(model::Union{JuMP.AbstractModel, MOI.ModelLike},
+                      cone::PosPoly, basis::PolyJuMP.AbstractPolynomialBasis)
+
+Returns a polynomial of the form ``x^\\top Q x`` where `x` is a vector of the
+elements of the polynomial basis and `Q` is a symmetric matrix of `model`
+variables constrained to belong to a subset of the cone of symmetric positive
+semidefinite matrix determined by `PosPoly`.
+"""
+function matrix_polynomial(model)
+end
+
 function JuMP.add_variable(model::JuMP.AbstractModel,
                            v::PolyJuMP.Variable{<:PosPoly{<:PolyJuMP.MonomialBasis}},
                            name::String="")
