@@ -1,4 +1,4 @@
-function lagrangian_multiplier(model::JuMP.Model, p, set::SOSSubCones, q, mindegree::Integer, maxdegree::Integer)
+function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSSubCones, q, mindegree::Integer, maxdegree::Integer)
     mindegree_q, maxdegree_q = extdegree(q)
     # extdegree's that s^2 should have so that s^2 * p has degrees between mindegree and maxdegree
     mindegree_s2 = mindegree - mindegree_q
@@ -12,17 +12,17 @@ function lagrangian_multiplier(model::JuMP.Model, p, set::SOSSubCones, q, mindeg
     # so instead of `variable(p)` we would have the union of them all
     @assert variables(q) ⊆ variables(p)
     monos = monomials(variables(p), mindegree_s:maxdegree_s)
-    return JuMP.add_variable(model, PolyJuMP.Variable(_varconetype(set)(monos),
-                                                      false, false))
+    return matpoly_in_cone(model, monos, set)
 end
 
 struct SOSPolynomialInSemialgebraicSetBridge{T, F <: MOI.AbstractVectorFunction,
                                              DT <: AbstractSemialgebraicSet,
+                                             CT <: SOSSubCones,
                                              BT <: PolyJuMP.AbstractPolynomialBasis,
                                              MT <: AbstractMonomial,
                                              MVT <: AbstractVector{MT},
                                              NPT <: Tuple} <: MOIB.AbstractBridge
-    constraint::MOI.ConstraintIndex{F, MOI.SOSPolynomialSet{DT, BT, MT, MVT, NPT}}
+    constraint::MOI.ConstraintIndex{F, SOSPolynomialSet{DT, CT, BT, MT, MVT, NPT}}
 end
 
 function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT, NPT}(model::MOI.ModelLike,
@@ -43,25 +43,25 @@ function MOI.supports_constraint(::Type{SOSPolynomialInSemialgebraicSetBridge{T}
                                  ::Type{<:SOSPolynomialSet{FullSpace}}) where T
     return true
 end
-function added_constraint_types(::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT}}) where {T, F}
-    return [(F, MOI.ZeroPolynomialSet{DT, BT, MT, MVT})]
+function MOIB.added_constraint_types(::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}}) where {T, F, DT, CT, BT, MT, MVT, NPT}
+    return [(F, SOSPolynomialSet{DT, CT, BT, MT, MVT, NPT})]
 end
-function concrete_bridge_type(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
-                              F::Type{<:MOI.AbstractVectorFunction},
-                              ::Type{SOSPolynomialSet{FullSpace, <:MonomialBasis, MT, MVT}}) where {T, MT, MVT}
+function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
+                                   F::Type{<:MOI.AbstractVectorFunction},
+                                   ::Type{<:SOSPolynomialSet{FullSpace, CT, <:PolyJuMP.MonomialBasis, MT, MVT}}) where {T, CT, MT, MVT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
-    G = MOIU.promote_operation(-, T, F, zeros(T))
-    return SOSPolynomialInSemialgebraicSetBridge{T, G, MT, MVT}
+    G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
+    return SOSPolynomialInSemialgebraicSetBridge{T, G, DT, CT, BT, MT, MVT, NPT}
 end
 
 # Attributes, Bridge acting as an model
-function MOI.get(::SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT},
-                 ::MOI.NumberOfConstraints{F, MOI.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {T, F, DT, BT, MT, MVT}
+function MOI.get(::SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT, NPT},
+                 ::MOI.NumberOfConstraints{F, SOSPolynomialSet{DT, BT, MT, MVT, NPT}}) where {T, F, DT, BT, MT, MVT, NPT}
     return 1
 end
-function MOI.get(b::SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT},
-                 ::MOI.ListOfConstraintIndices{F, MOI.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {T, F, DT, BT, MT, MVT}
+function MOI.get(b::SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT, NPT},
+                 ::MOI.ListOfConstraintIndices{F, SOSPolynomialSet{DT, BT, MT, MVT, NPT}}) where {T, F, DT, BT, MT, MVT, NPT}
     return [b.zero_constraint]
 end
 

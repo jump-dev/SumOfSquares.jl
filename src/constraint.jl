@@ -4,7 +4,7 @@ function JuMP.build_constraint(_error::Function, p, cone::SOSSubCones;
                                newton_polytope::Tuple=tuple(),
                                mindegree=MultivariatePolynomials.mindegree(p),
                                maxdegree=MultivariatePolynomials.maxdegree(p))
-    set = SOSPolynomialSet(domain, cone, basis, monomials(p), newton_polytope
+    set = SOSPolynomialSet(domain, cone, basis, monomials(p), newton_polytope,
                            mindegree, maxdegree)
     return JuMP.build_constraint(_error, coefficients(p), set)
 end

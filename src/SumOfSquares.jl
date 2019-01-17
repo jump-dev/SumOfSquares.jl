@@ -18,10 +18,12 @@ include("certificate.jl")
 
 using MathOptInterface
 const MOI = MathOptInterface
+const MOIU = MathOptInterface.Utilities
 
 using PolyJuMP
 export Poly
 
+include("diagonally_dominant.jl")
 include("sos_polynomial.jl")
 
 # Bridges
@@ -34,17 +36,24 @@ include("sos_polynomial_in_semialgebraic_set_bridge.jl")
 import Reexport
 Reexport.@reexport using JuMP
 
+include("utilities.jl")
 include("variable.jl")
 include("constraint.jl")
 
+function _add_bridges(model::JuMP.AbstractModel)
+    JuMP.add_bridge(model, SOSPolynomialBridge)
+    JuMP.add_bridge(model, SOSPolynomialInSemialgebraicSetBridge)
+end
+
 function setdefaults!(data::PolyJuMP.Data)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPoly, SOSCone)
-    PolyJuMP.setdefault!(data, PolyJuMP.NonNegPolyMatrix, SOSMatrixCone)
+    PolyJuMP.setdefault!(data, PolyJuMP.PosDefPolyMatrix, SOSMatrixCone)
 end
 
 export SOSModel
 function SOSModel(args...; kwargs...)
     model = Model(args...; kwargs...)
+    _add_bridges(model)
     setpolymodule!(model, SumOfSquares)
     model
 end

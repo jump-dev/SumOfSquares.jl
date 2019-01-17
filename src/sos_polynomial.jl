@@ -5,18 +5,18 @@ export SOSMatrixCone
 export getslack, certificate_monomials, lagrangian_multipliers
 
 struct DSOSCone <: PolyJuMP.PolynomialSet end
+matrix_cone(::DSOSCone) = DiagonallyDominantConeTriangle
 struct CoDSOSCone <: PolyJuMP.PolynomialSet end
-_varconetype(::DSOSCone) = DSOSPoly
 _nococone(::CoDSOSCone) = DSOSCone()
 
 struct SDSOSCone <: PolyJuMP.PolynomialSet end
+matrix_cone(::SDSOSCone) = ScaledDiagonallyDominantConeTriangle
 struct CoSDSOSCone <: PolyJuMP.PolynomialSet end
-_varconetype(::SDSOSCone) = SDSOSPoly
 _nococone(::CoSDSOSCone) = SDSOSCone()
 
 struct SOSCone <: PolyJuMP.PolynomialSet end
+matrix_cone(::SOSCone) = MOI.PositiveSemidefiniteConeTriangle
 struct CoSOSCone <: PolyJuMP.PolynomialSet end
-_varconetype(::SOSCone) = SOSPoly
 _nococone(::CoSOSCone) = SOSCone()
 
 const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone}

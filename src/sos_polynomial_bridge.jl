@@ -1,16 +1,20 @@
-function _createslack(model, x, set::SOSLikeCones)
-    JuMP.add_variable(model,
-                      PolyJuMP.Variable(_varconetype(set)(x), false, false))
+function moi_matpoly(model::MOI.ModelLike, monos)
+    return  MatPolynomial{MOI.SingleVariable}((i, j) -> MOI.SingleVariable(MOI.add_variable(model)),
+                                              monos)
 end
-function _matposynomial(m, x)
-    p = _matpolynomial(m, x, false, false)
-    for q in p.Q
-        JuMP.set_lower_bound(q, 0)
+function matpoly_in_cone(model::MOI.ModelLike, monos, set::SOSLikeCones)
+    p = moi_matpoly(model, monos)
+    matrix_add_constraint(model, p, matrix_cone(set))
+end
+function _matposynomial(model::MOI.ModelLike, monos)
+    p = moi_matpoly(model, monos)
+    for q in p.Q.Q
+        MOI.add_constraint(model, q, MOI.GreaterThan(0.0))
     end
-    p
+    return p
 end
-function _createslack(m, x, set::CoSOSLikeCones)
-    _matplus(_createslack(m, x, _nococone(set)), _matposynomial(m, x))
+function matpoly_in_cone(model, x, set::CoSOSLikeCones)
+    _matplus(matpoly_in_cone(model, x, _nococone(set)), _matposynomial(m, x))
 end
 
 struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
@@ -28,7 +32,7 @@ function SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(model::MOI.ModelLike,
     p = polynomial(MOIU.eachscalar(f), s.monomials)
     r = rem(p, ideal(domain))
     X = monomials_half_newton_polytope(monomials(r), s.newton_polytope)
-    slack = _createslack(model, X, set)
+    slack = matpoly_in_cone(model, X, set)
     q = r - slack
     set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, monomials(q))
     zero_constraint = MOI.add_constraint(model, coefficients(q), set)
@@ -40,16 +44,16 @@ function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
                                  ::Type{<:SOSPolynomialSet{FullSpace}}) where T
     return true
 end
-function added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, BT, MT, MVT}}) where {T, F, DT, BT, MT, MVT}
+function MOIB.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, BT, MT, MVT}}) where {T, F, DT, BT, MT, MVT}
     return [(F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT})]
 end
-function concrete_bridge_type(::Type{<:SOSPolynomialBridge{T}},
-                              F::Type{<:MOI.AbstractVectorFunction},
-                              ::Type{SOSPolynomialSet{FullSpace, <:MonomialBasis, MT, MVT}}) where {T, MT, MVT}
+function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialBridge{T}},
+                                   F::Type{<:MOI.AbstractVectorFunction},
+                                   ::Type{<:SOSPolynomialSet{FullSpace, CT, <:PolyJuMP.MonomialBasis, MT, MVT}}) where {T, CT, MT, MVT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
-    G = MOIU.promote_operation(-, T, F, zeros(T))
-    return SOSPolynomialBridge{T, G, MT, MVT}
+    G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
+    return SOSPolynomialBridge{T, G, FullSpace, PolyJuMP.MonomialBasis, MT, MVT}
 end
 
 # Attributes, Bridge acting as an model
