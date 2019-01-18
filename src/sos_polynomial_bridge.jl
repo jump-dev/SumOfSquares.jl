@@ -5,6 +5,7 @@ end
 function matpoly_in_cone(model::MOI.ModelLike, monos, set::SOSLikeCones)
     p = moi_matpoly(model, monos)
     matrix_add_constraint(model, p, matrix_cone(set))
+    return p
 end
 function _matposynomial(model::MOI.ModelLike, monos)
     p = moi_matpoly(model, monos)
@@ -29,13 +30,14 @@ function SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(model::MOI.ModelLike,
                                                     f::MOI.AbstractVectorFunction,
                                                     s::SOSPolynomialSet{<:AbstractAlgebraicSet}) where {T, F, DT, BT, MT, MVT}
     @assert MOI.output_dimension(f) == length(s.monomials)
-    p = polynomial(MOIU.eachscalar(f), s.monomials)
-    r = rem(p, ideal(domain))
+    p = polynomial(collect(MOIU.eachscalar(f)), s.monomials)
+    r = rem(p, ideal(s.domain))
     X = monomials_half_newton_polytope(monomials(r), s.newton_polytope)
-    slack = matpoly_in_cone(model, X, set)
+    slack = matpoly_in_cone(model, X, s.cone)
     q = r - slack
     set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, monomials(q))
-    zero_constraint = MOI.add_constraint(model, coefficients(q), set)
+    zero_constraint = MOI.add_constraint(model, MOIU.vectorize(coefficients(q)),
+                                         set)
     return SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(zero_constraint)
 end
 

@@ -50,10 +50,10 @@ end
 #    convert(PT, polynomial(p))
 #end
 function MP.polynomial(p::MatPolynomial)
-    polynomial(getmat(p), p.x)
+    MP.polynomial(getmat(p), p.x)
 end
 function MP.polynomial(p::MatPolynomial, ::Type{S}) where {S}
-    polynomial(getmat(p), p.x, S)
+    MP.polynomial(getmat(p), p.x, S)
 end
 
 const APL = AbstractPolynomialLike

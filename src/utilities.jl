@@ -1,5 +1,20 @@
+# + is not defined between SingleVariable
+function MP.polynomial(p::MatPolynomial{MOI.SingleVariable})
+    Q = convert(Vector{MOI.ScalarAffineFunction{Float64}}, p.Q.Q)
+    MP.polynomial(MatPolynomial(SymMatrix(Q, p.Q.n), p.x))
+end
+function MP.polynomial(p::MatPolynomial{F}) where {F <: MOI.AbstractFunction}
+    MP.polynomial(p, MOIU.promote_operation(+, Float64, F, F))
+end
+
 ### Utilities for writting code that works but at the JuMP and MOI level ###
 
+function _add_constraint(model::MOI.ModelLike, f::Vector{MOI.SingleVariable}, s)
+    return _add_constraint(model, MOI.VariableIndex[v.variable for v in f], s)
+end
+#function _add_constraint(model::MOI.ModelLike, f::Vector{<:MOI.AbstractScalarFunction}, s)
+#    return _add_constraint(model, MOIU.vectorize(f), s)
+#end
 function _add_constraint(model::MOI.ModelLike, f, s)
     MOI.add_constraint(model, f, s)
 end

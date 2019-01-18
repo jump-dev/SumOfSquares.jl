@@ -29,7 +29,7 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT, NPT}(model
                                                                            f::MOI.AbstractVectorFunction,
                                                                            s::SOSPolynomialInSemialgebraicSetBridge{<:AbstractSemialgebraicSet}) where {T, F, DT, BT, MT, MVT, NPT}
     @assert MOI.output_dimension(f) == length(s.monomials)
-    p = polynomial(MOIU.eachscalar(f), s.monomials)
+    p = polynomial(collect(MOIU.eachscalar(f)), s.monomials)
     λ = lagrangian_multiplier.(model, p, Ref(set), domain.p, mindegree, maxdegree)
     p -= dot(λ, domain.p)
     constraint = PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis; kws...)
@@ -40,7 +40,7 @@ end
 
 function MOI.supports_constraint(::Type{SOSPolynomialInSemialgebraicSetBridge{T}},
                                  ::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{<:SOSPolynomialSet{FullSpace}}) where T
+                                 ::Type{<:SOSPolynomialSet}) where T
     return true
 end
 function MOIB.added_constraint_types(::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}}) where {T, F, DT, CT, BT, MT, MVT, NPT}
@@ -48,7 +48,7 @@ function MOIB.added_constraint_types(::Type{SOSPolynomialInSemialgebraicSetBridg
 end
 function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
                                    F::Type{<:MOI.AbstractVectorFunction},
-                                   ::Type{<:SOSPolynomialSet{FullSpace, CT, <:PolyJuMP.MonomialBasis, MT, MVT}}) where {T, CT, MT, MVT}
+                                   ::Type{<:SOSPolynomialSet{DT, CT, BT, MT, MVT, NPT}}) where {T, DT, CT, BT, MT, MVT, NPT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)

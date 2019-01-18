@@ -41,6 +41,7 @@ include("variable.jl")
 include("constraint.jl")
 
 function _add_bridges(model::JuMP.AbstractModel)
+    JuMP.add_bridge(model, PolyJuMP.ZeroPolynomialBridge)
     JuMP.add_bridge(model, SOSPolynomialBridge)
     JuMP.add_bridge(model, SOSPolynomialInSemialgebraicSetBridge)
 end
