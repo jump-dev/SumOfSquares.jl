@@ -27,7 +27,7 @@ function JuMP.build_constraint(_error::Function, P::Matrix{PT},
                                kws...) where PT <: APL
     n = LinearAlgebra.checksquare(P)
     if !issymmetric(P)
-        _error("The polynomial matrix constrained to be SOS must be symmetric")
+        _error("The polynomial matrix constrained to be SOS must be symmetric.")
     end
     y = [similarvariable(PT, gensym()) for i in 1:n]
     p = dot(y, P * y)
