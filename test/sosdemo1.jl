@@ -20,7 +20,7 @@
 
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 
-    q = getslack(soscon)
+    q = slack(soscon)
     Q = getmat(q)
     @test issymmetric(Q)
     @test isapprox(Q[1, 1], 2, rtol=1e-5)

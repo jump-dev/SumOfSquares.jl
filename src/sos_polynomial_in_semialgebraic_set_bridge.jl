@@ -22,37 +22,45 @@ struct SOSPolynomialInSemialgebraicSetBridge{T, F <: MOI.AbstractVectorFunction,
                                              MT <: AbstractMonomial,
                                              MVT <: AbstractVector{MT},
                                              NPT <: Tuple} <: MOIB.AbstractBridge
+    lagrangian_multipliers::Vector{MatPolynomial{MOI.SingleVariable, MT, MVT}}
     constraint::MOI.ConstraintIndex{F, SOSPolynomialSet{DT, CT, BT, MT, MVT, NPT}}
 end
 
-function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT, NPT}(model::MOI.ModelLike,
-                                                                           f::MOI.AbstractVectorFunction,
-                                                                           s::SOSPolynomialInSemialgebraicSetBridge{<:AbstractSemialgebraicSet}) where {T, F, DT, BT, MT, MVT, NPT}
-    @assert MOI.output_dimension(f) == length(s.monomials)
-    p = polynomial(collect(MOIU.eachscalar(f)), s.monomials)
-    λ = lagrangian_multiplier.(model, p, Ref(set), domain.p, mindegree, maxdegree)
-    p -= dot(λ, domain.p)
-    constraint = PolyJuMP.addpolyconstraint!(m, p, set, domain.V, basis; kws...)
-    constraint.lagrangian_multipliers = λ
+function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}(
+    model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
+    set::SOSPolynomialSet{<:BasicSemialgebraicSet}) where {T, F, DT, CT, BT, MT, MVT, NPT}
 
-    return SOSPolynomialInSemialgebraicSetBridge{T, F, DT, BT, MT, MVT}(zero_constraint)
+    @assert MOI.output_dimension(f) == length(set.monomials)
+    p = polynomial(collect(MOIU.eachscalar(f)), set.monomials)
+    λ = lagrangian_multiplier.(model, p, set.cone, set.domain.p, set.mindegree,
+                               set.maxdegree)
+    p -= dot(set.domain.p, λ)
+    monos = monomials(p)
+    new_set = SOSPolynomialSet(set.domain.V, set.cone, set.basis, monos,
+                               set.newton_polytope, set.mindegree,
+                               set.maxdegree)
+    constraint = MOI.add_constraint(model, MOIU.vectorize(coefficients(p)),
+                                    new_set)
+
+    return SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}(λ, constraint)
 end
 
 function MOI.supports_constraint(::Type{SOSPolynomialInSemialgebraicSetBridge{T}},
                                  ::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{<:SOSPolynomialSet}) where T
+                                 ::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}}) where T
     return true
 end
-function MOIB.added_constraint_types(::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}}) where {T, F, DT, CT, BT, MT, MVT, NPT}
+function MOIB.added_constraint_types(
+    ::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}}) where {T, F, DT, CT, BT, MT, MVT, NPT}
     return [(F, SOSPolynomialSet{DT, CT, BT, MT, MVT, NPT})]
 end
 function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
                                    F::Type{<:MOI.AbstractVectorFunction},
-                                   ::Type{<:SOSPolynomialSet{DT, CT, BT, MT, MVT, NPT}}) where {T, DT, CT, BT, MT, MVT, NPT}
+                                   ::Type{<:SOSPolynomialSet{BasicSemialgebraicSet{S, PS, AT}, CT, BT, MT, MVT, NPT}}) where {T, S, PS, AT, CT, BT, MT, MVT, NPT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
-    return SOSPolynomialInSemialgebraicSetBridge{T, G, DT, CT, BT, MT, MVT, NPT}
+    return SOSPolynomialInSemialgebraicSetBridge{T, G, AT, CT, BT, MT, MVT, NPT}
 end
 
 # Attributes, Bridge acting as an model
@@ -72,7 +80,18 @@ end
 
 # Attributes, Bridge acting as a constraint
 function MOI.get(model::MOI.ModelLike,
-                 attr::Union{MOI.ConstraintPrimal, MOI.ConstraintDual},
+                 attr::MOI.ConstraintDual,
                  c::SOSPolynomialInSemialgebraicSetBridge)
-    return MOI.get(model, attr, c.zero_constraint)
+    # The monomials might be different from the ones of the original polynomial
+    # because of the ∑ λ_i s_i(x)
+    return measure(MOI.get(model, attr, c.constraint),
+                   MOI.get(model, MOI.ConstraintSet(), c.constraint).monomials)
+end
+function MOI.get(model::MOI.ModelLike, attr::CertificateMonomials,
+                 bridge::SOSPolynomialInSemialgebraicSetBridge)
+    return MOI.get(model, attr, bridge.constraint)
+end
+function MOI.get(model::MOI.ModelLike, ::LagrangianMultipliers,
+                 bridge::SOSPolynomialInSemialgebraicSetBridge)
+    return map(λ -> primal_value(model, λ), bridge.lagrangian_multipliers)
 end

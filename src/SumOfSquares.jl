@@ -23,6 +23,7 @@ const MOIU = MathOptInterface.Utilities
 using PolyJuMP
 export Poly
 
+include("attributes.jl")
 include("diagonally_dominant.jl")
 include("sos_polynomial.jl")
 
@@ -30,6 +31,8 @@ include("sos_polynomial.jl")
 const MOIB = MOI.Bridges
 include("sos_polynomial_bridge.jl")
 include("sos_polynomial_in_semialgebraic_set_bridge.jl")
+include("diagonally_dominant_bridge.jl")
+include("scaled_diagonally_dominant_bridge.jl")
 
 # JuMP extension
 
@@ -42,8 +45,12 @@ include("constraint.jl")
 
 function _add_bridges(model::JuMP.AbstractModel)
     JuMP.add_bridge(model, PolyJuMP.ZeroPolynomialBridge)
+    JuMP.add_bridge(model, PolyJuMP.ZeroPolynomialInAlgebraicSetBridge)
+    JuMP.add_bridge(model, PolyJuMP.PlusMinusBridge)
     JuMP.add_bridge(model, SOSPolynomialBridge)
     JuMP.add_bridge(model, SOSPolynomialInSemialgebraicSetBridge)
+    JuMP.add_bridge(model, DiagonallyDominantBridge)
+    JuMP.add_bridge(model, ScaledDiagonallyDominantBridge)
 end
 
 function setdefaults!(data::PolyJuMP.Data)

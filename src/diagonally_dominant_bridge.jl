@@ -5,7 +5,7 @@ end
 
 function DiagonallyDominantBridge{T, F}(model::MOI.ModelLike,
                                         f::MOI.AbstractVectorFunction,
-                                        s::DiagonallyDominantConeTriangle) where T
+                                        s::DiagonallyDominantConeTriangle) where {T, F}
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     n = s.side_dimension
     g = F[zero(F) for i in 1:n]
@@ -17,11 +17,12 @@ function DiagonallyDominantBridge{T, F}(model::MOI.ModelLike,
             k += 1
             # abs ≥ |Qij|
             abs = MOI.add_variable(model)
-            MOIU.operate!(-, T, dominance[j], abs)
-            MOIU.operate!(-, T, dominance[i], abs)
-            MOI.add_constraint(model, MOIU.operate(+, T, abs, fs[k]),
+            fabs = MOI.SingleVariable(abs)
+            MOIU.operate!(-, T, g[j], fabs)
+            MOIU.operate!(-, T, g[i], fabs)
+            MOI.add_constraint(model, MOIU.operate(+, T, fabs, fs[k]),
                                MOI.GreaterThan(0.0))
-            MOI.add_constraint(model, MOIU.operate(-, T, abs, fs[k]),
+            MOI.add_constraint(model, MOIU.operate(-, T, fabs, fs[k]),
                                MOI.GreaterThan(0.0))
         end
         k += 1
@@ -39,9 +40,9 @@ end
 function MOIB.added_constraint_types(::Type{DiagonallyDominantBridge{T, F}}) where {T, F}
     return [(F, MOI.GreaterThan{T})]
 end
-function MOIB.concrete_bridge_type(::Type{<:DiagonallyDominantBridge},
+function MOIB.concrete_bridge_type(::Type{<:DiagonallyDominantBridge{T}},
                                    F::Type{<:MOI.AbstractVectorFunction},
-                                   ::Type{DiagonallyDominantConeTriangle})
+                                   ::Type{DiagonallyDominantConeTriangle}) where T
     S = MOIU.scalar_type(F)
     G = MOIU.promote_operation(-, T, S, MOI.SingleVariable)
     return DiagonallyDominantBridge{T, G}

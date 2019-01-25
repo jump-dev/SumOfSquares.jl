@@ -46,14 +46,14 @@ function JuMP.add_variable(model::JuMP.AbstractModel,
                            name::String="")
     monos = v.p.polynomial_basis.monomials
     function new_var(i, j)
-        v = JuMP.VariableRef(model)
-        if binary
-            JuMP.set_binary(v)
+        vref = JuMP.VariableRef(model)
+        if v.binary
+            JuMP.set_binary(vref)
         end
-        if integer
-            JuMP.set_integer(v)
+        if v.integer
+            JuMP.set_integer(vref)
         end
-        return v
+        return vref
     end
     p = MatPolynomial{JuMP.VariableRef}(new_var, monos)
     matrix_add_constraint(model, p, matrix_cone(v.p))

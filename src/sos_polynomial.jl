@@ -2,7 +2,6 @@ export DSOSCone, SDSOSCone, SOSCone
 
 export CoDSOSCone, CoSDSOSCone, CoSOSCone
 export SOSMatrixCone
-export getslack, certificate_monomials, lagrangian_multipliers
 
 struct DSOSCone <: PolyJuMP.PolynomialSet end
 matrix_cone(::DSOSCone) = DiagonallyDominantConeTriangle
@@ -22,6 +21,8 @@ _nococone(::CoSOSCone) = SOSCone()
 const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone}
 const CoSOSLikeCones = Union{CoDSOSCone, CoSDSOSCone, CoSOSCone}
 const SOSSubCones = Union{CoSOSLikeCones, SOSLikeCones}
+
+Base.broadcastable(cone::SOSSubCones) = Ref(cone)
 
 struct SOSPolynomialSet{DT <: AbstractSemialgebraicSet,
                         CT <: SOSSubCones,

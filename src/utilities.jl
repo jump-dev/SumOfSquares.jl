@@ -7,6 +7,13 @@ function MP.polynomial(p::MatPolynomial{F}) where {F <: MOI.AbstractFunction}
     MP.polynomial(p, MOIU.promote_operation(+, Float64, F, F))
 end
 
+function primal_value(model, p::MatPolynomial{MOI.SingleVariable})
+    # TODO [perf] use MOI typed mapped array
+    Q = MOI.get(model, MOI.VariablePrimal(),
+                MOI.VariableIndex[sv.variable for sv in p.Q.Q])
+    return MatPolynomial(SymMatrix(Q, p.Q.n), p.x)
+end
+
 ### Utilities for writting code that works but at the JuMP and MOI level ###
 
 function _add_constraint(model::MOI.ModelLike, f::Vector{MOI.SingleVariable}, s)
@@ -28,9 +35,11 @@ _vcat(funs::JuMP.AbstractJuMPScalar...) = vcat(funs...)
 ### Utilities for constraining the symmetric matrix of a MatPolynomial ###
 
 # PSD constraints on 2x2 matrices are SOC representable.
+# [Q11 Q12] is PSD iff Q11, Q22 ≥ 0 and       Q11*Q22 ≥     Q12 ^2
+# [Q12 Q22] is PSD                      <=> 2*Q11*Q22 ≥ (√2*Q12)^2
 function soc_psd_constraint(model, Q11, Q12, Q22)
-    _add_constraint(model, _vcat(Q11 + Q22, 2.0Q12, Q11 - Q22),
-                    MOI.SecondOrderCone(3))
+    _add_constraint(model, _vcat(Q11, Q22, √2*Q12),
+                    MOI.RotatedSecondOrderCone(3))
 end
 
 function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
@@ -40,9 +49,11 @@ function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
         # PSD constraints on 1x1 matrices are equivalent to the
         # nonnegativity of the only entry
         _add_constraint(model, Q[1], MOI.GreaterThan(0.0))
-    elseif n == 2 && !(S <: DiagonallyDominantConeTriangle)
+    elseif false && n == 2 && !(set isa DiagonallyDominantConeTriangle)
         # PSD constraints on 2x2 matrices are SOC representable.
         # For the DD cone, we want to avoid using SOC and only use LP
+        # TODO check that ConstraintPrimal and ConstraintDual are not used
+        #      we should probably make a bridge that transform them
         soc_psd_constraint(model, Q...)
         # FIXME for SDOI solvers, it will be transformed to a 3x3 matrix as they
         #       do not support SOC.

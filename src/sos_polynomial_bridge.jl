@@ -23,6 +23,7 @@ struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
                            BT <: PolyJuMP.AbstractPolynomialBasis,
                            MT <: AbstractMonomial,
                            MVT <: AbstractVector{MT}} <: MOIB.AbstractBridge
+    slack::MatPolynomial{MOI.SingleVariable, MT, MVT}
     zero_constraint::MOI.ConstraintIndex{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}
 end
 
@@ -31,19 +32,20 @@ function SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(model::MOI.ModelLike,
                                                     s::SOSPolynomialSet{<:AbstractAlgebraicSet}) where {T, F, DT, BT, MT, MVT}
     @assert MOI.output_dimension(f) == length(s.monomials)
     p = polynomial(collect(MOIU.eachscalar(f)), s.monomials)
-    r = rem(p, ideal(s.domain))
+    # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
+    r = convert(typeof(p), rem(p, ideal(s.domain)))
     X = monomials_half_newton_polytope(monomials(r), s.newton_polytope)
     slack = matpoly_in_cone(model, X, s.cone)
     q = r - slack
     set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, monomials(q))
     zero_constraint = MOI.add_constraint(model, MOIU.vectorize(coefficients(q)),
                                          set)
-    return SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(zero_constraint)
+    return SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(slack, zero_constraint)
 end
 
 function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
                                  ::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{<:SOSPolynomialSet{FullSpace}}) where T
+                                 ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}}) where T
     return true
 end
 function MOIB.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, BT, MT, MVT}}) where {T, F, DT, BT, MT, MVT}
@@ -51,11 +53,11 @@ function MOIB.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, BT, MT
 end
 function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialBridge{T}},
                                    F::Type{<:MOI.AbstractVectorFunction},
-                                   ::Type{<:SOSPolynomialSet{FullSpace, CT, <:PolyJuMP.MonomialBasis, MT, MVT}}) where {T, CT, MT, MVT}
+                                   ::Type{<:SOSPolynomialSet{DT, CT, <:PolyJuMP.MonomialBasis, MT, MVT}}) where {T, DT<:AbstractAlgebraicSet, CT, MT, MVT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
-    return SOSPolynomialBridge{T, G, FullSpace, PolyJuMP.MonomialBasis, MT, MVT}
+    return SOSPolynomialBridge{T, G, DT, PolyJuMP.MonomialBasis, MT, MVT}
 end
 
 # Attributes, Bridge acting as an model
@@ -69,13 +71,25 @@ function MOI.get(b::SOSPolynomialBridge{T, F, DT, BT, MT, MVT},
 end
 
 # Indices
-function MOI.delete(model::MOI.ModelLike, c::SOSPolynomialBridge)
-    MOI.delete(model, c.zero_constraint)
+function MOI.delete(model::MOI.ModelLike, bridge::SOSPolynomialBridge)
+    # First delete the constraints in which the slack variables appears
+    MOI.delete(model, bridge.zero_constraint)
+    # Now we delete the slack variables
+    for vi in bridge.slack.Q.Q
+        MOI.delete(model, vi.variables)
+    end
 end
 
 # Attributes, Bridge acting as a constraint
 function MOI.get(model::MOI.ModelLike,
-                 attr::Union{MOI.ConstraintPrimal, MOI.ConstraintDual},
-                 c::SOSPolynomialBridge)
-    return MOI.get(model, attr, c.zero_constraint)
+                 attr::MOI.ConstraintDual,
+                 bridge::SOSPolynomialBridge)
+    return MOI.get(model, attr, bridge.zero_constraint)
+end
+function MOI.get(model::MOI.ModelLike, ::Slack, bridge::SOSPolynomialBridge)
+    return primal_value(model, bridge.slack)
+end
+function MOI.get(model::MOI.ModelLike, attr::CertificateMonomials,
+                 bridge::SOSPolynomialBridge)
+    return bridge.slack.x
 end
