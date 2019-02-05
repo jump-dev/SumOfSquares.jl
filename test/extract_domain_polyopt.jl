@@ -24,9 +24,8 @@ using MultivariateMoments
             @test all(eigvals(Matrix(λ.Q)) .>= -1e-2)
         end
 
-        μ = JuMP.dual(c)
         X = certificate_monomials(c)
-        ν = matmeasure(μ, X)
+        ν = moment_matrix(c)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)
         @test (atoms === nothing) == !found

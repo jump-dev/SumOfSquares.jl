@@ -79,15 +79,12 @@ function MOI.delete(model::MOI.ModelLike, c::SOSPolynomialInSemialgebraicSetBrid
 end
 
 # Attributes, Bridge acting as a constraint
+
+# The monomials might be different from the ones of the original polynomial
+# because of the ∑ λ_i s_i(x) so we don't define ConstraintPrimal and
+# ConstraintDual, as the caller won't know how to reshape it
 function MOI.get(model::MOI.ModelLike,
-                 attr::MOI.ConstraintDual,
-                 c::SOSPolynomialInSemialgebraicSetBridge)
-    # The monomials might be different from the ones of the original polynomial
-    # because of the ∑ λ_i s_i(x)
-    return measure(MOI.get(model, attr, c.constraint),
-                   MOI.get(model, MOI.ConstraintSet(), c.constraint).monomials)
-end
-function MOI.get(model::MOI.ModelLike, attr::CertificateMonomials,
+                 attr::Union{MomentMatrix, CertificateMonomials},
                  bridge::SOSPolynomialInSemialgebraicSetBridge)
     return MOI.get(model, attr, bridge.constraint)
 end

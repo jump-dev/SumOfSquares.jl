@@ -21,6 +21,12 @@ end
 
 slack(cref::JuMP.ConstraintRef) =  MOI.get(cref.model, Slack(), cref)
 
+function moment_matrix(cref::JuMP.ConstraintRef)
+    return MOI.get(cref.model, MomentMatrix(), cref)
+end
+
+# Equivalent but more efficient than moment_matrix(cref).x as it does not need
+# to query any result from the solver
 function certificate_monomials(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, CertificateMonomials(), cref)
 end
