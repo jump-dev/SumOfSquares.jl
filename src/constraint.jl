@@ -1,4 +1,4 @@
-export slack, certificate_monomials, lagrangian_multipliers
+export certificate_monomials, gram_matrix, moment_matrix, lagrangian_multipliers
 
 function JuMP.moi_set(cone::SOSSubCones,
                       monos::AbstractVector{<:AbstractMonomial};
@@ -19,7 +19,7 @@ function JuMP.build_constraint(_error::Function, p, cone::SOSSubCones; kws...)
     return JuMP.VectorConstraint(coefs, set, shape)
 end
 
-slack(cref::JuMP.ConstraintRef) =  MOI.get(cref.model, Slack(), cref)
+gram_matrix(cref::JuMP.ConstraintRef) =  MOI.get(cref.model, GramMatrix(), cref)
 
 function moment_matrix(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, MomentMatrix(), cref)
@@ -33,11 +33,6 @@ end
 
 function lagrangian_multipliers(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, LagrangianMultipliers(), cref)
-end
-
-function MOI.is_set_by_optimize(::Union{Slack, CertificateMonomials,
-                                        LagrangianMultipliers})
-    return true
 end
 
 struct SOSMatrixCone <: PolyJuMP.PolynomialSet end

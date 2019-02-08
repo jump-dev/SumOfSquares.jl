@@ -84,7 +84,7 @@ end
 # because of the ∑ λ_i s_i(x) so we don't define ConstraintPrimal and
 # ConstraintDual, as the caller won't know how to reshape it
 function MOI.get(model::MOI.ModelLike,
-                 attr::Union{MomentMatrix, CertificateMonomials},
+                 attr::Union{CertificateMonomials, GramMatrix, MomentMatrix},
                  bridge::SOSPolynomialInSemialgebraicSetBridge)
     return MOI.get(model, attr, bridge.constraint)
 end

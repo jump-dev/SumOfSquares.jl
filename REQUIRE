@@ -2,7 +2,7 @@ julia 0.7
 MultivariatePolynomials 0.1.1
 SemialgebraicSets 0.0.2
 MultivariateMoments 0.1.0
-MathOptInterface 0.8
-JuMP 0.18.2+
+MathOptInterface 0.8.2 0.9
+JuMP 0.18.5+
 PolyJuMP 0.2 0.3
 Reexport

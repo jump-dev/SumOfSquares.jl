@@ -91,7 +91,7 @@ function MOI.get(model::MOI.ModelLike, ::MomentMatrix,
     return primal_value(model, bridge.slack)
     μ = MOI.get(model, MOI.ConstraintDual(), bridge)
 end
-function MOI.get(model::MOI.ModelLike, ::Slack, bridge::SOSPolynomialBridge)
+function MOI.get(model::MOI.ModelLike, ::GramMatrix, bridge::SOSPolynomialBridge)
     return primal_value(model, bridge.slack)
 end
 function MOI.get(model::MOI.ModelLike, attr::CertificateMonomials,
