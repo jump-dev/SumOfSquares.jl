@@ -23,7 +23,7 @@ struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
                            BT <: PolyJuMP.AbstractPolynomialBasis,
                            MT <: AbstractMonomial,
                            MVT <: AbstractVector{MT}} <: MOIB.AbstractBridge
-    slack::MatPolynomial{MOI.SingleVariable, MT, MVT}
+    gram_matrix::MatPolynomial{MOI.SingleVariable, MT, MVT}
     zero_constraint::MOI.ConstraintIndex{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}
 end
 
@@ -35,12 +35,12 @@ function SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(model::MOI.ModelLike,
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     r = convert(typeof(p), rem(p, ideal(s.domain)))
     X = monomials_half_newton_polytope(monomials(r), s.newton_polytope)
-    slack = matpoly_in_cone(model, X, s.cone)
-    q = r - slack
+    gram_matrix = matpoly_in_cone(model, X, s.cone)
+    q = r - gram_matrix
     set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, monomials(q))
     zero_constraint = MOI.add_constraint(model, MOIU.vectorize(coefficients(q)),
                                          set)
-    return SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(slack, zero_constraint)
+    return SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(gram_matrix, zero_constraint)
 end
 
 function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
@@ -72,10 +72,10 @@ end
 
 # Indices
 function MOI.delete(model::MOI.ModelLike, bridge::SOSPolynomialBridge)
-    # First delete the constraints in which the slack variables appears
+    # First delete the constraints in which the Gram matrix appears
     MOI.delete(model, bridge.zero_constraint)
-    # Now we delete the slack variables
-    for vi in bridge.slack.Q.Q
+    # Now we delete the Gram matrix
+    for vi in bridge.gram_matrix.Q.Q
         MOI.delete(model, vi.variables)
     end
 end
@@ -88,13 +88,13 @@ function MOI.get(model::MOI.ModelLike,
 end
 function MOI.get(model::MOI.ModelLike, ::MomentMatrix,
                  bridge::SOSPolynomialBridge)
-    return primal_value(model, bridge.slack)
+    return primal_value(model, bridge.gram_matrix)
     μ = MOI.get(model, MOI.ConstraintDual(), bridge)
 end
 function MOI.get(model::MOI.ModelLike, ::GramMatrix, bridge::SOSPolynomialBridge)
-    return primal_value(model, bridge.slack)
+    return primal_value(model, bridge.gram_matrix)
 end
 function MOI.get(model::MOI.ModelLike, attr::CertificateMonomials,
                  bridge::SOSPolynomialBridge)
-    return bridge.slack.x
+    return bridge.gram_matrix.x
 end
