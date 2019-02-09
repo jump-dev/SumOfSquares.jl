@@ -48,13 +48,13 @@ function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
     if n == 1
         # PSD constraints on 1x1 matrices are equivalent to the
         # nonnegativity of the only entry
-        _add_constraint(model, Q[1], MOI.GreaterThan(0.0))
+        return _add_constraint(model, Q[1], MOI.GreaterThan(0.0))
     elseif false && n == 2 && !(set isa DiagonallyDominantConeTriangle)
         # PSD constraints on 2x2 matrices are SOC representable.
         # For the DD cone, we want to avoid using SOC and only use LP
         # TODO check that ConstraintPrimal and ConstraintDual are not used
         #      we should probably make a bridge that transform them
-        soc_psd_constraint(model, Q...)
+        return soc_psd_constraint(model, Q...)
         # FIXME for SDOI solvers, it will be transformed to a 3x3 matrix as they
         #       do not support SOC.
         #       We should transform it to RSOC and make an particular case for RSOC->PSD bridge of dimension 3. This exception would also help for the geometric cone which also generates dimension 3 RSOC
@@ -66,7 +66,7 @@ function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
         # On representing the positive semidefinite cone using the second-order
         # cone.
         # Mathematical Programming (2018): 1-10.
-        _add_constraint(model, Q, set)
+        return _add_constraint(model, Q, set)
     end
 end
 function matrix_add_constraint(model, p::MatPolynomial, S::Type)

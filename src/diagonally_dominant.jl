@@ -9,7 +9,7 @@ See Definition 4 of [AM17] for a precise definition of the last two items.
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
-ArXiv e-prints, 2017
+ArXiv e-prints, **2017**.
 """
 struct DiagonallyDominantConeTriangle <: MatrixConeTriangle
     side_dimension::Int
@@ -24,7 +24,7 @@ See Definition 4 of [AM17] for a precise definition of the last two items.
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
-ArXiv e-prints, 2017
+ArXiv e-prints, **2017**.
 """
 struct ScaledDiagonallyDominantConeTriangle <: MatrixConeTriangle
     side_dimension::Int
