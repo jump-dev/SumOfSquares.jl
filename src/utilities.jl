@@ -37,9 +37,11 @@ _vcat(funs::JuMP.AbstractJuMPScalar...) = vcat(funs...)
 # PSD constraints on 2x2 matrices are SOC representable.
 # [Q11 Q12] is PSD iff Q11, Q22 ≥ 0 and       Q11*Q22 ≥     Q12 ^2
 # [Q12 Q22] is PSD                      <=> 2*Q11*Q22 ≥ (√2*Q12)^2
-function soc_psd_constraint(model, Q11, Q12, Q22)
-    _add_constraint(model, _vcat(Q11, Q22, √2*Q12),
-                    MOI.RotatedSecondOrderCone(3))
+function psd2x2_constraint(model, Q11, Q12, Q22)
+#    _add_constraint(model, _vcat(Q11, Q22, √2*Q12),
+#                    MOI.RotatedSecondOrderCone(3))
+    return _add_constraint(model, _vcat(Q11, Q12, Q22),
+                           PositiveSemidefinite2x2ConeTriangle())
 end
 
 function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
@@ -54,7 +56,7 @@ function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
         # For the DD cone, we want to avoid using SOC and only use LP
         # TODO check that ConstraintPrimal and ConstraintDual are not used
         #      we should probably make a bridge that transform them
-        return soc_psd_constraint(model, Q...)
+        return psd2x2_constraint(model, Q...)
         # FIXME for SDOI solvers, it will be transformed to a 3x3 matrix as they
         #       do not support SOC.
         #       We should transform it to RSOC and make an particular case for RSOC->PSD bridge of dimension 3. This exception would also help for the geometric cone which also generates dimension 3 RSOC

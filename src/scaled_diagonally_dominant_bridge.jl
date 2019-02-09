@@ -1,12 +1,12 @@
 struct ScaledDiagonallyDominantBridge{T, F} <: MOIB.AbstractBridge
     equality::Vector{MOI.ConstraintIndex{F, MOI.EqualTo{T}}}
-    soc::Vector{MOI.ConstraintIndex{MOI.VectorAffineFunction{T},
-                                    MOI.RotatedSecondOrderCone}}
+    psd2x2::Vector{MOI.ConstraintIndex{MOI.VectorAffineFunction{T},
+                                       PositiveSemidefinite2x2ConeTriangle}}
 end
 
-function ScaledDiagonallyDominantBridge{T, F}(model::MOI.ModelLike,
-                                        f::MOI.AbstractVectorFunction,
-                                        s::ScaledDiagonallyDominantConeTriangle) where {T, F}
+function ScaledDiagonallyDominantBridge{T, F}(
+    model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
+    s::ScaledDiagonallyDominantConeTriangle) where {T, F}
     # `p.Q` is SDD iff it is the sum of psd matrices Mij that are zero except for
     # entries ii, ij and jj [Lemma 9, AM17].
     @assert MOI.output_dimension(f) == MOI.dimension(s)
@@ -16,40 +16,42 @@ function ScaledDiagonallyDominantBridge{T, F}(model::MOI.ModelLike,
     # Cannot use `collect(fs)` as its `eltype` might be different to `F`, e.g.
     # if `f` is a `MOI.VectorOfVariables`.
     g = F[zero(F) for i in 1:MOI.dimension(s)]
-    soc = Vector{MOI.ConstraintIndex{MOI.VectorAffineFunction{T},
-                                     MOI.RotatedSecondOrderCone}}(undef, length(fs) - n)
+    psd2x2 = Vector{MOI.ConstraintIndex{
+        MOI.VectorAffineFunction{T}, PositiveSemidefinite2x2ConeTriangle}}(
+            undef, length(fs) - n)
     diag_idx(i) = div(i * (i + 1), 2)
     k = 0
-    ksoc = 0
+    k2x2 = 0
     for j in 1:n
         for i in 1:(j-1)
             k += 1
-            ksoc += 1
+            MOIU.operate!(+, T, g[k], fs[k])
+            k2x2 += 1
             Mii = MOI.SingleVariable(MOI.add_variable(model))
             MOIU.operate!(-, T, g[diag_idx(i)], Mii)
             Mij = MOI.SingleVariable(MOI.add_variable(model))
             MOIU.operate!(-, T, g[k], Mij)
             Mjj = MOI.SingleVariable(MOI.add_variable(model))
-            MOIU.operate!(-, T, g[diag_idx(j)], Mii)
+            MOIU.operate!(-, T, g[diag_idx(j)], Mjj)
             # PSD constraints on 2x2 matrices are SOC representable
-            soc[ksoc] = soc_psd_constraint(model, Mii, Mij, Mjj)
+            psd2x2[k2x2] = psd2x2_constraint(model, Mii, Mij, Mjj)
         end
         k += 1
         MOIU.operate!(+, T, g[k], fs[k])
     end
     equality = map(f -> MOIU.add_scalar_constraint(model, f, MOI.EqualTo(0.0)), g)
-    return ScaledDiagonallyDominantBridge{T, F}(equality, soc)
+    return ScaledDiagonallyDominantBridge{T, F}(equality, psd2x2)
 end
 
 function MOI.supports_constraint(::Type{<:ScaledDiagonallyDominantBridge},
                                  ::Type{<:MOI.AbstractVectorFunction},
                                  ::Type{<:ScaledDiagonallyDominantConeTriangle})
-    println("yo")
     return true
 end
 function MOIB.added_constraint_types(::Type{ScaledDiagonallyDominantBridge{T, F}}) where {T, F}
     return [(F, MOI.EqualTo{T}),
-            (MOI.VectorAffineFunction{T}, MOI.RotatedSecondOrderCone)]
+            (MOI.VectorAffineFunction{T},
+             PositiveSemidefinite2x2ConeTriangle)]
 end
 function MOIB.concrete_bridge_type(::Type{<:ScaledDiagonallyDominantBridge{T}},
                                    F::Type{<:MOI.AbstractVectorFunction},
@@ -66,8 +68,8 @@ function MOI.get(bridge::ScaledDiagonallyDominantBridge{T, F},
 end
 function MOI.get(bridge::ScaledDiagonallyDominantBridge{T},
                  ::MOI.NumberOfConstraints{MOI.VectorAffineFunction{T},
-                                           MOI.RotatedSecondOrderCone}) where {T, F}
-    return length(bridge.soc)
+                                           PositiveSemidefinite2x2ConeTriangle}) where {T, F}
+    return length(bridge.psd2x2)
 end
 function MOI.get(bridge::ScaledDiagonallyDominantBridge{T, F},
                  ::MOI.ListOfConstraintIndices{F, MOI.EqualTo{T}}) where {T, F}
@@ -76,7 +78,7 @@ end
 function MOI.get(bridge::ScaledDiagonallyDominantBridge{T},
                  ::MOI.ListOfConstraintIndices{MOI.VectorAffineFunction{T},
                                                MOI.RotatedSecondOrderCone}) where {T}
-    return bridge.soc
+    return bridge.psd2x2
 end
 
 # Indices
@@ -84,7 +86,7 @@ function MOI.delete(model::MOI.ModelLike, bridge::ScaledDiagonallyDominantBridge
     for ci in bridge.equality
         MOI.delete(model, ci)
     end
-    for ci in bridge.soc
+    for ci in bridge.psd2x2
         MOI.delete(model, ci)
     end
     # TODO delete variables

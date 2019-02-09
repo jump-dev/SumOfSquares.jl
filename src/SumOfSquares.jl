@@ -32,6 +32,7 @@ const MOIB = MOI.Bridges
 include("sos_polynomial_bridge.jl")
 include("sos_polynomial_in_semialgebraic_set_bridge.jl")
 include("diagonally_dominant_bridge.jl")
+include("psd2x2_bridge.jl")
 include("scaled_diagonally_dominant_bridge.jl")
 
 # JuMP extension
@@ -50,6 +51,7 @@ function _add_bridges(model::JuMP.AbstractModel)
     JuMP.add_bridge(model, SOSPolynomialBridge)
     JuMP.add_bridge(model, SOSPolynomialInSemialgebraicSetBridge)
     JuMP.add_bridge(model, DiagonallyDominantBridge)
+    JuMP.add_bridge(model, PositiveSemidefinite2x2Bridge)
     JuMP.add_bridge(model, ScaledDiagonallyDominantBridge)
 end
 

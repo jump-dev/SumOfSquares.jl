@@ -17,9 +17,9 @@ using MultivariateMoments
     dsos_codsos_exp   = [132.63, 132.63, 132.63, 132.63, 132.63]
     sdsos_cosdsos_exp = [ 21.51,  17.17,  13.20,   9.85,   7.30]
     sos_cosos_exp = sdsos_cosdsos_exp
-    @testset "with $cone" for (cone, exp) in [(CoDSOSCone(), dsos_codsos_exp),
-                                              (CoSDSOSCone(), sdsos_cosdsos_exp),
-                                              (CoSOSCone(), sdsos_cosdsos_exp)]
+    @testset "with $cone" for (cone, exp) in [(CopositiveInner(DSOSCone()), dsos_codsos_exp),
+                                              (CopositiveInner(SDSOSCone()), sdsos_cosdsos_exp),
+                                              (CopositiveInner(SOSCone()), sdsos_cosdsos_exp)]
         function optionspricing(K, cone)
             m = SOSModel(factory)
             @variable m p Poly(X)

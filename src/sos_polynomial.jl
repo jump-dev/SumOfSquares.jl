@@ -1,6 +1,5 @@
 export DSOSCone, SDSOSCone, SOSCone
-
-export CoDSOSCone, CoSDSOSCone, CoSOSCone
+export CopositiveInner
 export SOSMatrixCone
 
 struct DSOSCone <: PolyJuMP.PolynomialSet end

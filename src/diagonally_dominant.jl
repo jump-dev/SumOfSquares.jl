@@ -30,6 +30,8 @@ struct ScaledDiagonallyDominantConeTriangle <: MatrixConeTriangle
     side_dimension::Int
 end
 
+side_dimension(set::MatrixConeTriangle) = set.side_dimension
+
 # isbits types, nothing to copy
 function Base.copy(set::MatrixConeTriangle)
     return set
@@ -38,15 +40,15 @@ end
 # TODO make PSDConeTriangle inherit from MatrixConeTriangle to remove the need
 #      for this
 function MOI.dimension(set::MatrixConeTriangle)
-    return div(set.side_dimension * (set.side_dimension + 1), 2)
+    return div(side_dimension(set) * (side_dimension(set) + 1), 2)
 end
 
 function MOIU.set_dot(x::Vector, y::Vector, set::MatrixConeTriangle)
-    return MOIU.triangle_dot(x, y, set.side_dimension, 0)
+    return MOIU.triangle_dot(x, y, side_dimension(set), 0)
 end
 
 function MOIU.dot_coefficients(a::Vector, set::MatrixConeTriangle)
     b = copy(a)
-    MOIU.triangle_coefficients!(b, set.side_dimension, 0)
+    MOIU.triangle_coefficients!(b, side_dimension(set), 0)
     return b
 end
