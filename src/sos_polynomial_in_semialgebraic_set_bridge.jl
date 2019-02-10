@@ -1,4 +1,5 @@
-function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSSubCones, q, mindegree::Integer, maxdegree::Integer)
+function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSSubCones, q,
+                               mindegree::Integer, maxdegree::Integer, T::Type)
     mindegree_q, maxdegree_q = extdegree(q)
     # extdegree's that s^2 should have so that s^2 * p has degrees between mindegree and maxdegree
     mindegree_s2 = mindegree - mindegree_q
@@ -41,7 +42,7 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}(
     cis = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}(undef, n)
     for (i, q) in enumerate(set.domain.p)
         λ, gram, ci = lagrangian_multiplier(model, p, set.cone, q,
-                                            set.mindegree, set.maxdegree)
+                                            set.mindegree, set.maxdegree, T)
         @assert λ === gram # not the case for CopositiveInner
         λs[i] = λ
         cis[i] = ci
