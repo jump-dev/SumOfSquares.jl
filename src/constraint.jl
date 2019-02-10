@@ -7,7 +7,7 @@ function JuMP.moi_set(cone::SOSSubCones,
                       newton_polytope::Tuple=tuple(),
                       mindegree=MultivariatePolynomials.mindegree(monos),
                       maxdegree=MultivariatePolynomials.maxdegree(monos))
-    return SOSPolynomialSet(domain, cone, basis, monos, tuple(), mindegree,
+    return SOSPolynomialSet(domain, cone, basis, monos, newton_polytope, mindegree,
                             maxdegree)
 end
 
