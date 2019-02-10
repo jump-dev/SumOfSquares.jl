@@ -14,7 +14,7 @@ before_install:
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
 before_script:
-  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="MathOptInterface", rev="bl/iszero_sv"))'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="MathOptInterface", rev="master"))'
   - julia -e 'using Pkg; Pkg.add(PackageSpec(name="JuMP", rev="master"))'
   - julia -e 'using Pkg; Pkg.add(PackageSpec(name="PolyJuMP", rev="bl/add_constraint"))'
 after_success:
