@@ -3,6 +3,7 @@
 # Section 3.6 of SOSTOOLS User's Manual
 
 @testset "SOSDEMO6 with $(factory.constructor)" for factory in sdp_factories
+    isscs(factory) && continue
     @polyvar x[1:5]
 
     # Number of cuts
