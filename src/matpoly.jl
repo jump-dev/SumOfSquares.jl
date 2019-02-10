@@ -22,11 +22,6 @@ Base.copy(p::MatPolynomial) = MatPolynomial(copy(p.Q), copy(p.x))
 
 MultivariateMoments.getmat(p::MatPolynomial{T}) where {T} = p.Q
 
-function _matplus(p::MatPolynomial, q::MatPolynomial)
-    @assert p.x == q.x
-    MatPolynomial(p.Q+q.Q, p.x)
-end
-
 function MatPolynomial{T}(f::Function, x::AbstractVector{MT}, σ) where {T, MT<:AbstractMonomial}
     MatPolynomial{T, MT, monovectype(x)}(trimat(T, f, length(x), σ), x)
 end
@@ -50,10 +45,10 @@ end
 #    convert(PT, polynomial(p))
 #end
 function MP.polynomial(p::MatPolynomial)
-    polynomial(getmat(p), p.x)
+    MP.polynomial(getmat(p), p.x)
 end
 function MP.polynomial(p::MatPolynomial, ::Type{S}) where {S}
-    polynomial(getmat(p), p.x, S)
+    MP.polynomial(getmat(p), p.x, S)
 end
 
 const APL = AbstractPolynomialLike

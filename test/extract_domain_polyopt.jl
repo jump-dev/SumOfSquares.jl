@@ -21,12 +21,11 @@ using MultivariateMoments
         @test JuMP.objective_value(m) ≈ 0 atol=1e-4
 
         for λ in lagrangian_multipliers(c)
-            @test all(eigvals(Matrix(JuMP.value(λ).Q)) .>= -1e-2)
+            @test all(eigvals(Matrix(λ.Q)) .>= -1e-2)
         end
 
-        μ = JuMP.dual(c)
         X = certificate_monomials(c)
-        ν = matmeasure(μ, X)
+        ν = moment_matrix(c)
         ranktol = 1e-3
         atoms = extractatoms(ν, ranktol)
         @test (atoms === nothing) == !found

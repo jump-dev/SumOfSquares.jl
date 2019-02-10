@@ -3,7 +3,7 @@ import PolyJuMP
 
 @testset "Non-symmetric matrix SOS constraint" begin
     @polyvar x
-    m = SOSModel()
-    # Throws an Argument Error because it should be symmetric to be an SOS matrix
-    @test_throws ArgumentError PolyJuMP.addpolyconstraint!(m, [1 x; -x 0], SOSMatrixCone(), SemialgebraicSets.BasicSemialgebraicSet{Int, polynomialtype(x, Int)}(), PolyJuMP.MonomialBasis)
+    model = SOSModel()
+    err = ErrorException("In `@constraint(model, [1 x; -x 0] in SOSMatrixCone())`: The polynomial matrix constrained to be SOS must be symmetric.")
+    @test_throws err @constraint(model, [1 x; -x 0] in SOSMatrixCone())
 end

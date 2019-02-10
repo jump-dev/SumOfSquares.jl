@@ -4,8 +4,8 @@ os:
   - linux
   - osx
 julia:
-  - 0.7
   - 1.0
+  - 1.1
 notifications:
   email: false
 before_install:
@@ -14,8 +14,9 @@ before_install:
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
 before_script:
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="MathOptInterface", rev="master"))'
   - julia -e 'using Pkg; Pkg.add(PackageSpec(name="JuMP", rev="master"))'
-  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="PolyJuMP", rev="master"))'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="PolyJuMP", rev="bl/add_constraint"))'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("SumOfSquares")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'

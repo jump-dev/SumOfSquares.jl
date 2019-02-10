@@ -10,7 +10,7 @@
     JuMP.optimize!(m)
     @test JuMP.termination_status(m) == MOI.OPTIMAL
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
-    @test length(getslack(mat_cref).x) == 4
+    @test length(gram_matrix(mat_cref).x) == 4
     # Example 3.79
     @polyvar y[1:2]
     M = SOSModel(factory)
@@ -18,5 +18,5 @@
     JuMP.optimize!(M)
     @test JuMP.termination_status(m) == MOI.OPTIMAL
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
-    @test length(getslack(cref).x) == 6
+    @test length(gram_matrix(cref).x) == 6
 end
