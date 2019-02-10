@@ -2,6 +2,16 @@ export DSOSCone, SDSOSCone, SOSCone
 export CopositiveInner
 export SOSMatrixCone
 
+function add_gram_matrix(model::MOI.ModelLike, monos)
+    return MatPolynomial{MOI.SingleVariable}(
+        (i, j) -> MOI.SingleVariable(MOI.add_variable(model)), monos)
+end
+function gram_delete(model::MOI.ModelLike, p::MatPolynomial)
+    for sv in p.Q.Q
+        MOI.delete(model, sv.variable)
+    end
+end
+
 struct DSOSCone <: PolyJuMP.PolynomialSet end
 matrix_cone(::DSOSCone) = DiagonallyDominantConeTriangle
 
@@ -12,6 +22,12 @@ struct SOSCone <: PolyJuMP.PolynomialSet end
 matrix_cone(::SOSCone) = MOI.PositiveSemidefiniteConeTriangle
 
 const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone}
+
+function gram_in_cone(model::MOI.ModelLike, monos, set::SOSLikeCones)
+    p = add_gram_matrix(model, monos)
+    ci = matrix_add_constraint(model, p, matrix_cone(set))
+    return p, ci
+end
 
 """
     struct CopositiveInner{S} <: PolyJuMP.PolynomialSet
@@ -71,6 +87,21 @@ Mathematical programming, 39:117–129, **1987**.
 """
 struct CopositiveInner{S} <: PolyJuMP.PolynomialSet
     psd_inner::S
+end
+
+function gram_posynomial(model::MOI.ModelLike, monos)
+    # TODO, the diagonal elements can be zero
+    p = add_gram_matrix(model, monos)
+    # TODO use Nonnegatives cone
+    for q in p.Q.Q
+        MOI.add_constraint(model, q, MOI.GreaterThan(0.0))
+    end
+    return p
+end
+
+function gram_in_cone(model::MOI.ModelLike, x, set::CopositiveInner)
+    p, ci = gram_in_cone(model, x, set.psd_inner)
+    _matplus(p, gram_posynomial(model, x)), ci
 end
 
 const SOSSubCones = Union{CopositiveInner, SOSLikeCones}
