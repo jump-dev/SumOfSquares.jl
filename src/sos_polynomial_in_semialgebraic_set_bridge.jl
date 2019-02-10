@@ -12,7 +12,7 @@ function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSSubCones, q, min
     # so instead of `variable(p)` we would have the union of them all
     @assert variables(q) ⊆ variables(p)
     monos = monomials(variables(p), mindegree_s:maxdegree_s)
-    return gram_in_cone(model, monos, set)
+    return gram_in_cone(model, monos, set, T)
 end
 
 struct SOSPolynomialInSemialgebraicSetBridge{
@@ -40,8 +40,9 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, BT, MT, MVT, NPT}(
     λs  = Vector{MatPolynomial{MOI.SingleVariable, MT, MVT}}(undef, n)
     cis = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}(undef, n)
     for (i, q) in enumerate(set.domain.p)
-        λ, ci = lagrangian_multiplier(model, p, set.cone, q, set.mindegree,
-                                      set.maxdegree)
+        λ, gram, ci = lagrangian_multiplier(model, p, set.cone, q,
+                                            set.mindegree, set.maxdegree)
+        @assert λ === gram # not the case for CopositiveInner
         λs[i] = λ
         cis[i] = ci
         p -= λ * q

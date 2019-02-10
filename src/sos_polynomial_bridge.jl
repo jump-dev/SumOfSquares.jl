@@ -21,8 +21,8 @@ function SOSPolynomialBridge{T, F, DT, BT, MT, MVT}(
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     r = convert(typeof(p), rem(p, ideal(s.domain)))
     X = monomials_half_newton_polytope(monomials(r), s.newton_polytope)
-    gram_matrix, gram_constraint = gram_in_cone(model, X, s.cone)
-    q = r - gram_matrix
+    g, gram_matrix, gram_constraint = gram_in_cone(model, X, s.cone, T)
+    q = r - g
     set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, monomials(q))
     coefs = MOIU.vectorize(coefficients(q))
     zero_constraint = MOI.add_constraint(model, coefs, set)

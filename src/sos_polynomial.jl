@@ -23,10 +23,10 @@ matrix_cone(::SOSCone) = MOI.PositiveSemidefiniteConeTriangle
 
 const SOSLikeCones = Union{DSOSCone, SDSOSCone, SOSCone}
 
-function gram_in_cone(model::MOI.ModelLike, monos, set::SOSLikeCones)
+function gram_in_cone(model::MOI.ModelLike, monos, set::SOSLikeCones, T::Type)
     p = add_gram_matrix(model, monos)
     ci = matrix_add_constraint(model, p, matrix_cone(set))
-    return p, ci
+    return p, p, ci
 end
 
 """
@@ -99,9 +99,26 @@ function gram_posynomial(model::MOI.ModelLike, monos)
     return p
 end
 
-function gram_in_cone(model::MOI.ModelLike, x, set::CopositiveInner)
-    p, ci = gram_in_cone(model, x, set.psd_inner)
-    _matplus(p, gram_posynomial(model, x)), ci
+function gram_in_cone(model::MOI.ModelLike, monos, set::CopositiveInner,
+                      T::Type)
+    p, gram, ci = gram_in_cone(model, monos, set.psd_inner, T)
+    F = MOI.ScalarAffineFunction{T}
+    # If `q isa F` then `convert` won't create a copy so we explictly copy it.
+    # It is less costly to copy it before, e.g. if `q is MOI.SingleVariable`.
+    Q = F[convert(F, copy(q)) for q in p.Q.Q]
+    n = length(monos)
+    k = 0
+    for j in 1:length(monos)
+        for i in 1:(j-1)
+            k += 1
+            # TODO: these should be deleted when the bridge is deleted
+            Nij = MOI.SingleVariable(MOI.add_variable(model))
+            MOI.add_constraint(model, Nij, MOI.GreaterThan(zero(T)))
+            MOIU.operate!(+, T, Q[k], Nij)
+        end
+        k += 1 # for diagonal entry (i, i)
+    end
+    return MatPolynomial(MultivariateMoments.SymMatrix(Q, n), monos), gram, ci
 end
 
 const SOSSubCones = Union{CopositiveInner, SOSLikeCones}
