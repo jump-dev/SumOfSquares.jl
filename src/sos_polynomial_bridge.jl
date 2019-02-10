@@ -1,6 +1,6 @@
 function moi_matpoly(model::MOI.ModelLike, monos)
-    return  MatPolynomial{MOI.SingleVariable}((i, j) -> MOI.SingleVariable(MOI.add_variable(model)),
-                                              monos)
+    return MatPolynomial{MOI.SingleVariable}(
+        (i, j) -> MOI.SingleVariable(MOI.add_variable(model)), monos)
 end
 function gram_in_cone(model::MOI.ModelLike, monos, set::SOSLikeCones)
     p = moi_matpoly(model, monos)
@@ -17,7 +17,8 @@ function gram_posynomial(model::MOI.ModelLike, monos)
     return p
 end
 function gram_in_cone(model::MOI.ModelLike, x, set::CopositiveInner)
-    _matplus(gram_in_cone(model, x, set.psd_inner), gram_posynomial(m, x))
+    p, ci = gram_in_cone(model, x, set.psd_inner)
+    _matplus(p, gram_posynomial(model, x)), ci
 end
 function gram_delete(model::MOI.ModelLike, p::MatPolynomial)
     for sv in p.Q.Q
