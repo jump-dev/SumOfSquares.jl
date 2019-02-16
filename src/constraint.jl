@@ -1,5 +1,8 @@
 export certificate_monomials, gram_matrix, moment_matrix, lagrangian_multipliers
 
+function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
+    return set.cone
+end
 function JuMP.moi_set(cone::SOSSubCones,
                       monos::AbstractVector{<:AbstractMonomial};
                       domain::AbstractSemialgebraicSet=FullSpace(),
@@ -7,8 +10,8 @@ function JuMP.moi_set(cone::SOSSubCones,
                       newton_polytope::Tuple=tuple(),
                       mindegree=MultivariatePolynomials.mindegree(monos),
                       maxdegree=MultivariatePolynomials.maxdegree(monos))
-    return SOSPolynomialSet(domain, cone, basis, monos, newton_polytope, mindegree,
-                            maxdegree)
+    return SOSPolynomialSet(domain, cone, basis, monos, newton_polytope,
+                            mindegree, maxdegree)
 end
 
 function JuMP.build_constraint(_error::Function, p, cone::SOSSubCones; kws...)

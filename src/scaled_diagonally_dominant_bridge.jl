@@ -10,6 +10,9 @@ function ScaledDiagonallyDominantBridge{T, F}(
     # `p.Q` is SDD iff it is the sum of psd matrices Mij that are zero except for
     # entries ii, ij and jj [Lemma 9, AM17].
     @assert MOI.output_dimension(f) == MOI.dimension(s)
+    @assert s.side_dimension > 1 # The bridges does not work with 1,
+                                 # `matrix_add_constraint` should have used
+                                 # Nonnegatives instead
     n = s.side_dimension
     fs = MOIU.eachscalar(f)
     # `g[r, c]` will contain the expression `f[r, c] - sum Mij[r, c]`
