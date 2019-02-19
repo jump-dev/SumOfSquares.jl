@@ -1,5 +1,11 @@
 abstract type MatrixConeTriangle <: MOI.AbstractVectorSet end
 
+function matrix_cone(S::Type{<:Union{MatrixConeTriangle,
+                                     MOI.PositiveSemidefiniteConeTriangle}},
+                     side_dimension)
+    return S(side_dimension)
+end
+
 """
     struct DiagonallyDominantConeTriangle <: MatrixConeTriangle
         side_dimension::Int
@@ -30,7 +36,10 @@ struct ScaledDiagonallyDominantConeTriangle <: MatrixConeTriangle
     side_dimension::Int
 end
 
-side_dimension(set::MatrixConeTriangle) = set.side_dimension
+function side_dimension(set::Union{MatrixConeTriangle,
+                                   MOI.PositiveSemidefiniteConeTriangle})
+    return set.side_dimension
+end
 
 # isbits types, nothing to copy
 function Base.copy(set::MatrixConeTriangle)

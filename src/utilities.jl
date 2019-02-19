@@ -50,7 +50,7 @@ function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
     if n == 1
         # PSD constraints on 1x1 matrices are equivalent to the
         # nonnegativity of the only entry
-        return _add_constraint(model, Q[1], MOI.GreaterThan(0.0))
+        return _add_constraint(model, Q[1:1], MOI.Nonnegatives(1))
     elseif false && n == 2 && !(set isa DiagonallyDominantConeTriangle)
         # PSD constraints on 2x2 matrices are SOC representable.
         # For the DD cone, we want to avoid using SOC and only use LP
@@ -71,6 +71,6 @@ function matrix_add_constraint(model, Q::Vector, set::MOI.AbstractVectorSet)
         return _add_constraint(model, Q, set)
     end
 end
-function matrix_add_constraint(model, p::MatPolynomial, S::Type)
-    matrix_add_constraint(model, p.Q.Q, S(length(p.x)))
-end
+#function matrix_add_constraint(model, p::MatPolynomial, S::Type)
+#    matrix_add_constraint(model, p.Q.Q, S(length(p.x)))
+#end

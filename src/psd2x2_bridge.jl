@@ -1,6 +1,3 @@
-struct PositiveSemidefinite2x2ConeTriangle <: MatrixConeTriangle end
-side_dimension(::PositiveSemidefinite2x2ConeTriangle) = 2
-
 # PSD constraints on 2x2 matrices are SOC representable.
 # [Q11 Q12] is PSD iff Q11, Q22 ≥ 0 and       Q11*Q22 ≥     Q12 ^2
 # [Q12 Q22]                             <=> 2*Q11*Q22 ≥ (√2*Q12)^2

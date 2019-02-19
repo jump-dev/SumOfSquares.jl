@@ -1,4 +1,5 @@
 struct ScaledDiagonallyDominantBridge{T, F} <: MOIB.AbstractBridge
+    side_dimension::Int
     equality::Vector{MOI.ConstraintIndex{F, MOI.EqualTo{T}}}
     psd2x2::Vector{MOI.ConstraintIndex{MOI.VectorAffineFunction{T},
                                        PositiveSemidefinite2x2ConeTriangle}}
@@ -43,7 +44,7 @@ function ScaledDiagonallyDominantBridge{T, F}(
         MOIU.operate!(+, T, g[k], fs[k])
     end
     equality = map(f -> MOIU.add_scalar_constraint(model, f, MOI.EqualTo(0.0)), g)
-    return ScaledDiagonallyDominantBridge{T, F}(equality, psd2x2)
+    return ScaledDiagonallyDominantBridge{T, F}(n, equality, psd2x2)
 end
 
 function MOI.supports_constraint(::Type{<:ScaledDiagonallyDominantBridge},
@@ -96,3 +97,17 @@ function MOI.delete(model::MOI.ModelLike, bridge::ScaledDiagonallyDominantBridge
 end
 
 # TODO ConstraintPrimal and ConstraintDual
+function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintDual,
+                 bridge::ScaledDiagonallyDominantBridge)
+    dual = copy(MOI.get(model, attr, bridge.equality))
+    # Need to divide by 2 because of the custom scalar product for this cone
+    k = 0
+    for j in 1:bridge.side_dimension
+        for i in 1:(j-1)
+            k += 1
+            dual[k] /= 2
+        end
+        k += 1
+    end
+    return dual
+end

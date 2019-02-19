@@ -66,4 +66,25 @@ function MOI.delete(model::MOI.ModelLike, bridge::DiagonallyDominantBridge)
     # TODO delete variables
 end
 
-# TODO ConstraintPrimal and ConstraintDual
+# TODO ConstraintPrimal
+
+function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintDual,
+                 bridge::DiagonallyDominantBridge{T}) where T
+    dominance_dual = MOI.get(model, attr, bridge.dominance)
+    side_dim = length(dominance_dual)
+    dim = MOI.dimension(DiagonallyDominantConeTriangle(side_dim))
+    dual = Array{T}(undef, dim)
+    k = 0
+    for j in 1:side_dim
+        for i in 1:(j-1)
+            k += 1
+            # Need to divide by 2 because of the custom scalar product for this
+            # cone
+            dual[k] = (- dominance_dual[i] - dominance_dual[j]) / 2
+        end
+        k += 1
+        dual[k] = dominance_dual[j]
+    end
+    @assert k == dim
+    return dual
+end

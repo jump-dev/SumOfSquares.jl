@@ -13,9 +13,9 @@ for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
     end
 end
 
-matrix_cone(::SOSPoly) = MOI.PositiveSemidefiniteConeTriangle
-matrix_cone(::DSOSPoly) = DiagonallyDominantConeTriangle
-matrix_cone(::SDSOSPoly) = ScaledDiagonallyDominantConeTriangle
+matrix_cone_type(::SOSPoly) = MOI.PositiveSemidefiniteConeTriangle
+matrix_cone_type(::DSOSPoly) = DiagonallyDominantConeTriangle
+matrix_cone_type(::SDSOSPoly) = ScaledDiagonallyDominantConeTriangle
 
 const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
@@ -26,36 +26,30 @@ PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV
 
 _polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MVT}
 
-"""
-    matrix_polynomial(model::Union{JuMP.AbstractModel, MOI.ModelLike},
-                      cone::PosPoly, basis::PolyJuMP.AbstractPolynomialBasis)
-
-Returns a polynomial of the form ``x^\\top Q x`` where `x` is a vector of the
-elements of the polynomial basis and `Q` is a symmetric matrix of `model`
-variables constrained to belong to a subset of the cone of symmetric positive
-semidefinite matrix determined by `PosPoly`.
-"""
-function matrix_polynomial(var_type::Type, new_var, monos, matrix_cone)
-    p = MatPolynomial{var_type}(new_var, monos)
-
-    return p
+function moi_add_variable(model::MOI.ModelLike, set::MOI.AbstractVectorSet,
+                          binary::Bool, integer::Bool)
+    VB = variable_bridge_type(typeof(set), Float64)
+    Q, variable_bridge = add_variable_bridge(VB, model, set)
+    if binary
+        for q in Q
+            MOI.add_constraint(model, q, MOI.ZeroOne())
+        end
+    end
+    if integer
+        for q in Q
+            MOI.add_constraint(model, q, MOI.Integer())
+        end
+    end
+    return Q
 end
 
 function JuMP.add_variable(model::JuMP.AbstractModel,
                            v::PolyJuMP.Variable{<:PosPoly{<:PolyJuMP.MonomialBasis}},
                            name::String="")
     monos = v.p.polynomial_basis.monomials
-    function new_var(i, j)
-        vref = JuMP.VariableRef(model)
-        if v.binary
-            JuMP.set_binary(vref)
-        end
-        if v.integer
-            JuMP.set_integer(vref)
-        end
-        return vref
-    end
-    p = MatPolynomial{JuMP.VariableRef}(new_var, monos)
-    matrix_add_constraint(model, p, matrix_cone(v.p))
-    return p
+    set = matrix_cone(matrix_cone_type(v.p), length(monos))
+    Q = moi_add_variable(backend(model), set, v.binary, v.integer)
+    F = JuMP.jump_function_type(model, eltype(Q))
+    return build_gram_matrix(
+        F[JuMP.jump_function(model, vi) for vi in Q], monos)
 end

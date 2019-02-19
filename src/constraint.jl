@@ -1,9 +1,9 @@
-export certificate_monomials, gram_matrix, moment_matrix, lagrangian_multipliers
+export certificate_monomials, gram_matrix, lagrangian_multipliers
 
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return set.cone
 end
-function JuMP.moi_set(cone::SOSSubCones,
+function JuMP.moi_set(cone::SOSLikeCone,
                       monos::AbstractVector{<:AbstractMonomial};
                       domain::AbstractSemialgebraicSet=FullSpace(),
                       basis=MonomialBasis,
@@ -14,18 +14,47 @@ function JuMP.moi_set(cone::SOSSubCones,
                             mindegree, maxdegree)
 end
 
-function JuMP.build_constraint(_error::Function, p, cone::SOSSubCones; kws...)
+function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
+                          ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}})
+    return [SOSPolynomialBridge]
+end
+
+function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
+                          ::Type{<:DiagonallyDominantConeTriangle})
+    return [DiagonallyDominantBridge]
+end
+
+function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
+                          ::Type{<:ScaledDiagonallyDominantConeTriangle})
+    return [ScaledDiagonallyDominantBridge]
+end
+
+function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
+                          ::Type{PositiveSemidefinite2x2ConeTriangle})
+    return [PositiveSemidefinite2x2Bridge]
+end
+
+function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
+                          ::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}})
+    return [SOSPolynomialInSemialgebraicSetBridge]
+end
+
+function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
     coefs = PolyJuMP.non_constant_coefficients(p)
     monos = monomials(p)
     set = JuMP.moi_set(cone, monos; kws...)
     shape = PolyJuMP.PolynomialShape(monos)
-    return JuMP.VectorConstraint(coefs, set, shape)
+    return PolyJuMP.bridgeable(JuMP.VectorConstraint(coefs, set, shape),
+                               JuMP.moi_function_type(typeof(coefs)),
+                               typeof(set))
 end
 
-gram_matrix(cref::JuMP.ConstraintRef) =  MOI.get(cref.model, GramMatrix(), cref)
+function gram_matrix(cref::JuMP.ConstraintRef)
+    return MOI.get(cref.model, GramMatrixAttribute(), cref)
+end
 
-function moment_matrix(cref::JuMP.ConstraintRef)
-    return MOI.get(cref.model, MomentMatrix(), cref)
+function MultivariateMoments.moment_matrix(cref::JuMP.ConstraintRef)
+    return MOI.get(cref.model, MomentMatrixAttribute(), cref)
 end
 
 # Equivalent but more efficient than moment_matrix(cref).x as it does not need
