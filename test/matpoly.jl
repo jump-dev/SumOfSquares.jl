@@ -4,11 +4,16 @@
         P = MatPolynomial{Int}((i,j) -> i + j, [x^2, x*y, y^2])
         @test nvariables(P) == 2
         @test variables(P) == [x, y]
+        Pp1 = 2x^4 + 6x^3*y + 12x^2*y^2 + 10x*y^3 + 6y^4 + 1
+        @test P + 1   == Pp1
+        @test P + 1.0 == Pp1
         zP = zero(typeof(P))
         @test isempty(zP.Q)
         @test zP == 0
         p = polynomial(P)
         @test coefficients(p) == [2, 6, 12, 10, 6]
+        @test monomialtype(p) == typeof(x*y)
+        @test monomialtype(typeof(p)) == typeof(x*y)
         @test monomials(p) == [x^4, x^3*y, x^2*y^2, x*y^3, y^4]
         for i in 1:3
             for j in 1:3

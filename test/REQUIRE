@@ -1,4 +1,4 @@
 PolyJuMP
 CSDP
 SCS
-DynamicPolynomials
+DynamicPolynomials 0.1.3
