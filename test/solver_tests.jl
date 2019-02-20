@@ -1,4 +1,5 @@
 import Pkg
+using Test
 
 function solver_test(name::Symbol)
     if string(name) in keys(Pkg.installed())
