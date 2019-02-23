@@ -17,11 +17,12 @@ function term_test(optimizer,
     @polyvar x
     cref = @constraint(model, α * x^2 in cone)
 
-    @objective(model, Min, α)
+    # See https://github.com/JuliaOpt/MathOptInterface.jl/issues/676
+    @objective(model, Min, α + 1)
     optimize!(model)
 
     @test termination_status(model) == MOI.OPTIMAL
-    @test objective_value(model) ≈ 0.0 atol=atol rtol=rtol
+    @test objective_value(model) ≈ 1.0 atol=atol rtol=rtol
 
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 0.0 atol=atol rtol=rtol
@@ -40,6 +41,20 @@ function term_test(optimizer,
     ν = moment_matrix(cref)
     @test getmat(ν) ≈ ones(1, 1) atol=atol rtol=rtol
     @test ν.x == [x]
+
+    S = SumOfSquares.SOSPolynomialSet{
+        SumOfSquares.FullSpace, typeof(cone), SumOfSquares.MonomialBasis,
+        Monomial{true},MonomialVector{true},Tuple{}
+    }
+    @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
+    test_delete_bridge(
+        model, cref, 1,
+        ((MOI.VectorOfVariables, MOI.Nonnegatives, 0),
+         (MOI.VectorAffineFunction{Float64},
+          SumOfSquares.PolyJuMP.ZeroPolynomialSet{
+              SumOfSquares.FullSpace, SumOfSquares.MonomialBasis,
+              Monomial{true}, MonomialVector{true}},
+          0)))
 end
 sos_term_test(optimizer, config)   = term_test(optimizer, config, SOSCone())
 sdsos_term_test(optimizer, config) = term_test(optimizer, config, SDSOSCone())

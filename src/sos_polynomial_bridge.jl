@@ -54,14 +54,38 @@ function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialBridge{T}},
 end
 
 # Attributes, Bridge acting as an model
-function MOI.get(::SOSPolynomialBridge{T, F, DT, BT, MT, MVT},
-                 ::MOI.NumberOfConstraints{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {T, F, DT, BT, MT, MVT}
+function MOI.get(bridge::SOSPolynomialBridge, attr::MOI.NumberOfVariables)
+    return MOI.get(bridge.variable_bridge, attr)
+end
+function MOI.get(::SOSPolynomialBridge{T, F, DT, VB, BT, MT, MVT},
+                 ::MOI.NumberOfConstraints{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {
+        # Need to specify types to avoid ambiguity with the method redirecting
+        # to `variable_bridge`
+        T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
+        VB <: AbstractVariableBridge, BT <: PolyJuMP.AbstractPolynomialBasis,
+        MT <: AbstractMonomial, MVT <: AbstractVector{MT}
+    }
     return 1
 end
-function MOI.get(b::SOSPolynomialBridge{T, F, DT, BT, MT, MVT},
-                 ::MOI.ListOfConstraintIndices{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {T, F, DT, BT, MT, MVT}
+function MOI.get(b::SOSPolynomialBridge{T, F, DT, VB, BT, MT, MVT},
+                 ::MOI.ListOfConstraintIndices{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {
+        # Need to specify types to avoid ambiguity with the method redirecting
+        # to `variable_bridge`
+        T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
+        VB <: AbstractVariableBridge, BT <: PolyJuMP.AbstractPolynomialBasis,
+        MT <: AbstractMonomial, MVT <: AbstractVector{MT}
+    }
     return [b.zero_constraint]
 end
+function MOI.get(bridge::SOSPolynomialBridge,
+                 attr::MOI.NumberOfConstraints)
+    return MOI.get(bridge.variable_bridge, attr)
+end
+function MOI.get(bridge::SOSPolynomialBridge,
+                 attr::MOI.ListOfConstraintIndices)
+    return MOI.get(bridge.variable_bridge, attr)
+end
+
 
 # Indices
 function MOI.delete(model::MOI.ModelLike, bridge::SOSPolynomialBridge)

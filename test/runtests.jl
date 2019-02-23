@@ -33,6 +33,8 @@ include("matpoly.jl")
 include("variable.jl")
 include("constraint.jl")
 
+include("mock_tests.jl")
+
 include("solvers.jl")
 
 include("certificate.jl")

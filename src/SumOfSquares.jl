@@ -35,7 +35,7 @@ include("copositive_inner.jl")
 const MOIB = MOI.Bridges
 
 # Variable Bridges
-abstract type AbstractVariableBridge end
+include("variable_bridge.jl")
 include("sos_variable_bridge.jl")
 include("copositive_inner_variable_bridge.jl")
 

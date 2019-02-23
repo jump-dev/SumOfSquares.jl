@@ -1,4 +1,4 @@
-using JuMP
+using Test, JuMP
 
 function _model(optimizer::MOI.AbstractOptimizer)
     MOI.empty!(optimizer)
@@ -41,4 +41,33 @@ macro test_suite(setname, subsets=false)
             end
         end
     ))
+end
+
+function test_noc(model, F, S, n)
+    @test MOI.get(model, MOI.NumberOfConstraints{F, S}()) == n
+    @test length(MOI.get(model, MOI.ListOfConstraintIndices{F, S}())) == n
+    @test ((F, S) in MOI.get(model, MOI.ListOfConstraints())) == !iszero(n)
+end
+
+# Test deletion of bridge
+function test_delete_bridge(model::Model,
+                            cref::ConstraintRef{Model,
+                                                MOI.ConstraintIndex{F, S}},
+                            nvars::Int, nocs::Tuple;
+                            last_bridge = true) where {F, S}
+    @test num_variables(model) == nvars
+    test_noc(model, F, S, 1)
+    for noc in nocs
+        test_noc(model, noc...)
+    end
+    @test is_valid(model, cref)
+    delete(model, cref)
+    @test_throws MOI.InvalidIndex(index(cref)) delete(model, cref)
+    @test !is_valid(model, cref)
+    test_noc(model, F, S, 0)
+    # As the bridge has been removed, if the constraints it has created where not removed, it wouldn't be there to decrease this counter anymore
+    @test num_variables(model) == nvars
+    for noc in nocs
+        test_noc(model, noc...)
+    end
 end
