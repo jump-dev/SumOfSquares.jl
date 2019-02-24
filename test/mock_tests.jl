@@ -4,6 +4,7 @@ include("utilities.jl")
 using Test, JuMP
 
 # Needs https://github.com/JuliaOpt/MathOptInterface.jl/pull/669
+import Pkg
 if Pkg.installed()["MathOptInterface"] > v"0.8.2"
     @testset "Term" begin
         config = MOI.Test.TestConfig()
