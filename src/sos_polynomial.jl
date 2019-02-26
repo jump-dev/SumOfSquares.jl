@@ -1,6 +1,5 @@
 export DSOSCone, SDSOSCone, SOSCone
 export CopositiveInner
-export SOSMatrixCone
 
 function build_gram_matrix(q::Vector,
                            monos::AbstractVector{<:AbstractMonomial})

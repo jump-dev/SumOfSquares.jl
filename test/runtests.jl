@@ -1,11 +1,6 @@
 using LinearAlgebra, SparseArrays, Test
 
 using MultivariatePolynomials
-
-using MathOptInterface
-const MOI = MathOptInterface
-
-using JuMP
 using SumOfSquares
 
 # Taken from JuMP/test/solvers.jl

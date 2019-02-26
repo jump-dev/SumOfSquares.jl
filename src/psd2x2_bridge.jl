@@ -48,4 +48,9 @@ function MOI.delete(model::MOI.ModelLike, bridge::PositiveSemidefinite2x2Bridge)
     MOI.delete(model, bridge.rsoc)
 end
 
-# TODO ConstraintPrimal and ConstraintDual
+# TODO ConstraintPrimal
+function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintDual,
+                 bridge::PositiveSemidefinite2x2Bridge)
+    dual = MOI.get(model, attr, bridge.rsoc)
+    return [dual[1], dual[3] / √2, dual[2]]
+end

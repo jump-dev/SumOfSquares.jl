@@ -2,10 +2,8 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-include("utilities.jl")
-
 function bivariate_quadratic_test(optimizer,
-                                  config::MOI.Test.TestConfig,
+                                  config::MOIT.TestConfig,
                                   cone::SumOfSquares.PolyJuMP.PolynomialSet)
     atol = config.atol
     rtol = config.rtol
@@ -17,11 +15,12 @@ function bivariate_quadratic_test(optimizer,
     @polyvar x
     cref = @constraint(model, x^2 + α*x + 1 in cone)
 
-    @objective(model, Max, α)
+    # See https://github.com/JuliaOpt/MathOptInterface.jl/issues/676
+    @objective(model, Max, α + 1)
     optimize!(model)
 
     @test termination_status(model) == MOI.OPTIMAL
-    @test objective_value(model) ≈ 2.0 atol=atol rtol=rtol
+    @test objective_value(model) ≈ 3.0 atol=atol rtol=rtol
 
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 2.0 atol=atol rtol=rtol
@@ -43,6 +42,21 @@ function bivariate_quadratic_test(optimizer,
     @test getmat(ν) ≈ [a[1] a[2]
                        a[2] a[3]] atol=atol rtol=rtol
     @test ν.x == [x, 1]
+
+    S = SumOfSquares.SOSPolynomialSet{
+        SumOfSquares.FullSpace, typeof(cone), SumOfSquares.MonomialBasis,
+        Monomial{true},MonomialVector{true},Tuple{}
+    }
+    @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
+    test_delete_bridge(
+        model, cref, 1,
+        ((MOI.VectorOfVariables, MOI.Nonnegatives, 0),
+         (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}, 0),
+         (MOI.VectorAffineFunction{Float64},
+          SumOfSquares.PolyJuMP.ZeroPolynomialSet{
+              SumOfSquares.FullSpace, SumOfSquares.MonomialBasis,
+              Monomial{true}, MonomialVector{true}},
+          0)))
 end
 sos_bivariate_quadratic_test(optimizer, config)   = bivariate_quadratic_test(optimizer, config, SOSCone())
 sdsos_bivariate_quadratic_test(optimizer, config) = bivariate_quadratic_test(optimizer, config, SDSOSCone())

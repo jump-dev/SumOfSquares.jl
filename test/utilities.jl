@@ -7,6 +7,7 @@ macro test_macro_throws(errortype, m)
 end
 
 using JuMP
+const MOIT = MOI.Test
 
 function bridged_mock(mock_optimize!::Function;
                       model = JuMP._MOIModel{Float64}())

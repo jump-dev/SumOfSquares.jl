@@ -1,4 +1,5 @@
 using Test, JuMP
+const MOIT = MOI.Test
 
 function _model(optimizer::MOI.AbstractOptimizer)
     MOI.empty!(optimizer)

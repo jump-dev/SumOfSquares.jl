@@ -1,4 +1,5 @@
 export certificate_monomials, gram_matrix, lagrangian_multipliers
+export SOSMatrixCone, SOSConvexCone
 
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return set.cone
@@ -83,5 +84,13 @@ function JuMP.build_constraint(_error::Function, P::Matrix{PT},
     #      polytope computation is used.
     #      See "Sum-of-Squares Matrices" notebook
     JuMP.build_constraint(_error, p, SOSCone();
-                          newton_polytope=(y, newton_polytope...))
+                          newton_polytope=(y, newton_polytope...), kws...)
+end
+
+struct SOSConvexCone <: PolyJuMP.PolynomialSet end
+
+function JuMP.build_constraint(_error::Function, p::AbstractPolynomialLike,
+                               ::SOSConvexCone; kws...)
+    hessian = differentiate(p, variables(p), 2)
+    JuMP.build_constraint(_error, hessian, SOSMatrixCone(); kws...)
 end

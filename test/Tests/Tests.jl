@@ -4,6 +4,7 @@ include("utilities.jl")
 
 include("term_test.jl")
 include("bivariate_quadratic_test.jl")
+include("concave_then_convex_cubic_test.jl")
 
 const linear_tests = Dict(
     "dsos_term" => dsos_term_test,
@@ -17,7 +18,8 @@ const soc_tests = Dict(
 
 const sd_tests = Dict(
     "sos_term" => sos_term_test,
-    "sos_bivariate_quadratic" => sos_bivariate_quadratic_test
+    "sos_bivariate_quadratic" => sos_bivariate_quadratic_test,
+    "concave_then_convex_cubic" => concave_then_convex_cubic_test
 )
 
 @test_suite linear

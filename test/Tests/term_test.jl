@@ -2,10 +2,8 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-include("utilities.jl")
-
 function term_test(optimizer,
-                   config::MOI.Test.TestConfig,
+                   config::MOIT.TestConfig,
                    cone::SumOfSquares.PolyJuMP.PolynomialSet)
     atol = config.atol
     rtol = config.rtol
