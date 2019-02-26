@@ -2,7 +2,9 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig)
+# Inspired from https://github.com/JuliaOpt/SumOfSquares.jl/issues/79
+function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig,
+                                        MCT::Type{<:MOI.AbstractVectorSet})
     atol = config.atol
     rtol = config.rtol
 
@@ -10,8 +12,9 @@ function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig)
 
     @polyvar x
     @variable(model, p, Poly(monomials(x, 0:3)))
-    @constraint(model,  p in SOSConvexCone(), domain = (@set x >= 0))
-    @constraint(model, -p in SOSConvexCone(), domain = (@set x <= 0))
+    cone = ConvexPolyInnerCone{MCT}()
+    @constraint(model,  p in cone, domain = (@set x >= 0))
+    @constraint(model, -p in cone, domain = (@set x <= 0))
     @constraint(model, p(x =>  2) ==  8)
     @constraint(model, p(x => -2) == -8)
     @constraint(model, p(x =>  1) ==  1)
@@ -23,6 +26,17 @@ function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig)
 
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(p) ≈ x^3 atol=atol rtol=rtol
+end
 
-    @test dual_status(model) == MOI.FEASIBLE_POINT
+function sos_concave_then_convex_cubic_test(optimizer, config)
+    concave_then_convex_cubic_test(optimizer, config,
+                                   MOI.PositiveSemidefiniteConeTriangle)
+end
+function sdsos_concave_then_convex_cubic_test(optimizer, config)
+    concave_then_convex_cubic_test(optimizer, config,
+                                   SumOfSquares.ScaledDiagonallyDominantConeTriangle)
+end
+function dsos_concave_then_convex_cubic_test(optimizer, config)
+    concave_then_convex_cubic_test(optimizer, config,
+                                   SumOfSquares.DiagonallyDominantConeTriangle)
 end

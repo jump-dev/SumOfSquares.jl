@@ -1,6 +1,3 @@
-export DSOSCone, SDSOSCone, SOSCone
-export CopositiveInner
-
 function build_gram_matrix(q::Vector,
                            monos::AbstractVector{<:AbstractMonomial})
     return MatPolynomial(MultivariateMoments.SymMatrix(q, length(monos)),
@@ -15,17 +12,6 @@ end
 
 abstract type SOSLikeCone <: PolyJuMP.PolynomialSet end
 Base.broadcastable(cone::SOSLikeCone) = Ref(cone)
-
-abstract type SOSSubCone <: SOSLikeCone end
-
-struct DSOSCone <: SOSSubCone end
-matrix_cone_type(::Type{DSOSCone}) = DiagonallyDominantConeTriangle
-
-struct SDSOSCone <: SOSSubCone end
-matrix_cone_type(::Type{SDSOSCone}) = ScaledDiagonallyDominantConeTriangle
-
-struct SOSCone <: SOSSubCone end
-matrix_cone_type(::Type{SOSCone}) = MOI.PositiveSemidefiniteConeTriangle
 
 struct SOSPolynomialSet{DT <: AbstractSemialgebraicSet,
                         CT <: SOSLikeCone,

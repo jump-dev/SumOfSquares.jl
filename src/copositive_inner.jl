@@ -1,3 +1,5 @@
+export CopositiveInner
+
 """
     struct CopositiveInner{S} <: PolyJuMP.PolynomialSet
         # Inner approximation of the PSD cone, i.e. typically either

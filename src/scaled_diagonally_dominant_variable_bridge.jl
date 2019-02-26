@@ -43,7 +43,7 @@ function add_variable_bridge(
         end
         k += 1 # diagonal entry `(i, i)`
     end
-    return ScaledDiagonallyDominantVariableBridge{T}(n, psd2x2)
+    return g, ScaledDiagonallyDominantVariableBridge{T}(n, variables, psd2x2)
 end
 
 function MOIB.added_constraint_types(

@@ -1,5 +1,66 @@
 export certificate_monomials, gram_matrix, lagrangian_multipliers
-export SOSMatrixCone, SOSConvexCone
+export NonnegPolyInnerCone, DSOSCone, SDSOSCone, SOSCone
+export PSDMatrixInnerCone, SOSMatrixCone
+export ConvexPolyInnerCone, SOSConvexCone
+
+"""
+    struct NonnegPolyInnerCone{MCT <: MOI.AbstractVectorSet}
+    end
+
+Inner approximation of the cone of nonnegative polynomials defined by the set
+of polynomials of the form
+```julia
+X^\\top Q X
+```
+where `X` is a vector of monomials and `Q` is a symmetric matrix that belongs to
+the cone `psd_inner`.
+"""
+struct NonnegPolyInnerCone{MCT <: MOI.AbstractVectorSet} <: SOSLikeCone
+end
+matrix_cone_type(::Type{NonnegPolyInnerCone{MCT}}) where {MCT} = MCT
+
+_wrap(::Type{JuMP.REPLMode}, s) = s
+_wrap(::Type{JuMP.IJuliaMode}, s) = "\\text{ " * s * "}"
+
+"""
+    const SOSCone = NonnegPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
+
+Sum-of-squares cone; see [NonnegPolyInnerCone](@ref).
+"""
+const SOSCone = NonnegPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
+function JuMP.in_set_string(print_mode, ::SOSCone)
+    return _wrap(print_mode, "is SOS")
+end
+
+"""
+    const SDSOSCone = NonnegPolyInnerCone{ScaledDiagonallyDominantConeTriangle}
+
+Scaled-diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
+[NonnegPolyInnerCone](@ref).
+
+[AM17] Ahmadi, A. A. & Majumdar, A.
+*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
+ArXiv e-prints, **2017**.
+"""
+const SDSOSCone = NonnegPolyInnerCone{ScaledDiagonallyDominantConeTriangle}
+function JuMP.in_set_string(print_mode, ::SDSOSCone)
+    return _wrap(print_mode, "is SDSOS")
+end
+
+"""
+    const DSOSCone = NonnegPolyInnerCone{DiagonallyDominantConeTriangle}
+
+Diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
+[NonnegPolyInnerCone](@ref).
+
+[AM17] Ahmadi, A. A. & Majumdar, A.
+*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
+ArXiv e-prints, **2017**.
+"""
+const DSOSCone = NonnegPolyInnerCone{DiagonallyDominantConeTriangle}
+function JuMP.in_set_string(print_mode, ::DSOSCone)
+    return _wrap(print_mode, "is DSOS")
+end
 
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return set.cone
@@ -68,29 +129,71 @@ function lagrangian_multipliers(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, LagrangianMultipliers(), cref)
 end
 
-struct SOSMatrixCone <: PolyJuMP.PolynomialSet end
+"""
+    struct PSDMatrixInnerCone{MCT <: MOI.AbstractVectorSet} <: PolyJuMP.PolynomialSet
+    end
 
-function JuMP.build_constraint(_error::Function, P::Matrix{PT},
-                               ::SOSMatrixCone;
+Inner approximation of the cone of polynomial matrices `P(x)` that are positive
+semidefinite for any `x` defined by the set of ``n \\times n`` polynomial
+matrices such that the polynomial ``y^\\top P(x) y`` belongs to
+`NonnegPolyInnerCone{MCT}` where `y` is a vector of ``n`` auxiliary polynomial
+variables.
+"""
+struct PSDMatrixInnerCone{MCT <: MOI.AbstractVectorSet} <: PolyJuMP.PolynomialSet
+end
+
+"""
+    const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
+
+Sum-of-squares matrices cone; see [Section 3.3.2, BPT12] and
+[PSDMatrixInnerCone](@ref).
+
+[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
+*Semidefinite Optimization and Convex Algebraic Geometry*.
+Society for Industrial and Applied Mathematics, 2012.
+"""
+const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
+
+function JuMP.build_constraint(_error::Function, P::Matrix{<:APL},
+                               ::PSDMatrixInnerCone{MCT};
                                newton_polytope::Tuple = tuple(),
-                               kws...) where PT <: APL
+                               kws...) where MCT
     n = LinearAlgebra.checksquare(P)
     if !issymmetric(P)
         _error("The polynomial matrix constrained to be SOS must be symmetric.")
     end
-    y = [similarvariable(PT, gensym()) for i in 1:n]
+    y = [similarvariable(eltype(P), gensym()) for i in 1:n]
     p = dot(y, P * y)
     # TODO Newton_polytope=(y,) may not be the best idea if exact newton
     #      polytope computation is used.
     #      See "Sum-of-Squares Matrices" notebook
-    JuMP.build_constraint(_error, p, SOSCone();
+    JuMP.build_constraint(_error, p, NonnegPolyInnerCone{MCT}();
                           newton_polytope=(y, newton_polytope...), kws...)
 end
 
-struct SOSConvexCone <: PolyJuMP.PolynomialSet end
+"""
+    struct ConvexPolyInnerCone{MCT} <: PolyJuMP.PolynomialSet end
+
+Inner approximation of the set of convex polynomials defined by the set of
+polynomials such that their hessian belongs to to the set
+`PSDMatrixInnerCone{MCT}()`
+"""
+struct ConvexPolyInnerCone{MCT} <: PolyJuMP.PolynomialSet end
+
+"""
+    const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
+
+Sum-of-squares convex polynomials cone; see [Section 3.3.3, BPT12] and
+[ConvexPolyInnerCone](@ref).
+
+[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
+*Semidefinite Optimization and Convex Algebraic Geometry*.
+Society for Industrial and Applied Mathematics, 2012.
+"""
+const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 function JuMP.build_constraint(_error::Function, p::AbstractPolynomialLike,
-                               ::SOSConvexCone; kws...)
+                               ::ConvexPolyInnerCone{MCT}; kws...) where MCT
     hessian = differentiate(p, variables(p), 2)
-    JuMP.build_constraint(_error, hessian, SOSMatrixCone(); kws...)
+    JuMP.build_constraint(_error, hessian, PSDMatrixInnerCone{MCT}(); kws...)
 end

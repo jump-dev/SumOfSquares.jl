@@ -30,3 +30,15 @@ end
         (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[2.0, -1.0, 0.0]])
     Tests.dsos_bivariate_quadratic_test(mock, config)
 end
+@testset "Concave then convex cubic" begin
+    config = MOI.Test.TestConfig()
+    optimize!(mock) = MOIU.mock_optimize!(mock, [1.0; zeros(5); 6.0; zeros(12); 6.0; zeros(10)])
+    mock = bridged_mock(optimize!)
+    Tests.dsos_concave_then_convex_cubic_test(mock, config)
+    optimize!(mock) = MOIU.mock_optimize!(mock, [1.0; zeros(5); 3.0; zeros(3); 3.0; zeros(7); 3.0; zeros(3); 3.0; zeros(5)])
+    mock = bridged_mock(optimize!)
+    Tests.sdsos_concave_then_convex_cubic_test(mock, config)
+    optimize!(mock) = MOIU.mock_optimize!(mock, [1.0; zeros(5); 6.0; zeros(8); 6.0; zeros(6)])
+    mock = bridged_mock(optimize!)
+    Tests.sos_concave_then_convex_cubic_test(mock, config)
+end

@@ -1,5 +1,6 @@
 using Test, JuMP
 const MOIT = MOI.Test
+const MOIB = MOI.Bridges
 
 function _model(optimizer::MOI.AbstractOptimizer)
     MOI.empty!(optimizer)
@@ -72,3 +73,15 @@ function test_delete_bridge(model::Model,
         test_noc(model, noc...)
     end
 end
+
+# Utilities for building the mock `optimize!` from the solution of a solver
+_inner(model::MOIU.CachingOptimizer) = _inner(model.optimizer)
+_inner(model::MOIB.LazyBridgeOptimizer) = model.model
+# Variables primal values for inner bridged model
+function inner_variable_value(model)
+    inner = _inner(backend(model))
+    values = MOI.get(inner, MOI.VariablePrimal(),
+                     MOI.get(inner, MOI.ListOfVariableIndices()))
+    return values
+end
+# Constraint dual values for inner bridged model
