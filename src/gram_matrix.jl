@@ -3,7 +3,16 @@ export GramMatrix
 import MultivariateMoments: trimat, SymMatrix, getmat
 export getmat
 
-struct GramMatrix{T, MT <: AbstractMonomial, MVT <: AbstractVector{MT}} <: AbstractPolynomialLike{T} # should be AbstractPolynomialLike{eltype(T)} but it doesn't work
+"""
+    struct GramMatrix{T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MP.APL{T}
+        Q::SymMatrix{T}
+        x::MVT
+    end
+
+Gram matrix ``x^\\top Q x`` where `Q` is a symmetric matrix indexed by the
+vector of monomials `x`.
+"""
+struct GramMatrix{T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MP.APL{T} # should be MP.APL{eltype(T)} but it doesn't work
     Q::SymMatrix{T}
     x::MVT
 end
@@ -33,7 +42,7 @@ Base.copy(p::GramMatrix) = GramMatrix(copy(p.Q), copy(p.x))
 
 MultivariateMoments.getmat(p::GramMatrix{T}) where {T} = p.Q
 
-function GramMatrix{T}(f::Function, x::AbstractVector{MT}, σ) where {T, MT<:AbstractMonomial}
+function GramMatrix{T}(f::Function, x::AbstractVector{MT}, σ) where {T, MT<:MP.AbstractMonomial}
     GramMatrix{T, MT, monovectype(x)}(trimat(T, f, length(x), σ), x)
 end
 GramMatrix{T}(f::Function, x::AbstractVector, σ) where T = GramMatrix{T}(f, monomial.(x), σ)

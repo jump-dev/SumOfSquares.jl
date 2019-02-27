@@ -25,7 +25,7 @@ _wrap(::Type{JuMP.IJuliaMode}, s) = "\\text{ " * s * "}"
 """
     const SOSCone = NonnegPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-Sum-of-squares cone; see [NonnegPolyInnerCone](@ref).
+Sum-of-squares cone; see [`NonnegPolyInnerCone`](@ref).
 """
 const SOSCone = NonnegPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 function JuMP.in_set_string(print_mode, ::SOSCone)
@@ -66,7 +66,7 @@ function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return set.cone
 end
 function JuMP.moi_set(cone::SOSLikeCone,
-                      monos::AbstractVector{<:AbstractMonomial};
+                      monos::AbstractVector{<:MP.AbstractMonomial};
                       domain::AbstractSemialgebraicSet=FullSpace(),
                       basis=MonomialBasis,
                       newton_polytope::Tuple=tuple(),
@@ -212,7 +212,7 @@ Society for Industrial and Applied Mathematics, 2012.
 """
 const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-function JuMP.build_constraint(_error::Function, p::AbstractPolynomialLike,
+function JuMP.build_constraint(_error::Function, p::MP.APL,
                                ::ConvexPolyInnerCone{MCT}; kws...) where MCT
     hessian = differentiate(p, variables(p), 2)
     JuMP.build_constraint(_error, hessian, PSDMatrixInnerCone{MCT}(); kws...)

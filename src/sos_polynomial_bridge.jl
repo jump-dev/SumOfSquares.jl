@@ -3,7 +3,7 @@ struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
                            VBS <: AbstractVariableBridge,
                            MCT <: MOI.AbstractVectorSet,
                            BT <: PolyJuMP.AbstractPolynomialBasis,
-                           MT <: AbstractMonomial,
+                           MT <: MP.AbstractMonomial,
                            MVT <: AbstractVector{MT}} <: MOIB.AbstractBridge
     variable_bridge::VBS
     certificate_monomials::MVT
@@ -16,7 +16,7 @@ function SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
         # Need to specify types to avoid ambiguity with the default constructor
         T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
         VBS <: AbstractVariableBridge, MCT <: MOI.AbstractVectorSet,
-        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: AbstractMonomial,
+        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: MP.AbstractMonomial,
         MVT <: AbstractVector{MT}
     }
     @assert MOI.output_dimension(f) == length(s.monomials)
@@ -64,7 +64,7 @@ function MOI.get(::SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT},
         # to `variable_bridge`
         T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
         VBS <: AbstractVariableBridge, MCT <: MOI.AbstractVectorSet,
-        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: AbstractMonomial,
+        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: MP.AbstractMonomial,
         MVT <: AbstractVector{MT}
     }
     return 1
@@ -75,7 +75,7 @@ function MOI.get(b::SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT},
         # to `variable_bridge`
         T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
         VBS <: AbstractVariableBridge, MCT <: MOI.AbstractVectorSet,
-        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: AbstractMonomial,
+        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: MP.AbstractMonomial,
         MVT <: AbstractVector{MT}
     }
     return [b.zero_constraint]

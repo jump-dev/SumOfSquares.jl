@@ -1,11 +1,11 @@
 function build_gram_matrix(q::Vector,
-                           monos::AbstractVector{<:AbstractMonomial})
+                           monos::AbstractVector{<:MP.AbstractMonomial})
     return GramMatrix(MultivariateMoments.SymMatrix(q, length(monos)),
                          monos)
 end
 
 function build_moment_matrix(q::Vector,
-                             monos::AbstractVector{<:AbstractMonomial})
+                             monos::AbstractVector{<:MP.AbstractMonomial})
     return MomentMatrix(MultivariateMoments.SymMatrix(q, length(monos)),
                         monos)
 end
@@ -16,7 +16,7 @@ Base.broadcastable(cone::SOSLikeCone) = Ref(cone)
 struct SOSPolynomialSet{DT <: AbstractSemialgebraicSet,
                         CT <: SOSLikeCone,
                         BT <: PolyJuMP.AbstractPolynomialBasis,
-                        MT <: AbstractMonomial,
+                        MT <: MP.AbstractMonomial,
                         MVT <: AbstractVector{MT},
                         NPT <: Tuple} <: MOI.AbstractVectorSet
     domain::DT

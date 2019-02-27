@@ -3,7 +3,7 @@ export randpsd, randsos
 
 cfld(x::NTuple{2,Int}, n) = (cld(x[1], n), fld(x[2], n))
 
-function sub_extdegree(X::AbstractVector{<:AbstractMonomial}, vars)
+function sub_extdegree(X::AbstractVector{<:MP.AbstractMonomial}, vars)
     if isempty(X)
         return (0, 0)
     else
@@ -31,7 +31,7 @@ end
 # | ^---------- minmultidegree
 # +---------
 
-function _sub_half_newton_polytope(X::AbstractVector{<:AbstractMonomial},
+function _sub_half_newton_polytope(X::AbstractVector{<:MP.AbstractMonomial},
                                    extdeg, exp, vars)
     mindeg, maxdeg = cfld(extdeg, 2)
     n = length(vars)
@@ -46,7 +46,7 @@ function _sub_half_newton_polytope(X::AbstractVector{<:AbstractMonomial},
                           1:n))
 end
 
-function sub_half_newton_polytope(X::AbstractVector{<:AbstractMonomial},
+function sub_half_newton_polytope(X::AbstractVector{<:MP.AbstractMonomial},
                                   vars)
     _sub_half_newton_polytope(X, sub_extdegree(X, vars),
                               (mono, i) -> degree(mono, vars[i]), vars)
@@ -100,7 +100,7 @@ function randpsd(n; r=n, eps=0.1)
     Q' * Diagonal(d) * Q
 end
 
-function _randsos(X::AbstractVector{<:AbstractMonomial}; r=-1, monotype=:Classic, eps=0.1)
+function _randsos(X::AbstractVector{<:MP.AbstractMonomial}; r=-1, monotype=:Classic, eps=0.1)
     if monotype == :Classic
         x = monomials_half_newton_polytope(X, tuple())
     elseif monotype == :Gram

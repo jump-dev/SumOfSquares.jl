@@ -21,7 +21,7 @@ end
 struct SOSPolynomialInSemialgebraicSetBridge{
     T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
     CT <: SOSLikeCone, VBS <: AbstractVariableBridge,
-    BT <: PolyJuMP.AbstractPolynomialBasis, MT <: AbstractMonomial,
+    BT <: PolyJuMP.AbstractPolynomialBasis, MT <: MP.AbstractMonomial,
     MVT <: AbstractVector{MT}, NPT <: Tuple} <: MOIB.AbstractBridge
     lagrangian_monomials::Vector{MVT}
     lagrangian_bridges::Vector{VBS}
@@ -34,7 +34,7 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, BT, MT, MVT, N
         # Need to specify types to avoid ambiguity with the default constructor
         T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
         CT <: SOSLikeCone, VBS <: AbstractVariableBridge,
-        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: AbstractMonomial,
+        BT <: PolyJuMP.AbstractPolynomialBasis, MT <: MP.AbstractMonomial,
         MVT <: AbstractVector{MT}, NPT <: Tuple
     }
     @assert MOI.output_dimension(f) == length(set.monomials)

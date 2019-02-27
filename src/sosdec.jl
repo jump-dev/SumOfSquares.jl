@@ -1,12 +1,12 @@
 export SOSDecomposition
 
-struct SOSDecomposition{T, PT <: AbstractPolynomialLike{T}} <: AbstractPolynomialLike{T} # If promote_op((x, y) -> x * y + x * y, T, T) != T then it might not be true
+struct SOSDecomposition{T, PT <: MP.APL{T}} <: MP.APL{T} # If promote_op((x, y) -> x * y + x * y, T, T) != T then it might not be true
     ps::Vector{PT}
     function SOSDecomposition{T, PT}(ps::Vector{PT}) where {T, PT}
         new(ps)
     end
 end
-SOSDecomposition(ps::Vector{PT}) where {T, PT <: AbstractPolynomialLike{T}} = SOSDecomposition{T, PT}(ps)
+SOSDecomposition(ps::Vector{PT}) where {T, PT <: MP.APL{T}} = SOSDecomposition{T, PT}(ps)
 MP.polynomialtype(::Type{SOSDecomposition{T, PT}}) where {T, PT} = polynomialtype(PT)
 #function SOSDecomposition(ps::Vector)
 #    T = reduce(promote_type, Int, map(eltype, ps))

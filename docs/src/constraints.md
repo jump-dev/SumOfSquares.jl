@@ -188,6 +188,7 @@ SumOfSquares.CopositiveInner
 
 Attributes
 ```@docs
+GramMatrix
 SumOfSquares.GramMatrixAttribute
 gram_matrix
 SumOfSquares.MomentMatrixAttribute
