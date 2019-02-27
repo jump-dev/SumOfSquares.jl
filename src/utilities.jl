@@ -1,17 +1,17 @@
 # + is not defined between SingleVariable
-function MP.polynomial(p::MatPolynomial{MOI.SingleVariable})
+function MP.polynomial(p::GramMatrix{MOI.SingleVariable})
     Q = convert(Vector{MOI.ScalarAffineFunction{Float64}}, p.Q.Q)
-    MP.polynomial(MatPolynomial(SymMatrix(Q, p.Q.n), p.x))
+    MP.polynomial(GramMatrix(SymMatrix(Q, p.Q.n), p.x))
 end
-function MP.polynomial(p::MatPolynomial{F}) where {F <: MOI.AbstractFunction}
+function MP.polynomial(p::GramMatrix{F}) where {F <: MOI.AbstractFunction}
     MP.polynomial(p, MOIU.promote_operation(+, Float64, F, F))
 end
 
-function primal_value(model, p::MatPolynomial{MOI.SingleVariable})
+function primal_value(model, p::GramMatrix{MOI.SingleVariable})
     # TODO [perf] use MOI typed mapped array
     Q = MOI.get(model, MOI.VariablePrimal(),
                 MOI.VariableIndex[sv.variable for sv in p.Q.Q])
-    return MatPolynomial(SymMatrix(Q, p.Q.n), p.x)
+    return GramMatrix(SymMatrix(Q, p.Q.n), p.x)
 end
 
 function add_matrix_variable_bridge(

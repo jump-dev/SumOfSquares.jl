@@ -1,7 +1,7 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
-function JuMP.value(p::MatPolynomial{JuMP.VariableRef})
-    MatPolynomial(map(JuMP.value, p.Q), p.x)
+function JuMP.value(p::GramMatrix{JuMP.VariableRef})
+    GramMatrix(map(JuMP.value, p.Q), p.x)
 end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
@@ -20,11 +20,11 @@ matrix_cone_type(::SDSOSPoly) = ScaledDiagonallyDominantConeTriangle
 const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
 JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
-PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:AbstractMonomial, MV<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MV}
+PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:AbstractMonomial, MV<:AbstractVector{MT}} = GramMatrix{JuMP.VariableRef, MT, MV}
 
 # Sum-of-Squares polynomial
 
-_polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = MatPolynomial{JuMP.VariableRef, MT, MVT}
+_polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:AbstractMonomial, MVT<:AbstractVector{MT}} = GramMatrix{JuMP.VariableRef, MT, MVT}
 
 function moi_add_variable(model::MOI.ModelLike, set::MOI.AbstractVectorSet,
                           binary::Bool, integer::Bool)

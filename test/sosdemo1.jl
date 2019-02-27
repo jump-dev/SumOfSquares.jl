@@ -41,5 +41,5 @@
 
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
 
-    # p should be MatPolynomial([1, 0, -1/2, 0, -1, 1, 0, -2/3, 0, 4/3, 0, 0, 2, 0, 4], [y, x, x*y, x*y^2, x^2*y^3])
+    # p should be GramMatrix([1, 0, -1/2, 0, -1, 1, 0, -2/3, 0, 4/3, 0, 0, 2, 0, 4], [y, x, x*y, x*y^2, x^2*y^3])
 end

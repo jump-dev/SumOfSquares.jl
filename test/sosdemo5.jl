@@ -33,13 +33,13 @@
 
         # -- Q(x)'s -- : sums of squares
         # Monomial vector: [x1; ... x8]
-        Q = Vector{MatPolynomial{JuMP.VariableRef, monomialtype(x[1]),
+        Q = Vector{GramMatrix{JuMP.VariableRef, monomialtype(x[1]),
                                  monovectype(x[1])}}(undef, 4)
         @variable m Q[1:4] SOSPoly(Z)
 
         # -- r's -- : constant sum of squares
         Z = monomials(x, 0)
-        #r = Matrix{MatPolynomial{JuMP.VariableRef}}(4,4) # FIXME doesn't work with 1x1 SDP matrix :(
+        #r = Matrix{GramMatrix{JuMP.VariableRef}}(4,4) # FIXME doesn't work with 1x1 SDP matrix :(
         @variable m r[i=1:4,j=(i+1):4] >= 0
 
         # Constraint : -sum(Qi(x)*Ai(x)) - sum(rij*Ai(x)*Aj(x)) + I(x) >= 0

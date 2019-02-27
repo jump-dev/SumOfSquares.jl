@@ -13,7 +13,7 @@ MP.polynomialtype(::Type{SOSDecomposition{T, PT}}) where {T, PT} = polynomialtyp
 #    SOSDecomposition{T}(ps)
 #end
 
-function MatPolynomial(p::SOSDecomposition{T}) where {T}
+function GramMatrix(p::SOSDecomposition{T}) where {T}
     X = mergemonovec(map(monomials, p))
     m = length(p)
     n = length(X)
@@ -28,10 +28,10 @@ function MatPolynomial(p::SOSDecomposition{T}) where {T}
             j += 1
         end
     end
-    MatPolynomial(Q' * Q, X)
+    GramMatrix(Q' * Q, X)
 end
 
-function SOSDecomposition(p::MatPolynomial)
+function SOSDecomposition(p::GramMatrix)
     n = length(p.x)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
@@ -42,14 +42,14 @@ function SOSDecomposition(p::MatPolynomial)
     SOSDecomposition(ps)
 end
 # Without LDL^T, we need to do float(T)
-SOSDecomposition(p::MatPolynomial{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)
+SOSDecomposition(p::GramMatrix{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)
 
 Base.length(p::SOSDecomposition) = length(p.ps)
 Base.isempty(p::SOSDecomposition) = isempty(p.ps)
 Base.iterate(p::SOSDecomposition, args...) = Base.iterate(p.ps, args...)
 Base.getindex(p::SOSDecomposition, i::Int) = p.ps[i]
 
-(p::MatPolynomial)(s::MP.AbstractSubstitution...) = polynomial(p)(s...)
+(p::GramMatrix)(s::MP.AbstractSubstitution...) = polynomial(p)(s...)
 
 function Base.show(io::IO, p::SOSDecomposition)
     for (i, q) in enumerate(p)

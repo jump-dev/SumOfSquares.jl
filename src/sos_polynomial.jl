@@ -1,6 +1,6 @@
 function build_gram_matrix(q::Vector,
                            monos::AbstractVector{<:AbstractMonomial})
-    return MatPolynomial(MultivariateMoments.SymMatrix(q, length(monos)),
+    return GramMatrix(MultivariateMoments.SymMatrix(q, length(monos)),
                          monos)
 end
 

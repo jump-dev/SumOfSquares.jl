@@ -112,7 +112,7 @@ function _randsos(X::AbstractVector{<:AbstractMonomial}; r=-1, monotype=:Classic
     if r < 0
         r = n
     end
-    MatPolynomial(randpsd(n, r=r, eps=eps), x)
+    GramMatrix(randpsd(n, r=r, eps=eps), x)
 end
 
 randsos(X::AbstractVector; kws...) = _randsos(monovec(X); kws...)
