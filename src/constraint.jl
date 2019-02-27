@@ -70,8 +70,8 @@ function JuMP.moi_set(cone::SOSLikeCone,
                       domain::AbstractSemialgebraicSet=FullSpace(),
                       basis=MonomialBasis,
                       newton_polytope::Tuple=tuple(),
-                      mindegree=MultivariatePolynomials.mindegree(monos),
-                      maxdegree=MultivariatePolynomials.maxdegree(monos))
+                      mindegree=MP.mindegree(monos),
+                      maxdegree=MP.maxdegree(monos))
     return SOSPolynomialSet(domain, cone, basis, monos, newton_polytope,
                             mindegree, maxdegree)
 end
@@ -103,7 +103,7 @@ end
 
 function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
     coefs = PolyJuMP.non_constant_coefficients(p)
-    monos = monomials(p)
+    monos = MP.monomials(p)
     set = JuMP.moi_set(cone, monos; kws...)
     shape = PolyJuMP.PolynomialShape(monos)
     return PolyJuMP.bridgeable(JuMP.VectorConstraint(coefs, set, shape),
@@ -182,7 +182,7 @@ function JuMP.build_constraint(_error::Function, P::Matrix{<:MP.APL},
     if !issymmetric(P)
         _error("The polynomial matrix constrained to be SOS must be symmetric.")
     end
-    y = [similarvariable(eltype(P), gensym()) for i in 1:n]
+    y = [MP.similarvariable(eltype(P), gensym()) for i in 1:n]
     p = dot(y, P * y)
     # TODO Newton_polytope=(y,) may not be the best idea if exact newton
     #      polytope computation is used.
@@ -214,6 +214,6 @@ const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 function JuMP.build_constraint(_error::Function, p::MP.APL,
                                ::ConvexPolyInnerCone{MCT}; kws...) where MCT
-    hessian = differentiate(p, variables(p), 2)
+    hessian = MP.differentiate(p, MP.variables(p), 2)
     JuMP.build_constraint(_error, hessian, PSDMatrixInnerCone{MCT}(); kws...)
 end

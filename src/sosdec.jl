@@ -7,24 +7,24 @@ struct SOSDecomposition{T, PT <: MP.APL{T}} <: MP.APL{T} # If promote_op((x, y) 
     end
 end
 SOSDecomposition(ps::Vector{PT}) where {T, PT <: MP.APL{T}} = SOSDecomposition{T, PT}(ps)
-MP.polynomialtype(::Type{SOSDecomposition{T, PT}}) where {T, PT} = polynomialtype(PT)
+MP.polynomialtype(::Type{SOSDecomposition{T, PT}}) where {T, PT} = MP.polynomialtype(PT)
 #function SOSDecomposition(ps::Vector)
 #    T = reduce(promote_type, Int, map(eltype, ps))
 #    SOSDecomposition{T}(ps)
 #end
 
 function GramMatrix(p::SOSDecomposition{T}) where {T}
-    X = mergemonovec(map(monomials, p))
+    X = MP.mergemonovec(map(MP.monomials, p))
     m = length(p)
     n = length(X)
     Q = zeros(T, m, n)
     for i in 1:m
         j = 1
-        for t in terms(p[i])
-            while X[j] != monomial(t)
+        for t in MP.terms(p[i])
+            while X[j] != MP.monomial(t)
                 j += 1
             end
-            Q[i, j] = coefficient(t)
+            Q[i, j] = MP.coefficient(t)
             j += 1
         end
     end
@@ -38,7 +38,7 @@ function SOSDecomposition(p::GramMatrix)
     A = getmat(p)
     Q = cholesky(Matrix(A)).U
     m = size(Q, 1)
-    ps = [polynomial(Q[i,:], p.x) for i in 1:m]
+    ps = [MP.polynomial(Q[i,:], p.x) for i in 1:m]
     SOSDecomposition(ps)
 end
 # Without LDL^T, we need to do float(T)
@@ -49,7 +49,7 @@ Base.isempty(p::SOSDecomposition) = isempty(p.ps)
 Base.iterate(p::SOSDecomposition, args...) = Base.iterate(p.ps, args...)
 Base.getindex(p::SOSDecomposition, i::Int) = p.ps[i]
 
-(p::GramMatrix)(s::MP.AbstractSubstitution...) = polynomial(p)(s...)
+(p::GramMatrix)(s::MP.AbstractSubstitution...) = MP.polynomial(p)(s...)
 
 function Base.show(io::IO, p::SOSDecomposition)
     for (i, q) in enumerate(p)

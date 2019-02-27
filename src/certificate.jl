@@ -7,7 +7,7 @@ function sub_extdegree(X::AbstractVector{<:MP.AbstractMonomial}, vars)
     if isempty(X)
         return (0, 0)
     else
-        return extrema(map(mono -> sum(var -> degree(mono, var), vars), X))
+        return extrema(map(mono -> sum(var -> MP.degree(mono, var), vars), X))
     end
 end
 
@@ -41,15 +41,15 @@ function _sub_half_newton_polytope(X::AbstractVector{<:MP.AbstractMonomial},
         minmultideg[i] = cld(mapreduce(exponent_i, min, X), 2)
         maxmultideg[i] = fld(mapreduce(exponent_i, max, X), 2)
     end
-    monomials(vars, mindeg:maxdeg,
-              mono -> all(i -> minmultideg[i] <= exp(mono, i) <= maxmultideg[i],
-                          1:n))
+    MP.monomials(vars, mindeg:maxdeg,
+                 mono -> all(i -> minmultideg[i] <= exp(mono, i) <= maxmultideg[i],
+                             1:n))
 end
 
 function sub_half_newton_polytope(X::AbstractVector{<:MP.AbstractMonomial},
                                   vars)
     _sub_half_newton_polytope(X, sub_extdegree(X, vars),
-                              (mono, i) -> degree(mono, vars[i]), vars)
+                              (mono, i) -> MP.degree(mono, vars[i]), vars)
 end
 
 # Multipartite
@@ -62,7 +62,7 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple)
         throw(ArgumentError("Parts are not disjoint in multipartite Newton polytope estimation: $parts"))
     end
     # Some variables might be in no part...
-    missing = setdiff(variables(X), reduce(union, parts))
+    missing = setdiff(MP.variables(X), reduce(union, parts))
     if isempty(missing)
         all_parts = parts
     else
@@ -76,21 +76,21 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple)
     monovecs = map(vars -> sub_half_newton_polytope(X, vars), all_parts)
     # Cartesian product of the newton polytopes of the different parts
     product = [prod(monos) for monos in Iterators.product(monovecs...)]
-    mindeg, maxdeg = cfld(extdegree(X), 2)
+    mindeg, maxdeg = cfld(MP.extdegree(X), 2)
     # We know that the degree inequalities are satisfied variable-wise and
     # part-wise but for all variables together so we filter with that
-    return monovec(filter(mono -> mindeg <= degree(mono) <= maxdeg, product))
+    return MP.monovec(filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product))
 end
 # Shortcut for more efficient `extdeg` and `exp` function in case all the
 # variables are in the same part
 function half_newton_polytope(X::AbstractVector, parts::Tuple{})
-    return _sub_half_newton_polytope(X, extdegree(X),
-                                     (mono, i) -> exponents(mono)[i],
-                                     variables(X))
+    return _sub_half_newton_polytope(X, MP.extdegree(X),
+                                     (mono, i) -> MP.exponents(mono)[i],
+                                     MP.variables(X))
 end
 
 function monomials_half_newton_polytope(X::AbstractVector, parts)
-    half_newton_polytope(monovec(X), parts)
+    half_newton_polytope(MP.monovec(X), parts)
 end
 
 function randpsd(n; r=n, eps=0.1)
@@ -115,4 +115,4 @@ function _randsos(X::AbstractVector{<:MP.AbstractMonomial}; r=-1, monotype=:Clas
     GramMatrix(randpsd(n, r=r, eps=eps), x)
 end
 
-randsos(X::AbstractVector; kws...) = _randsos(monovec(X); kws...)
+randsos(X::AbstractVector; kws...) = _randsos(MP.monovec(X); kws...)

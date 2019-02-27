@@ -1,6 +1,6 @@
 function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSLikeCone, q,
                                mindegree::Integer, maxdegree::Integer, T::Type)
-    mindegree_q, maxdegree_q = extdegree(q)
+    mindegree_q, maxdegree_q = MP.extdegree(q)
     # extdegree's that s^2 should have so that s^2 * p has degrees between mindegree and maxdegree
     mindegree_s2 = mindegree - mindegree_q
     maxdegree_s2 = maxdegree - maxdegree_q
@@ -12,7 +12,7 @@ function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSLikeCone, q,
     # FIXME handle the case where `p`, `q_i`, ...  do not have the same variables
     # so instead of `variable(p)` we would have the union of them all
     @assert variables(q) ⊆ variables(p)
-    monos = monomials(variables(p), mindegree_s:maxdegree_s)
+    monos = MP.monomials(MP.variables(p), mindegree_s:maxdegree_s)
     Q, variable_bridge = add_matrix_variable_bridge(
         model, matrix_cone_type(typeof(set)), length(monos), T)
     return build_gram_matrix(Q, monos), variable_bridge, monos
@@ -38,7 +38,7 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, BT, MT, MVT, N
         MVT <: AbstractVector{MT}, NPT <: Tuple
     }
     @assert MOI.output_dimension(f) == length(set.monomials)
-    p = polynomial(collect(MOIU.eachscalar(f)), set.monomials)
+    p = MP.polynomial(collect(MOIU.eachscalar(f)), set.monomials)
     n = length(set.domain.p)
     λ_monos   = Vector{MVT}(undef, n)
     λ_bridges = Vector{VBS}(undef, n)
@@ -47,11 +47,11 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, BT, MT, MVT, N
             model, p, set.cone, q, set.mindegree, set.maxdegree, T)
         p -= λ * q
     end
-    monos = monomials(p)
+    monos = MP.monomials(p)
     new_set = SOSPolynomialSet(set.domain.V, set.cone, set.basis, monos,
                                set.newton_polytope, set.mindegree,
                                set.maxdegree)
-    constraint = MOI.add_constraint(model, MOIU.vectorize(coefficients(p)),
+    constraint = MOI.add_constraint(model, MOIU.vectorize(MP.coefficients(p)),
                                     new_set)
 
     return SOSPolynomialInSemialgebraicSetBridge{

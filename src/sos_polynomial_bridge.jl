@@ -20,15 +20,15 @@ function SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
         MVT <: AbstractVector{MT}
     }
     @assert MOI.output_dimension(f) == length(s.monomials)
-    p = polynomial(collect(MOIU.eachscalar(f)), s.monomials)
+    p = MP.polynomial(collect(MOIU.eachscalar(f)), s.monomials)
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     r = convert(typeof(p), rem(p, ideal(s.domain)))
-    X = monomials_half_newton_polytope(monomials(r), s.newton_polytope)
+    X = monomials_half_newton_polytope(MP.monomials(r), s.newton_polytope)
     Q, variable_bridge = add_matrix_variable_bridge(model, MCT, length(X), T)
     g = build_gram_matrix(Q, X)
     q = r - g
-    set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, monomials(q))
-    coefs = MOIU.vectorize(coefficients(q))
+    set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, MP.monomials(q))
+    coefs = MOIU.vectorize(MP.coefficients(q))
     zero_constraint = MOI.add_constraint(model, coefs, set)
     return SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
         variable_bridge, X, zero_constraint)
