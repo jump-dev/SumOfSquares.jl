@@ -1,13 +1,12 @@
-using JuMP
 using SumOfSquares
 using DynamicPolynomials
-using MathOptInterfaceMosek
+using MosekTools
 
 # Create symbolic variables (not JuMP decision variables)
 @polyvar x1 x2
 
 # Create a Sum of Squares JuMP model with the Mosek solver
-model = SOSModel(with_optimizer(MosekOptimizer))
+model = SOSModel(with_optimizer(Mosek.Optimizer))
 
 # Create a JuMP decision variable for the lower bound
 @variable(model, γ)
