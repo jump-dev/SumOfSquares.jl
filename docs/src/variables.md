@@ -7,9 +7,11 @@ variables representing a number whose value needs to be optimized upon by the
 optimizer, [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl) allows to create
 *polynomial* decision variables. In order to do that, we first need to create
 polynomial variables with the `@polyvar` macro:
-```julia
-using DynamicPolynomials # or TypedPolynomials, pick your favorite
-@polyvar x y
+```jldoctest Poly
+julia> using DynamicPolynomials # or TypedPolynomials, pick your favorite
+
+julia> @polyvar x y
+(x, y)
 ```
 Note that these should not be confused with JuMP's decision variables which are
 created using the `@variable` macro. The polynomial decision variable that will
@@ -17,14 +19,30 @@ be created need to be parametrized by a polynomial basis of finite size.
 For instance, if we want to find a quadratic polynomial, we can parametrize it
 with all monomials of degree between 0 and 2. Generating a vector with such
 monomials can be achieved through the `monomials` function:
-```julia
-using MultivariatePolynomials
-X = monomials([x, y], 0:2)
+```jldoctest Poly
+julia> X = monomials([x, y], 0:2)
+6-element MonomialVector{true}:
+ x²
+ xy
+ y²
+ x
+ y
+ 1
 ```
 We can now create our polynomial variable `p` as follows:
-```julia
-using PolyJuMP
-@variable(model, p, Poly(X))
+```jldoctest Poly
+julia> using SumOfSquares
+
+julia> model = Model()
+A JuMP Model
+Feasibility problem with:
+Variables: 0
+Model mode: AUTOMATIC
+CachingOptimizer state: NO_OPTIMIZER
+Solver name: No optimizer attached.
+
+julia> @variable(model, p, Poly(X))
+(noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
 ```
 This creates a vector of decision variables `a` and sets `p` as the scalar
 product between `a` and `X`.

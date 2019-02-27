@@ -36,7 +36,7 @@ end
     const SDSOSCone = NonnegPolyInnerCone{ScaledDiagonallyDominantConeTriangle}
 
 Scaled-diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
-[NonnegPolyInnerCone](@ref).
+[`NonnegPolyInnerCone`](@ref).
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
@@ -51,7 +51,7 @@ end
     const DSOSCone = NonnegPolyInnerCone{DiagonallyDominantConeTriangle}
 
 Diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
-[NonnegPolyInnerCone](@ref).
+[`NonnegPolyInnerCone`](@ref).
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
@@ -111,20 +111,40 @@ function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
                                typeof(set))
 end
 
+"""
+    gram_matrix(cref::JuMP.ConstraintRef)
+
+Return the [`GramMatrixAttribute`](@ref) of `cref`.
+"""
 function gram_matrix(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, GramMatrixAttribute(), cref)
 end
 
+"""
+    moment_matrix(cref::JuMP.ConstraintRef)
+
+Return the [`MomentMatrixAttribute`](@ref) of `cref`.
+"""
 function MultivariateMoments.moment_matrix(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, MomentMatrixAttribute(), cref)
 end
 
 # Equivalent but more efficient than moment_matrix(cref).x as it does not need
 # to query any result from the solver
+"""
+    certificate_monomials(cref::JuMP.ConstraintRef)
+
+Return the [`CertificateMonomials`](@ref) of `cref`.
+"""
 function certificate_monomials(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, CertificateMonomials(), cref)
 end
 
+"""
+    lagrangian_multipliers(cref::JuMP.ConstraintRef)
+
+Return the [`LagrangianMultipliers`](@ref) of `cref`.
+"""
 function lagrangian_multipliers(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, LagrangianMultipliers(), cref)
 end
@@ -146,7 +166,7 @@ end
     const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 Sum-of-squares matrices cone; see [Section 3.3.2, BPT12] and
-[PSDMatrixInnerCone](@ref).
+[`PSDMatrixInnerCone`](@ref).
 
 [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
 *Semidefinite Optimization and Convex Algebraic Geometry*.
@@ -154,7 +174,7 @@ Society for Industrial and Applied Mathematics, 2012.
 """
 const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-function JuMP.build_constraint(_error::Function, P::Matrix{<:APL},
+function JuMP.build_constraint(_error::Function, P::Matrix{<:MP.APL},
                                ::PSDMatrixInnerCone{MCT};
                                newton_polytope::Tuple = tuple(),
                                kws...) where MCT
@@ -184,7 +204,7 @@ struct ConvexPolyInnerCone{MCT} <: PolyJuMP.PolynomialSet end
     const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 Sum-of-squares convex polynomials cone; see [Section 3.3.3, BPT12] and
-[ConvexPolyInnerCone](@ref).
+[`ConvexPolyInnerCone`](@ref).
 
 [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
 *Semidefinite Optimization and Convex Algebraic Geometry*.

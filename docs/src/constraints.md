@@ -11,7 +11,6 @@ must sum up to one can be done as follows:
 ```julia
 using DynamicPolynomials
 @polyvar x[1:n]
-using MultivariatePolynomials
 X = monomials(x, 0:2)
 using PolyJuMP
 @variable(model, p, Poly(X))
@@ -152,3 +151,49 @@ Society for Industrial and Applied Mathematics, 2012.
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
 ArXiv e-prints, **2017**.
+
+## Reference
+
+Inner approximations of the PSD cone that do not require semidefinite
+programming:
+```@docs
+SumOfSquares.DiagonallyDominantConeTriangle
+SumOfSquares.ScaledDiagonallyDominantConeTriangle
+```
+
+Approximations of the cone of nonnegative polynomials:
+```@docs
+SumOfSquares.NonnegPolyInnerCone
+SumOfSquares.SOSCone
+SumOfSquares.SDSOSCone
+SumOfSquares.DSOSCone
+```
+
+Approximations of the cone of positive semidefinite polynomial matrices:
+```@docs
+SumOfSquares.PSDMatrixInnerCone
+SumOfSquares.SOSMatrixCone
+```
+
+Approximations of the cone of convex polynomials:
+```@docs
+SumOfSquares.ConvexPolyInnerCone
+SumOfSquares.SOSConvexCone
+```
+
+Approximations of the cone of copositive matrices:
+```@docs
+SumOfSquares.CopositiveInner
+```
+
+Attributes
+```@docs
+SumOfSquares.GramMatrixAttribute
+gram_matrix
+SumOfSquares.MomentMatrixAttribute
+moment_matrix
+SumOfSquares.CertificateMonomials
+certificate_monomials
+SumOfSquares.LagrangianMultipliers
+lagrangian_multipliers
+```

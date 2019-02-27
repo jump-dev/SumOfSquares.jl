@@ -6,7 +6,7 @@ import Reexport
 
 # MultivariatePolynomials extension
 
-using MultivariatePolynomials
+import MultivariatePolynomials
 const MP = MultivariatePolynomials
 using SemialgebraicSets
 export @set

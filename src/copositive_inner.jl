@@ -44,8 +44,8 @@ which is the same as, using the `domain` keyword,
 @constraint(model, x^2 - 2x*y + y^2 in SOSCone(), domain = @set x*y ≥ 0)
 ```
 
-For consistency with its equivalent forms, the [`GramMonomials`](@ref) for this
-constraint is given by the gram matrix in the `psd_inner` cone, i.e. which
+For consistency with its equivalent forms, the [`GramMatrixAttribute`](@ref) for
+this constraint is given by the gram matrix in the `psd_inner` cone, i.e. which
 should be equal to `Q - Λ`.
 
 [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
