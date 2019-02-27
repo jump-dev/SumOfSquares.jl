@@ -22,8 +22,7 @@ using MathOptInterface
 const MOI = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 
-using PolyJuMP
-export Poly
+Reexport.@reexport using PolyJuMP
 
 include("attributes.jl")
 include("diagonally_dominant.jl")
