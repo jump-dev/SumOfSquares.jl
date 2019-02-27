@@ -23,7 +23,7 @@ else
     end
 end
 
-include("matpoly.jl")
+include("gram_matrix.jl")
 
 include("variable.jl")
 include("constraint.jl")

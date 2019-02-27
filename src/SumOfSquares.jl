@@ -12,7 +12,7 @@ using SemialgebraicSets
 export @set
 Reexport.@reexport using MultivariateMoments
 
-include("matpoly.jl")
+include("gram_matrix.jl")
 include("sosdec.jl")
 include("certificate.jl")
 
