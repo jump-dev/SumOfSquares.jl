@@ -9,7 +9,7 @@ function try_import(name::Symbol)
     end
 end
 
-mos = try_import(:MathOptInterfaceMosek)
+mos = try_import(:MosekTools)
 csd = try_import(:CSDP)
 scs = try_import(:SCS)
 
@@ -24,7 +24,7 @@ sdp_factories = JuMP.OptimizerFactory[]
 # https://github.com/JuliaOpt/Mosek.jl/issues/92
 # and at least Mosek 8.0.0.41 for sosdemo6 to pass; see:
 # https://github.com/JuliaOpt/Mosek.jl/issues/98
-mos && push!(sdp_factories, with_optimizer(MathOptInterfaceMosek.MosekOptimizer, QUIET=true))
+mos && push!(sdp_factories, with_optimizer(MosekTools.Mosek.Optimizer, QUIET=true))
 # Currently, need to create a file param.csdp to avoid printing, see https://github.com/JuliaOpt/CSDP.jl/issues/15
 csd && push!(sdp_factories, with_opt(CSDP, printlevel=0))
 iscsdp(factory) = occursin("CSDP", string(factory.constructor))
