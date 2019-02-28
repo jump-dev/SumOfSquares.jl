@@ -13,7 +13,8 @@ function MOI.supports_constraint(::Type{<:EmptyBridge},
     return true
 end
 function MOIB.added_constraint_types(::Type{<:EmptyBridge{T}}) where {T}
-    return Tuple{DataType, DataType}[]
+    # TODO remove vov-in-Nonneg when MOI v0.8.3 is released
+    return Tuple{DataType, DataType}[(MOI.VectorOfVariables, MOI.Nonnegatives)]
 end
 function MOIB.concrete_bridge_type(::Type{<:EmptyBridge{T}},
                                    ::Type{<:MOI.AbstractVectorFunction},
