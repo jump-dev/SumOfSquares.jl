@@ -1,7 +1,6 @@
 struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
                            DT <: AbstractSemialgebraicSet,
-                           VBS <: AbstractVariableBridge,
-                           MCT <: MOI.AbstractVectorSet,
+                           VBS <: AbstractVariableBridge, MCT,
                            BT <: PolyJuMP.AbstractPolynomialBasis,
                            MT <: MP.AbstractMonomial,
                            MVT <: AbstractVector{MT}} <: MOIB.AbstractBridge
@@ -15,7 +14,7 @@ function SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
     s::SOSPolynomialSet{<:AbstractAlgebraicSet}) where {
         # Need to specify types to avoid ambiguity with the default constructor
         T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
-        VBS <: AbstractVariableBridge, MCT <: MOI.AbstractVectorSet,
+        VBS <: AbstractVariableBridge, MCT,
         BT <: PolyJuMP.AbstractPolynomialBasis, MT <: MP.AbstractMonomial,
         MVT <: AbstractVector{MT}
     }

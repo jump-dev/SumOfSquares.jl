@@ -78,10 +78,26 @@ end
 _inner(model::MOIU.CachingOptimizer) = _inner(model.optimizer)
 _inner(model::MOIB.LazyBridgeOptimizer) = model.model
 # Variables primal values for inner bridged model
-function inner_variable_value(model)
+function print_value(v, atol)
+    i = round(v)
+    if isapprox(v, i, atol=atol)
+        print(float(i))
+    else
+        print(v)
+    end
+end
+function inner_variable_value(model, atol=1e-4)
     inner = _inner(backend(model))
     values = MOI.get(inner, MOI.VariablePrimal(),
                      MOI.get(inner, MOI.ListOfVariableIndices()))
+    print("optimize!(mock) = MOIU.mock_optimize!(mock, [")
+    for (i, v) in enumerate(values)
+        if i > 1
+            print(", ")
+        end
+        print_value(v, atol)
+    end
+    println("])")
     return values
 end
 # Constraint dual values for inner bridged model

@@ -77,8 +77,13 @@ function JuMP.moi_set(cone::SOSLikeCone,
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}})
-    return [SOSPolynomialBridge]
+                          ::Type{EmptyCone})
+    return [EmptyBridge]
+end
+
+function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
+                          ::Type{PositiveSemidefinite2x2ConeTriangle})
+    return [PositiveSemidefinite2x2Bridge]
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
@@ -92,8 +97,8 @@ function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{PositiveSemidefinite2x2ConeTriangle})
-    return [PositiveSemidefinite2x2Bridge]
+                          ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}})
+    return [SOSPolynomialBridge]
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},

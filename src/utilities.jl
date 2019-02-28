@@ -15,20 +15,22 @@ function primal_value(model, p::GramMatrix{MOI.SingleVariable})
 end
 
 function add_matrix_variable_bridge(
-    model::MOI.ModelLike, MCT::Type{<:MOI.AbstractVectorSet},
+    model::MOI.ModelLike, MCT,
     side_dimension::Integer, T::Type)
     mat_cone = matrix_cone(MCT, side_dimension)
     VB = variable_bridge_type(typeof(mat_cone), T)
     return add_variable_bridge(VB, model, mat_cone)
 end
 function union_vector_bridge_types(
-    MCT::Type{<:MOI.AbstractVectorSet}, T::Type)
-    return Union{variable_bridge_type(typeof(matrix_cone(MCT, 1)), T),
+    MCT, T::Type)
+    return Union{variable_bridge_type(typeof(matrix_cone(MCT, 0)), T),
+                 variable_bridge_type(typeof(matrix_cone(MCT, 1)), T),
                  variable_bridge_type(typeof(matrix_cone(MCT, 2)), T),
                  variable_bridge_type(typeof(matrix_cone(MCT, 3)), T)}
 end
 function append_added_constraint_types(
-    added, MCT::Type{<:MOI.AbstractVectorSet}, T::Type)
+    added, MCT, T::Type)
+    append!(added, MOIB.added_constraint_types(variable_bridge_type(typeof(matrix_cone(MCT, 0)), T)))
     append!(added, MOIB.added_constraint_types(variable_bridge_type(typeof(matrix_cone(MCT, 1)), T)))
     append!(added, MOIB.added_constraint_types(variable_bridge_type(typeof(matrix_cone(MCT, 2)), T)))
     append!(added, MOIB.added_constraint_types(variable_bridge_type(typeof(matrix_cone(MCT, 3)), T)))
