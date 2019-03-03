@@ -102,6 +102,17 @@ end
 # The monomials might be different from the ones of the original polynomial
 # because of the ∑ λ_i s_i(x) so we don't define ConstraintPrimal and
 # ConstraintDual, as the caller won't know how to reshape it
+function MOI.get(::MOI.ModelLike,
+                 ::MOI.ConstraintPrimal,
+                 ::SOSPolynomialInSemialgebraicSetBridge)
+    throw(ValueNotSupported())
+end
+function MOI.get(::MOI.ModelLike,
+                 ::MOI.ConstraintDual,
+                 ::SOSPolynomialInSemialgebraicSetBridge)
+    throw(DualNotSupported())
+end
+
 function MOI.get(model::MOI.ModelLike,
                  attr::Union{CertificateMonomials, GramMatrixAttribute,
                              MomentMatrixAttribute},

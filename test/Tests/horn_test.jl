@@ -51,6 +51,7 @@ function horn_test(optimizer,
         @test termination_status(model) == MOI.OPTIMAL
 
         @test primal_status(model) == MOI.FEASIBLE_POINT
+        @test_throws SumOfSquares.ValueNotSupported value(cref)
         @test isempty(certificate_monomials(cref))
         @test isempty(getmat(gram_matrix(cref)))
     else

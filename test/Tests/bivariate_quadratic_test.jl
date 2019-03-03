@@ -25,6 +25,7 @@ function bivariate_quadratic_test(optimizer,
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 2.0 atol=atol rtol=rtol
 
+    @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
     @test getmat(p) ≈ ones(2, 2) atol=atol rtol=rtol
     @test p.x == [x, 1]

@@ -97,10 +97,33 @@ function MOI.delete(model::MOI.ModelLike, bridge::SOSPolynomialBridge)
     MOI.delete(model, bridge.variable_bridge)
 end
 
+struct ValueNotSupported <: Exception end
+function Base.showerror(io::IO, ::ValueNotSupported)
+    print(io, "`value` is no supported for Sum-of-Squares constraints, use",
+          " `gram_matrix` instead.")
+end
+
+struct DualNotSupported <: Exception end
+function Base.showerror(io::IO, ::DualNotSupported)
+    print(io, "`dual` is no supported for Sum-of-Squares constraints in a",
+          " domain, use `moment_matrix` instead.")
+end
+
+
 # Attributes, Bridge acting as a constraint
+function MOI.get(::MOI.ModelLike,
+                 ::MOI.ConstraintPrimal,
+                 ::SOSPolynomialBridge)
+    throw(ValueNotSupported())
+end
+function MOI.get(::MOI.ModelLike,
+                 ::MOI.ConstraintDual,
+                 ::SOSPolynomialBridge)
+    throw(DualNotSupported())
+end
 function MOI.get(model::MOI.ModelLike,
                  attr::MOI.ConstraintDual,
-                 bridge::SOSPolynomialBridge)
+                 bridge::SOSPolynomialBridge{T, <:MOI.AbstractVectorFunction, FullSpace}) where {T}
     return MOI.get(model, attr, bridge.zero_constraint)
 end
 function MOI.get(::MOI.ModelLike, ::CertificateMonomials,
