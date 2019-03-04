@@ -20,7 +20,12 @@ matrix_cone_type(::SDSOSPoly) = ScaledDiagonallyDominantConeTriangle
 const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
 JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
-PolyJuMP.polytype(m::JuMP.Model, ::PosPoly, basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} = GramMatrix{JuMP.VariableRef, MT, MV}
+gram_eltype(::Union{DSOSPoly, SOSPoly}) = JuMP.VariableRef
+gram_eltype(::SDSOSPoly) = JuMP.AffExpr # affine because of the variable bridge
+function PolyJuMP.polytype(m::JuMP.Model, cone::PosPoly,
+                           basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}}
+    return GramMatrix{gram_eltype(cone), MT, MV}
+end
 
 # Sum-of-Squares polynomial
 
