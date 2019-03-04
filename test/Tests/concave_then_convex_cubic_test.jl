@@ -13,8 +13,8 @@ function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig,
     @polyvar x
     @variable(model, p, Poly(monomials(x, 0:3)))
     cone = ConvexPolyInnerCone{MCT}()
-    @constraint(model,  p in cone, domain = (@set x >= 0))
-    @constraint(model, -p in cone, domain = (@set x <= 0))
+    cref_convex  = @constraint(model,  p in cone, domain = (@set x >= 0))
+    cref_concave = @constraint(model, -p in cone, domain = (@set x <= 0))
     @constraint(model, p(x =>  2) ==  8)
     @constraint(model, p(x => -2) == -8)
     @constraint(model, p(x =>  1) ==  1)
@@ -26,6 +26,11 @@ function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig,
 
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(p) ≈ x^3 atol=atol rtol=rtol
+    @test_throws SumOfSquares.ValueNotSupported value(cref_convex)
+    @test_throws SumOfSquares.ValueNotSupported value(cref_concave)
+
+    @test_throws SumOfSquares.DualNotSupported dual(cref_convex)
+    @test_throws SumOfSquares.DualNotSupported dual(cref_concave)
 end
 
 function sos_concave_then_convex_cubic_test(optimizer, config)
