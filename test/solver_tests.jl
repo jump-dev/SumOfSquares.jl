@@ -20,6 +20,9 @@ function solver_test(name::Symbol)
     end
 end
 
+include("solver_preamble.jl")
+shared_preamble = true
+
 # LP solvers
 solver_test(:GLPK)
 
@@ -34,3 +37,6 @@ solver_test(:SDPA)
 solver_test(:Mosek)
 solver_test(:SeDuMi)
 #solver_test(:SCS)
+
+# If we re-run `solver_tests.jl`, it may be because we changed `Tests/Tests.jl`.
+shared_preamble = false
