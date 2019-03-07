@@ -36,7 +36,8 @@ solver_test(:SDPA)
 # SDP+SOC solvers
 solver_test(:Mosek)
 solver_test(:SeDuMi)
-#solver_test(:SCS)
+solver_test(:SCS)
 
 # If we re-run `solver_tests.jl`, it may be because we changed `Tests/Tests.jl`.
 shared_preamble = false
+nothing # Show nothing when `include` is called from REPL

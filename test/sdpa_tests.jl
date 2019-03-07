@@ -1,6 +1,5 @@
-include("Tests/Tests.jl")
-
-using Test, JuMP, SDPA
+include("solver_preamble.jl")
+import SDPA
 factory = with_optimizer(SDPA.Optimizer)
 config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5, query=false)
 @testset "Linear" begin
