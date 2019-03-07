@@ -35,6 +35,7 @@ solver_test(:SDPA)
 
 # SDP+SOC solvers
 solver_test(:Mosek)
+solver_test(:ProxSDP)
 solver_test(:SeDuMi)
 solver_test(:SCS)
 
