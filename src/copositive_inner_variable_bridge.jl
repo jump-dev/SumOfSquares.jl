@@ -42,5 +42,5 @@ end
 function MOI.get(model::MOI.ModelLike,
                  attr::Union{MomentMatrixAttribute, GramMatrixAttribute},
                  bridge::CopositiveInnerVariableBridge)
-    return MOI.get(modle, attr, bridge.variable_bridge)
+    return MOI.get(model, attr, bridge.variable_bridge)
 end
