@@ -34,6 +34,7 @@ solver_test(:CSDP)
 solver_test(:SDPA)
 
 # SDP+SOC solvers
+solver_test(:COSMO)
 solver_test(:Mosek)
 solver_test(:SeDuMi)
 solver_test(:SCS)
