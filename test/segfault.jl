@@ -7,7 +7,7 @@ using SumOfSquares
 using CSDP
 using Test
 
-solver = CSDP.CSDPSolver(printlevel=0)
+solver = with_optimizer(CSDP.Optimizer, printlevel=0)
 
     @polyvar x[1:8]
 
@@ -35,7 +35,7 @@ solver = CSDP.CSDPSolver(printlevel=0)
         end
         A = build_A.(1:4)
 
-        m = SOSModel(solver = solver)
+        m = SOSModel(solver)
 
         # -- Q(x)'s -- : sums of squares
         # Monomial vector: [x1; ... x8]
@@ -63,11 +63,11 @@ solver = CSDP.CSDPSolver(printlevel=0)
         @constraint m expr >= 0
 
         println("solve")
-        status = solve(m)
+        optimize!(m)
         println("solved")
 
         # Program is feasible, thus 0.8724 is an upper bound for mu.
-        @test status == expected
+        @test termination_status(m) == expected
     end
 
 
