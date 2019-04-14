@@ -63,6 +63,24 @@
         @test p(v => ones(3)) == 31
         #@inferred subs(p, x => ones(3))
         @test subs(p, v => ones(3)) == 31
+        @testset "Gram Sum" begin
+            p = GramMatrix([2 3; 3 2], [x, y])
+            q = GramMatrix(5 * ones(1, 1), [x])
+            r = @inferred gram_sum(p, q)
+            @test r.Q == [7 3; 3 2]
+            @test r.x == [x, y]
+            q = GramMatrix(5 * ones(1, 1), [y])
+            r = @inferred gram_sum(p, q)
+            @test r.Q == [2 3; 3 7]
+            @test r.x == [x, y]
+            q = GramMatrix([5.0 7; 7 9], [x*y, 1])
+            r = @inferred gram_sum(p, q)
+            @test r.Q == [5 0 0 7
+                          0 2 3 0
+                          0 3 2 0
+                          7 0 0 9]
+            @test r.x == [x*y, x, y, 1]
+        end
     end
     @testset "SOSDecomposition" begin
         @polyvar x y
