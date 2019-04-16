@@ -252,6 +252,7 @@ Attributes
 GramMatrix
 SumOfSquares.GramMatrixAttribute
 gram_matrix
+gram_sum
 SumOfSquares.MomentMatrixAttribute
 moment_matrix
 SumOfSquares.CertificateMonomials

@@ -1,7 +1,7 @@
 export GramMatrix
 
 import MultivariateMoments: trimat, SymMatrix, getmat
-export getmat
+export gram_sum, getmat
 
 """
     struct GramMatrix{T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MP.APL{T}
@@ -69,6 +69,51 @@ function MP.polynomial(p::GramMatrix)
 end
 function MP.polynomial(p::GramMatrix, ::Type{S}) where {S}
     MP.polynomial(getmat(p), p.x, S)
+end
+
+# The `i`th index of output is the index of occurence of `x[i]` in `y`,
+# or `0` if it does not occur.
+function multi_findsorted(x, y)
+    I = zeros(Int, length(x))
+    j = 1
+    for i in eachindex(x)
+        while j ≤ length(y) && x[i] < y[j]
+            j += 1
+        end
+        if j ≤ length(y) && x[i] == y[j]
+            I[i] = j
+        end
+    end
+    return I
+end
+
+"""
+    gram_sum(p::GramMatrix{S}, q::GramMatrix{T})
+
+Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
+`p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
+obtained by `polynomial(gram_sum(p, q))`.
+"""
+function gram_sum(p::GramMatrix{S}, q::GramMatrix{T}) where {S, T}
+    monos = MultivariatePolynomials.mergemonovec([p.x, q.x])
+    U = typeof(zero(S) + zero(T))
+    n = length(monos)
+    Q = SymMatrix(zeros(U, div(n * (n + 1), 2)), n)
+    Ip = multi_findsorted(monos, p.x)
+    Iq = multi_findsorted(monos, q.x)
+    for j in 1:length(monos)
+        for i in 1:j
+            if !iszero(Ip[j]) && !iszero(Ip[i])
+                MultivariateMoments.symmetric_setindex!(
+                    Q, Q[i, j] + p.Q[Ip[i], Ip[j]], i, j)
+            end
+            if !iszero(Iq[j]) && !iszero(Iq[i])
+                MultivariateMoments.symmetric_setindex!(
+                    Q, Q[i, j] + q.Q[Iq[i], Iq[j]], i, j)
+            end
+        end
+    end
+    return GramMatrix(Q, monos)
 end
 
 Base.:(+)(x::MP.APL, y::GramMatrix) = x + MP.polynomial(y)
