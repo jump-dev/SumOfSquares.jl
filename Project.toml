@@ -1,0 +1,39 @@
+name = "SumOfSquares"
+uuid = "4b9e565b-77fc-50a5-a571-1244f986bda1"
+repo = "https://github.com/JuliaOpt/SumOfSquares.jl.git"
+version = "0.3.1"
+
+[deps]
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+MultivariateMoments = "f4abf1af-0426-5881-a0da-e2f168889b5e"
+MultivariatePolynomials = "102ac46a-7ee4-5c85-9060-abc95bfdeaa3"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+PolyJuMP = "ddf597a6-d67e-5340-b84c-e37d84115374"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SemialgebraicSets = "8e049039-38e8-557d-ae3a-bc521ccf6204"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[compat]
+DynamicPolynomials = "≥ 0.1.3"
+JuMP = "0.19"
+MathOptInterface = "~0.8.2"
+MultivariateMoments = "≥ 0.2.1"
+MultivariatePolynomials = "~0.2.7"
+PolyJuMP = "0.3"
+SemialgebraicSets = "0.1"
+julia = "1"
+
+[extras]
+CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
+DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+PolyJuMP = "ddf597a6-d67e-5340-b84c-e37d84115374"
+SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Pkg", "SCS", "LinearAlgebra", "DynamicPolynomials", "SparseArrays", "PolyJuMP", "Test", "CSDP"]
