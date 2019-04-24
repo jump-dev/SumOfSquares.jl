@@ -28,7 +28,7 @@ include("gram_matrix.jl")
 include("variable.jl")
 include("constraint.jl")
 
-include("mock_tests.jl")
+include("Mock/mock_tests.jl")
 
 include("solvers.jl")
 
