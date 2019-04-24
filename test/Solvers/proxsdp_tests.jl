@@ -9,5 +9,9 @@ end
     Tests.soc_test(factory, config, ["sdsos_horn", "sdsos_bivariate_quadratic"])
 end
 @testset "SDP" begin
-    Tests.sd_test(factory, config, ["sos_horn", "sos_bivariate_quadratic"])
+    Tests.sd_test(factory, config,
+                  ["sos_horn",
+                   "sos_bivariate_quadratic",
+                   "quadratic_infeasible_lyapunov_switched_system",
+                   "quartic_infeasible_lyapunov_switched_system"])
 end

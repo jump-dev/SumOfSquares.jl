@@ -9,5 +9,7 @@ end
     Tests.soc_test(factory, config)
 end
 @testset "SDP" begin
-    Tests.sd_test(factory, config)
+    Tests.sd_test(factory, config,
+                  ["quadratic_infeasible_lyapunov_switched_system",
+                   "quadratic_feasible_lyapunov_switched_system"])
 end
