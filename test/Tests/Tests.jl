@@ -25,8 +25,10 @@ const sd_tests = Dict(
     "sos_term" => sos_term_test,
     "sos_bivariate_quadratic" => sos_bivariate_quadratic_test,
     "sos_concave_then_convex_cubic" => sos_concave_then_convex_cubic_test,
-    "sos_horn" => sos_horn_test
+    "sos_horn" => sos_horn_test,
 )
+
+include("lyapunov_switched_system.jl")
 
 @test_suite linear
 @test_suite soc

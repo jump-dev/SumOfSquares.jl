@@ -1,4 +1,4 @@
-# See https://github.com/blegat/SwitchedSystems.jl
+# See https://github.com/blegat/SwitchOnSafety.jl
 
 # Example 2.8 of
 # P. Parrilo and A. Jadbabaie
@@ -15,22 +15,27 @@
     @polyvar x[1:2]
     A1 = [1 0; 1 0]
     A2 = [0 1; 0 -1]
-    expected_ub = [√2, 1]
     function testlyap(d, γ, feasible::Bool)
-        m = SOSModel(factory)
-        @variable m p Poly(monomials(x, 2d))
-        # p strictly positive
-        q = sum(x.^(2*d))
-        @constraint m p >= q
-        c1 = @constraint m p(x => A1 * vec(x)) <= γ^(2*d) * p
-        c2 = @constraint m p(x => A2 * vec(x)) <= γ^(2*d) * p
+        model = SOSModel(factory)
+        # p is should be strictly positive so we create a nonnegative `p`
+        # and sum it with a strictly positive `q`.
+        # Since the problem is homogeneous (i.e. given any `λ > 0`, `p` is
+        # feasible iff `λp` is feasible), this is wlog.
+        p0 = @variable(model, variable_type=SOSPoly(monomials(x, d)))
+        q = GramMatrix(SOSDecomposition(x.^d))
+        # Keep `p` in a `GramMatrix` form while `q + p0` would transform it to
+        # a polynomial. It is not mandatory to keep it in its `GramMatrix` form
+        # but it will allow us to test `JuMP.value(::GramMatrix{JuMP.AffExpr})`.
+        p = gram_operate(+, q, p0)
+        c1 = @constraint(model, p(x => (A1 / γ) * vec(x)) <= p)
+        c2 = @constraint(model, p(x => (A2 / γ) * vec(x)) <= p)
 
-        JuMP.optimize!(m)
+        JuMP.optimize!(model)
 
         if feasible
-            @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
+            @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
         else
-            @test JuMP.dual_status(m) == MOI.INFEASIBILITY_CERTIFICATE
+            @test JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
             μ1 = JuMP.dual(c1)
             μ2 = JuMP.dual(c2)
 

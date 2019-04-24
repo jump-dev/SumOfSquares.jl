@@ -1,6 +1,6 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
-function JuMP.value(p::GramMatrix{JuMP.VariableRef})
+function JuMP.value(p::GramMatrix{<:JuMP.AbstractJuMPScalar})
     GramMatrix(map(JuMP.value, p.Q), p.x)
 end
 
@@ -53,6 +53,16 @@ function JuMP.add_variable(model::JuMP.AbstractModel,
                            name::String="")
     monos = v.p.polynomial_basis.monomials
     set = matrix_cone(matrix_cone_type(v.p), length(monos))
+    # FIXME There is no variable bridge mechanism yet:
+    #       https://github.com/JuliaOpt/MathOptInterface.jl/issues/710
+    #       so there is not equivalent to `BridgeableConstraint`.
+    #       Yet, we may need constraint bridges here if it goes through
+    #       the `generic_variable_bridge`.
+    #       We don't need the `ScaledDiagonallyDominantBridge` since it does
+    #       not use the `generic_variable_bridge`.
+    JuMP.add_bridge(model, EmptyBridge)
+    JuMP.add_bridge(model, PositiveSemidefinite2x2Bridge)
+    JuMP.add_bridge(model, DiagonallyDominantBridge)
     Q = moi_add_variable(backend(model), set, v.binary, v.integer)
     F = JuMP.jump_function_type(model, eltype(Q))
     return build_gram_matrix(
