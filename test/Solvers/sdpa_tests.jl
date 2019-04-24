@@ -17,5 +17,8 @@ end
 @testset "SDP" begin
     # With `sos_concave_then_convex_cubic`, we have the same error than with
     # `dsos_concave_then_convex_cubic`.
-    Tests.sd_test(factory, config, ["sos_concave_then_convex_cubic"])
+    Tests.sd_test(factory, config,
+                  ["sos_concave_then_convex_cubic",
+                   "quadratic_infeasible_lyapunov_switched_system",
+                   "quartic_infeasible_lyapunov_switched_system"])
 end

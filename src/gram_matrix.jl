@@ -1,7 +1,7 @@
 export GramMatrix
 
 import MultivariateMoments: trimat, SymMatrix, getmat
-export gram_sum, getmat
+export gram_operate, getmat
 
 """
     struct GramMatrix{T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MP.APL{T}
@@ -88,13 +88,13 @@ function multi_findsorted(x, y)
 end
 
 """
-    gram_sum(p::GramMatrix{S}, q::GramMatrix{T})
+    gram_operate(::typeof(+), p::GramMatrix{S}, q::GramMatrix{T})
 
 Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
 `p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
 obtained by `polynomial(gram_sum(p, q))`.
 """
-function gram_sum(p::GramMatrix{S}, q::GramMatrix{T}) where {S, T}
+function gram_operate(::typeof(+), p::GramMatrix{S}, q::GramMatrix{T}) where {S, T}
     monos = MultivariatePolynomials.mergemonovec([p.x, q.x])
     U = typeof(zero(S) + zero(T))
     n = length(monos)
@@ -114,6 +114,18 @@ function gram_sum(p::GramMatrix{S}, q::GramMatrix{T}) where {S, T}
         end
     end
     return GramMatrix(Q, monos)
+end
+
+"""
+    gram_operate(/, p::GramMatrix{S}, q::GramMatrix{T})
+
+Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
+`p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
+obtained by `polynomial(gram_sum(p, q))`.
+"""
+function gram_operate(::typeof(/), q::GramMatrix, α)
+    Q = SymMatrix(q.Q.Q / α, q.Q.n)
+    return GramMatrix(Q, q.x)
 end
 
 Base.:(+)(x::MP.APL, y::GramMatrix) = x + MP.polynomial(y)
