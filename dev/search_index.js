@@ -305,11 +305,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "constraints/#SumOfSquares.gram_sum",
+    "location": "constraints/#SumOfSquares.gram_operate",
     "page": "Constraints",
-    "title": "SumOfSquares.gram_sum",
+    "title": "SumOfSquares.gram_operate",
     "category": "function",
-    "text": "gram_sum(p::GramMatrix{S}, q::GramMatrix{T})\n\nComputes the Gram matrix equal to the sum between p and q. On the opposite, p + q gives a polynomial equal to p + q. The polynomial p + q can also be obtained by polynomial(gram_sum(p, q)).\n\n\n\n\n\n"
+    "text": "gram_operate(::typeof(+), p::GramMatrix{S}, q::GramMatrix{T})\n\nComputes the Gram matrix equal to the sum between p and q. On the opposite, p + q gives a polynomial equal to p + q. The polynomial p + q can also be obtained by polynomial(gram_sum(p, q)).\n\n\n\n\n\ngram_operate(/, p::GramMatrix{S}, q::GramMatrix{T})\n\nComputes the Gram matrix equal to the sum between p and q. On the opposite, p + q gives a polynomial equal to p + q. The polynomial p + q can also be obtained by polynomial(gram_sum(p, q)).\n\n\n\n\n\n"
 },
 
 {
@@ -365,7 +365,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Reference",
     "category": "section",
-    "text": "Inner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_sum\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliers"
+    "text": "Inner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_operate\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliers"
 },
 
 ]}
