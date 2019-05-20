@@ -1,7 +1,7 @@
 name = "SumOfSquares"
 uuid = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 repo = "https://github.com/JuliaOpt/SumOfSquares.jl.git"
-version = "0.3.1"
+version = "0.3.2"
 
 [deps]
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
