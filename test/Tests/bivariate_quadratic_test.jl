@@ -30,14 +30,17 @@ function bivariate_quadratic_test(optimizer,
     @test getmat(p) ≈ ones(2, 2) atol=atol rtol=rtol
     @test p.x == [x, 1]
 
+    a = moment_value.(moments(dual(cref)))
+    @test a[2] ≈ -1.0 atol=atol rtol=rtol
+    @test a[1] + a[3] ≈ 2.0 atol=atol rtol=rtol
+
     @test dual_status(model) == MOI.FEASIBLE_POINT
-    μ = dual(cref)
-    @test μ isa AbstractMeasure{Float64}
-    @test length(moments(μ)) == 3
-    a = moment_value.(moments(μ))
-    @test a[2] ≈ -1.0  atol=atol rtol=rtol
-    @test a[1] + a[3] ≈ 2.0  atol=atol rtol=rtol
-    @test monomial.(moments(μ)) == [x^2, x, 1]
+    for μ in [dual(cref), moments(cref)]
+        @test μ isa AbstractMeasure{Float64}
+        @test length(moments(μ)) == 3
+        @test a ≈ moment_value.(moments(μ)) atol=atol rtol=rtol
+        @test monomial.(moments(μ)) == [x^2, x, 1]
+    end
 
     ν = moment_matrix(cref)
     @test getmat(ν) ≈ [a[1] a[2]

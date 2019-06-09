@@ -131,6 +131,11 @@ function MOI.get(::MOI.ModelLike, ::CertificateMonomials,
     return bridge.certificate_monomials
 end
 function MOI.get(model::MOI.ModelLike,
+                 attr::PolyJuMP.MomentsAttribute,
+                 bridge::SOSPolynomialBridge)
+    return MOI.get(model, attr, bridge.zero_constraint)
+end
+function MOI.get(model::MOI.ModelLike,
                  attr::GramMatrixAttribute,
                  bridge::SOSPolynomialBridge)
     return build_gram_matrix(MOI.get(model, attr, bridge.variable_bridge),
