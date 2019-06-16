@@ -90,14 +90,37 @@ function inner_variable_value(model, atol=1e-4)
     inner = _inner(backend(model))
     values = MOI.get(inner, MOI.VariablePrimal(),
                      MOI.get(inner, MOI.ListOfVariableIndices()))
-    print("optimize!(mock) = MOIU.mock_optimize!(mock, [")
-    for (i, v) in enumerate(values)
-        if i > 1
-            print(", ")
+    println("optimize!(mock) = MOIU.mock_optimize!(mock,")
+    println(JuMP.termination_status(model))
+    if JuMP.primal_status(model) != MOI.NO_SOLUTION
+        values = MOI.get(inner, MOI.VariablePrimal(),
+                         MOI.get(inner, MOI.ListOfVariableIndices()))
+        print("(MOI.FEASIBLE_POINT, [")
+        for (i, v) in enumerate(values)
+            if i > 1
+                print(", ")
+            end
+            print_value(v, atol)
         end
-        print_value(v, atol)
+        print("])")
+    else
+        print("tuple()")
     end
-    println("])")
-    return values
+    println(",")
+    if JuMP.dual_status(model) != MOI.NO_SOLUTION
+        for (F, S) in MOI.get(inner, MOI.ListOfConstraints())
+            print("($F, $S) => [")
+            first = true
+            for ci in MOI.get(inner, MOI.ListOfConstraintIndices{F, S}())
+                if !first
+                    print(", ")
+                end
+                first = false
+                print(MOI.get(inner, MOI.ConstraintDual(), ci))
+            end
+            println("])")
+        end
+    end
+    println(")")
 end
 # Constraint dual values for inner bridged model

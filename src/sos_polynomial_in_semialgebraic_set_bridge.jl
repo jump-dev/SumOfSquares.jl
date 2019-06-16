@@ -26,6 +26,7 @@ struct SOSPolynomialInSemialgebraicSetBridge{
     lagrangian_monomials::Vector{MVT}
     lagrangian_bridges::Vector{VBS}
     constraint::MOI.ConstraintIndex{F, SOSPolynomialSet{DT, CT, BT, MT, MVT, NPT}}
+    monomials::MVT
 end
 
 function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, BT, MT, MVT, NPT}(
@@ -55,7 +56,7 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, BT, MT, MVT, N
                                     new_set)
 
     return SOSPolynomialInSemialgebraicSetBridge{
-        T, F, DT, CT, VBS, BT, MT, MVT, NPT}(λ_monos, λ_bridges, constraint)
+        T, F, DT, CT, VBS, BT, MT, MVT, NPT}(λ_monos, λ_bridges, constraint, set.monomials)
 end
 
 function MOI.supports_constraint(::Type{SOSPolynomialInSemialgebraicSetBridge{T}},
@@ -107,10 +108,17 @@ function MOI.get(::MOI.ModelLike,
                  ::SOSPolynomialInSemialgebraicSetBridge)
     throw(ValueNotSupported())
 end
-function MOI.get(::MOI.ModelLike,
-                 ::MOI.ConstraintDual,
-                 ::SOSPolynomialInSemialgebraicSetBridge)
-    throw(DualNotSupported())
+
+function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintDual,
+                 bridge::SOSPolynomialInSemialgebraicSetBridge)
+    dual = MOI.get(model, attr, bridge.constraint)
+    set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
+    μ = measure(dual, set.monomials)
+    return [dot(mono, μ) for mono in bridge.monomials]
+end
+function MOI.get(model::MOI.ModelLike, attr::PolyJuMP.MomentsAttribute,
+                 bridge::SOSPolynomialInSemialgebraicSetBridge)
+    return MOI.get(model, attr, bridge.constraint)
 end
 
 function MOI.get(model::MOI.ModelLike,
