@@ -31,11 +31,12 @@ function term_test(optimizer,
     @test p.x == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
-    μ = dual(cref)
-    @test μ isa AbstractMeasure{Float64}
-    @test length(moments(μ)) == 1
-    @test moment_value(moments(μ)[1]) ≈ 1.0 atol=atol rtol=rtol
-    @test monomial(moments(μ)[1]) == x^2
+    for μ in [dual(cref), moments(cref)]
+        @test μ isa AbstractMeasure{Float64}
+        @test length(moments(μ)) == 1
+        @test moment_value(moments(μ)[1]) ≈ 1.0 atol=atol rtol=rtol
+        @test monomial(moments(μ)[1]) == x^2
+    end
 
     ν = moment_matrix(cref)
     @test getmat(ν) ≈ ones(1, 1) atol=atol rtol=rtol

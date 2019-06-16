@@ -62,14 +62,14 @@ function lyapunov_switched_system_test(
     else
         @test JuMP.termination_status(model) == MOI.INFEASIBLE
         @test JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
-        μ1 = JuMP.dual(c1)
-        μ2 = JuMP.dual(c2)
-
-        # The dual constraint should work on any polynomial.
-        # Let's test it with q
-        lhs = dot(μ1, q(x => A1 * vec(x))) + dot(μ2, q(x => A2 * vec(x)))
-        rhs = dot(μ1, q) + dot(μ2, q)
-        @test atol + rtol * max(abs(lhs), abs(rhs)) + lhs >= rhs
+        for (μ1, μ2) in [(JuMP.dual(c1), JuMP.dual(c2)),
+                         (moments(c1), moments(c2))]
+            # The dual constraint should work on any polynomial.
+            # Let's test it with q
+            lhs = dot(μ1, q(x => A1 * vec(x))) + dot(μ2, q(x => A2 * vec(x)))
+            rhs = dot(μ1, q) + dot(μ2, q)
+            @test atol + rtol * max(abs(lhs), abs(rhs)) + lhs >= rhs
+        end
     end
 end
 
