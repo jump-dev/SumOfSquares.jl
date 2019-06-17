@@ -10,7 +10,7 @@ struct CertificateMonomials <: MOI.AbstractConstraintAttribute end
     struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute end
 
 A constraint attribute for the [`GramMatrix`](@ref) of a constraint, that is,
-the positive semidefinte matrix `Q` indexed by the monomials in the vector `X`
+the positive semidefinite matrix `Q` indexed by the monomials in the vector `X`
 such that ``X^\\top Q X`` is the sum-of-squares certificate of the constraint.
 The
 """

@@ -7,6 +7,8 @@ struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
     variable_bridge::VBS
     certificate_monomials::MVT
     zero_constraint::MOI.ConstraintIndex{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}
+    domain::DT
+    monomials::MVT
 end
 
 function SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
@@ -30,7 +32,7 @@ function SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
     coefs = MOIU.vectorize(MP.coefficients(q))
     zero_constraint = MOI.add_constraint(model, coefs, set)
     return SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
-        variable_bridge, X, zero_constraint)
+        variable_bridge, X, zero_constraint, s.domain, s.monomials)
 end
 
 function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
@@ -116,16 +118,25 @@ function MOI.get(::MOI.ModelLike,
                  ::SOSPolynomialBridge)
     throw(ValueNotSupported())
 end
-function MOI.get(::MOI.ModelLike,
-                 ::MOI.ConstraintDual,
-                 ::SOSPolynomialBridge)
-    throw(DualNotSupported())
+
+function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintDual,
+                 bridge::SOSPolynomialBridge)
+    dual = MOI.get(model, attr, bridge.zero_constraint)
+    set = MOI.get(model, MOI.ConstraintSet(), bridge.zero_constraint)
+    μ = measure(dual, set.monomials)
+    I = ideal(bridge.domain)
+    return [dot(rem(mono, I), μ) for mono in bridge.monomials]
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::MOI.ConstraintDual,
                  bridge::SOSPolynomialBridge{T, <:MOI.AbstractVectorFunction, FullSpace}) where {T}
     return MOI.get(model, attr, bridge.zero_constraint)
 end
+function MOI.get(model::MOI.ModelLike, attr::PolyJuMP.MomentsAttribute,
+                 bridge::SOSPolynomialBridge)
+    return MOI.get(model, attr, bridge.zero_constraint)
+end
+
 function MOI.get(::MOI.ModelLike, ::CertificateMonomials,
                  bridge::SOSPolynomialBridge)
     return bridge.certificate_monomials

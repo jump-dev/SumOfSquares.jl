@@ -59,5 +59,8 @@ function horn_test(optimizer,
     end
 end
 sos_horn_test(optimizer, config)   = horn_test(optimizer, config, SOSCone())
+sd_tests["sos_horn"] = sos_horn_test
 sdsos_horn_test(optimizer, config) = horn_test(optimizer, config, SDSOSCone())
+soc_tests["sdsos_horn"] = sdsos_horn_test
 dsos_horn_test(optimizer, config)  = horn_test(optimizer, config, DSOSCone())
+linear_tests["dsos_horn"] = dsos_horn_test

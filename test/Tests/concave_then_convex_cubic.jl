@@ -29,19 +29,30 @@ function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig,
     @test_throws SumOfSquares.ValueNotSupported value(cref_convex)
     @test_throws SumOfSquares.ValueNotSupported value(cref_concave)
 
-    @test_throws SumOfSquares.DualNotSupported dual(cref_convex)
-    @test_throws SumOfSquares.DualNotSupported dual(cref_concave)
+    # The monomials contain the variables created for the Hessian so we cannot
+    # check them easily
+    for μ in [dual(cref_convex), dual(cref_concave)]
+        @test μ isa AbstractMeasure{Float64}
+        @test length(moments(μ)) == 2
+    end
+    for μ in [moments(cref_convex), moments(cref_concave)]
+        @test μ isa AbstractMeasure{Float64}
+        @test length(moments(μ)) == 7
+    end
 end
 
 function sos_concave_then_convex_cubic_test(optimizer, config)
     concave_then_convex_cubic_test(optimizer, config,
                                    MOI.PositiveSemidefiniteConeTriangle)
 end
+sd_tests["sos_concave_then_convex_cubic"] = sos_concave_then_convex_cubic_test
 function sdsos_concave_then_convex_cubic_test(optimizer, config)
     concave_then_convex_cubic_test(optimizer, config,
                                    SumOfSquares.ScaledDiagonallyDominantConeTriangle)
 end
+soc_tests["sdsos_concave_then_convex_cubic"] = sdsos_concave_then_convex_cubic_test
 function dsos_concave_then_convex_cubic_test(optimizer, config)
     concave_then_convex_cubic_test(optimizer, config,
                                    SumOfSquares.DiagonallyDominantConeTriangle)
 end
+linear_tests["dsos_concave_then_convex_cubic"] = dsos_concave_then_convex_cubic_test
