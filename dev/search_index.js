@@ -293,7 +293,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "SumOfSquares.GramMatrixAttribute",
     "category": "type",
-    "text": "struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute end\n\nA constraint attribute for the GramMatrix of a constraint, that is, the positive semidefinte matrix Q indexed by the monomials in the vector X such that X^top Q X is the sum-of-squares certificate of the constraint. The\n\n\n\n\n\n"
+    "text": "struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute end\n\nA constraint attribute for the GramMatrix of a constraint, that is, the positive semidefinite matrix Q indexed by the monomials in the vector X such that X^top Q X is the sum-of-squares certificate of the constraint. The\n\n\n\n\n\n"
 },
 
 {
