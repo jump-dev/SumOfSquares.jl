@@ -57,5 +57,8 @@ function term_test(optimizer,
           0)))
 end
 sos_term_test(optimizer, config)   = term_test(optimizer, config, SOSCone())
+sd_tests["sos_term"] = sos_term_test
 sdsos_term_test(optimizer, config) = term_test(optimizer, config, SDSOSCone())
+soc_tests["sdsos_term"] = sdsos_term_test
 dsos_term_test(optimizer, config)  = term_test(optimizer, config, DSOSCone())
+linear_tests["dsos_term"] = dsos_term_test

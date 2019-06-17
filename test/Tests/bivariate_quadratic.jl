@@ -63,5 +63,8 @@ function bivariate_quadratic_test(optimizer,
           0)))
 end
 sos_bivariate_quadratic_test(optimizer, config)   = bivariate_quadratic_test(optimizer, config, SOSCone())
+sd_tests["sos_bivariate_quadratic"] = sos_bivariate_quadratic_test
 sdsos_bivariate_quadratic_test(optimizer, config) = bivariate_quadratic_test(optimizer, config, SDSOSCone())
+soc_tests["sdsos_bivariate_quadratic"] = sdsos_bivariate_quadratic_test
 dsos_bivariate_quadratic_test(optimizer, config)  = bivariate_quadratic_test(optimizer, config, DSOSCone())
+linear_tests["dsos_bivariate_quadratic"] = dsos_bivariate_quadratic_test
