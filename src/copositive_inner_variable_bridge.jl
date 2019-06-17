@@ -40,7 +40,7 @@ function MOI.delete(model::MOI.ModelLike, bridge::CopositiveInnerVariableBridge)
 end
 
 function MOI.get(model::MOI.ModelLike,
-                 attr::Union{MomentMatrixAttribute, GramMatrixAttribute},
+                 attr::Union{MOI.ConstraintDual, MOI.ConstraintPrimal},
                  bridge::CopositiveInnerVariableBridge)
     return MOI.get(model, attr, bridge.variable_bridge)
 end

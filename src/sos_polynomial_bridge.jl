@@ -90,7 +90,6 @@ function MOI.get(bridge::SOSPolynomialBridge,
     return MOI.get(bridge.variable_bridge, attr)
 end
 
-
 # Indices
 function MOI.delete(model::MOI.ModelLike, bridge::SOSPolynomialBridge)
     # First delete the constraints in which the Gram matrix appears
@@ -144,12 +143,13 @@ end
 function MOI.get(model::MOI.ModelLike,
                  attr::GramMatrixAttribute,
                  bridge::SOSPolynomialBridge)
-    return build_gram_matrix(MOI.get(model, attr, bridge.variable_bridge),
+    return build_gram_matrix(MOI.get(model, MOI.ConstraintPrimal(attr.N), bridge.variable_bridge),
                              bridge.certificate_monomials)
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::MomentMatrixAttribute,
                  bridge::SOSPolynomialBridge)
-    return build_moment_matrix(MOI.get(model, attr, bridge.variable_bridge),
+    return build_moment_matrix(MOI.get(model, MOI.ConstraintDual(attr.N),
+                                       bridge.variable_bridge),
                                bridge.certificate_monomials)
 end

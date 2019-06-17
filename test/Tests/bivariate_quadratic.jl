@@ -19,6 +19,8 @@ function bivariate_quadratic_test(optimizer,
     @objective(model, Max, α + 1)
     optimize!(model)
 
+    @test certificate_monomials(cref) == [x, 1]
+
     @test termination_status(model) == MOI.OPTIMAL
     @test objective_value(model) ≈ 3.0 atol=atol rtol=rtol
 

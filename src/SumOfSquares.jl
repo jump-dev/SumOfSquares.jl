@@ -35,6 +35,7 @@ const MOIB = MOI.Bridges
 
 # Variable Bridges
 include("variable_bridge.jl")
+include("psd2x2_variable_bridge.jl")
 include("scaled_diagonally_dominant_variable_bridge.jl")
 include("generic_variable_bridge.jl")
 include("copositive_inner_variable_bridge.jl")

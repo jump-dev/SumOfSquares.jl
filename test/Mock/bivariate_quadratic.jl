@@ -1,6 +1,6 @@
 config = MOI.Test.TestConfig()
-optimize!(mock) = MOIU.mock_optimize!(mock, [2.0, 1.0, 1.0, 1.0],
-    (MOI.VectorAffineFunction{Float64}, MOI.RotatedSecondOrderCone) => [[1.0, 1.0, -√2]],
+optimize!(mock) = MOIU.mock_optimize!(mock, [2.0, 1.0, 1.0, √2],
+    (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) => [[1.0, 1.0, -√2]],
     (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1.0, -1.0, 1.0]])
 mock = bridged_mock(optimize!)
 Tests.sos_bivariate_quadratic_test(mock, config)
