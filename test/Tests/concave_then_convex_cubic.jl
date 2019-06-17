@@ -45,11 +45,14 @@ function sos_concave_then_convex_cubic_test(optimizer, config)
     concave_then_convex_cubic_test(optimizer, config,
                                    MOI.PositiveSemidefiniteConeTriangle)
 end
+sd_tests["sos_concave_then_convex_cubic"] = sos_concave_then_convex_cubic_test
 function sdsos_concave_then_convex_cubic_test(optimizer, config)
     concave_then_convex_cubic_test(optimizer, config,
                                    SumOfSquares.ScaledDiagonallyDominantConeTriangle)
 end
+soc_tests["sdsos_concave_then_convex_cubic"] = sdsos_concave_then_convex_cubic_test
 function dsos_concave_then_convex_cubic_test(optimizer, config)
     concave_then_convex_cubic_test(optimizer, config,
                                    SumOfSquares.DiagonallyDominantConeTriangle)
 end
+linear_tests["dsos_concave_then_convex_cubic"] = dsos_concave_then_convex_cubic_test

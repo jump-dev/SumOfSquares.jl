@@ -1,6 +1,7 @@
 using Test, JuMP
 const MOIT = MOI.Test
 const MOIB = MOI.Bridges
+using SumOfSquares
 
 function _model(optimizer::MOI.AbstractOptimizer)
     MOI.empty!(optimizer)
@@ -10,6 +11,12 @@ end
 function _model(factory::OptimizerFactory)
     return Model(factory)
 end
+
+#const SOSPolynomial{T, OT<:MOI.ModelLike} = MOIB.SingleBridgeOptimizer{SumOfSquares.SOSPolynomialBridge{T}, OT}
+
+#function _cheat_model(factory::OptimizerFactory)
+#    return Model(with_optimizer(() -> SOSPolynomial{Float64}(factory())))
+#end
 
 #"""
 #    @test_suite setname subsets
@@ -77,6 +84,8 @@ end
 # Utilities for building the mock `optimize!` from the solution of a solver
 _inner(model::MOIU.CachingOptimizer) = _inner(model.optimizer)
 _inner(model::MOIB.LazyBridgeOptimizer) = model.model
+_cheat_inner(model::MOI.ModelLike) = model
+_cheat_inner(model::MOIB.SingleBridgeOptimizer) = _cheat_inner(model.model)
 # Variables primal values for inner bridged model
 function print_value(v, atol)
     i = round(v)
@@ -87,6 +96,7 @@ function print_value(v, atol)
     end
 end
 function inner_variable_value(model, atol=1e-4)
+    #inner = _cheat_inner(backend(model))
     inner = _inner(backend(model))
     values = MOI.get(inner, MOI.VariablePrimal(),
                      MOI.get(inner, MOI.ListOfVariableIndices()))
@@ -124,3 +134,17 @@ function inner_variable_value(model, atol=1e-4)
     println(")")
 end
 # Constraint dual values for inner bridged model
+function inner_inspect(model, atol=1e-4)
+    inner = _inner(backend(model))
+    for (F, S) in MOI.get(inner, MOI.ListOfConstraints())
+        @show F
+        @show S
+        @show MOI.get(inner, MOI.NumberOfConstraints{F, S}())
+        if S <: MOI.AbstractVectorSet
+            for ci in MOI.get(inner, MOI.ListOfConstraintIndices{F, S}())
+                set = MOI.get(inner, MOI.ConstraintSet(), ci)
+                @show MOI.dimension(set)
+            end
+        end
+    end
+end
