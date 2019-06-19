@@ -9,15 +9,6 @@ This packages contains the Sum of Squares reformulation for polynomial optimizat
 When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for [JuMP](https://github.com/JuliaOpt/JuMP.jl).
 Enabling the creation of sum of squares variables and constraints.
 
-## Installation
-
-The `master` branch of this package works with the JuMP v0.19. To try this
-package with JuMP v0.19, do:
-```julia
-] add PolyJuMP#master
-] add SumOfSquares#master
-```
-
 ## Documentation
 
 - [**STABLE**][docs-stable-url] &mdash; **most recently tagged version of the documentation.**
