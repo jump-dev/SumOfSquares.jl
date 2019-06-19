@@ -173,3 +173,9 @@ Society for Industrial and Applied Mathematics, **2012**.
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
 ArXiv e-prints, **2017**.
+
+## Reference
+
+```@docs
+SumOfSquares.PolyJuMP.Poly
+```

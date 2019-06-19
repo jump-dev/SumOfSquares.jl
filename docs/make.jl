@@ -14,7 +14,7 @@ makedocs(
     ],
     # The following ensures that we only include the docstrings from
     # this module for functions define in Base that we overwrite.
-    modules = [SumOfSquares]
+    modules = [SumOfSquares, PolyJuMP]
 )
 
 deploydocs(

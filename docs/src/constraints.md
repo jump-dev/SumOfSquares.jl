@@ -190,15 +190,42 @@ for a detailed example.
 The dual of a polynomial constraint `cref` is a moment serie `μ` as defined in
 [MultivariateMoments](https://github.com/JuliaAlgebra/MultivariateMoments.jl).
 The dual can be obtained with the `dual` function as with classical
-dual values in JuMP. The matrix of moments can be obtained using [`moment_matrix`](@ref):
+dual values in JuMP.
 ```julia
 μ = dual(cref)
+```
+By dual of a Sum-of-Squares constraint, we may mean different things
+and the meaning chosen for `dual` function was chosen for consistency
+with the definition of the JuMP `dual` function to ensure that generic
+code will work as expected with Sum-of-Squares constraints.
+In a Sum-of-Squares constraint, a polynomial $p$ is constraint to
+be SOS in some domain defined by polynomial `q_i`.
+So `p(x)` is constrained to be equal to
+`s(x) = s_0(x) + s_1(x) * q_1(x) + s_2(x) * q_2(x) + ...`
+where the `s_i(x)` polynomials are Sum-of-Squares.
+The dual of the equality constraint between `p(x)` and `s(x)` is given
+by [`SumOfSquares.PolyJuMP.moments`](@ref).
+```julia
+μ = moments(cref)
+```
+Note that the `dual` and `moments` may give different results. For instance,
+the output of `dual` only contains the moments corresponding to monomials of `p`
+while the output of `moments` may give the  moments of other monomials if `s(x)`
+has more monomials than `p(x)`. Besides, if the domain contains polynomial,
+equalities, only the  remainder of `p(x) - s(x)` modulo the ideal is constrained
+to be zero, see Corollary 2 of [CLO13]. In that case, the output `moments` is
+the dual of the constraint on the remainder so some monomials may have different
+moments with `dual` or `moments`.
+
+The dual of the Sum-of-Squares constraint on `s_0(x)`, commonly referred
+to as the the matrix of moments can be obtained using [`moment_matrix`](@ref):
+```julia
 ν = moment_matrix(cref)
 ```
 The `extractatoms` function of [MultivariateMoments](https://github.com/JuliaAlgebra/MultivariateMoments.jl)
 can be used to check if there exists an *atomic* measure (i.e. a measure that is
-a sum of Dirac measures) that has the moments given in `ν`.
-This can be used for instance in polynomial optimization (see
+a sum of Dirac measures) that has the moments given in the the moment matrix
+`ν`. This can be used for instance in polynomial optimization (see
 [this notebook](https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb))
 or stability analysis (see
 [this notebook](https://github.com/blegat/SwitchOnSafety.jl/blob/master/examples/LPJ17e43.ipynb)).
@@ -207,10 +234,14 @@ or stability analysis (see
 
 [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
 *Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, 2012.
+Society for Industrial and Applied Mathematics, **2012**.
+
+[CLO13] Cox, D., Little, J., & OShea, D.
+*Ideals, varieties, and algorithms: an introduction to computational algebraic geometry and commutative algebra*.
+Springer Science & Business Media, **2013**.
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
-*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
+*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*.
 ArXiv e-prints, **2017**.
 
 ## Reference
@@ -249,6 +280,8 @@ SumOfSquares.CopositiveInner
 
 Attributes
 ```@docs
+SumOfSquares.PolyJuMP.MomentsAttribute
+SumOfSquares.MultivariateMoments.moments(::SumOfSquares.JuMP.ConstraintRef)
 GramMatrix
 SumOfSquares.GramMatrixAttribute
 gram_matrix
@@ -259,4 +292,18 @@ SumOfSquares.CertificateMonomials
 certificate_monomials
 SumOfSquares.LagrangianMultipliers
 lagrangian_multipliers
+```
+
+Polynomial basis:
+```@docs
+SumOfSquares.PolyJuMP.AbstractPolynomialBasis
+SumOfSquares.PolyJuMP.MonomialBasis
+SumOfSquares.PolyJuMP.ScaledMonomialBasis
+SumOfSquares.PolyJuMP.FixedPolynomialBasis
+```
+
+Bridges are automatically added using the following utilities:
+```@docs
+SumOfSquares.PolyJuMP.bridgeable
+SumOfSquares.PolyJuMP.bridges
 ```
