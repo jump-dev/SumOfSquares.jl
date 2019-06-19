@@ -121,6 +121,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "variables/#PolyJuMP.Poly",
+    "page": "Variables",
+    "title": "PolyJuMP.Poly",
+    "category": "type",
+    "text": "struct Poly{PB<:AbstractPolynomialBasis} <: AbstractPoly\n    polynomial_basis::PB\nend\n\nPolynomial variable v^top p where v is a vector of new decision variables and p is a vector of polynomials for the basis polynomial_basis.\n\n\n\n\n\n"
+},
+
+{
+    "location": "variables/#Reference-1",
+    "page": "Variables",
+    "title": "Reference",
+    "category": "section",
+    "text": "SumOfSquares.PolyJuMP.Poly"
+},
+
+{
     "location": "constraints/#",
     "page": "Constraints",
     "title": "Constraints",
@@ -181,7 +197,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Dual of polynomial constraints",
     "category": "section",
-    "text": "The dual of a polynomial constraint cref is a moment serie μ as defined in MultivariateMoments. The dual can be obtained with the dual function as with classical dual values in JuMP. The matrix of moments can be obtained using moment_matrix:μ = dual(cref)\nν = moment_matrix(cref)The extractatoms function of MultivariateMoments can be used to check if there exists an atomic measure (i.e. a measure that is a sum of Dirac measures) that has the moments given in ν. This can be used for instance in polynomial optimization (see this notebook) or stability analysis (see this notebook)."
+    "text": "The dual of a polynomial constraint cref is a moment serie μ as defined in MultivariateMoments. The dual can be obtained with the dual function as with classical dual values in JuMP.μ = dual(cref)By dual of a Sum-of-Squares constraint, we may mean different things and the meaning chosen for dual function was chosen for consistency with the definition of the JuMP dual function to ensure that generic code will work as expected with Sum-of-Squares constraints. In a Sum-of-Squares constraint, a polynomial p is constraint to be SOS in some domain defined by polynomial q_i. So p(x) is constrained to be equal to s(x) = s_0(x) + s_1(x) * q_1(x) + s_2(x) * q_2(x) + ... where the s_i(x) polynomials are Sum-of-Squares. The dual of the equality constraint between p(x) and s(x) is given by SumOfSquares.PolyJuMP.moments.μ = moments(cref)Note that the dual and moments may give different results. For instance, the output of dual only contains the moments corresponding to monomials of p while the output of moments may give the  moments of other monomials if s(x) has more monomials than p(x). Besides, if the domain contains polynomial, equalities, only the  remainder of p(x) - s(x) modulo the ideal is constrained to be zero, see Corollary 2 of [CLO13]. In that case, the output moments is the dual of the constraint on the remainder so some monomials may have different moments with dual or moments.The dual of the Sum-of-Squares constraint on s_0(x), commonly referred to as the the matrix of moments can be obtained using moment_matrix:ν = moment_matrix(cref)The extractatoms function of MultivariateMoments can be used to check if there exists an atomic measure (i.e. a measure that is a sum of Dirac measures) that has the moments given in the the moment matrix ν. This can be used for instance in polynomial optimization (see this notebook) or stability analysis (see this notebook)."
 },
 
 {
@@ -189,7 +205,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "References",
     "category": "section",
-    "text": "[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017."
+    "text": "[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.[CLO13] Cox, D., Little, J., & OShea, D. Ideals, varieties, and algorithms: an introduction to computational algebraic geometry and commutative algebra. Springer Science & Business Media, 2013.[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization. ArXiv e-prints, 2017."
 },
 
 {
@@ -281,6 +297,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "constraints/#PolyJuMP.MomentsAttribute",
+    "page": "Constraints",
+    "title": "PolyJuMP.MomentsAttribute",
+    "category": "type",
+    "text": "ConstraintDual(N)\nConstraintDual()\n\nA constraint attribute for the vector of moments corresponding to the constraint that a polynomial is zero in the full space in result N. If the polynomial is constrained to be zero in an algebraic set, it is the moments for the constraint once it is rewritten into an constraint on the full space. If N is omitted, it is 1 by default.\n\nExamples\n\nConsider the following program:\n\n@variable(model, α)\n@variable(model, β ≤ 1)\n\nusing DynamicPolynomials\n@polyvar x y\ncref = @constraint(model, α * x - β * y == 0, domain = @set x == y)\n\nThe constraint is equivalent to\n\n@constraint(model, (α - β) * y == 0)\n\nfor which the dual is the 1-element vector with the moment of y of value -1. This is the result of moments(cref). However, the dual of cref obtained by dual(cref) is the 2-elements vector with both the moments of x and y of value -1.\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#MultivariateMoments.moments-Tuple{ConstraintRef}",
+    "page": "Constraints",
+    "title": "MultivariateMoments.moments",
+    "category": "method",
+    "text": "moments(cref::JuMP.ConstraintRef)\n\nReturn the MomentsAttribute of cref.\n\n\n\n\n\n"
+},
+
+{
     "location": "constraints/#SumOfSquares.GramMatrix",
     "page": "Constraints",
     "title": "SumOfSquares.GramMatrix",
@@ -361,11 +393,59 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "constraints/#PolyJuMP.AbstractPolynomialBasis",
+    "page": "Constraints",
+    "title": "PolyJuMP.AbstractPolynomialBasis",
+    "category": "type",
+    "text": "abstract type AbstractPolynomialBasis end\n\nPolynomial basis of a subspace of the polynomials [Section~3.1.5, BPT12].\n\n[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#PolyJuMP.MonomialBasis",
+    "page": "Constraints",
+    "title": "PolyJuMP.MonomialBasis",
+    "category": "type",
+    "text": "struct MonomialBasis{MT<:MultivariatePolynomials.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis\n    monomials::MV\nend\n\nMonomial basis with the monomials of the vector monomials. For instance, MonomialBasis([1, x, y, x^2, x*y, y^2]) is the monomial basis for the subspace of quadratic polynomials in the variables x, y.\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#PolyJuMP.ScaledMonomialBasis",
+    "page": "Constraints",
+    "title": "PolyJuMP.ScaledMonomialBasis",
+    "category": "type",
+    "text": "struct ScaledMonomialBasis{MT<:MultivariatePolynomials.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis\n    monomials::MV\nend\n\nScaled monomial basis (see [Section 3.1.5, BPT12]) with the monomials of the vector monomials. Given a monomial x^alpha = x_1^alpha_1 cdots x_n^alpha_n of degree d = sum_i=1^n alpha_i, the corresponding polynomial of the basis is\n\nd choose alpha^frac12 x^alpha quad text where  quad\nd choose alpha = fracdalpha_1 alpha_2 cdots alpha_n\n\nFor instance, create a polynomial with the basis xy^2 xy creates the polynomial sqrt3 a xy^2 + sqrt2 b xy where a and b are new JuMP decision variables. Constraining the polynomial axy^2 + bxy to be zero with the scaled monomial basis constrains a/√3 and b/√2 to be zero.\n\n[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#PolyJuMP.FixedPolynomialBasis",
+    "page": "Constraints",
+    "title": "PolyJuMP.FixedPolynomialBasis",
+    "category": "type",
+    "text": "struct FixedPolynomialBasis{PT<:MultivariatePolynomials.AbstractPolynomialLike, PV<:AbstractVector{PT}} <: AbstractPolynomialBasis\n    polynomials::PV\nend\n\nPolynomial basis with the polynomials of the vector polynomials. For instance, FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x]) is the Chebyshev polynomial basis for cubic polynomials in the variable x.\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#PolyJuMP.bridgeable",
+    "page": "Constraints",
+    "title": "PolyJuMP.bridgeable",
+    "category": "function",
+    "text": "bridgeable(c::JuMP.AbstractConstraint, F::Type{<:MOI.AbstractFunction},\n           S::Type{<:MOI.AbstractSet})\n\nWrap the constraint c in JuMP.BridgeableConstraints that may be needed to bridge F-in-S constraints.\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#PolyJuMP.bridges",
+    "page": "Constraints",
+    "title": "PolyJuMP.bridges",
+    "category": "function",
+    "text": "bridges(F::Type{<:MOI.AbstractFunction}, S::Type{<:MOI.AbstractSet})\n\nReturn a list of bridges that may be needed to bridge F-in-S constraints but not the bridges that may be needed by constraints added by the bridges.\n\n\n\n\n\n"
+},
+
+{
     "location": "constraints/#Reference-1",
     "page": "Constraints",
     "title": "Reference",
     "category": "section",
-    "text": "Inner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_operate\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliers"
+    "text": "Inner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesSumOfSquares.PolyJuMP.MomentsAttribute\nSumOfSquares.MultivariateMoments.moments(::SumOfSquares.JuMP.ConstraintRef)\nGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_operate\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliersPolynomial basis:SumOfSquares.PolyJuMP.AbstractPolynomialBasis\nSumOfSquares.PolyJuMP.MonomialBasis\nSumOfSquares.PolyJuMP.ScaledMonomialBasis\nSumOfSquares.PolyJuMP.FixedPolynomialBasisBridges are automatically added using the following utilities:SumOfSquares.PolyJuMP.bridgeable\nSumOfSquares.PolyJuMP.bridges"
 },
 
 ]}
