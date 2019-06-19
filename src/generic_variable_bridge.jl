@@ -42,12 +42,13 @@ function MOI.delete(model::MOI.ModelLike, bridge::GenericVariableBridge)
     end
 end
 
-function MOI.get(model::MOI.ModelLike, ::MomentMatrixAttribute,
+function MOI.get(model::MOI.ModelLike,
+                 attr::MOI.ConstraintPrimal,
                  bridge::GenericVariableBridge)
-    return MOI.get(model, MOI.ConstraintDual(), bridge.gram_constraint)
+    return MOI.get(model, MOI.VariablePrimal(attr.N), bridge.gram_matrix)
 end
-
-function MOI.get(model::MOI.ModelLike, ::GramMatrixAttribute,
+function MOI.get(model::MOI.ModelLike,
+                 attr::MOI.ConstraintDual,
                  bridge::GenericVariableBridge)
-    return MOI.get(model, MOI.VariablePrimal(), bridge.gram_matrix)
+    return MOI.get(model, attr, bridge.gram_constraint)
 end

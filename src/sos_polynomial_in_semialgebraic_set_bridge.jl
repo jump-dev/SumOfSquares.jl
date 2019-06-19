@@ -130,7 +130,7 @@ end
 function MOI.get(model::MOI.ModelLike, ::LagrangianMultipliers,
                  bridge::SOSPolynomialInSemialgebraicSetBridge)
     @assert eachindex(bridge.lagrangian_bridges) == eachindex(bridge.lagrangian_monomials)
-    map(i -> build_gram_matrix(MOI.get(model, GramMatrixAttribute(),
+    map(i -> build_gram_matrix(MOI.get(model, MOI.ConstraintPrimal(),
                                        bridge.lagrangian_bridges[i]),
                                bridge.lagrangian_monomials[i]),
         eachindex(bridge.lagrangian_bridges))

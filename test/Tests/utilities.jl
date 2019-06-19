@@ -136,6 +136,7 @@ end
 # Constraint dual values for inner bridged model
 function inner_inspect(model, atol=1e-4)
     inner = _inner(backend(model))
+    @show MOI.get(inner, MOI.NumberOfVariables())
     for (F, S) in MOI.get(inner, MOI.ListOfConstraints())
         @show F
         @show S
