@@ -277,7 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "SumOfSquares.CopositiveInner",
     "category": "type",
-    "text": "struct CopositiveInner{S} <: PolyJuMP.PolynomialSet\n    # Inner approximation of the PSD cone, i.e. typically either\n    # `SOSCone`, `DSOSCone` or `SDSOSCone`,\n    psd_inner::S\nend\n\nA symmetric matrix Q is copositive if x^top Q x ge 0 for all vector x in the nonnegative orthant. Checking copositivity is a co-NP-complete problem [MK87] and this cone is only the inner approximation of the cone of copositive symmetric matrices given by Minknowski sum of psd_inner and the cone of symmetric matrices with nonnegative entries (the diagonal entries can be chosen to be zero) [Lemma 3.164, BPT12].\n\nThe matrix with nonnegative entries can be interpreted as lagrangian multipliers. For instance,\n\n@polyvar x y\n@constraint(model, x^2 - 2x*y + y^2 in CopositiveInner(SOSCone()))\n\nis equivalent to\n\n# Matrix that we require to be copositive\nQ = [ 1 -1\n     -1  1]\nλ = @variable(model, lower_bound=0)\n# Symmetric matrix of nonnegative entries\nΛ = [0 λ\n     λ 0]\nusing LinearAlgebra # For `Symmetric`\n@constraint(model, Symmetric(Q - Λ) in PSDCone())\n\nwhich is equivalent to\n\n@polyvar x y\nλ = @variable(model, lower_bound=0)\n@constraint(model, x^2 - 2x*y + y^2 - 2*λ * x*y in SOSCone())\n\nwhich is the same as, using the domain keyword,\n\n@polyvar x y\n@constraint(model, x^2 - 2x*y + y^2 in SOSCone(), domain = @set x*y ≥ 0)\n\nFor consistency with its equivalent forms, the GramMatrixAttribute for this constraint is given by the gram matrix in the psd_inner cone, i.e. which should be equal to Q - Λ.\n\n[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.\n\n[MK87] K. G. Murty and S. N. Kabadi. Some NP-complete problems in quadratic and nonlinear programming. Mathematical programming, 39:117–129, 1987.\n\n\n\n\n\n"
+    "text": "struct CopositiveInner{S} <: PolyJuMP.PolynomialSet\n    # Inner approximation of the PSD cone, i.e. typically either\n    # `SOSCone`, `DSOSCone` or `SDSOSCone`,\n    psd_inner::S\nend\n\nA symmetric matrix Q is copositive if x^top Q x ge 0 for all vector x in the nonnegative orthant. Checking copositivity is a co-NP-complete problem [MK87] and this cone is only the inner approximation of the cone of copositive symmetric matrices given by Minknowski sum of psd_inner and the cone of symmetric matrices with nonnegative entries (the diagonal entries can be chosen to be zero) [Lemma 3.164, BPT12].\n\nThe matrix with nonnegative entries can be interpreted as lagrangian multipliers. For instance,\n\n@polyvar x y\n@constraint(model, x^2 - 2x*y + y^2 in CopositiveInner(SOSCone()))\n\nis equivalent to\n\n# Matrix that we require to be copositive\nQ = [ 1 -1\n     -1  1]\nλ = @variable(model, lower_bound=0)\n# Symmetric matrix of nonnegative entries\nΛ = [0 λ\n     λ 0]\nusing LinearAlgebra # For `Symmetric`\n@constraint(model, Symmetric(Q - Λ) in PSDCone())\n\nwhich is equivalent to\n\n@polyvar x y\nλ = @variable(model, lower_bound=0)\n@constraint(model, x^2 - 2x*y + y^2 - 2*λ * x*y in SOSCone())\n\nwhich is the same as, using the domain keyword,\n\n@polyvar x y\n@constraint(model, x^2 - 2x*y + y^2 in SOSCone(), domain = @set x*y ≥ 0)\n\nAs an important difference with its equivalent forms, the GramMatrixAttribute for the copositive constraint is given by matrix Q while for the equivalent form using the  domainkeyword, the value of the attribute would correspond to the the gram matrix in thepsd_innercone, i.e. which should be equal toQ - Λ`.\n\n[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.\n\n[MK87] K. G. Murty and S. N. Kabadi. Some NP-complete problems in quadratic and nonlinear programming. Mathematical programming, 39:117–129, 1987.\n\n\n\n\n\n"
 },
 
 {
@@ -293,7 +293,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "SumOfSquares.GramMatrixAttribute",
     "category": "type",
-    "text": "struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute end\n\nA constraint attribute for the GramMatrix of a constraint, that is, the positive semidefinite matrix Q indexed by the monomials in the vector X such that X^top Q X is the sum-of-squares certificate of the constraint. The\n\n\n\n\n\n"
+    "text": "GramMatrixAttribute(N)\nGramMatrixAttribute()\n\nA constraint attribute for the GramMatrix of a constraint, that is, the positive semidefinite matrix Q indexed by the monomials in the vector X such that X^top Q X is the sum-of-squares certificate of the constraint.\n\n\n\n\n\n"
 },
 
 {
@@ -317,7 +317,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "SumOfSquares.MomentMatrixAttribute",
     "category": "type",
-    "text": "struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute end\n\nA constraint attribute fot the MomentMatrix of a constraint.\n\n\n\n\n\n"
+    "text": "MomentMatrixAttribute(N)\nMomentMatrixAttribute()\n\nA constraint attribute fot the MomentMatrix of a constraint.\n\n\n\n\n\n"
 },
 
 {
@@ -349,7 +349,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "SumOfSquares.LagrangianMultipliers",
     "category": "type",
-    "text": "struct LagrangianMultipliers <: MOI.AbstractConstraintAttribute end\n\nA constraint attribute fot the LagrangianMultipliers assiciated to the inequalities of the domain of a constraint. There is one multiplier per inequality and no multiplier for equalities as the equalities are handled by reducing the polynomials over the ideal they generate instead of explicitely creating multipliers.\n\n\n\n\n\n"
+    "text": "LagrangianMultipliers(N)\nLagrangianMultipliers()\n\nA constraint attribute fot the LagrangianMultipliers associated to the inequalities of the domain of a constraint. There is one multiplier per inequality and no multiplier for equalities as the equalities are handled by reducing the polynomials over the ideal they generate instead of explicitely creating multipliers.\n\n\n\n\n\n"
 },
 
 {
