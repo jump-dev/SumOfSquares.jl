@@ -24,6 +24,7 @@ package with JuMP v0.19, do:
 - [**LATEST**][docs-latest-url] &mdash; *in-development version of the documentation.*
 
 Some presentations on, or using, SumOfSquares:
+  * Benoît Legat at the [juliaday Nantes 2019](https://julialang.univ-nantes.fr/programme/) [[Slides](https://drive.google.com/open?id=1pN3G9Pr8jbzK9EEaJ9a6p_qKwSbxb2bo)]
   * Benoît Legat at the [Summer School on Numerical Computing in Algebraic Geometry 2018](https://www.mis.mpg.de/calendar/conferences/2018/nc2018.html) [[Poster](https://drive.google.com/open?id=1pf9rdoVEjAnD164rptLki1AG0AH4i88M)]
   * Benoît Legat at the [JuMP Meetup 2017](http://www.juliaopt.org/meetings/mit2017/) [[Slides](http://www.juliaopt.org/meetings/mit2017/legat.pdf)] [[Video](https://youtu.be/kyo72yWYr54)]
   * [Joey Huchette at SIAM Opt 2017](https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit?usp=sharing)
