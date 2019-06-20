@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Index · SumOfSquares</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SumOfSquares</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href>Index</a><ul class="internal"><li><a class="toctext" href="#Contents-1">Contents</a></li></ul></li><li><a class="toctext" href="sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="toctext" href="variables/">Variables</a></li><li><a class="toctext" href="constraints/">Constraints</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Index</a></li></ul><a class="edit-page" href="https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/docs/src/index.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Index</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="SumOfSquares-–-Sum-of-Squares-Programming-for-Julia-1" href="#SumOfSquares-–-Sum-of-Squares-Programming-for-Julia-1">SumOfSquares –- Sum of Squares Programming for Julia</a></h1><p><a href="https://github.com/JuliaOpt/SumOfSquares.jl">SumOfSquares</a> implements Sum of Squares reformulation for <a href="https://github.com/JuliaOpt/PolyJuMP.jl">PolyJuMP</a>, enabling the creation of sum of squares variables and constraints in <a href="https://github.com/JuliaOpt/JuMP.jl">JuMP</a>.</p><p>The polynomial can be represented by any library implementing the <a href="https://github.com/JuliaAlgebra/MultivariatePolynomials.jl">MultivariatePolynomial.jl</a> interface. That is, you can currently choose between <a href="https://github.com/JuliaAlgebra/MultivariatePolynomials.jl">DynamicPolynomials</a> and <a href="https://github.com/JuliaAlgebra/MultivariatePolynomials.jl">TypedPolynomials</a>. As a rule of thumb, if you know at compile time (or at the time you are writing your code), the number of variable and that this number is small, use TypedPolynomials, otherwise, use DynamicPolynomials.</p><p>Some presentations on, or using, SumOfSquares:</p><ul><li>Benoît Legat at the JuMP Meetup 2017 [<a href="http://www.juliaopt.org/meetings/mit2017/legat.pdf">Slides</a>] [<a href="https://youtu.be/kyo72yWYr54">Video</a>]</li><li><a href="https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit?usp=sharing">Joey Huchette at SIAM Opt 2017</a></li></ul><p>The following example shows how to find lower bounds for the Goldstein-Price function using this package.</p><pre><code class="language-julia">using SumOfSquares
+using DynamicPolynomials
+using MosekTools
+
+# Create symbolic variables (not JuMP decision variables)
+@polyvar x1 x2
+
+# Create a Sum of Squares JuMP model with the Mosek solver
+model = SOSModel(with_optimizer(Mosek.Optimizer))
+
+# Create a JuMP decision variable for the lower bound
+@variable(model, γ)
+
+# f(x) is the Goldstein-Price function
+f1 = x1+x2+1
+f2 = 19-14*x1+3*x1^2-14*x2+6*x1*x2+3*x2^2
+f3 = 2*x1-3*x2
+f4 = 18-32*x1+12*x1^2+48*x2-36*x1*x2+27*x2^2
+
+f = (1+f1^2*f2)*(30+f3^2*f4)
+
+# Constraints f(x) - γ to be sum of squares
+@constraint(model, f &gt;= γ)
+
+@objective(model, Max, γ)
+
+optimize!(model)
+
+# The lower bound found is 3
+println(objective_value(model))</code></pre><h2><a class="nav-anchor" id="Contents-1" href="#Contents-1">Contents</a></h2><ul><li><a href="sumofsquares/#Sum-of-Squares-Programming-1">Sum-of-Squares Programming</a></li><ul><li><a href="sumofsquares/#Quadratic-forms-and-Semidefinite-programming-1">Quadratic forms and Semidefinite programming</a></li><li><a href="sumofsquares/#Polynomial-nonnegativity-and-Semidefinite-programming-1">Polynomial nonnegativity and Semidefinite programming</a></li><li><a href="sumofsquares/#When-is-nonnegativity-equivalent-to-sum-of-squares-?-1">When is nonnegativity equivalent to sum of squares ?</a></li></ul><li><a href="variables/#Polynomial-and-Sum-of-Squares-variables-1">Polynomial and Sum-of-Squares variables</a></li><ul><li><a href="variables/#Polynomial-variables-1">Polynomial variables</a></li><li><a href="variables/#Nonnegative-polynomial-variables-1">Nonnegative polynomial variables</a></li><li><a href="variables/#Choosing-a-polynomial-basis-1">Choosing a polynomial basis</a></li><li><a href="variables/#Reference-1">Reference</a></li></ul><li><a href="constraints/#Constraints-1">Constraints</a></li><ul><li><a href="constraints/#Equality-constraints-between-polynomials-1">Equality constraints between polynomials</a></li><li><a href="constraints/#Inequality-constraints-between-polynomials-1">Inequality constraints between polynomials</a></li><li><a href="constraints/#Changing-the-polynomial-basis-1">Changing the polynomial basis</a></li><li><a href="constraints/#Polynomial-nonnegativity-on-a-subset-of-the-space-1">Polynomial nonnegativity on a subset of the space</a></li><li><a href="constraints/#Dual-of-polynomial-constraints-1">Dual of polynomial constraints</a></li><li><a href="constraints/#Reference-1">Reference</a></li></ul></ul><footer><hr/><a class="next" href="sumofsquares/"><span class="direction">Next</span><span class="title">Sum-of-Squares Programming</span></a></footer></article></body></html>
