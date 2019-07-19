@@ -14,7 +14,7 @@ Reexport.@reexport using MultivariateMoments
 
 include("gram_matrix.jl")
 include("sosdec.jl")
-include("certificate.jl")
+include("newton_polytope.jl")
 
 # MOI extension
 
