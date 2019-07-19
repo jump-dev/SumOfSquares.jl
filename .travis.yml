@@ -15,8 +15,6 @@ before_install:
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         sudo apt-get install liblapack-dev libblas-dev; # For CSDP
     fi
-before_script:
-    - julia -e 'using Pkg;  Pkg.add(PackageSpec(name="PolyJuMP", rev="master"))'
 jobs:
   include:
     - stage: "Documentation"
