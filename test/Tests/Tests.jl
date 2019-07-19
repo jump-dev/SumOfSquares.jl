@@ -7,6 +7,7 @@ const soc_tests = Dict{String, Function}()
 const sd_tests = Dict{String, Function}()
 
 include("term.jl")
+include("term_fixed.jl")
 include("bivariate_quadratic.jl")
 include("horn.jl")
 include("concave_then_convex_cubic.jl")

@@ -6,6 +6,9 @@ using Test, JuMP
 @testset "Term" begin
     include("term.jl")
 end
+@testset "Term fixed" begin
+    include("term_fixed.jl")
+end
 @testset "Bivariate quadratic" begin
     include("bivariate_quadratic.jl")
 end

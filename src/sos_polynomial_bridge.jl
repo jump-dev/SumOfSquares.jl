@@ -22,8 +22,12 @@ function SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
     }
     @assert MOI.output_dimension(f) == length(s.monomials)
     p = MP.polynomial(collect(MOIU.eachscalar(f)), s.monomials)
+    # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
+    # need to call `changecoefficienttype`. This is critical since `T` is
+    # `Float64` when used with JuMP and the coefficient type is often `Int` if
+    # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
-    r = convert(typeof(p), rem(p, ideal(s.domain)))
+    r = convert(typeof(p), rem(p, ideal(MP.changecoefficienttype(s.domain, T))))
     X = monomials_half_newton_polytope(MP.monomials(r), s.newton_polytope)
     Q, variable_bridge = add_matrix_variable_bridge(model, MCT, length(X), T)
     g = build_gram_matrix(Q, X)
