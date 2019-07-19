@@ -46,7 +46,11 @@ function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, BT, MT, MVT, N
     for (i, q) in enumerate(set.domain.p)
         λ, λ_bridges[i], λ_monos[i] = lagrangian_multiplier(
             model, p, set.cone, q, set.mindegree, set.maxdegree, T)
-        p -= λ * q
+        # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
+        # need to call `changecoefficienttype`. This is critical since `T` is
+        # `Float64` when used with JuMP and the coefficient type is often `Int` if
+        # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
+        p -= λ * MP.changecoefficienttype(q, T)
     end
     monos = MP.monomials(p)
     new_set = SOSPolynomialSet(set.domain.V, set.cone, set.basis, monos,
