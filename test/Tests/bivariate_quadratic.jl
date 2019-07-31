@@ -50,8 +50,7 @@ function bivariate_quadratic_test(optimizer,
     @test ν.x == [x, 1]
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, typeof(cone), SumOfSquares.MonomialBasis,
-        Monomial{true},MonomialVector{true},Tuple{}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Remainder{typeof(cone), SumOfSquares.MonomialBasis, Tuple{}}
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     test_delete_bridge(

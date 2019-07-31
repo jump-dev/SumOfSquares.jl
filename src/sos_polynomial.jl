@@ -10,20 +10,11 @@ function build_moment_matrix(q::Vector,
                         monos)
 end
 
-abstract type SOSLikeCone <: PolyJuMP.PolynomialSet end
-Base.broadcastable(cone::SOSLikeCone) = Ref(cone)
-
 struct SOSPolynomialSet{DT <: AbstractSemialgebraicSet,
-                        CT <: SOSLikeCone,
-                        BT <: PolyJuMP.AbstractPolynomialBasis,
                         MT <: MP.AbstractMonomial,
                         MVT <: AbstractVector{MT},
-                        NPT <: Tuple} <: MOI.AbstractVectorSet
+                        CT <: Certificate.AbstractCertificate} <: MOI.AbstractVectorSet
     domain::DT
-    cone::CT
-    basis::Type{BT}
     monomials::MVT
-    newton_polytope::NPT
-    mindegree::Int
-    maxdegree::Int
+    certificate::CT
 end

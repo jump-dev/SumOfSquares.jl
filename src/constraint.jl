@@ -63,7 +63,7 @@ function JuMP.in_set_string(print_mode, ::DSOSCone)
 end
 
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
-    return set.cone
+    return set.certificate.cone
 end
 function JuMP.moi_set(cone::SOSLikeCone,
                       monos::AbstractVector{<:MP.AbstractMonomial};
@@ -72,9 +72,16 @@ function JuMP.moi_set(cone::SOSLikeCone,
                       newton_polytope::Tuple=tuple(),
                       mindegree=MP.mindegree(monos),
                       maxdegree=MP.maxdegree(monos))
-    return SOSPolynomialSet(domain, cone, basis, monos, newton_polytope,
-                            mindegree, maxdegree)
+    ideal_certificate = Certificate.Remainder(cone, basis, newton_polytope)
+    if domain isa AbstractAlgebraicSet
+        certificate = ideal_certificate
+    else
+        certificate = Certificate.Putinar(
+            ideal_certificate, cone, basis, mindegree, maxdegree)
+    end
+    return SOSPolynomialSet(domain, monos, certificate)
 end
+
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
                           ::Type{EmptyCone})
