@@ -8,8 +8,8 @@ import Reexport
 
 import MultivariatePolynomials
 const MP = MultivariatePolynomials
-using SemialgebraicSets
-export @set
+# @set assumes that `SemialgebraicSets` is defined
+Reexport.@reexport using SemialgebraicSets
 Reexport.@reexport using MultivariateMoments
 
 include("gram_matrix.jl")
