@@ -13,6 +13,7 @@ include("choi.jl")
 include("horn.jl")
 include("concave_then_convex_cubic.jl")
 include("lyapunov_switched_system.jl")
+include("motzkin.jl")
 include("BPT12e399.jl")
 
 @test_suite linear

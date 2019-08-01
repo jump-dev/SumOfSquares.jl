@@ -24,6 +24,9 @@ end
 @testset "Lyapunov Switched System" begin
     include("lyapunov_switched_system.jl")
 end
+@testset "Motzkin" begin
+    include("motzkin.jl")
+end
 @testset "BPT12e399" begin
     include("BPT12e399.jl")
 end
