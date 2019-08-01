@@ -12,6 +12,9 @@ end
 @testset "Bivariate quadratic" begin
     include("bivariate_quadratic.jl")
 end
+@testset "Choi" begin
+    include("choi.jl")
+end
 @testset "Concave then convex cubic" begin
     include("concave_then_convex_cubic.jl")
 end
