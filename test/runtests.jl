@@ -34,8 +34,6 @@ include("solvers.jl")
 
 include("certificate.jl")
 
-include("motzkin.jl")
-
 # SOSTools demos
 include("sospoly.jl")
 include("lyapunov.jl")
