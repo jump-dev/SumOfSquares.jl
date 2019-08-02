@@ -103,4 +103,24 @@
             @test isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x-y, x+y+1e-8]), ztol=1e-7)
         end
     end
+
+    @testset "SOSDecompositionWithDomain" begin
+        @polyvar x y
+		K =  @set 1-x^2>=0 && 1-y^2>=0
+		ps = SOSDecomposition([x+y, x-y])
+		ps1 = SOSDecomposition([x])
+		ps2 = SOSDecomposition([y])
+        @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) == "(x + y)^2 + (x - y)^2 + (x)^2 * (-x^2 + 1) + (y)^2 * (-y^2 + 1)"
+        @testset "SOSDecompositionWithDomain equality" begin
+            @polyvar x y
+			K =  @set 1-x^2>=0 && 1-y^2>=0
+ 			B =  @set 1-x>=0 && 1-y>=0
+			ps = SOSDecomposition([x+y, x-y])
+			ps1 = SOSDecomposition([x+y, x^2-y])
+			ps2 = SOSDecomposition([x+y, y^2-x])
+			@test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps2], K), SOSDecompositionWithDomain(ps, [ps1, ps2], B))	
+			@test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps1], K), SOSDecompositionWithDomain(ps, [ps1, ps2], K))	
+			@test isapprox(SOSDecompositionWithDomain(ps, [ps1, ps2], K), SOSDecompositionWithDomain(ps, [ps1, ps2], K))	
+		end
+	end
 end

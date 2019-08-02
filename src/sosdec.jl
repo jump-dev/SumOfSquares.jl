@@ -1,4 +1,4 @@
-export SOSDecomposition
+export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
 struct SOSDecomposition{T, PT <: MP.APL{T}} <: MP.APL{T} # If promote_op((x, y) -> x * y + x * y, T, T) != T then it might not be true
     ps::Vector{PT}
@@ -69,4 +69,71 @@ function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
     else
         MultivariateMoments.permcomp((i, j) -> isapprox(p.ps[i], q.ps[j]; kwargs...), m)
     end
+end
+
+"""
+	function sos_decomposition(cref::JuMP.ConstraintRef)
+
+Returns representation as a sum of squares.
+"""
+function sos_decomposition(cref::JuMP.ConstraintRef)
+	return SOSDecomposition(gram_matrix(cref))
+end
+
+
+"""
+	struct SOSDecompositionWithDomain{T, PT, S}
+
+Represends SOSDecomposition on a basic semi-algebraic domain.
+"""
+struct SOSDecompositionWithDomain
+	sos
+	sosj
+	domain
+end
+
+"""
+struct SOSDecompositionWithDomain{T, PT <: MP.APL{T}, S <: AbstractSemialgebraicSet }
+	sos::SOSDecomposition{T, PT}
+	sosj::Vector{SOSDecomposition{T, PT}}
+	domain::S
+end
+"""
+
+function Base.show(io::IO, decomp::SOSDecompositionWithDomain)
+	print(io, decomp.sos)
+	for (sos, g) in zip(decomp.sosj, inequalities(decomp.domain))
+		print(io, " + ")
+		print(io, sos)
+		print(io, " * ")
+		print(io, "(")
+		print(io, g)
+		print(io, ")")
+	end
+end
+
+function polynomial(decomp::SOSDecompositionWithDomain)
+	p = polynomial(decomp.sos)
+	if !(isempty(equalities(decomp.domain)))
+		@error "Semialgebraic set has equality constraints"
+	end
+	for (Gj, gj) in zip(decomp.sosj, inequalities(decomp.domain))
+		p += polynomial(Gj)*gj
+	end
+	return p
+end
+
+function Base.isapprox(p::SOSDecompositionWithDomain, q::SOSDecompositionWithDomain; kwargs...)
+	return isapprox(p.sos, q.sos) && all(isapprox.(p.sosj, q.sosj)) && p.domain == q.domain
+end
+
+"""
+	 sos_decomposition(cref::JuMP.ConstraintRef, K<:AbstractBasicSemialgebraicSet)
+
+Returns representation in the quadraic module associated with K. 
+"""
+function sos_decomposition(cref::JuMP.ConstraintRef, K:: T) where T<: AbstractBasicSemialgebraicSet
+	lm = lagrangian_multipliers(cref)
+	gm = gram_matrix(cref)
+	return SOSDecompositionWithDomain(gm, lm, K)
 end
