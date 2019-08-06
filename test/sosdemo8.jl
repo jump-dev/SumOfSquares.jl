@@ -45,5 +45,5 @@
     @test isapprox(JuMP.objective_value(m), 1/37, rtol=1e-5)
     @test isapprox(JuMP.value(P), ((12/37)x-11/37)^2, rtol=1e-3)
 	
-	@test sos_decomposition(cons, K) isa SOSDecompositionWithDomain
+	@test sos_decomposition(cons, K, 0.0001) isa SOSDecompositionWithDomain
 end

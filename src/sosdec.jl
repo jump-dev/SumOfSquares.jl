@@ -31,15 +31,14 @@ function GramMatrix(p::SOSDecomposition{T}) where {T}
     GramMatrix(Q' * Q, X)
 end
 
-function SOSDecomposition(p::GramMatrix)
+function SOSDecomposition(p::GramMatrix, ranktol=0.0,
+                          dec::MultivariateMoments.LowRankChol=SVDChol())
     n = length(p.x)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
-    A = getmat(p)
-    Q = cholesky(Matrix(A)).U
-    m = size(Q, 1)
-    ps = [MP.polynomial(Q[i,:], p.x) for i in 1:m]
-    SOSDecomposition(ps)
+	nM, cM, Q = MultivariateMoments.lowrankchol(Matrix(getmat(p)), dec, ranktol)
+    ps = [MP.polynomial(Q[i,:], p.x) for i in 1:size(Q, 1)]
+    return SOSDecomposition(ps)
 end
 # Without LDL^T, we need to do float(T)
 SOSDecomposition(p::GramMatrix{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)
@@ -87,12 +86,12 @@ function MP.polynomial(decomp::SOSDecomposition, T::Type)
 end
 
 """
-	function sos_decomposition(cref::JuMP.ConstraintRef)
+	function sos_decomposition(cref::JuMP.ConstraintRef, ranktol::Float64, dec::MultivariateMoments.lowrankchol)
 
 Returns representation as a sum of squares.
 """
-function sos_decomposition(cref::JuMP.ConstraintRef)
-	return SOSDecomposition(gram_matrix(cref))
+function sos_decomposition(cref::JuMP.ConstraintRef, args...)
+	return SOSDecomposition(gram_matrix(cref), args...)
 end
 
 
@@ -145,8 +144,8 @@ end
 
 Returns representation in the quadraic module associated with K. 
 """
-function sos_decomposition(cref::JuMP.ConstraintRef, K:: T) where T<: AbstractBasicSemialgebraicSet
-	lm = lagrangian_multipliers(cref)
-	gm = gram_matrix(cref)
+function sos_decomposition(cref::JuMP.ConstraintRef, K::AbstractBasicSemialgebraicSet, args...)
+	lm = SOSDecomposition.(lagrangian_multipliers(cref), args...)
+	gm = sos_decomposition(cref, args...)
 	return SOSDecompositionWithDomain(gm, lm, K)
 end
