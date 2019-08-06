@@ -71,6 +71,21 @@ function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
     end
 end
 
+function Base.promote_rule(::Type{SOSDecomposition{T1, PT1}}, ::Type{SOSDecomposition{T2, PT2}}) where {T1, T2, PT1<:MP.APL{T1}, PT2<:MP.APL{T2}}
+	return SOSDecomposition{promote_type(T1, T2), promote_type(PT1, PT2)} 
+end
+
+function Base.convert(::Type{SOSDecomposition{T, PT}}, p::SOSDecomposition) where {T, PT}
+	return SOSDecomposition(convert(Vector{PT}, p.ps))
+end
+
+function MP.polynomial(decomp::SOSDecomposition)
+    return sum(decomp.ps.^2)
+end
+function MP.polynomial(decomp::SOSDecomposition, T::Type)
+    return MP.polynomial(MP.polynomial(decomp), T)
+end
+
 """
 	function sos_decomposition(cref::JuMP.ConstraintRef)
 
@@ -86,19 +101,17 @@ end
 
 Represends SOSDecomposition on a basic semi-algebraic domain.
 """
-struct SOSDecompositionWithDomain
-	sos
-	sosj
-	domain
-end
-
-"""
 struct SOSDecompositionWithDomain{T, PT <: MP.APL{T}, S <: AbstractSemialgebraicSet }
 	sos::SOSDecomposition{T, PT}
 	sosj::Vector{SOSDecomposition{T, PT}}
 	domain::S
 end
-"""
+
+function SOSDecompositionWithDomain(ps::SOSDecomposition{T1, PT1}, vps::Vector{SOSDecomposition{T2, PT2}}, set::AbstractSemialgebraicSet ) where {T1, T2, PT1, PT2}
+	ptype = promote_type(SOSDecomposition{T1,PT1}, SOSDecomposition{T2, PT2})
+	return SOSDecompositionWithDomain(convert(ptype, ps), convert(Vector{ptype}, vps), set)
+end
+
 
 function Base.show(io::IO, decomp::SOSDecompositionWithDomain)
 	print(io, decomp.sos)
@@ -112,7 +125,7 @@ function Base.show(io::IO, decomp::SOSDecompositionWithDomain)
 	end
 end
 
-function polynomial(decomp::SOSDecompositionWithDomain)
+function MP.polynomial(decomp::SOSDecompositionWithDomain)
 	p = polynomial(decomp.sos)
 	if !(isempty(equalities(decomp.domain)))
 		@error "Semialgebraic set has equality constraints"

@@ -95,6 +95,8 @@
 #       @test P == P
 #       @test isapprox(GramMatrix(SOSDecomposition(P)), P)
         @test sprint(show, SOSDecomposition([x+y, x-y])) == "(x + y)^2 + (x - y)^2"
+        @test polynomial(SOSDecomposition([x+y, x-y])) == (x + y)^2 + (x - y)^2
+        @test polynomial(SOSDecomposition([x+y, x-y]), Float64) == (x + y)^2 + (x - y)^2
         @testset "SOSDecomposition equality" begin
             @polyvar x y
             @test !isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x+y]))
