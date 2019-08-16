@@ -86,9 +86,9 @@ function MP.polynomial(decomp::SOSDecomposition, T::Type)
 end
 
 """
-	function sos_decomposition(cref::JuMP.ConstraintRef, ranktol::Float64, dec::MultivariateMoments.lowrankchol)
+    function sos_decomposition(cref::JuMP.ConstraintRef, ranktol::Float64, dec::MultivariateMoments.lowrankchol)
 
-Returns representation as a sum of squares.
+Return representation as a sum of squares.
 """
 function sos_decomposition(cref::JuMP.ConstraintRef, args...)
 	return SOSDecomposition(gram_matrix(cref), args...)
@@ -96,9 +96,9 @@ end
 
 
 """
-	struct SOSDecompositionWithDomain{T, PT, S}
+    struct SOSDecompositionWithDomain{T, PT, S}
 
-Represends SOSDecomposition on a basic semi-algebraic domain.
+Represend SOSDecomposition on a basic semi-algebraic domain.
 """
 struct SOSDecompositionWithDomain{T, PT <: MP.APL{T}, S <: AbstractSemialgebraicSet }
 	sos::SOSDecomposition{T, PT}
@@ -140,9 +140,9 @@ function Base.isapprox(p::SOSDecompositionWithDomain, q::SOSDecompositionWithDom
 end
 
 """
-	 sos_decomposition(cref::JuMP.ConstraintRef, K<:AbstractBasicSemialgebraicSet)
+    sos_decomposition(cref::JuMP.ConstraintRef, K<:AbstractBasicSemialgebraicSet)
 
-Returns representation in the quadraic module associated with K. 
+Return representation in the quadraic module associated with K. 
 """
 function sos_decomposition(cref::JuMP.ConstraintRef, K::AbstractBasicSemialgebraicSet, args...)
 	lm = SOSDecomposition.(lagrangian_multipliers(cref), args...)
