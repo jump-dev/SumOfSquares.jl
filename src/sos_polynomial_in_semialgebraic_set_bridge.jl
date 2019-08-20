@@ -9,7 +9,7 @@ function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSLikeCone, q,
     # If maxdegree_s2 is odd, div(maxdegree_s2,2) would make s^2 have degree up to maxdegree_s2-1
     # for this reason, we take div(maxdegree_s2+1,2) so that s^2 have degree up to maxdegree_s2+1
     maxdegree_s = div(maxdegree_s2 + 1, 2)
-    vars = [MP.variables(p)..., MP.variables(q)...]
+    vars = sort([MP.variables(p)..., MP.variables(q)...])
     unique!(vars)
     monos = MP.monomials(sort(vars, rev=true), 0:maxdegree_s)
     Q, variable_bridge = add_matrix_variable_bridge(
