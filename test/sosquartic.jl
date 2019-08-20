@@ -12,5 +12,5 @@
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
     Q = gram_matrix(soscon)
     @test mindegree(monomials(Q)) == 2
-    @test mindegree(monomials(Q)) == 4
+    @test maxdegree(monomials(Q)) == 4
 end
