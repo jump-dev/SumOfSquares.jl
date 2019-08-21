@@ -29,6 +29,7 @@
     @test abs(Q[2, 3]) < 1e-5
     @test isapprox(Q[2, 2] + 2Q[1, 3], -1, rtol=1e-5)
     sosdec = SOSDecomposition(q)
+    @test isapprox(sosdec, sos_decomposition(soscon))
     @test isapprox(sum(sosdec.ps.^2), p; rtol=1e-4, ztol=1e-6)
 
     M = SOSModel(factory)

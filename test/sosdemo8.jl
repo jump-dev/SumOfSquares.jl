@@ -28,7 +28,8 @@
     P = a + b*x + c*x^2
 
     # Nonnegative on the support
-    @constraint(m, P >= 0, domain = (@set 0 <= x && x <= 5))
+    K = @set 0 <= x && x <= 5 
+    cons = @constraint(m, P >= 0, domain = K)
 
     # Greater than one on the event
     @constraint(m, P >= 1, domain = (@set 4 <= x && x <= 5))
@@ -43,4 +44,6 @@
 
     @test isapprox(JuMP.objective_value(m), 1/37, rtol=1e-5)
     @test isapprox(JuMP.value(P), ((12/37)x-11/37)^2, rtol=1e-3)
+
+    @test sos_decomposition(cons, K, 0.0001) isa SOSDecompositionWithDomain
 end

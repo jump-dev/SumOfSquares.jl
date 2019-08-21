@@ -292,6 +292,9 @@ SumOfSquares.CertificateMonomials
 certificate_monomials
 SumOfSquares.LagrangianMultipliers
 lagrangian_multipliers
+SOSDecomposition
+SOSDecompositionWithDomain
+sos_decomposition
 ```
 
 Polynomial basis:
