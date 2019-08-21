@@ -1,17 +1,13 @@
 function lagrangian_multiplier(model::MOI.ModelLike, p, set::SOSLikeCone, q,
                                mindegree::Integer, maxdegree::Integer, T::Type)
-    mindegree_q, maxdegree_q = MP.extdegree(q)
-    # extdegree's that s^2 should have so that s^2 * p has degrees between mindegree and maxdegree
-    mindegree_s2 = mindegree - mindegree_q
-    maxdegree_s2 = maxdegree - maxdegree_q
-    # extdegree's for s
-    mindegree_s = max(0, div(mindegree_s2, 2))
+    # mindegree is not longer needed in here
+    maxdegree_s2 = maxdegree - MP.maxdegree(q) 
     # If maxdegree_s2 is odd, div(maxdegree_s2,2) would make s^2 have degree up to maxdegree_s2-1
     # for this reason, we take div(maxdegree_s2+1,2) so that s^2 have degree up to maxdegree_s2+1
     maxdegree_s = div(maxdegree_s2 + 1, 2)
-    vars = sort([MP.variables(p)..., MP.variables(q)...])
+    vars = sort!([MP.variables(p)..., MP.variables(q)...], rev = true)
     unique!(vars)
-    monos = MP.monomials(sort(vars, rev=true), 0:maxdegree_s)
+    monos = MP.monomials(vars, 0:maxdegree_s)
     Q, variable_bridge = add_matrix_variable_bridge(
         model, matrix_cone_type(typeof(set)), length(monos), T)
     return build_gram_matrix(Q, monos), variable_bridge, monos
