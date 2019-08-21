@@ -131,12 +131,12 @@ function Base.show(io::IO, decomp::SOSDecompositionWithDomain)
 end
 
 function MP.polynomial(decomp::SOSDecompositionWithDomain)
-    p = polynomial(decomp.sos)
+    p = MP.polynomial(decomp.sos)
     if !(isempty(equalities(decomp.domain)))
         @error "Semialgebraic set has equality constraints"
     end
     for (Gj, gj) in zip(decomp.sosj, inequalities(decomp.domain))
-        p += polynomial(Gj)*gj
+        p += MP.polynomial(Gj)*gj
     end
     return p
 end

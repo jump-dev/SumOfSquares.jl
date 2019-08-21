@@ -94,6 +94,8 @@
 #       P.x == [x^2, x*y, x, y, 1]
 #       @test P == P
 #       @test isapprox(GramMatrix(SOSDecomposition(P)), P)
+        P = GramMatrix{Int}((i,j) -> i + j, [x^2, x*y, y^2])
+        @test polynomialtype(SOSDecomposition(P)) <: AbstractPolynomialLike
         @test sprint(show, SOSDecomposition([x+y, x-y])) == "(x + y)^2 + (x - y)^2"
         @test polynomial(SOSDecomposition([x+y, x-y])) == (x + y)^2 + (x - y)^2
         @test polynomial(SOSDecomposition([x+y, x-y]), Float64) == (x + y)^2 + (x - y)^2
@@ -112,7 +114,9 @@
 		ps = SOSDecomposition([x+y, x-y])
 		ps1 = SOSDecomposition([x])
 		ps2 = SOSDecomposition([y])
+        @test [ps, ps1] isa Vector{SOSDecomposition{Int64, T}} where T<:AbstractPolynomialLike
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) == "(x + y)^2 + (x - y)^2 + (x)^2 * (-x^2 + 1) + (y)^2 * (-y^2 + 1)"
+        
         @testset "SOSDecompositionWithDomain equality" begin
             @polyvar x y
 			K =  @set 1-x^2>=0 && 1-y^2>=0
@@ -120,9 +124,11 @@
 			ps = SOSDecomposition([x+y, x-y])
 			ps1 = SOSDecomposition([x+y, x^2-y])
 			ps2 = SOSDecomposition([x+y, y^2-x])
-			@test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps2], K), SOSDecompositionWithDomain(ps, [ps1, ps2], B))	
-			@test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps1], K), SOSDecompositionWithDomain(ps, [ps1, ps2], K))	
-			@test isapprox(SOSDecompositionWithDomain(ps, [ps1, ps2], K), SOSDecompositionWithDomain(ps, [ps1, ps2], K))	
+            sosdec = SOSDecompositionWithDomain(ps, [ps1, ps2], K)
+            @test typeof(polynomial(sosdec)) <: AbstractPolynomialLike
+			@test isapprox(sosdec, sosdec)
+			@test !isapprox(sosdec, SOSDecompositionWithDomain(ps, [ps1, ps2], B))	
+			@test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps1], K), sosdec)	
 		end
 	end
 end
