@@ -393,6 +393,30 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "constraints/#SumOfSquares.SOSDecomposition",
+    "page": "Constraints",
+    "title": "SumOfSquares.SOSDecomposition",
+    "category": "type",
+    "text": "struct SOSDecomposition{T, PT}\n\nRepresend SOSDecomposition without domain\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#SumOfSquares.SOSDecompositionWithDomain",
+    "page": "Constraints",
+    "title": "SumOfSquares.SOSDecompositionWithDomain",
+    "category": "type",
+    "text": "struct SOSDecompositionWithDomain{T, PT, S}\n\nRepresend SOSDecomposition on a basic semi-algebraic domain.\n\n\n\n\n\n"
+},
+
+{
+    "location": "constraints/#SumOfSquares.sos_decomposition",
+    "page": "Constraints",
+    "title": "SumOfSquares.sos_decomposition",
+    "category": "function",
+    "text": "function sos_decomposition(cref::JuMP.ConstraintRef, ranktol::Float64, dec::MultivariateMoments.lowrankchol)\n\nReturn representation as a sum of squares.\n\n\n\n\n\nsos_decomposition(cref::JuMP.ConstraintRef, K<:AbstractBasicSemialgebraicSet)\n\nReturn representation in the quadraic module associated with K. \n\n\n\n\n\n"
+},
+
+{
     "location": "constraints/#PolyJuMP.AbstractPolynomialBasis",
     "page": "Constraints",
     "title": "PolyJuMP.AbstractPolynomialBasis",
@@ -445,7 +469,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Reference",
     "category": "section",
-    "text": "Inner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesSumOfSquares.PolyJuMP.MomentsAttribute\nSumOfSquares.MultivariateMoments.moments(::SumOfSquares.JuMP.ConstraintRef)\nGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_operate\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliersPolynomial basis:SumOfSquares.PolyJuMP.AbstractPolynomialBasis\nSumOfSquares.PolyJuMP.MonomialBasis\nSumOfSquares.PolyJuMP.ScaledMonomialBasis\nSumOfSquares.PolyJuMP.FixedPolynomialBasisBridges are automatically added using the following utilities:SumOfSquares.PolyJuMP.bridgeable\nSumOfSquares.PolyJuMP.bridges"
+    "text": "Inner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesSumOfSquares.PolyJuMP.MomentsAttribute\nSumOfSquares.MultivariateMoments.moments(::SumOfSquares.JuMP.ConstraintRef)\nGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_operate\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliers\nSOSDecomposition\nSOSDecompositionWithDomain\nsos_decompositionPolynomial basis:SumOfSquares.PolyJuMP.AbstractPolynomialBasis\nSumOfSquares.PolyJuMP.MonomialBasis\nSumOfSquares.PolyJuMP.ScaledMonomialBasis\nSumOfSquares.PolyJuMP.FixedPolynomialBasisBridges are automatically added using the following utilities:SumOfSquares.PolyJuMP.bridgeable\nSumOfSquares.PolyJuMP.bridges"
 },
 
 ]}
