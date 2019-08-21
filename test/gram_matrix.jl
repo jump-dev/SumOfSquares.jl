@@ -114,7 +114,7 @@
         ps = SOSDecomposition([x+y, x-y])
         ps1 = SOSDecomposition([x])
         ps2 = SOSDecomposition([y])
-        @test [ps, ps1] isa Vector{SOSDecomposition{Int64, T}} where T<:AbstractPolynomialLike
+        @test [ps, ps1] isa Vector{SOSDecomposition{Int, T}} where T<:AbstractPolynomialLike
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) == "(x + y)^2 + (x - y)^2 + (x)^2 * (-x^2 + 1) + (y)^2 * (-y^2 + 1)"
 
         @testset "SOSDecompositionWithDomain equality" begin
