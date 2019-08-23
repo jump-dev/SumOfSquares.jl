@@ -27,12 +27,12 @@ function SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
     # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
-    r = convert(typeof(p), rem(p, ideal(MP.changecoefficienttype(s.domain, T))))
-    X = monomials_half_newton_polytope(MP.monomials(r), s.newton_polytope)
+    r = Certificate.get(s.certificate, Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
+    X = Certificate.get(s.certificate, Certificate.GramBasis(), r)
     Q, variable_bridge = add_matrix_variable_bridge(model, MCT, length(X), T)
     g = build_gram_matrix(Q, X)
     q = r - g
-    set = PolyJuMP.ZeroPolynomialSet(s.domain, s.basis, MP.monomials(q))
+    set = PolyJuMP.ZeroPolynomialSet(s.domain, Certificate.zero_basis(s.certificate), MP.monomials(q))
     coefs = MOIU.vectorize(MP.coefficients(q))
     zero_constraint = MOI.add_constraint(model, coefs, set)
     return SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, MT, MVT}(
@@ -50,13 +50,13 @@ function MOIB.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, VBS, M
 end
 function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialBridge{T}},
                                    F::Type{<:MOI.AbstractVectorFunction},
-                                   ::Type{<:SOSPolynomialSet{DT, CT, <:PolyJuMP.MonomialBasis, MT, MVT}}) where {T, DT<:AbstractAlgebraicSet, CT, MT, MVT}
+                                   ::Type{<:SOSPolynomialSet{DT, MT, MVT, CT}}) where {T, DT<:AbstractAlgebraicSet, MT, MVT, CT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
     MCT = matrix_cone_type(CT)
     VBS = union_vector_bridge_types(MCT, T)
-    return SOSPolynomialBridge{T, G, DT, VBS, MCT, PolyJuMP.MonomialBasis, MT, MVT}
+    return SOSPolynomialBridge{T, G, DT, VBS, MCT, Certificate.zero_basis_type(CT), MT, MVT}
 end
 
 # Attributes, Bridge acting as an model
