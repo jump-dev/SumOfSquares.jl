@@ -28,7 +28,7 @@ include("gram_matrix.jl")
 include("variable.jl")
 include("constraint.jl")
 
-include("Mock/mock_tests.jl")
+#include("Mock/mock_tests.jl")
 
 include("solvers.jl")
 
@@ -42,6 +42,7 @@ include("sosdemo5.jl")
 include("sosdemo6.jl")
 include("domain.jl")
 include("sosmatrix.jl")
+include("sosquartic.jl")
 include("equalitypolyconstr.jl")
 include("dsos.jl")
 include("extract.jl")
