@@ -12,7 +12,7 @@ function _model(factory::OptimizerFactory)
     return Model(factory)
 end
 
-#const SOSPolynomial{T, OT<:MOI.ModelLike} = MOIB.SingleBridgeOptimizer{SumOfSquares.SOSPolynomialBridge{T}, OT}
+#const SOSPolynomial{T, OT<:MOI.ModelLike} = MOIB.Constraint.SingleBridgeOptimizer{SumOfSquares.SOSPolynomialBridge{T}, OT}
 
 #function _cheat_model(factory::OptimizerFactory)
 #    return Model(with_optimizer(() -> SOSPolynomial{Float64}(factory())))
@@ -85,7 +85,7 @@ end
 _inner(model::MOIU.CachingOptimizer) = _inner(model.optimizer)
 _inner(model::MOIB.LazyBridgeOptimizer) = model.model
 _cheat_inner(model::MOI.ModelLike) = model
-_cheat_inner(model::MOIB.SingleBridgeOptimizer) = _cheat_inner(model.model)
+_cheat_inner(model::MOIB.Constraint.SingleBridgeOptimizer) = _cheat_inner(model.model)
 # Variables primal values for inner bridged model
 function print_value(v, atol)
     i = round(v)

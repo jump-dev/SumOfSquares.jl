@@ -1,4 +1,4 @@
-struct DiagonallyDominantBridge{T, F} <: MOIB.AbstractBridge
+struct DiagonallyDominantBridge{T, F} <: MOIB.Constraint.AbstractBridge
     # |Qij| variables
     abs_vars::Vector{MOI.VariableIndex}
     # |Qij| ≥ +Qij
@@ -11,9 +11,11 @@ struct DiagonallyDominantBridge{T, F} <: MOIB.AbstractBridge
     dominance::Vector{MOI.ConstraintIndex{F, MOI.GreaterThan{T}}}
 end
 
-function DiagonallyDominantBridge{T, F}(model::MOI.ModelLike,
-                                        f::MOI.AbstractVectorFunction,
-                                        s::DiagonallyDominantConeTriangle) where {T, F}
+function MOIB.Constraint.bridge_constraint(
+    ::Type{DiagonallyDominantBridge{T, F}},
+    model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
+    s::DiagonallyDominantConeTriangle) where {T, F}
+
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     n = s.side_dimension
     g = F[zero(F) for i in 1:n]
@@ -53,6 +55,9 @@ function MOI.supports_constraint(::Type{<:DiagonallyDominantBridge},
                                  ::Type{<:DiagonallyDominantConeTriangle})
     return true
 end
+function MOIB.added_constrained_variable_types(::Type{<:DiagonallyDominantBridge})
+    return Tuple{DataType}[]
+end
 function MOIB.added_constraint_types(::Type{DiagonallyDominantBridge{T, F}}) where {T, F}
     added = [(F, MOI.GreaterThan{T})]
     if F != MOI.ScalarAffineFunction{T}
@@ -60,9 +65,11 @@ function MOIB.added_constraint_types(::Type{DiagonallyDominantBridge{T, F}}) whe
     end
     return added
 end
-function MOIB.concrete_bridge_type(::Type{<:DiagonallyDominantBridge{T}},
-                                   F::Type{<:MOI.AbstractVectorFunction},
-                                   ::Type{DiagonallyDominantConeTriangle}) where T
+function MOIB.Constraint.concrete_bridge_type(
+    ::Type{<:DiagonallyDominantBridge{T}},
+    F::Type{<:MOI.AbstractVectorFunction},
+    ::Type{DiagonallyDominantConeTriangle}) where T
+
     S = MOIU.scalar_type(F)
     G = MOIU.promote_operation(-, T, S, MOI.SingleVariable)
     return DiagonallyDominantBridge{T, G}

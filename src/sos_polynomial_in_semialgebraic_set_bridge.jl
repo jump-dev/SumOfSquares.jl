@@ -8,16 +8,18 @@ end
 struct SOSPolynomialInSemialgebraicSetBridge{
     T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
     CT <: Certificate.AbstractIdealCertificate, VBS <: AbstractVariableBridge,
-    MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MOIB.AbstractBridge
+    MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MOIB.Constraint.AbstractBridge
     lagrangian_monomials::Vector{MVT}
     lagrangian_bridges::Vector{VBS}
     constraint::MOI.ConstraintIndex{F, SOSPolynomialSet{DT, MT, MVT, CT}}
     monomials::MVT
 end
 
-function SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, MT, MVT}(
+function MOI.Bridges.Constraint.bridge_constraint(
+    ::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, MT, MVT}},
     model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
     set::SOSPolynomialSet{<:BasicSemialgebraicSet}) where {T, F, DT, CT, VBS, MT, MVT}
+
     @assert MOI.output_dimension(f) == length(set.monomials)
     p = MP.polynomial(collect(MOIU.eachscalar(f)), set.monomials)
     n = length(set.domain.p)
@@ -50,14 +52,19 @@ function MOI.supports_constraint(::Type{SOSPolynomialInSemialgebraicSetBridge{T}
                                  ::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}}) where T
     return true
 end
+function MOIB.added_constrained_variable_types(::Type{<:SOSPolynomialInSemialgebraicSetBridge})
+    return Tuple{DataType}[]
+end
 function MOIB.added_constraint_types(
     ::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, VBS, MT, MVT}}) where {T, F, DT, CT, VBS, MT, MVT}
     added = [(F, SOSPolynomialSet{DT, MT, MVT, CT})]
     return append_added_constraint_types(added, matrix_cone_type(CT), T)
 end
-function MOIB.concrete_bridge_type(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
-                                   F::Type{<:MOI.AbstractVectorFunction},
-                                   ::Type{<:SOSPolynomialSet{BasicSemialgebraicSet{S, PS, AT}, MT, MVT, CT}}) where {T, S, PS, AT, CT, MT, MVT}
+function MOIB.Constraint.concrete_bridge_type(
+    ::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
+    F::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:SOSPolynomialSet{BasicSemialgebraicSet{S, PS, AT}, MT, MVT, CT}}) where {T, S, PS, AT, CT, MT, MVT}
+
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
