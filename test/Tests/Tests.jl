@@ -15,6 +15,7 @@ include("concave_then_convex_cubic.jl")
 include("lyapunov_switched_system.jl")
 include("motzkin.jl")
 include("BPT12e399.jl")
+include("maxcut.jl")
 
 @test_suite linear
 @test_suite soc
