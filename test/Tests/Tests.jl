@@ -16,6 +16,7 @@ include("lyapunov_switched_system.jl")
 include("motzkin.jl")
 include("BPT12e399.jl")
 include("maxcut.jl")
+include("chebyshev.jl")
 
 @test_suite linear
 @test_suite soc

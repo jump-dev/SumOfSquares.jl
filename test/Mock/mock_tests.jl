@@ -30,6 +30,9 @@ end
 @testset "BPT12e399" begin
     include("BPT12e399.jl")
 end
-@testset "maxcut" begin
+@testset "Max Cut" begin
     include("maxcut.jl")
+end
+@testset "Chebyshev" begin
+    include("chebyshev.jl")
 end

@@ -5,9 +5,6 @@ A constraint attribute for the monomials indexing the
 [`GramMatrixAttribute`](@ref) and [`MomentMatrixAttribute`](@ref) certificates.
 """
 struct CertificateMonomials <: MOI.AbstractConstraintAttribute end
-# This is type piracy but we tolerate it.
-MOIU.map_indices(::Function, monovec::AbstractVector{<:MP.AbstractMonomial}) = monovec
-MOIU.substitute_variables(::Function, monovec::AbstractVector{<:MP.AbstractMonomial}) = monovec
 
 """
     GramMatrixAttribute(N)
@@ -21,8 +18,6 @@ struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute
     N::Int
 end
 GramMatrixAttribute() = GramMatrixAttribute(1)
-MOIU.map_indices(::Function, gram::GramMatrix{<:MOIU.ObjectWithoutIndex}) = gram
-MOIU.substitute_variables(::Function, gram::GramMatrix{<:MOIU.ObjectWithoutIndex}) = gram
 
 """
     MomentMatrixAttribute(N)
@@ -34,9 +29,6 @@ struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
     N::Int
 end
 MomentMatrixAttribute() = MomentMatrixAttribute(1)
-# This is type piracy but we tolerate it.
-MOIU.map_indices(::Function, mom::MultivariateMoments.MomentMatrix{<:MOIU.ObjectWithoutIndex}) = mom
-MOIU.substitute_variables(::Function, mom::MultivariateMoments.MomentMatrix{<:MOIU.ObjectWithoutIndex}) = mom
 
 """
     LagrangianMultipliers(N)
@@ -61,3 +53,10 @@ function MOI.is_set_by_optimize(::Union{CertificateMonomials,
                                         LagrangianMultipliers})
     return true
 end
+
+# This is type piracy but we tolerate it.
+const ObjectWithoutIndex = Union{MultivariateMoments.MomentMatrix{<:MOI.Utilities.ObjectWithoutIndex}, GramMatrix{<:MOI.Utilities.ObjectWithoutIndex}}
+const ObjectOrTupleWithoutIndex = Union{ObjectWithoutIndex, Tuple{Vararg{ObjectWithoutIndex}}}
+const ObjectOrTupleOrArrayWithoutIndex = Union{ObjectOrTupleWithoutIndex, AbstractArray{<:ObjectOrTupleWithoutIndex}}
+MOI.Utilities.map_indices(::Function, x::ObjectOrTupleOrArrayWithoutIndex) = x
+MOI.Utilities.substitute_variables(::Function, x::ObjectOrTupleOrArrayWithoutIndex) = x
