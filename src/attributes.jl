@@ -35,8 +35,8 @@ struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
 end
 MomentMatrixAttribute() = MomentMatrixAttribute(1)
 # This is type piracy but we tolerate it.
-MOIU.map_indices(::Function, mom::GramMatrix{<:MOIU.ObjectWithoutIndex}) = mom
-MOIU.substitute_variables(::Function, mom::GramMatrix{<:MOIU.ObjectWithoutIndex}) = mom
+MOIU.map_indices(::Function, mom::MultivariateMoments.MomentMatrix{<:MOIU.ObjectWithoutIndex}) = mom
+MOIU.substitute_variables(::Function, mom::MultivariateMoments.MomentMatrix{<:MOIU.ObjectWithoutIndex}) = mom
 
 """
     LagrangianMultipliers(N)
