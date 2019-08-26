@@ -10,7 +10,7 @@ julia:
   - 1.1
   - 1.2
 before_script:
-  - julia -e 'using Pkg; Pkg.add([PackageSpec(name="JuMP", rev="master"), PackageSpec(name="PolyJuMP", rev="bl/moiv0.9")])'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="PolyJuMP", rev="bl/moiv0.9"))'
 notifications:
   email: false
 before_install:

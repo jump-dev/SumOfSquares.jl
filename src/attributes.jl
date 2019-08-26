@@ -5,6 +5,9 @@ A constraint attribute for the monomials indexing the
 [`GramMatrixAttribute`](@ref) and [`MomentMatrixAttribute`](@ref) certificates.
 """
 struct CertificateMonomials <: MOI.AbstractConstraintAttribute end
+# This is type piracy but we tolerate it.
+MOIU.map_indices(::Function, monovec::AbstractVector{<:MP.AbstractMonomial}) = monovec
+MOIU.substitute_variables(::Function, monovec::AbstractVector{<:MP.AbstractMonomial}) = monovec
 
 """
     GramMatrixAttribute(N)
@@ -18,6 +21,8 @@ struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute
     N::Int
 end
 GramMatrixAttribute() = GramMatrixAttribute(1)
+MOIU.map_indices(::Function, gram::GramMatrix{<:MOIU.ObjectWithoutIndex}) = gram
+MOIU.substitute_variables(::Function, gram::GramMatrix{<:MOIU.ObjectWithoutIndex}) = gram
 
 """
     MomentMatrixAttribute(N)
@@ -29,6 +34,9 @@ struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
     N::Int
 end
 MomentMatrixAttribute() = MomentMatrixAttribute(1)
+# This is type piracy but we tolerate it.
+MOIU.map_indices(::Function, mom::GramMatrix{<:MOIU.ObjectWithoutIndex}) = mom
+MOIU.substitute_variables(::Function, mom::GramMatrix{<:MOIU.ObjectWithoutIndex}) = mom
 
 """
     LagrangianMultipliers(N)
