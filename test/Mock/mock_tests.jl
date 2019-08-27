@@ -9,8 +9,8 @@ end
 @testset "Term fixed" begin
     include("term_fixed.jl")
 end
-@testset "Bivariate quadratic" begin
-    include("bivariate_quadratic.jl")
+@testset "Quadratic" begin
+    include("quadratic.jl")
 end
 @testset "Choi" begin
     include("choi.jl")
