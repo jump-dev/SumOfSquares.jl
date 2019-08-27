@@ -3,6 +3,7 @@
 # Section 3.3 of SOSTOOLS User's Manual
 
 @testset "SOSDEMO3 with $(factory.constructor)" for factory in sdp_factories
+    iscsdp(factory) && continue # will be fixed by objective bridge
     @polyvar x1 x2
 
     m = SOSModel(factory)

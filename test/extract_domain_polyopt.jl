@@ -13,7 +13,8 @@ using MultivariateMoments
     for (maxdeg, found) in [(3, false), (4, true), (5, true)]
         m = SOSModel(factory)
         @variable m α
-        @objective m Max α
+        # TODO Change 1α to α once we have variable bridges
+        @objective m Max 1α
         c = @constraint m p >= α domain = S maxdegree = maxdeg
 
         JuMP.optimize!(m)

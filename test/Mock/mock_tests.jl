@@ -9,8 +9,8 @@ end
 @testset "Term fixed" begin
     include("term_fixed.jl")
 end
-@testset "Bivariate quadratic" begin
-    include("bivariate_quadratic.jl")
+@testset "Quadratic" begin
+    include("quadratic.jl")
 end
 @testset "Choi" begin
     include("choi.jl")
@@ -29,4 +29,19 @@ end
 end
 @testset "BPT12e399" begin
     include("BPT12e399.jl")
+end
+@testset "Max Cut" begin
+    include("maxcut.jl")
+end
+@testset "Chebyshev" begin
+    include("chebyshev.jl")
+end
+@testset "Quartic comparison" begin
+    include("quartic_comparison.jl")
+end
+@testset "SOSDEMO9" begin
+    include("sosdemo9.jl")
+end
+@testset "SOSDEMO10" begin
+    include("sosdemo10.jl")
 end
