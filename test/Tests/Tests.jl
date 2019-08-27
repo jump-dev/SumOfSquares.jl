@@ -18,6 +18,7 @@ include("BPT12e399.jl")
 include("maxcut.jl")
 include("chebyshev.jl")
 include("sosdemo9.jl")
+include("sosdemo10.jl")
 
 @test_suite linear
 @test_suite soc
