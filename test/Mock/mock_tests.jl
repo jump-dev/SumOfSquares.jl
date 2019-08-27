@@ -36,3 +36,6 @@ end
 @testset "Chebyshev" begin
     include("chebyshev.jl")
 end
+@testset "SOSDEMO9" begin
+    include("sosdemo9.jl")
+end
