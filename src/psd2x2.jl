@@ -1,7 +1,10 @@
-abstract type MatrixConeTriangle <: MOI.AbstractVectorSet end
+struct EmptyCone <: MOI.AbstractSymmetricMatrixSetTriangle end
+MOI.side_dimension(::EmptyCone) = 0
 
-struct EmptyCone <: MatrixConeTriangle end
-side_dimension(::EmptyCone) = 0
+struct PositiveSemidefinite2x2ConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle end
+MOI.side_dimension(::PositiveSemidefinite2x2ConeTriangle) = 2
 
-struct PositiveSemidefinite2x2ConeTriangle <: MatrixConeTriangle end
-side_dimension(::PositiveSemidefinite2x2ConeTriangle) = 2
+# isbits types, nothing to copy
+function Base.copy(set::Union{EmptyCone, PositiveSemidefinite2x2ConeTriangle})
+    return set
+end

@@ -11,7 +11,7 @@ function add_variable_bridge(::Type{CopositiveInnerVariableBridge{T, VB}},
     # It is less costly to copy it before, e.g. if `q is MOI.SingleVariable`.
     Q = F[convert(F, copy(q)) for q in func]
     k = 0
-    for j in 1:side_dimension(set)
+    for j in 1:MOI.side_dimension(set)
         for i in 1:(j-1)
             k += 1
             # TODO: these should be deleted when the bridge is deleted

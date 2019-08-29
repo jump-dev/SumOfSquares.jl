@@ -1,5 +1,4 @@
-function matrix_cone(S::Type{<:Union{MatrixConeTriangle,
-                                     MOI.PositiveSemidefiniteConeTriangle}},
+function matrix_cone(S::Type{<:MOI.AbstractSymmetricMatrixSetTriangle},
                      side_dimension)
     if iszero(side_dimension)
         # Some solvers such as Mosek does not support 0-dimensional PSD cone
@@ -24,7 +23,7 @@ function matrix_cone(S::Type{<:Union{MatrixConeTriangle,
 end
 
 """
-    struct DiagonallyDominantConeTriangle <: MatrixConeTriangle
+    struct DiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle
         side_dimension::Int
     end
 
@@ -34,7 +33,7 @@ See Definition 4 of [AM17] for a precise definition of the last two items.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
 ArXiv e-prints, **2017**.
 """
-struct DiagonallyDominantConeTriangle <: MatrixConeTriangle
+struct DiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle
     side_dimension::Int
 end
 
@@ -51,7 +50,7 @@ function matrix_cone(S::Type{DiagonallyDominantConeTriangle},
 end
 
 """
-    struct ScaledDiagonallyDominantConeTriangle <: MatrixConeTriangle
+    struct ScaledDiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle
         side_dimension::Int
     end
 
@@ -61,7 +60,7 @@ See Definition 4 of [AM17] for a precise definition of the last two items.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
 ArXiv e-prints, **2017**.
 """
-struct ScaledDiagonallyDominantConeTriangle <: MatrixConeTriangle
+struct ScaledDiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle
     side_dimension::Int
 end
 
@@ -78,28 +77,8 @@ function matrix_cone(S::Type{ScaledDiagonallyDominantConeTriangle},
     end
 end
 
-function side_dimension(set::Union{MatrixConeTriangle,
-                                   MOI.PositiveSemidefiniteConeTriangle})
-    return set.side_dimension
-end
-
 # isbits types, nothing to copy
-function Base.copy(set::MatrixConeTriangle)
+function Base.copy(set::Union{DiagonallyDominantConeTriangle,
+                              ScaledDiagonallyDominantConeTriangle})
     return set
-end
-
-# TODO make PSDConeTriangle inherit from MatrixConeTriangle to remove the need
-#      for this
-function MOI.dimension(set::MatrixConeTriangle)
-    return div(side_dimension(set) * (side_dimension(set) + 1), 2)
-end
-
-function MOIU.set_dot(x::Vector, y::Vector, set::MatrixConeTriangle)
-    return MOIU.triangle_dot(x, y, side_dimension(set), 0)
-end
-
-function MOIU.dot_coefficients(a::Vector, set::MatrixConeTriangle)
-    b = copy(a)
-    MOIU.triangle_coefficients!(b, side_dimension(set), 0)
-    return b
 end
