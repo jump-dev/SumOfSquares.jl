@@ -11,11 +11,11 @@ function MOIB.Constraint.bridge_constraint(
 
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     Q, variable_bridge = add_matrix_variable_bridge(
-        model, ScaledDiagonallyDominantConeTriangle, side_dimension(s), T)
+        model, ScaledDiagonallyDominantConeTriangle, MOI.side_dimension(s), T)
     g = MOI.operate(-, T, f, MOIU.vectorize(g))
     equality = MOI.add_constraint(model, g, MOI.Zeros(MOI.dimension(s)))
     return ScaledDiagonallyDominantBridge{T, F, VBS}(
-        side_dimension(s), variable_bridge, equality)
+        MOI.side_dimension(s), variable_bridge, equality)
 end
 
 function MOI.supports_constraint(::Type{<:ScaledDiagonallyDominantBridge},

@@ -68,4 +68,4 @@ end
 function matrix_cone(set::Type{CopositiveInner{S}}, side_dimension) where S
     return CopositiveInner(matrix_cone(S, side_dimension))
 end
-side_dimension(set::CopositiveInner) = side_dimension(set.psd_inner)
+MOI.side_dimension(set::CopositiveInner) = MOI.side_dimension(set.psd_inner)
