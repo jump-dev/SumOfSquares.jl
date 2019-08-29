@@ -28,7 +28,6 @@ function quartic_comparison_test(
     @constraint(model, p - γ * sum(x .* x)^2 in cone)
     @objective(model, Max, γ)
     JuMP.optimize!(model)
-    inner_variable_value(model)
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
     @test JuMP.objective_value(model) ≈ expected_objective_value atol=atol rtol=rtol
 end
