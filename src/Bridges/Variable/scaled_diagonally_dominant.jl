@@ -3,7 +3,7 @@
         side_dimension::Int
         variables::Vector{Vector{MOI.VariableIndex}}
         constraints::Vector{MOI.ConstraintIndex{
-            MOI.VectorOfVariables, PositiveSemidefinite2x2ConeTriangle}}
+            MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}
     end
 
 A matrix is SDD iff it is the sum of psd matrices Mij that are zero except
@@ -13,24 +13,24 @@ struct ScaledDiagonallyDominantBridge{T} <: MOIB.Variable.AbstractBridge
     side_dimension::Int
     variables::Vector{Vector{MOI.VariableIndex}}
     constraints::Vector{MOI.ConstraintIndex{
-        MOI.VectorOfVariables, PositiveSemidefinite2x2ConeTriangle}}
+        MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}
 end
 
 function MOIB.Variable.bridge_constrained_variable(
     ::Type{ScaledDiagonallyDominantBridge{T}}, model::MOI.ModelLike,
-    s::ScaledDiagonallyDominantConeTriangle) where T
+    s::SOS.ScaledDiagonallyDominantConeTriangle) where T
     n = s.side_dimension
     @assert n > 1 # The bridges does not work with 1, `matrix_cone`
                   # should have returned `Nonnegatives` instead
     N = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(n))
     variables = Vector{Vector{MOI.VariableIndex}}(undef, N)
-    constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, PositiveSemidefinite2x2ConeTriangle}}(undef, N)
+    constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}(undef, N)
     k = 0
     for j in 1:n
         for i in 1:(j-1)
             k += 1
             # PSD constraints on 2x2 matrices are SOC representable
-            variables[k], constraints[k] = MOI.add_constrained_variables(model, PositiveSemidefinite2x2ConeTriangle())
+            variables[k], constraints[k] = MOI.add_constrained_variables(model, SOS.PositiveSemidefinite2x2ConeTriangle())
         end
     end
     return ScaledDiagonallyDominantBridge{T}(n, variables, constraints)
@@ -38,12 +38,12 @@ end
 
 function MOIB.Variable.supports_constrained_variable(
     ::Type{<:ScaledDiagonallyDominantBridge},
-    ::Type{ScaledDiagonallyDominantConeTriangle})
+    ::Type{SOS.ScaledDiagonallyDominantConeTriangle})
     return true
 end
 function MOIB.added_constrained_variable_types(
     ::Type{<:ScaledDiagonallyDominantBridge})
-    return [(PositiveSemidefinite2x2ConeTriangle,)]
+    return [(SOS.PositiveSemidefinite2x2ConeTriangle,)]
 end
 function MOIB.added_constraint_types(
     ::Type{<:ScaledDiagonallyDominantBridge})
@@ -60,11 +60,11 @@ function MOI.get(bridge::ScaledDiagonallyDominantBridge,
     return Iterators.flatten(bridge.variables)
 end
 function MOI.get(bridge::ScaledDiagonallyDominantBridge,
-                 ::MOI.NumberOfConstraints{MOI.VectorOfVariables, PositiveSemidefinite2x2ConeTriangle})
+                 ::MOI.NumberOfConstraints{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle})
     return length(bridge.constraints)
 end
 function MOI.get(bridge::ScaledDiagonallyDominantBridge,
-                 ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables, PositiveSemidefinite2x2ConeTriangle})
+                 ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle})
     return bridge.constraints
 end
 
@@ -79,8 +79,8 @@ end
 # Attributes, Bridge acting as a constraint
 
 function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet,
-                 bridge::PositiveSemidefinite2x2Bridge)
-    return ScaledDiagonallyDominantConeTriangle(bridge.side_dimension)
+                 bridge::SOS.PositiveSemidefinite2x2Bridge)
+    return SOS.ScaledDiagonallyDominantConeTriangle(bridge.side_dimension)
 end
 
 # TODO ConstraintPrimal, ConstraintDual

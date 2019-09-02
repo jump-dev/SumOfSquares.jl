@@ -7,7 +7,7 @@ end
 
 function MOIB.Variable.add_variable_bridge(
     ::Type{CopositiveInnerBridge{T, S}},
-    model::MOI.ModelLike, set::CopositiveInner) where {T, S}
+    model::MOI.ModelLike, set::SOS.CopositiveInner) where {T, S}
 
     side_dimension = MOI.side_dimension(set.psd_inner)
     num_off_diag = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(side_dimension - 1))
@@ -19,7 +19,7 @@ function MOIB.Variable.add_variable_bridge(
 end
 
 function MOIB.Variable.supports_constrained_variable(
-    ::Type{<:CopositiveInnerBridge}, ::Type{<:CopositiveInner})
+    ::Type{<:CopositiveInnerBridge}, ::Type{<:SOS.CopositiveInner})
     return true
 end
 function MOIB.added_constrained_variable_types(::Type{CopositiveInnerBridge{T, S}}) where {T, S}
@@ -29,7 +29,7 @@ function MOIB.added_constraint_types(::Type{<:CopositiveInnerBridge})
     return Tuple{DataType, DataType}[]
 end
 function MOIB.Variable.concrete_bridge_type(
-    ::Type{<:CopositiveInnerBridge{T}}, ::Type{CopositiveInner{S}}) where {T, S}
+    ::Type{<:CopositiveInnerBridge{T}}, ::Type{SOS.CopositiveInner{S}}) where {T, S}
     return CopositiveInnerBridge{T, S}
 end
 
@@ -69,7 +69,7 @@ end
 
 function MOI.get(bridge::MOI.ModelLike, attr::MOI.ConstraintSet,
                  bridge::CopositiveInnerBridge)
-    return CopositiveInner(MOI.get(model, attr, bridge.matrix_constraint))
+    return SOS.CopositiveInner(MOI.get(model, attr, bridge.matrix_constraint))
 end
 
 # TODO ConstraintPrimal, ConstraintDual

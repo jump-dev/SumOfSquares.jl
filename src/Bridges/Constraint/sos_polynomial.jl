@@ -1,11 +1,12 @@
 struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
                            DT <: AbstractSemialgebraicSet,
-                           VBS <: AbstractVariableBridge, MCT,
+                           UMCT <: MOI.ConstraintIndex{MOI.VectorOfVariables}, MCT,
                            BT <: PolyJuMP.AbstractPolynomialBasis,
-                           CT <: Certificate.AbstractIdealCertificate,
+                           CT <: SOS.Certificate.AbstractIdealCertificate,
                            MT <: MP.AbstractMonomial,
                            MVT <: AbstractVector{MT}} <: MOIB.Constraint.AbstractBridge
-    variable_bridge::VBS
+    Q::Vector{MOI.VariableIndex}
+    cQ::UMCT
     certificate_monomials::MVT
     zero_constraint::MOI.ConstraintIndex{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}
     domain::DT
@@ -14,9 +15,9 @@ struct SOSPolynomialBridge{T, F <: MOI.AbstractVectorFunction,
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, CT, MT, MVT}},
+    ::Type{SOSPolynomialBridge{T, F, DT, UMCT, MCT, BT, CT, MT, MVT}},
     model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
-    s::SOSPolynomialSet{<:AbstractAlgebraicSet}) where {T, F, DT, VBS, MCT, BT, CT, MT, MVT}
+    s::SOSPolynomialSet{<:AbstractAlgebraicSet}) where {T, F, DT, UMCT, MCT, BT, CT, MT, MVT}
 
     @assert MOI.output_dimension(f) == length(s.monomials)
     p = MP.polynomial(collect(MOIU.eachscalar(f)), s.monomials)
@@ -25,16 +26,16 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
     # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
-    r = Certificate.get(s.certificate, Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
-    X = Certificate.get(s.certificate, Certificate.GramBasis(), r)
-    Q, variable_bridge = add_matrix_variable_bridge(model, MCT, length(X), T)
+    r = SOS.Certificate.get(s.certificate, SOS.Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
+    X = SOS.Certificate.get(s.certificate, SOS.Certificate.GramBasis(), r)
+    Q, cQ = MOI.add_constrained_variables(model, SOS.matrix_cone(MCT, side_dimension))
     g = build_gram_matrix(Q, X)
     q = r - g
-    set = PolyJuMP.ZeroPolynomialSet(s.domain, Certificate.zero_basis(s.certificate), MP.monomials(q))
+    set = PolyJuMP.ZeroPolynomialSet(s.domain, SOS.Certificate.zero_basis(s.certificate), MP.monomials(q))
     coefs = MOIU.vectorize(MP.coefficients(q))
     zero_constraint = MOI.add_constraint(model, coefs, set)
-    return SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, CT, MT, MVT}(
-        variable_bridge, X, zero_constraint, s.domain, s.monomials, s.certificate)
+    return SOSPolynomialBridge{T, F, DT, UMCT, MCT, BT, CT, MT, MVT}(
+        Q, cQ, X, zero_constraint, s.domain, s.monomials, s.certificate)
 end
 
 function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
@@ -45,7 +46,7 @@ end
 function MOIB.added_constrained_variable_types(::Type{<:SOSPolynomialBridge})
     return Tuple{DataType}[]
 end
-function MOIB.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, CT, MT, MVT}}) where {T, F, DT, VBS, MCT, BT, CT, MT, MVT}
+function MOIB.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, UMCT, MCT, BT, CT, MT, MVT}}) where {T, F, DT, UMCT, MCT, BT, CT, MT, MVT}
     added = [(F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT})]
     return append_added_constraint_types(added, MCT, T)
 end
@@ -57,43 +58,25 @@ function MOIB.Constraint.concrete_bridge_type(
     # for most use cases
     G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
     MCT = matrix_cone_type(CT)
-    VBS = union_vector_bridge_types(MCT, T)
-    return SOSPolynomialBridge{T, G, DT, VBS, MCT, Certificate.zero_basis_type(CT), CT, MT, MVT}
+    UMCT = union_vector_bridge_types(MCT, T)
+    return SOSPolynomialBridge{T, G, DT, UMCT, MCT, SOS.Certificate.zero_basis_type(CT), CT, MT, MVT}
 end
 
 # Attributes, Bridge acting as an model
 function MOI.get(bridge::SOSPolynomialBridge, attr::MOI.NumberOfVariables)
     return MOI.get(bridge.variable_bridge, attr)
 end
-function MOI.get(::SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, CT, MT, MVT},
+function MOI.get(::SOSPolynomialBridge{T, F, DT, UMCT, MCT, BT, CT, MT, MVT},
                  ::MOI.NumberOfConstraints{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {
-        # Need to specify types to avoid ambiguity with the method redirecting
-        # to `variable_bridge`
-        T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
-        VBS <: AbstractVariableBridge, MCT <: MOI.AbstractVectorSet,
-        BT <: PolyJuMP.AbstractPolynomialBasis, CT <: Certificate.AbstractIdealCertificate,
-        MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}
+        T, F, DT, UMCT, MCT, BT, CT, MT, MVT
     }
     return 1
 end
-function MOI.get(b::SOSPolynomialBridge{T, F, DT, VBS, MCT, BT, CT, MT, MVT},
+function MOI.get(b::SOSPolynomialBridge{T, F, DT, UMCT, MCT, BT, CT, MT, MVT},
                  ::MOI.ListOfConstraintIndices{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}) where {
-        # Need to specify types to avoid ambiguity with the method redirecting
-        # to `variable_bridge`
-        T, F <: MOI.AbstractVectorFunction, DT <: AbstractSemialgebraicSet,
-        VBS <: AbstractVariableBridge, MCT <: MOI.AbstractVectorSet,
-        BT <: PolyJuMP.AbstractPolynomialBasis, CT <: Certificate.AbstractIdealCertificate,
-        MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}
+        T, F, DT, UMCT, MCT, BT, CT, MT, MVT
     }
     return [b.zero_constraint]
-end
-function MOI.get(bridge::SOSPolynomialBridge,
-                 attr::MOI.NumberOfConstraints)
-    return MOI.get(bridge.variable_bridge, attr)
-end
-function MOI.get(bridge::SOSPolynomialBridge,
-                 attr::MOI.ListOfConstraintIndices)
-    return MOI.get(bridge.variable_bridge, attr)
 end
 
 # Indices
@@ -101,7 +84,7 @@ function MOI.delete(model::MOI.ModelLike, bridge::SOSPolynomialBridge)
     # First delete the constraints in which the Gram matrix appears
     MOI.delete(model, bridge.zero_constraint)
     # Now we delete the Gram matrix
-    MOI.delete(model, bridge.variable_bridge)
+    MOI.delete(model, bridge.Q)
 end
 
 struct ValueNotSupported <: Exception end
@@ -147,7 +130,7 @@ function MOI.get(model::MOI.ModelLike, attr::PolyJuMP.MomentsAttribute,
     return MOI.get(model, attr, bridge.zero_constraint)
 end
 
-function MOI.get(::MOI.ModelLike, ::CertificateMonomials,
+function MOI.get(::MOI.ModelLike, ::SOS.CertificateMonomials,
                  bridge::SOSPolynomialBridge)
     return bridge.certificate_monomials
 end
