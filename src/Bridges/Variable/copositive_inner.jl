@@ -1,46 +1,123 @@
-struct CopositiveInnerVariableBridge{T, VB} <: AbstractVariableBridge
-    variable_bridge::VB
-    # TODO store GreaterThan constraints
+struct CopositiveInnerBridge{T, S} <: MOIB.Variable.AbstractBridge
+    matrix_variables::Vector{MOI.VariableIndex}
+    matrix_constraint::MOI.ConstraintIndex{MOI.VectorOfVariables, S}
+    nonneg_variables::Vector{MOI.VariableIndex}
+    nonneg_constraint::MOI.ConstraintIndex{MOI.VectorOfVariables, MOI.Nonnegatives}
 end
 
-function add_variable_bridge(::Type{CopositiveInnerVariableBridge{T, VB}},
-                             model::MOI.ModelLike, set::CopositiveInner) where {T, VB}
-    func, variable_bridge = add_variable_bridge(VB, model, set.psd_inner)
-    F = MOI.ScalarAffineFunction{T}
-    # If `func isa F` then `convert` won't create a copy so we explictly copy it.
-    # It is less costly to copy it before, e.g. if `q is MOI.SingleVariable`.
-    Q = F[convert(F, copy(q)) for q in func]
-    k = 0
-    for j in 1:MOI.side_dimension(set)
-        for i in 1:(j-1)
-            k += 1
-            # TODO: these should be deleted when the bridge is deleted
-            Nij = MOI.SingleVariable(MOI.add_variable(model))
-            MOI.add_constraint(model, Nij, MOI.GreaterThan(zero(T)))
-            MOIU.operate!(+, T, Q[k], Nij)
-        end
-        k += 1 # for diagonal entry (i, i)
+function MOIB.Variable.add_variable_bridge(
+    ::Type{CopositiveInnerBridge{T, S}},
+    model::MOI.ModelLike, set::CopositiveInner) where {T, S}
+
+    side_dimension = MOI.side_dimension(set.psd_inner)
+    num_off_diag = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(side_dimension - 1))
+    return CopositiveInnerBridge{T, S}(
+        side_dimension,
+        MOI.add_constrained_variables(model, set.psd_inner)...,
+        MOI.add_constrained_variables(model, MOI.Nonnegatives(num_off_diag))...
+    )
+end
+
+function MOIB.Variable.supports_constrained_variable(
+    ::Type{<:CopositiveInnerBridge}, ::Type{<:CopositiveInner})
+    return true
+end
+function MOIB.added_constrained_variable_types(::Type{CopositiveInnerBridge{T, S}}) where {T, S}
+    return [(S,), (MOI.Nonnegatives,)]
+end
+function MOIB.added_constraint_types(::Type{<:CopositiveInnerBridge})
+    return Tuple{DataType, DataType}[]
+end
+function MOIB.Variable.concrete_bridge_type(
+    ::Type{<:CopositiveInnerBridge{T}}, ::Type{CopositiveInner{S}}) where {T, S}
+    return CopositiveInnerBridge{T, S}
+end
+
+# Attributes, Bridge acting as a model
+function MOI.get(bridge::CopositiveInnerBridge,
+                 ::MOI.NumberOfVariables)
+    return length(bridge.matrix_variables) + length(bridge.nonneg_variables)
+end
+function MOI.get(bridge::CopositiveInnerBridge,
+                 ::MOI.ListOfVariableIndices)
+    return Iterators.flatten((bridge.matrix_variables, bridge.nonneg_variables))
+end
+function MOI.get(bridge::CopositiveInnerBridge{T, S},
+                 ::MOI.NumberOfConstraints{MOI.VectorOfVariables, S}) where {T, S}
+    return 1
+end
+function MOI.get(bridge::CopositiveInnerBridge{T, S},
+                 ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables, S}) where {T, S}
+    return [bridge.matrix_constraint]
+end
+function MOI.get(bridge::CopositiveInnerBridge,
+                 ::MOI.NumberOfConstraints{MOI.VectorOfVariables, MOI.Nonnegatives})
+    return 1
+end
+function MOI.get(bridge::CopositiveInnerBridge,
+                 ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables, MOI.Nonnegatives})
+    return [bridge.nonneg_constraint]
+end
+
+# Indices
+function MOI.delete(model::MOI.ModelLike, bridge::CopositiveInnerBridge)
+    MOI.delete(model, bridge.matrix_variables)
+    MOI.delete(model, bridge.nonneg_variables)
+end
+
+# Attributes, Bridge acting as a constraint
+
+function MOI.get(bridge::MOI.ModelLike, attr::MOI.ConstraintSet,
+                 bridge::CopositiveInnerBridge)
+    return CopositiveInner(MOI.get(model, attr, bridge.matrix_constraint))
+end
+
+# TODO ConstraintPrimal, ConstraintDual
+
+# See https://www.juliaopt.org/MathOptInterface.jl/v0.9.1/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle
+function matrix_indices(k)
+    j = div(1 + isqrt(8k - 7), 2)
+    i = k - div((j - 1) * j, 2)
+    return i, j
+end
+# Vector index for the vectorization of the triangular part.
+function vector_index(i, j)
+    return div((j - 1) * j, 2) + i
+end
+# Vector index for the vectorization of the off-diagonal triangular part.
+function offdiag_vector_index(i, j)
+    if i < j
+        return vector_index(i, j - 1)
+    else
+        throw(ArgumentError())
     end
-    return Q, CopositiveInnerVariableBridge{T, VB}(variable_bridge)
 end
 
-function MOIB.added_constraint_types(::Type{CopositiveInnerVariableBridge{T, VB}}) where {T, VB}
-    added = MOIB.added_constraint_types(VB)
-    push!(added, (MOI.SingleVariable, MOI.GreaterThan{T}))
-    return added
+function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
+                 bridge::CopositiveInnerBridge, i::IndexInVector)
+    value = MOI.get(model, attr, bridge.matrix_variables[i.value])
+    row, col = matrix_indices(i.value)
+    if row != col
+        value += MOI.get(model, attr, bridge.nonneg_variables[offdiag_vector_index(i, j)])
+    end
+    return value
 end
 
-function variable_bridge_type(::Type{CopositiveInner{S}}, T::Type) where S
-    return CopositiveInnerVariableBridge{T, variable_bridge_type(S, T)}
+function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
+                               i::IndexInVector) where T
+    func = convert(MOI.ScalarAffineFunction{T},
+                   MOI.SingleVariable(bridge.matrix_variables[i.value]))
+    row, col = matrix_indices(i.value)
+    if row != col
+        func = MOIU.operate!(+, T, func, MOI.SingleVariable(
+            bridge.nonneg_variables[vector_index(i, j - 1)]))
+    end
+    return func
 end
+function MOIB.Variable.unbridged_map(
+    bridge::CopositiveInnerBridge{T},
+    vi::MOI.VariableIndex, i::IndexInVector) where T
 
-function MOI.delete(model::MOI.ModelLike, bridge::CopositiveInnerVariableBridge)
-    # TODO remove GreaterThan constraints
-    MOI.delete(model, bridge.variable_bridge)
-end
-
-function MOI.get(model::MOI.ModelLike,
-                 attr::Union{MOI.ConstraintDual, MOI.ConstraintPrimal},
-                 bridge::CopositiveInnerVariableBridge)
-    return MOI.get(model, attr, bridge.variable_bridge)
+    # TODO
+    return nothing
 end
