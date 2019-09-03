@@ -55,7 +55,7 @@ function MOI.is_set_by_optimize(::Union{CertificateMonomials,
 end
 
 # This is type piracy but we tolerate it.
-const ObjectWithoutIndex = Union{MultivariateMoments.MomentMatrix{<:MOI.Utilities.ObjectWithoutIndex}, GramMatrix{<:MOI.Utilities.ObjectWithoutIndex}}
+const ObjectWithoutIndex = GramMatrix{<:MOI.Utilities.ObjectWithoutIndex}
 const ObjectOrTupleWithoutIndex = Union{ObjectWithoutIndex, Tuple{Vararg{ObjectWithoutIndex}}}
 const ObjectOrTupleOrArrayWithoutIndex = Union{ObjectOrTupleWithoutIndex, AbstractArray{<:ObjectOrTupleWithoutIndex}}
 MOI.Utilities.map_indices(::Function, x::ObjectOrTupleOrArrayWithoutIndex) = x
