@@ -1,5 +1,7 @@
 module Constraint
 
+using LinearAlgebra
+
 using MathOptInterface
 const MOI = MathOptInterface
 const MOIU = MOI.Utilities
@@ -7,9 +9,12 @@ const MOIB = MOI.Bridges
 
 import MultivariatePolynomials
 const MP = MultivariatePolynomials
+import SemialgebraicSets
+import MultivariateMoments
 import PolyJuMP
 import SumOfSquares
 const SOS = SumOfSquares
+const Certificate = SOS.Certificate
 
 # Symmetric PSD matrix bridges
 include("empty.jl")

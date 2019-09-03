@@ -1,3 +1,7 @@
+function build_gram_matrix(q::Vector{MOI.VariableIndex},
+                           monos::AbstractVector{<:MP.AbstractMonomial})
+    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], monos)
+end
 function build_gram_matrix(q::Vector,
                            monos::AbstractVector{<:MP.AbstractMonomial})
     return GramMatrix(MultivariateMoments.SymMatrix(q, length(monos)),

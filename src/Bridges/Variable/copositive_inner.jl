@@ -5,7 +5,7 @@ struct CopositiveInnerBridge{T, S} <: MOIB.Variable.AbstractBridge
     nonneg_constraint::MOI.ConstraintIndex{MOI.VectorOfVariables, MOI.Nonnegatives}
 end
 
-function MOIB.Variable.add_variable_bridge(
+function MOIB.Variable.bridge_constrained_variable(
     ::Type{CopositiveInnerBridge{T, S}},
     model::MOI.ModelLike, set::SOS.CopositiveInner) where {T, S}
 
@@ -67,7 +67,7 @@ end
 
 # Attributes, Bridge acting as a constraint
 
-function MOI.get(bridge::MOI.ModelLike, attr::MOI.ConstraintSet,
+function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintSet,
                  bridge::CopositiveInnerBridge)
     return SOS.CopositiveInner(MOI.get(model, attr, bridge.matrix_constraint))
 end
@@ -94,7 +94,7 @@ function offdiag_vector_index(i, j)
 end
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::CopositiveInnerBridge, i::IndexInVector)
+                 bridge::CopositiveInnerBridge, i::MOIB.Variable.IndexInVector)
     value = MOI.get(model, attr, bridge.matrix_variables[i.value])
     row, col = matrix_indices(i.value)
     if row != col
@@ -104,7 +104,7 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
 end
 
 function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
-                               i::IndexInVector) where T
+                               i::MOIB.Variable.IndexInVector) where T
     func = convert(MOI.ScalarAffineFunction{T},
                    MOI.SingleVariable(bridge.matrix_variables[i.value]))
     row, col = matrix_indices(i.value)
@@ -116,7 +116,7 @@ function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
 end
 function MOIB.Variable.unbridged_map(
     bridge::CopositiveInnerBridge{T},
-    vi::MOI.VariableIndex, i::IndexInVector) where T
+    vi::MOI.VariableIndex, i::MOIB.Variable.IndexInVector) where T
 
     # TODO
     return nothing

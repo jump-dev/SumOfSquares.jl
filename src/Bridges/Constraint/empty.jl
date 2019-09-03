@@ -8,9 +8,9 @@ function MOIB.Constraint.bridge_constraint(
     return EmptyBridge{T}()
 end
 
-function MOI.supports_constraint(::Type{<:EmptyBridge},
-                                 ::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{<:SOS.EmptyCone})
+function MOI.supports_constraint(
+    ::Type{<:EmptyBridge}, ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:SOS.EmptyCone})
     return true
 end
 function MOIB.added_constrained_variable_types(::Type{<:EmptyBridge})

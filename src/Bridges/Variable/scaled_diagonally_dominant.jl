@@ -79,7 +79,7 @@ end
 # Attributes, Bridge acting as a constraint
 
 function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet,
-                 bridge::SOS.PositiveSemidefinite2x2Bridge)
+                 bridge::ScaledDiagonallyDominantBridge)
     return SOS.ScaledDiagonallyDominantConeTriangle(bridge.side_dimension)
 end
 
@@ -88,7 +88,7 @@ end
 trimap(i, j) = div(j * (j - 1), 2) + i
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::ScaledDiagonallyDominantBridge{T}, i::IndexInVector) where T
+                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOIB.Variable.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         value = zero(T)
@@ -108,7 +108,7 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
 end
 
 function MOIB.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
-                               i::IndexInVector) where T
+                               i::MOIB.Variable.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         func = zero(MOI.ScalarAffineFunction{T})
@@ -128,7 +128,7 @@ function MOIB.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
 end
 function MOIB.Variable.unbridged_map(
     bridge::ScaledDiagonallyDominantBridge{T},
-    vi::MOI.VariableIndex, i::IndexInVector) where T
+    vi::MOI.VariableIndex, i::MOIB.Variable.IndexInVector) where T
 
     # TODO
     return nothing
