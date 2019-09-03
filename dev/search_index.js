@@ -213,7 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "SumOfSquares.DiagonallyDominantConeTriangle",
     "category": "type",
-    "text": "struct DiagonallyDominantConeTriangle <: MatrixConeTriangle\n    side_dimension::Int\nend\n\nSee Definition 4 of [AM17] for a precise definition of the last two items.\n\n[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017.\n\n\n\n\n\n"
+    "text": "struct DiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle\n    side_dimension::Int\nend\n\nSee Definition 4 of [AM17] for a precise definition of the last two items.\n\n[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017.\n\n\n\n\n\n"
 },
 
 {
@@ -221,7 +221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "SumOfSquares.ScaledDiagonallyDominantConeTriangle",
     "category": "type",
-    "text": "struct ScaledDiagonallyDominantConeTriangle <: MatrixConeTriangle\n    side_dimension::Int\nend\n\nSee Definition 4 of [AM17] for a precise definition of the last two items.\n\n[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017.\n\n\n\n\n\n"
+    "text": "struct ScaledDiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle\n    side_dimension::Int\nend\n\nSee Definition 4 of [AM17] for a precise definition of the last two items.\n\n[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017.\n\n\n\n\n\n"
 },
 
 {
@@ -461,7 +461,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "PolyJuMP.bridges",
     "category": "function",
-    "text": "bridges(F::Type{<:MOI.AbstractFunction}, S::Type{<:MOI.AbstractSet})\n\nReturn a list of bridges that may be needed to bridge F-in-S constraints but not the bridges that may be needed by constraints added by the bridges.\n\n\n\n\n\n"
+    "text": "bridges(F::Type{<:MOI.AbstractFunction}, S::Type{<:MOI.AbstractSet})\n\nReturn a list of bridges that may be needed to bridge F-in-S constraints but not the bridges that may be needed by constraints added by the bridges.\n\n\n\n\n\nbridges(S::Type{<:MOI.AbstractSet})\n\nReturn a list of bridges that may be needed to bridge constrained variables in S but not the bridges that may be needed by constraints added by the bridges.\n\n\n\n\n\n"
 },
 
 {
