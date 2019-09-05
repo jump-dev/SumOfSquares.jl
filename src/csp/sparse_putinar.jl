@@ -10,10 +10,9 @@ function chordal_sos(p::APL; model::JuMP.Model = SOSModel())
     degree_p = MP.maxdegree(p)
     for clique in cliques
         vars = Tuple(unique!(sort!(clique, rev = true)))
-        mvec = MP.monomials(vars, 0:degree_p)
-        pp = @variable model [1] Poly(mvec)
-        p = p - pp[1]
-        @constraint model pp[1] in SOSCone()
+        mvec = MP.monomials(vars, 0:div(degree_p,2))
+        pp = @variable model variable_type=SOSPoly(mvec)
+        p = p - pp
     end
     @constraint model p == 0
     return model
