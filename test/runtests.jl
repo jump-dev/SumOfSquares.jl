@@ -23,6 +23,10 @@ else
     end
 end
 
+const CEG = SumOfSquares.ChordalExtensionGraph
+include("ceg_test.jl")
+include("csp_test.jl")
+
 include("gram_matrix.jl")
 
 include("variable.jl")
