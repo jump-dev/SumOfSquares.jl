@@ -1,8 +1,12 @@
+__precompile__()
+
 module ChordalExtensionGraph
 
 using SparseArrays
 
-export Graph, add_node!, add_edge!, add_clique!, chordal_extension
+export Graph, add_node!, add_edge!, add_clique!, sub_graph, chordal_extension, adjacency_matrix
+
+
 """
     struct Graph{T}
         nodes::Vector{T}
@@ -24,7 +28,7 @@ function Graph{T}() where T
 end
 
 function Graph()
-    println("Specify type of nodes!")
+    show("Specify type of nodes!")
 end
 
 function Base.show(io::IO, G::Graph{T}) where T
@@ -61,7 +65,7 @@ end
 Add the unweighted edge (i, j) to graph G. Duplicate edges are not taken into account. 
 """
 function add_edge!(G::Graph{T}, xi::T, xj::T) where T
-    i, j = add_node!.(G, [xi, xj])
+    i, j = add_node!.(G, (xi, xj))
     append!(G.edges, [(i, j), (j, i)])
     unique!(sort!(G.edges))
 end
@@ -82,6 +86,7 @@ Add all elements of x as nodes to G and add edges such that x is fully
 connected in G.
 """  
 function add_clique!(G::Graph{T}, x::Vector{T}) where T
+    n_edges = length(G.edges)
     while !isempty(x)
         y = pop!(x)
         for z in x
@@ -111,7 +116,7 @@ end
 Return neighbors of i in G.
 """
 function neighbors(G::Graph{T}, i::T) where T
-    neighbor_nodes = T[]
+    neighbor_nodes = Vector{T}()
     bool = true
     edges = copy(G.edges)
     while bool&&!isempty(edges)
@@ -193,18 +198,17 @@ function chordal_extension(G::Graph{T}) where T
         neighbor_nodes = neighbors(H, node)
         
         # add neighbors and node as a potentially maximal clique
-        candidate_clique = [neighbor_nodes..., node]
-
+        candidate_clique = push!(copy(neighbor_nodes), node)
         # add edges to H to make the new candidate_clique at least potentially a clique
         while !isempty(neighbor_nodes)
 
             neighbor = popfirst!(neighbor_nodes)
             other_neighbors = copy(neighbor_nodes)
-            non_neighbors = T[]
+            non_neighbors = Vector{T}()
             while !isempty(other_neighbors)
                 next_neighbor = popfirst!(other_neighbors)
                
-                # add an edge between neighbor and next_neighbor if both are bigger than node
+                # add an edge between neighbor and next_neighbor if both have more fill-in
                 if elimination_order[neighbor] > elimination_node 
                     if elimination_order[next_neighbor] > elimination_node 
                         add_edge!(H, neighbor, next_neighbor)
@@ -225,8 +229,7 @@ function chordal_extension(G::Graph{T}) where T
     sort!.(candidate_cliques) 
     unique!(candidate_cliques) 
     # check whether candidate cliques are actually cliques
-    candidate_cliques = candidate_cliques[[is_clique(H, clique) for clique in candidate_cliques]]
-  
+    candidate_cliques = candidate_cliques[[is_clique(H, clique) for clique in candidate_cliques]] 
     sort!(candidate_cliques, lt = (x,y)-> length(x)<length(y))
     maximal_cliques = [pop!(candidate_cliques)]
     while !isempty(candidate_cliques)
@@ -241,7 +244,6 @@ function chordal_extension(G::Graph{T}) where T
             push!(maximal_cliques, clique)
         end        
     end
-
     return H, maximal_cliques
 end
 
@@ -261,5 +263,4 @@ function adjacency_matrix(G::Graph{T}) where T
     unique!(I)
     return sparse(first.(I), last.(I), ones(Int, length(I)))
 end
-
-end # module
+end #module
