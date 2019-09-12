@@ -24,55 +24,73 @@ chordal_putinar(p::T, degree::Int; equalities = T[], inequalities = T[],  model 
 
 """
 function chordal_putinar(
-                         p::T, 
-                         degree::Int;
-                         equalities = T[], 
-                         inequalities = T[], 
+                         p::APL, 
+                         degree::Int,
+                         K::AbstractBasicSemialgebraicSet;
                          model::JuMP.Model = SOSModel()
-                        ) where T <: APL
-    if isempty([equalities, inequalities])
+                        )
+
+    if K isa FullSpace
+        println("Unbounded domain. Ignoring degree = $degree .")
         model = chordal_sos(p, model)
-    else
-        H, cliques = chordal_csp_graph(p, [equalities..., inequalities...])
-        println(cliques)
+    elseif K isa AbstractAlgebraicSet
+        H, cliques = chordal_csp_graph(p, equalities(K))
         for clique in cliques
             vars = Tuple(unique!(sort!(clique, rev = true)))
-            mvec = MP.monomials(vars, 0:degree)
-            pp = @variable model [1] Poly(mvec) 
-            p = p - pp[1]
+            mvec = MP.monomials(vars, 0:MP.maxdegree(p))
+            pp = @variable model variable_type=Poly(mvec) 
+            p = p - pp
             for eq in equalities
                 if CEG.contains(clique, variables(eq))
                     deg = degree - MP.maxdegree(eq)
                     if deg >= 0
-                        vars = Tuple(unique!(sort!(clique, rev = true)))
                         mvec = MP.monomials(vars, 0:deg)
-                        ppi = @variable model [1] Poly(mvec)
+                        ppi = @variable model variable_type=Poly(mvec)
                         pp = pp - ppi[1]*eq
                     end
                 end
             end
-            for ineq in inequalities
-                if CEG.contains(clique, variables(ineq))
-                    println(clique)
-                    println(ineq)
-                    println()
-                    degree_s = 2*div( degree - MP.maxdegree(ineq) + 1, 2)
-                    if degree_s >= 0
-                        vars = Tuple(unique!(sort!(clique, rev = true)))
-                        mvec = MP.monomials(vars, 0:degree_s)
-                        if degree_s == 0
-                            ppi = @variable model [1] 
-                            @constraint model ppi[1]>=0
-                        else
-                            ppi = @variable model [1] Poly(mvec)
-                            @constraint model ppi[1] in SOSCone()
-                        end
-                        pp = pp - ppi[1]*ineq
+            @constraint model pp in SOSCone()
+        end
+        @constraint model p ==0
+    else
+        if isempty(equalities(K))
+            constraints =  [equalities(K)..., inequalities(K)...]
+        else
+            constraints = inequalities(K)
+        end
+        
+        H, cliques = chordal_csp_graph(p,constraints)
+
+        for clique in cliques
+            vars = Tuple(unique!(sort!(clique, rev = true)))
+            mvec = MP.monomials(vars, 0:MP.maxdegree(p))
+            pp = @variable model variable_type=Poly(mvec) 
+            p = p - pp
+            for eq in equalities(K)
+                if CEG.contains(clique, variables(eq))
+                    deg = degree - MP.maxdegree(eq)
+                    if deg >= 0
+                        mvec = MP.monomials(vars, 0:deg)
+                        ppi = @variable model variable_type=Poly(mvec)
+                        pp = pp - ppi[1]*eq
                     end
                 end
             end
+            for ineq in inequalities(K)
+                if CEG.contains(clique, variables(ineq))
+                    degree_s = div(degree - MP.maxdegree(ineq) + 1, 2)
+                    if degree_s >= 0
+                        mvec = MP.monomials(vars, 0:degree_s)
+                        ppi = @variable model variable_type=SOSPoly(mvec)   
+                        pp = pp - ppi*ineq
+                    end
+                end
+            end
+            @constraint model pp in SOSCone()
         end
         @constraint model p == 0
     end
     return model
 end
+
