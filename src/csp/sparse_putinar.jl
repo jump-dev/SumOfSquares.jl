@@ -40,7 +40,7 @@ function chordal_putinar(
             mvec = MP.monomials(vars, 0:MP.maxdegree(p))
             pp = @variable model variable_type=Poly(mvec) 
             p = p - pp
-            for eq in equalities
+            for eq in equalities(K)
                 if CEG.contains(clique, variables(eq))
                     deg = degree - MP.maxdegree(eq)
                     if deg >= 0
