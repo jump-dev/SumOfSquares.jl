@@ -129,11 +129,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "variables/#SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge",
+    "page": "Variables",
+    "title": "SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge",
+    "category": "type",
+    "text": "struct ScaledDiagonallyDominantBridge{T} <: MOI.Bridges.Variable.AbstractBridge\n    side_dimension::Int\n    variables::Vector{Vector{MOI.VariableIndex}}\n    constraints::Vector{MOI.ConstraintIndex{\n        MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}\nend\n\nA matrix is SDD iff it is the sum of psd matrices Mij that are zero except for entries ii, ij and jj [Lemma 9, AM17]. This bridge substitute the constrained variables in SumOfSquares.ScaledDiagonallyDominantConeTriangle into a sum of constrained variables in SumOfSquares.PositiveSemidefinite2x2ConeTriangle.\n\n[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization ArXiv e-prints, 2017.\n\n\n\n\n\n"
+},
+
+{
     "location": "variables/#Reference-1",
     "page": "Variables",
     "title": "Reference",
     "category": "section",
-    "text": "SumOfSquares.PolyJuMP.Poly"
+    "text": "SumOfSquares.PolyJuMP.PolyVariable bridges:SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge"
 },
 
 {
@@ -206,6 +214,14 @@ var documenterSearchIndex = {"docs": [
     "title": "References",
     "category": "section",
     "text": "[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R. Semidefinite Optimization and Convex Algebraic Geometry. Society for Industrial and Applied Mathematics, 2012.[CLO13] Cox, D., Little, J., & OShea, D. Ideals, varieties, and algorithms: an introduction to computational algebraic geometry and commutative algebra. Springer Science & Business Media, 2013.[AM17] Ahmadi, A. A. & Majumdar, A. DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization. ArXiv e-prints, 2017."
+},
+
+{
+    "location": "constraints/#SumOfSquares.PositiveSemidefinite2x2ConeTriangle",
+    "page": "Constraints",
+    "title": "SumOfSquares.PositiveSemidefinite2x2ConeTriangle",
+    "category": "type",
+    "text": "struct PositiveSemidefinite2x2ConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle end\n\nCone of positive semidefinite matrices of 2 rows and 2 columns.\n\n\n\n\n\n"
 },
 
 {
@@ -469,7 +485,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Constraints",
     "title": "Reference",
     "category": "section",
-    "text": "Inner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesSumOfSquares.PolyJuMP.MomentsAttribute\nSumOfSquares.MultivariateMoments.moments(::SumOfSquares.JuMP.ConstraintRef)\nGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_operate\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliers\nSOSDecomposition\nSOSDecompositionWithDomain\nsos_decompositionPolynomial basis:SumOfSquares.PolyJuMP.AbstractPolynomialBasis\nSumOfSquares.PolyJuMP.MonomialBasis\nSumOfSquares.PolyJuMP.ScaledMonomialBasis\nSumOfSquares.PolyJuMP.FixedPolynomialBasisBridges are automatically added using the following utilities:SumOfSquares.PolyJuMP.bridgeable\nSumOfSquares.PolyJuMP.bridges"
+    "text": "Special case that is second-order cone representable:SumOfSquares.PositiveSemidefinite2x2ConeTriangleInner approximations of the PSD cone that do not require semidefinite programming:SumOfSquares.DiagonallyDominantConeTriangle\nSumOfSquares.ScaledDiagonallyDominantConeTriangleApproximations of the cone of nonnegative polynomials:SumOfSquares.NonnegPolyInnerCone\nSumOfSquares.SOSCone\nSumOfSquares.SDSOSCone\nSumOfSquares.DSOSConeApproximations of the cone of positive semidefinite polynomial matrices:SumOfSquares.PSDMatrixInnerCone\nSumOfSquares.SOSMatrixConeApproximations of the cone of convex polynomials:SumOfSquares.ConvexPolyInnerCone\nSumOfSquares.SOSConvexConeApproximations of the cone of copositive matrices:SumOfSquares.CopositiveInnerAttributesSumOfSquares.PolyJuMP.MomentsAttribute\nSumOfSquares.MultivariateMoments.moments(::SumOfSquares.JuMP.ConstraintRef)\nGramMatrix\nSumOfSquares.GramMatrixAttribute\ngram_matrix\ngram_operate\nSumOfSquares.MomentMatrixAttribute\nmoment_matrix\nSumOfSquares.CertificateMonomials\ncertificate_monomials\nSumOfSquares.LagrangianMultipliers\nlagrangian_multipliers\nSOSDecomposition\nSOSDecompositionWithDomain\nsos_decompositionPolynomial basis:SumOfSquares.PolyJuMP.AbstractPolynomialBasis\nSumOfSquares.PolyJuMP.MonomialBasis\nSumOfSquares.PolyJuMP.ScaledMonomialBasis\nSumOfSquares.PolyJuMP.FixedPolynomialBasisBridges are automatically added using the following utilities:SumOfSquares.PolyJuMP.bridgeable\nSumOfSquares.PolyJuMP.bridges"
 },
 
 ]}
