@@ -1,6 +1,11 @@
 struct EmptyCone <: MOI.AbstractSymmetricMatrixSetTriangle end
 MOI.side_dimension(::EmptyCone) = 0
 
+"""
+    struct PositiveSemidefinite2x2ConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle end
+
+Cone of positive semidefinite matrices of 2 rows and 2 columns.
+"""
 struct PositiveSemidefinite2x2ConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle end
 MOI.side_dimension(::PositiveSemidefinite2x2ConeTriangle) = 2
 

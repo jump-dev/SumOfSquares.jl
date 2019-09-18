@@ -8,7 +8,7 @@ end
 function MOIB.Constraint.bridge_constraint(
     ::Type{PositiveSemidefinite2x2Bridge{T, F}},
     model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
-    s::PositiveSemidefinite2x2ConeTriangle) where {T, F}
+    s::SOS.PositiveSemidefinite2x2ConeTriangle) where {T, F}
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     fs = MOIU.eachscalar(f)
     g = MOIU.operate(vcat, T, fs[1], fs[3], √2 * fs[2])
@@ -18,7 +18,7 @@ end
 
 function MOI.supports_constraint(::Type{<:PositiveSemidefinite2x2Bridge},
                                  ::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{PositiveSemidefinite2x2ConeTriangle})
+                                 ::Type{SOS.PositiveSemidefinite2x2ConeTriangle})
     return true
 end
 function MOIB.added_constrained_variable_types(::Type{<:PositiveSemidefinite2x2Bridge})
@@ -30,7 +30,7 @@ end
 function MOIB.Constraint.concrete_bridge_type(
     ::Type{<:PositiveSemidefinite2x2Bridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
-    ::Type{PositiveSemidefinite2x2ConeTriangle}) where T
+    ::Type{SOS.PositiveSemidefinite2x2ConeTriangle}) where T
     S = MOIU.scalar_type(F)
     G = MOIU.promote_operation(*, T, T, S)
     H = MOIU.promote_operation(vcat, T, G)

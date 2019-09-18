@@ -3,14 +3,14 @@ end
 
 function MOIB.Constraint.bridge_constraint(
     ::Type{EmptyBridge{T}}, model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
-    s::EmptyCone) where {T}
+    s::SOS.EmptyCone) where {T}
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     return EmptyBridge{T}()
 end
 
-function MOI.supports_constraint(::Type{<:EmptyBridge},
-                                 ::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{<:EmptyCone})
+function MOI.supports_constraint(
+    ::Type{<:EmptyBridge}, ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:SOS.EmptyCone})
     return true
 end
 function MOIB.added_constrained_variable_types(::Type{<:EmptyBridge})
@@ -21,14 +21,13 @@ function MOIB.added_constraint_types(::Type{<:EmptyBridge})
 end
 function MOIB.Constraint.concrete_bridge_type(
     ::Type{<:EmptyBridge{T}}, ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{EmptyCone}) where T
+    ::Type{SOS.EmptyCone}) where T
     return EmptyBridge{T}
 end
 
 # Indices
 function MOI.delete(model::MOI.ModelLike, bridge::EmptyBridge) end
 
-# TODO ConstraintPrimal
 function MOI.get(::MOI.ModelLike,
                  ::Union{MOI.ConstraintDual, MOI.ConstraintPrimal},
                  bridge::EmptyBridge{T}) where T

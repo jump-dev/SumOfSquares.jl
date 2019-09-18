@@ -7,11 +7,11 @@ end
 function MOIB.Constraint.bridge_constraint(
     ::Type{ScaledDiagonallyDominantBridge{T, F, VBS}},
     model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
-    s::ScaledDiagonallyDominantConeTriangle) where {T, F, VBS}
+    s::SOS.ScaledDiagonallyDominantConeTriangle) where {T, F, VBS}
 
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     Q, variable_bridge = add_matrix_variable_bridge(
-        model, ScaledDiagonallyDominantConeTriangle, MOI.side_dimension(s), T)
+        model, SOS.ScaledDiagonallyDominantConeTriangle, MOI.side_dimension(s), T)
     g = MOI.operate(-, T, f, MOIU.vectorize(g))
     equality = MOI.add_constraint(model, g, MOI.Zeros(MOI.dimension(s)))
     return ScaledDiagonallyDominantBridge{T, F, VBS}(
@@ -20,7 +20,7 @@ end
 
 function MOI.supports_constraint(::Type{<:ScaledDiagonallyDominantBridge},
                                  ::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{<:ScaledDiagonallyDominantConeTriangle})
+                                 ::Type{<:SOS.ScaledDiagonallyDominantConeTriangle})
     return true
 end
 function MOIB.added_constrained_variable_types(::Type{<:ScaledDiagonallyDominantBridge})
@@ -29,15 +29,15 @@ end
 function MOIB.added_constraint_types(::Type{<:ScaledDiagonallyDominantBridge{T}}) where {T}
     added = [(F, MOI.Zeros)]
     return append_added_constraint_types(
-        added, ScaledDiagonallyDominantConeTriangle, T)
+        added, SOS.ScaledDiagonallyDominantConeTriangle, T)
 end
 function MOIB.Constraint.concrete_bridge_type(
     ::Type{<:ScaledDiagonallyDominantBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
-    ::Type{ScaledDiagonallyDominantConeTriangle}) where T
+    ::Type{SOS.ScaledDiagonallyDominantConeTriangle}) where T
 
     G = MOIU.promote_operation(-, T, F, MOI.VectorAffineFunction{T})
-    VBS = union_vector_bridge_types(ScaledDiagonallyDominantConeTriangle, T)
+    VBS = union_vector_bridge_types(SOS.ScaledDiagonallyDominantConeTriangle, T)
     return ScaledDiagonallyDominantBridge{T, G, VBS}
 end
 

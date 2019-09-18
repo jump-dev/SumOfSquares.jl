@@ -82,35 +82,34 @@ function JuMP.moi_set(cone::SOSLikeCone,
     return SOSPolynomialSet(domain, monos, certificate)
 end
 
-
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
                           ::Type{EmptyCone})
-    return [EmptyBridge]
+    return [Bridges.Constraint.EmptyBridge]
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
                           ::Type{PositiveSemidefinite2x2ConeTriangle})
-    return [PositiveSemidefinite2x2Bridge]
+    return [Bridges.Constraint.PositiveSemidefinite2x2Bridge]
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
                           ::Type{<:DiagonallyDominantConeTriangle})
-    return [DiagonallyDominantBridge]
+    return [Bridges.Constraint.DiagonallyDominantBridge]
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
                           ::Type{<:ScaledDiagonallyDominantConeTriangle})
-    return [ScaledDiagonallyDominantBridge]
+    return [Bridges.Constraint.ScaledDiagonallyDominantBridge]
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
                           ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}})
-    return [SOSPolynomialBridge]
+    return [Bridges.Constraint.SOSPolynomialBridge]
 end
 
 function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
                           ::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}})
-    return [SOSPolynomialInSemialgebraicSetBridge]
+    return [Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge]
 end
 
 function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
@@ -121,6 +120,18 @@ function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
     return PolyJuMP.bridgeable(JuMP.VectorConstraint(coefs, set, shape),
                                JuMP.moi_function_type(typeof(coefs)),
                                typeof(set))
+end
+
+struct ValueNotSupported <: Exception end
+function Base.showerror(io::IO, ::ValueNotSupported)
+    print(io, "`value` is no supported for Sum-of-Squares constraints, use",
+          " `gram_matrix` instead.")
+end
+
+struct DualNotSupported <: Exception end
+function Base.showerror(io::IO, ::DualNotSupported)
+    print(io, "`dual` is no supported for Sum-of-Squares constraints in a",
+          " domain, use `moment_matrix` instead.")
 end
 
 """

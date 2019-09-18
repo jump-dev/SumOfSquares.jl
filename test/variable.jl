@@ -27,10 +27,6 @@ end
         p = @variable(model, [1:2], cone)
         @test p[1].x == X
         @test p[2].x == X
-        if cone isa SDSOSPoly
-            @test eltype(p) <: GramMatrix{JuMP.AffExpr}
-        else
-            @test eltype(p) <: GramMatrix{JuMP.VariableRef}
-        end
+        @test eltype(p) <: GramMatrix{JuMP.VariableRef}
     end
 end
