@@ -246,6 +246,11 @@ ArXiv e-prints, **2017**.
 
 ## Reference
 
+Special case that is second-order cone representable:
+```@docs
+SumOfSquares.PositiveSemidefinite2x2ConeTriangle
+```
+
 Inner approximations of the PSD cone that do not require semidefinite
 programming:
 ```@docs

@@ -1,5 +1,5 @@
 """
-    struct ScaledDiagonallyDominantBridge{T} <: MOIB.Variable.AbstractBridge
+    struct ScaledDiagonallyDominantBridge{T} <: MOI.Bridges.Variable.AbstractBridge
         side_dimension::Int
         variables::Vector{Vector{MOI.VariableIndex}}
         constraints::Vector{MOI.ConstraintIndex{
@@ -7,7 +7,13 @@
     end
 
 A matrix is SDD iff it is the sum of psd matrices Mij that are zero except
-for entries ii, ij and jj [Lemma 9, AM17].
+for entries ii, ij and jj [Lemma 9, AM17]. This bridge substitute the
+constrained variables in [`SumOfSquares.ScaledDiagonallyDominantConeTriangle`](@ref)
+into a sum of constrained variables in [`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref).
+
+[AM17] Ahmadi, A. A. & Majumdar, A.
+*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
+ArXiv e-prints, **2017**.
 """
 struct ScaledDiagonallyDominantBridge{T} <: MOIB.Variable.AbstractBridge
     side_dimension::Int

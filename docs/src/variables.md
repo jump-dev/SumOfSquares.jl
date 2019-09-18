@@ -179,3 +179,8 @@ ArXiv e-prints, **2017**.
 ```@docs
 SumOfSquares.PolyJuMP.Poly
 ```
+
+Variable bridges:
+```@docs
+SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge
+```
