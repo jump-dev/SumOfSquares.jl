@@ -6,7 +6,7 @@ end
 function PolyJuMP.bridges(::Type{<:ScaledDiagonallyDominantConeTriangle})
     return [Bridges.Variable.ScaledDiagonallyDominantBridge]
 end
-function PolyJuMP.bridges(::Type{<:CopositiveInner})
+function PolyJuMP.bridges(::Type{<:CopositiveInnerCone})
     return [Bridges.Variable.CopositiveInnerBridge]
 end
 

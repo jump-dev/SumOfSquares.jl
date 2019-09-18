@@ -20,8 +20,9 @@ function MOIB.Variable.bridge_constrained_variable(
     ::Type{ScaledDiagonallyDominantBridge{T}}, model::MOI.ModelLike,
     s::SOS.ScaledDiagonallyDominantConeTriangle) where T
     n = s.side_dimension
-    @assert n > 1 # The bridges does not work with 1, `matrix_cone`
-                  # should have returned `Nonnegatives` instead
+    if n <= 1
+        error("The bridges does not work with 1, `matrix_cone` should have returned `Nonnegatives` instead.")
+    end
     N = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(n))
     variables = Vector{Vector{MOI.VariableIndex}}(undef, N)
     constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}(undef, N)
@@ -128,8 +129,30 @@ function MOIB.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
 end
 function MOIB.Variable.unbridged_map(
     bridge::ScaledDiagonallyDominantBridge{T},
-    vi::MOI.VariableIndex, i::MOIB.Variable.IndexInVector) where T
+    vis::Vector{MOI.VariableIndex}) where T
 
-    # TODO
-    return nothing
+    SAF = MOI.ScalarAffineFunction{T}
+    umap = Pair{MOI.VariableIndex, SAF}[]
+    k = 0
+    z = zero(SAF)
+    saf(i) = convert(SAF, MOI.SingleVariable(vis[i]))
+    # vis[trimap(j, j)] is replaced by a sum of several variables.
+    # The strategy is to replace all of them by zero except one.
+    for j in 1:bridge.side_dimension
+        for i in 1:(j-1)
+            k += 1
+            if i == 1 && j == 2
+                push!(umap, bridge.variables[k][1] => saf(trimap(1, 1)))
+            else
+                push!(umap, bridge.variables[k][1] => z)
+            end
+            push!(umap, bridge.variables[k][2] => saf(trimap(i, j)))
+            if i == 1
+                push!(umap, bridge.variables[k][3] => saf(trimap(j, j)))
+            else
+                push!(umap, bridge.variables[k][3] => z)
+            end
+        end
+    end
+    return umap
 end

@@ -62,10 +62,14 @@ struct CopositiveInner{S} <: SOSLikeCone
     psd_inner::S
 end
 
+struct CopositiveInnerCone{S} <: MOI.AbstractSymmetricMatrixSetTriangle
+    psd_inner::S
+end
+
 function matrix_cone_type(::Type{CopositiveInner{S}}) where S
-    return CopositiveInner{matrix_cone_type(S)}
+    return CopositiveInnerCone{matrix_cone_type(S)}
 end
-function matrix_cone(set::Type{CopositiveInner{S}}, side_dimension) where S
-    return CopositiveInner(matrix_cone(S, side_dimension))
+function matrix_cone(set::Type{CopositiveInnerCone{S}}, side_dimension) where S
+    return CopositiveInnerCone(matrix_cone(S, side_dimension))
 end
-MOI.side_dimension(set::CopositiveInner) = MOI.side_dimension(set.psd_inner)
+MOI.side_dimension(set::CopositiveInnerCone) = MOI.side_dimension(set.psd_inner)

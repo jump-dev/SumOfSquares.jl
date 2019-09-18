@@ -7,19 +7,18 @@ end
 
 function MOIB.Variable.bridge_constrained_variable(
     ::Type{CopositiveInnerBridge{T, S}},
-    model::MOI.ModelLike, set::SOS.CopositiveInner) where {T, S}
+    model::MOI.ModelLike, set::SOS.CopositiveInnerCone) where {T, S}
 
     side_dimension = MOI.side_dimension(set.psd_inner)
     num_off_diag = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(side_dimension - 1))
     return CopositiveInnerBridge{T, S}(
-        side_dimension,
         MOI.add_constrained_variables(model, set.psd_inner)...,
         MOI.add_constrained_variables(model, MOI.Nonnegatives(num_off_diag))...
     )
 end
 
 function MOIB.Variable.supports_constrained_variable(
-    ::Type{<:CopositiveInnerBridge}, ::Type{<:SOS.CopositiveInner})
+    ::Type{<:CopositiveInnerBridge}, ::Type{<:SOS.CopositiveInnerCone})
     return true
 end
 function MOIB.added_constrained_variable_types(::Type{CopositiveInnerBridge{T, S}}) where {T, S}
@@ -29,7 +28,7 @@ function MOIB.added_constraint_types(::Type{<:CopositiveInnerBridge})
     return Tuple{DataType, DataType}[]
 end
 function MOIB.Variable.concrete_bridge_type(
-    ::Type{<:CopositiveInnerBridge{T}}, ::Type{SOS.CopositiveInner{S}}) where {T, S}
+    ::Type{<:CopositiveInnerBridge{T}}, ::Type{SOS.CopositiveInnerCone{S}}) where {T, S}
     return CopositiveInnerBridge{T, S}
 end
 
@@ -69,7 +68,7 @@ end
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintSet,
                  bridge::CopositiveInnerBridge)
-    return SOS.CopositiveInner(MOI.get(model, attr, bridge.matrix_constraint))
+    return SOS.CopositiveInnerCone(MOI.get(model, attr, bridge.matrix_constraint))
 end
 
 # TODO ConstraintPrimal, ConstraintDual
@@ -110,7 +109,7 @@ function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
     row, col = matrix_indices(i.value)
     if row != col
         func = MOIU.operate!(+, T, func, MOI.SingleVariable(
-            bridge.nonneg_variables[vector_index(i, j - 1)]))
+            bridge.nonneg_variables[vector_index(row, col - 1)]))
     end
     return func
 end
