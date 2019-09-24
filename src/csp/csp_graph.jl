@@ -61,3 +61,14 @@ end
 function chordal_csp_graph(objective::APL, G::CEG.Graph = CEG.Graph{variable_type(objective)}() )
     return CEG.chordal_extension(csp_graph(objective, typeof(objective)[], G))
 end
+
+function chordal_csp_graph(objective::APL, K::AbstractBasicSemialgebraicSet, G::CEG.Graph = CEG.Graph{variable_type(objective)}() )
+    constraints = Vector{typeof(objective)}()
+    if K isa BasicSemialgebraicSet
+        append!(constraints, inequalities(K))
+    end
+    if !(K isa FullSpace)
+        append!(constraints, equalities(K))
+    end
+    return chordal_csp_graph(objective, constraints, G)
+end
