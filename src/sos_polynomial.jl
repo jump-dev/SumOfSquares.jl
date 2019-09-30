@@ -22,3 +22,4 @@ struct SOSPolynomialSet{DT <: AbstractSemialgebraicSet,
     monomials::MVT
     certificate::CT
 end
+MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)

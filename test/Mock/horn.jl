@@ -14,9 +14,12 @@ optimize!(mock) = MOIU.mock_optimize!(mock,
      4.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 4.0, 0.0, 0.0,
      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
      0.0, -0.0, 0.0, -0.0, 0.0, 0.0, -0.0, 0.0])
-mock = bridged_mock(optimize!_inf, optimize!_inf, optimize!)
-Tests.sos_horn_test(mock, config)
-mock = bridged_mock(optimize!_inf)
-Tests.dsos_horn_test(mock, config)
-mock = bridged_mock(optimize!_inf)
-Tests.sdsos_horn_test(mock, config)
+@testset "sos $(typeof(mock))" for mock in mocks(optimize!_inf, optimize!_inf, optimize!)
+    Tests.sos_horn_test(mock, config)
+end
+@testset "dsos $(typeof(mock))" for mock in mocks(optimize!_inf)
+    Tests.dsos_horn_test(mock, config)
+end
+@testset "sdsos $(typeof(mock))" for mock in mocks(optimize!_inf)
+    Tests.sdsos_horn_test(mock, config)
+end

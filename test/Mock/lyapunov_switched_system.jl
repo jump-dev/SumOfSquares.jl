@@ -13,6 +13,7 @@ config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5)
 # P - A2'P*A*2 = [1+α 0
 #                 0   β]
 optimize!(mock) = MOIU.mock_optimize!(mock, [α, α, 0.0, β, 1 + α, 0.0, 1 + α, β, 0.0])
-mock = bridged_mock(optimize!)
-Tests.quadratic_feasible_lyapunov_switched_system_test(mock, config)
+for mock in mocks(optimize!)
+    Tests.quadratic_feasible_lyapunov_switched_system_test(mock, config)
+end
 # TODO quadratic infeasible and quartic

@@ -29,7 +29,7 @@ function MOIB.Variable.bridge_constrained_variable(
     if n <= 1
         error("The bridges does not work with 1, `matrix_cone` should have returned `Nonnegatives` instead.")
     end
-    N = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(n))
+    N = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(n - 1))
     variables = Vector{Vector{MOI.VariableIndex}}(undef, N)
     constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}(undef, N)
     k = 0
