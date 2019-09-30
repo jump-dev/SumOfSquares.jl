@@ -117,6 +117,14 @@ function MOIB.Variable.unbridged_map(
     bridge::CopositiveInnerBridge{T},
     vi::MOI.VariableIndex, i::MOIB.Variable.IndexInVector) where T
 
-    # TODO
-    return nothing
+    F = MOI.ScalarAffineFunction{T}
+    func = convert(F, MOI.SingleVariable(vi))
+    map = bridge.matrix_variables[i.value] => func
+    row, col = matrix_indices(i.value)
+    if row == col
+        return (map,)
+    else
+        nneg = bridge.nonneg_variables[vector_index(row, col - 1)]
+        return (map, nneg => zero(F))
+    end
 end

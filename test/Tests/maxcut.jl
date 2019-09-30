@@ -18,16 +18,16 @@ function maxcut_test(optimizer, config::MOIT.TestConfig)
     # Boolean constraints
     bc = vec(x).^2 .- 1
 
+    model = _model(optimizer)
+
+    Z = monomials(x, 0:1)
+    @variable(model, p1, SOSPoly(Z))
+
+    Z = monomials(x, 0:2)
+    @variable(model, p[1:5], Poly(Z))
+
     @testset "with γ=$γ it should be $(feasible ? "feasible" : "infeasible")" for (γ, feasible) in [(3.9, false), (4.1, true)]
-        model = _model(optimizer)
-
-        Z = monomials(x, 0:1)
-        @variable(model, p1, SOSPoly(Z))
-
-        Z = monomials(x, 0:2)
-        @variable(model, p[1:5], Poly(Z))
-
-        @constraint(model, p1*(γ-f) + dot(p, bc) - (γ-f)^2 in SOSCone())
+        cref = @constraint(model, p1*(γ-f) + dot(p, bc) - (γ-f)^2 in SOSCone())
 
         JuMP.optimize!(model)
 
@@ -36,6 +36,7 @@ function maxcut_test(optimizer, config::MOIT.TestConfig)
         else
             @test JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
         end
+        delete(model, cref)
     end
 end
 sd_tests["maxcut"] = maxcut_test

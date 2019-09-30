@@ -34,14 +34,14 @@ function horn_test(optimizer,
 
     @test termination_status(model) == MOI.INFEASIBLE
 
-    model = _model(optimizer)
+    delete(model, cref)
     orthant = @set x[1] ≥ 0 && x[2] ≥ 0 && x[3] ≥ 0 && x[4] ≥ 0 && x[5] ≥ 0
     cref = @constraint(model, sum(x) * x' * H * x in cone, domain = orthant)
     optimize!(model)
 
     @test termination_status(model) == MOI.INFEASIBLE
 
-    model = _model(optimizer)
+    delete(model, cref)
     orthant = orthant ∩ basicsemialgebraicset(
         algebraicset(polynomialtype(x[1])[]), polynomial.(monomials(x, 3)))
     cref = @constraint(model, sum(x) * x' * H * x in cone, domain = orthant)
