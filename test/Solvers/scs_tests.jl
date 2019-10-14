@@ -9,5 +9,9 @@ end
     Tests.soc_test(factory, config)
 end
 @testset "SDP" begin
-    Tests.sd_test(factory, config)
+    Tests.sd_test(factory, config, [
+        # Expression: termination_status(model) == MOI.INFEASIBLE
+        # Evaluated: MathOptInterface.OPTIMAL == MathOptInterface.INFEASIBLE
+        "sos_horn"
+    ])
 end

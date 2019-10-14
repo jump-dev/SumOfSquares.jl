@@ -27,7 +27,7 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig)
     @test objective_value(model) ≈ 6.0 atol=atol rtol=rtol
 
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-    @test JuMP.value(α) ≈ 6 atol=1e-6
+    @test JuMP.value(α) ≈ 6 atol=atol rtol=rtol
 
     @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
@@ -62,7 +62,7 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig)
     @test objective_value(model) ≈ -6.0 atol=atol rtol=rtol
 
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-    @test JuMP.value(α) ≈ -6 atol=1e-6
+    @test JuMP.value(α) ≈ -6.0 atol=atol rtol=rtol
 
     @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
