@@ -8,6 +8,13 @@ function build_gram_matrix(q::Vector,
                          monos)
 end
 
+function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
+                         monos::AbstractVector{<:MP.AbstractMonomial})
+    Q, cQ = MOI.add_constrained_variables(model, SOS.matrix_cone(MCT, length(X)))
+    q = SOS.build_gram_matrix(Q, X)
+    return q, Q, cQ
+end
+
 function build_moment_matrix(q::Vector,
                              monos::AbstractVector{<:MP.AbstractMonomial})
     return MomentMatrix(MultivariateMoments.SymMatrix(q, length(monos)),
