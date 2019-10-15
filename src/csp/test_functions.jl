@@ -39,7 +39,7 @@ function generalized_rosenbrock(n::Int)
 end
 
 function dense(p)
-    dense_model  = SOSModel(with_optimizer(Mosek.Optimizer))
+    dense_model = SOSModel(with_optimizer(Mosek.Optimizer))
     @variable dense_model t
     @objective dense_model Max t
     @constraint dense_model p-t in SOSCone()
