@@ -19,7 +19,7 @@ struct Graph{T}
 end
 
 Base.broadcastable(g::Graph) = Ref(g)
-Base.copy(G::Graph{T}) where T = Graph(copy(G.n2int), copy(G.int2n), copy(G.edges))
+Base.copy(G::Graph{T}) where T = Graph(copy(G.n2int), copy(G.int2n), deepcopy(G.edges))
 
 function Graph{T}() where T
     return Graph(Dict{T,Int}(),T[], Vector{Vector{Int}}())
