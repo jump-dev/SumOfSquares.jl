@@ -18,7 +18,6 @@ chordal_putinar(p-t, 2, K,  model = sm)
 optimize!(sm)
 sparse_value = objective_value(sm)
 
-
 # no chordal sparsity
 
 m = SOSModel(with_optimizer(Mosek.Optimizer))
