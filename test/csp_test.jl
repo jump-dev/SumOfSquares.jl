@@ -5,8 +5,8 @@
         q1 = 1 - x^2 - y^2
         q2 = 1 - y^2 - z^2
         G = csp_graph(p, [q1, q2])
-        @test sort(G.nodes) == [z, y, x]
-        @test length(G.edges) == 4
+        @test sort(G.int2n) == [z, y, x]
+        @test CEG.n_edges(G) == 4
     end
     @testset "chordal_csp" begin
         @polyvar x y z
@@ -16,13 +16,13 @@
         H, cliques = chordal_csp_graph(p, [q1, q2])
         @test length(cliques) == 2
         svar = cliques[1]∪cliques[2]
-        @test CEG.contains(svar, H.nodes)
-        @test CEG.contains(H.nodes, svar)
-        @test sort!(svar)== sort!(H.nodes)
-        @test length(H.edges) == 4
+        @test CEG.contains(svar, H.int2n)
+        @test CEG.contains(H.int2n, svar)
+        @test sort!(svar)== sort!(H.int2n)
+        @test CEG.n_edges(H) == 4
         I, cliquesI = chordal_csp_graph(p)
-        @test sort!(I.nodes) == sort!(H.nodes)
-        @test sort!(I.edges) ==sort!(H.edges)      
+        @test sort!(I.int2n) == sort!(H.int2n)
+        @test sort!(I.edges) == sort!(H.edges)      
     end
 end
 
