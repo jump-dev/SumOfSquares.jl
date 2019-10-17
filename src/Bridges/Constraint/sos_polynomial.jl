@@ -8,8 +8,8 @@ struct SOSPolynomialBridge{
     MT <: MP.AbstractMonomial,
     MVT <: AbstractVector{MT}} <: MOIB.Constraint.AbstractBridge
 
-    Q::Vector{MOI.VariableIndex}
-    cQ::UMCT
+    Q::Vector{MOI.VariableIndex} # TODO the type will be different for sparse SOS
+    cQ::UMCT # TODO the type will be different for sparse SOS
     certificate_monomials::MVT
     zero_constraint::MOI.ConstraintIndex{F, PolyJuMP.ZeroPolynomialSet{DT, BT, MT, MVT}}
     domain::DT
@@ -31,8 +31,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     r = SOS.Certificate.get(s.certificate, SOS.Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
     X = SOS.Certificate.get(s.certificate, SOS.Certificate.GramBasis(), r)
-    Q, cQ = MOI.add_constrained_variables(model, SOS.matrix_cone(MCT, length(X)))
-    g = SOS.build_gram_matrix(Q, X)
+    g, Q, cQ = SOS.add_gram_matrix(model, MCT, X)
     q = r - g
     set = PolyJuMP.ZeroPolynomialSet(s.domain, SOS.Certificate.zero_basis(s.certificate), MP.monomials(q))
     coefs = MOIU.vectorize(MP.coefficients(q))

@@ -61,11 +61,11 @@ struct Putinar{IC <: AbstractIdealCertificate, CT <: SumOfSquares.SOSLikeCone, B
     maxdegree::Int
 end
 
-function get(::Putinar, index::PreorderIndices, domain)
+function get(::Putinar, index::PreorderIndices, domain::BasicSemialgebraicSet)
     return map(PreorderIndex, eachindex(domain.p))
 end
 
-function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain, p)
+function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::BasicSemialgebraicSet, p)
     q = domain.p[index.value]
     # TODO mindegree is no longer needed in here, maybe remove it as an keyword argument
     maxdegree_s2 = certificate.maxdegree - MP.maxdegree(q)
@@ -77,7 +77,7 @@ function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, doma
     return MP.monomials(vars, 0:maxdegree_s)
 end
 
-function get(::Putinar, ::Generator, index::PreorderIndex, domain)
+function get(::Putinar, ::Generator, index::PreorderIndex, domain::BasicSemialgebraicSet)
     return domain.p[index.value]
 end
 
