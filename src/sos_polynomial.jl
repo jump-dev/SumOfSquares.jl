@@ -10,8 +10,8 @@ end
 
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
                          monos::AbstractVector{<:MP.AbstractMonomial})
-    Q, cQ = MOI.add_constrained_variables(model, SOS.matrix_cone(MCT, length(X)))
-    q = SOS.build_gram_matrix(Q, X)
+    Q, cQ = MOI.add_constrained_variables(model, matrix_cone(matrix_cone_type, length(monos)))
+    q = build_gram_matrix(Q, monos)
     return q, Q, cQ
 end
 

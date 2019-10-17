@@ -1,8 +1,7 @@
 function lagrangian_multiplier(model::MOI.ModelLike, p, certificate, index, domain, T::Type)
     monos = Certificate.get(certificate, Certificate.MultiplierBasis(), index, domain, p)
     MCT = SOS.matrix_cone_type(typeof(certificate))
-    Q, con_Q = MOI.add_constrained_variables(model, SOS.matrix_cone(MCT, length(monos)))
-    return SOS.build_gram_matrix(Q, monos), Q, con_Q, monos
+    return SOS.add_gram_matrix(model, MCT, monos)..., monos
 end
 
 struct SOSPolynomialInSemialgebraicSetBridge{
