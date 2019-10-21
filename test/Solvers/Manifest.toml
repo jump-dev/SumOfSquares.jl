@@ -47,7 +47,7 @@ version = "0.5.0"
 
 [[CSDP]]
 deps = ["BinDeps", "Glob", "Libdl", "LinearAlgebra", "MathOptInterface", "MathProgBase", "SemidefiniteModels", "SparseArrays"]
-git-tree-sha1 = "70f666f2c69102c53636dfe2139762d277a10102"
+path = "../../../CSDP"
 uuid = "0a46da34-8e4b-519e-b418-48813639ff34"
 version = "0.5.1"
 
@@ -252,10 +252,10 @@ deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[ProxSDP]]
-deps = ["Arpack", "Compat", "Dates", "DelimitedFiles", "LinearAlgebra", "MathOptInterface", "Printf", "Random", "SparseArrays", "Test", "TimerOutputs"]
+deps = ["Arpack", "LinearAlgebra", "MathOptInterface", "Printf", "Random", "SparseArrays", "TimerOutputs"]
 path = "../../../ProxSDP"
 uuid = "65e78d25-6039-50a4-9445-38022e3d2eb3"
-version = "1.1.0+"
+version = "1.1.0"
 
 [[QDLDL]]
 deps = ["AMD", "LinearAlgebra", "Random", "SparseArrays", "Test"]
@@ -338,9 +338,9 @@ version = "0.8.0"
 
 [[StaticArrays]]
 deps = ["LinearAlgebra", "Random", "Statistics"]
-git-tree-sha1 = "db23bbf50064c582b6f2b9b043c8e7e98ea8c0c6"
+git-tree-sha1 = "1085ffbf5fd48fdba64ef8e902ca429c4e1212d3"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "0.11.0"
+version = "0.11.1"
 
 [[Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -351,7 +351,7 @@ deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[SumOfSquares]]
-deps = ["JuMP", "LinearAlgebra", "MathOptInterface", "MultivariateMoments", "MultivariatePolynomials", "Pkg", "PolyJuMP", "Reexport", "SemialgebraicSets", "SparseArrays"]
+deps = ["CSDP", "JuMP", "LinearAlgebra", "MathOptInterface", "MultivariateMoments", "MultivariatePolynomials", "Pkg", "PolyJuMP", "Reexport", "SemialgebraicSets", "SparseArrays"]
 path = "../.."
 uuid = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 version = "0.3.5"
