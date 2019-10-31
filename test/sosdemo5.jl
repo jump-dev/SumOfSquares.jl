@@ -4,7 +4,6 @@
 
 @testset "SOSDEMO5 with $(factory.constructor)" for factory in sdp_factories
     isscs(factory) && continue
-    iscsdp(factory) && continue # See https://github.com/JuliaOpt/SumOfSquares.jl/issues/52
     @polyvar x[1:8]
 
     # The matrix under consideration

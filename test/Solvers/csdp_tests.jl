@@ -1,7 +1,7 @@
 include("solver_preamble.jl")
 import CSDP
 factory = with_optimizer(CSDP.Optimizer, printlevel=0)
-config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5, query=false)
+config = MOI.Test.TestConfig(atol=1e-4, rtol=1e-4, query=false)
 @testset "Linear" begin
     Tests.linear_test(factory, config)
 end
