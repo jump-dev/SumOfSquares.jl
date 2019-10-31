@@ -28,10 +28,10 @@ uuid = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
 version = "0.8.10"
 
 [[BinaryProvider]]
-deps = ["Libdl", "Logging", "SHA"]
-git-tree-sha1 = "c7361ce8a2129f20b0e05a89f7070820cfed6648"
+deps = ["Libdl", "SHA"]
+git-tree-sha1 = "29995a7b317bbd06be147e1974a3541ce2502dca"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.5.6"
+version = "0.5.7"
 
 [[CDCS]]
 deps = ["LinearAlgebra", "MATLAB", "MathOptInterface", "SparseArrays"]
@@ -47,9 +47,9 @@ version = "0.5.0"
 
 [[CSDP]]
 deps = ["BinDeps", "Glob", "Libdl", "LinearAlgebra", "MathOptInterface", "MathProgBase", "SemidefiniteModels", "SparseArrays"]
-path = "../../../CSDP"
+git-tree-sha1 = "6d2a79cf77728780f8950b7a744d716c1fd3e8cf"
 uuid = "0a46da34-8e4b-519e-b418-48813639ff34"
-version = "0.5.1"
+version = "0.5.2"
 
 [[Calculus]]
 deps = ["Compat"]
@@ -83,9 +83,9 @@ version = "0.8.1"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "f94423c68f2e47db0d6f626a26d4872266e0ec3d"
+git-tree-sha1 = "1fe8fad5fc84686dcbc674aa255bc867a64f8132"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.2"
+version = "0.17.5"
 
 [[Dates]]
 deps = ["Printf"]
@@ -112,22 +112,22 @@ deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[ECOS]]
-deps = ["BinaryProvider", "Compat", "Libdl", "LinearAlgebra", "MathOptInterface", "MathProgBase", "SparseArrays"]
-git-tree-sha1 = "3febd87acacfc35e364eed4a07ae0a684208aa64"
+deps = ["BinaryProvider", "Libdl", "LinearAlgebra", "MathOptInterface", "MathProgBase", "SparseArrays"]
+git-tree-sha1 = "02ff5d6090d4e057d9ed4589bf6d64cfd6d10820"
 uuid = "e2685f51-7e38-5353-a97d-a921fd2c8199"
-version = "0.10.0"
+version = "0.10.1"
 
 [[ForwardDiff]]
-deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "InteractiveUtils", "LinearAlgebra", "NaNMath", "Random", "SparseArrays", "SpecialFunctions", "StaticArrays", "Test"]
-git-tree-sha1 = "4c4d727f1b7e0092134fabfab6396b8945c1ea5b"
+deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "NaNMath", "Random", "SpecialFunctions", "StaticArrays"]
+git-tree-sha1 = "e2c81741a8be50de143ecddee942396894f47750"
 uuid = "f6369f11-7733-5829-9624-2563aa707210"
-version = "0.10.3"
+version = "0.10.4"
 
 [[GLPK]]
 deps = ["BinaryProvider", "Libdl", "MathOptInterface", "SparseArrays"]
-path = "../../../GLPK"
+git-tree-sha1 = "3710cc4a23a9b7a6eefacbd507837103a6d04240"
 uuid = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
-version = "0.11.4"
+version = "0.12.0"
 
 [[GZip]]
 deps = ["Libdl", "Test"]
@@ -153,9 +153,9 @@ version = "0.21.0"
 
 [[JuMP]]
 deps = ["Calculus", "DataStructures", "ForwardDiff", "LinearAlgebra", "MathOptInterface", "NaNMath", "Random", "SparseArrays", "Statistics"]
-git-tree-sha1 = "a970a86abc924f2c126cdb4978a5e8923d0e7b22"
+git-tree-sha1 = "ba7f96010ed290d77d5c941c32e5df107ca688a4"
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
-version = "0.20.0"
+version = "0.20.1"
 
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
@@ -182,9 +182,9 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[MathOptInterface]]
 deps = ["BenchmarkTools", "LinearAlgebra", "OrderedCollections", "SparseArrays", "Test", "Unicode"]
-path = "../../../MathOptInterface"
+git-tree-sha1 = "78427dcc212e0c0ad9658049bc56a50303ad9737"
 uuid = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-version = "0.9.5"
+version = "0.9.7"
 
 [[MathProgBase]]
 deps = ["Compat"]
@@ -203,15 +203,15 @@ version = "1.0.4"
 
 [[MosekTools]]
 deps = ["MathOptInterface", "Mosek", "Printf"]
-git-tree-sha1 = "f24a2f9213afe8407f32b8e621a2665986ecaa92"
+git-tree-sha1 = "2d5b26efcf1352485c967a8a570ceab83118ebbc"
 uuid = "1ec41992-ff65-5c91-ac43-2df89e9693a4"
-version = "0.9.0"
+version = "0.9.1"
 
 [[MultivariateMoments]]
 deps = ["LinearAlgebra", "MultivariatePolynomials", "RowEchelon", "SemialgebraicSets"]
-git-tree-sha1 = "470520d85d92f67686a496f2092d63cf276dabe3"
+git-tree-sha1 = "4a5d45238c2359d17d51a102019b6e47a85d26f3"
 uuid = "f4abf1af-0426-5881-a0da-e2f168889b5e"
-version = "0.2.2"
+version = "0.2.3"
 
 [[MultivariatePolynomials]]
 deps = ["LinearAlgebra"]
@@ -253,9 +253,9 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[ProxSDP]]
 deps = ["Arpack", "LinearAlgebra", "MathOptInterface", "Printf", "Random", "SparseArrays", "TimerOutputs"]
-path = "../../../ProxSDP"
+git-tree-sha1 = "6113808a3d4bfdb642a9d202cd1da12e7b1114a9"
 uuid = "65e78d25-6039-50a4-9445-38022e3d2eb3"
-version = "1.1.0"
+version = "1.2.0"
 
 [[QDLDL]]
 deps = ["AMD", "LinearAlgebra", "Random", "SparseArrays", "Test"]
@@ -285,15 +285,21 @@ version = "0.1.1"
 
 [[SCS]]
 deps = ["BinaryProvider", "Libdl", "LinearAlgebra", "MathOptInterface", "MathProgBase", "SparseArrays"]
-git-tree-sha1 = "910a2611254b970ac4cca0f97aafbaba2ec9af93"
+git-tree-sha1 = "f777069f119d26b021b773756c2510e4fb8a3f99"
 uuid = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
-version = "0.6.1"
+version = "0.6.2"
 
 [[SDPA]]
 deps = ["BinaryProvider", "CxxWrap", "Libdl", "LinearAlgebra", "MathOptInterface", "MathProgBase", "SemidefiniteModels", "Test"]
-git-tree-sha1 = "3616ad50a023701df8c198db9a8673ef2d1d6576"
+git-tree-sha1 = "739c8beafddd725624004081083fbf690bc105eb"
 uuid = "b9a10b5b-afa4-512f-a053-bb3d8080febc"
-version = "0.2.0"
+version = "0.2.1"
+
+[[SDPAFamily]]
+deps = ["BinaryProvider", "DelimitedFiles", "Libdl", "LinearAlgebra", "MathOptInterface", "SparseArrays"]
+git-tree-sha1 = "6787480c2fc87c48f2c7d81a8a995244d084602a"
+uuid = "bfe18334-aefd-11e9-1109-4bf2b15a5b91"
+version = "0.1.1"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -351,7 +357,7 @@ deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[SumOfSquares]]
-deps = ["CSDP", "JuMP", "LinearAlgebra", "MathOptInterface", "MultivariateMoments", "MultivariatePolynomials", "Pkg", "PolyJuMP", "Reexport", "SemialgebraicSets", "SparseArrays"]
+deps = ["JuMP", "LinearAlgebra", "MathOptInterface", "MultivariateMoments", "MultivariatePolynomials", "Pkg", "PolyJuMP", "Reexport", "SemialgebraicSets", "SparseArrays"]
 path = "../.."
 uuid = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 version = "0.3.5"

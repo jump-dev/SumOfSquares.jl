@@ -32,6 +32,7 @@ solver_test(:ECOS)
 # SDP solvers (SOC is reformulated into SDP)
 solver_test(:CSDP)
 solver_test(:SDPA)
+solver_test(:SDPAFamily)
 
 # SDP+SOC solvers
 solver_test(:CDCS)

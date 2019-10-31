@@ -25,6 +25,14 @@ end
 end
 @testset "SDP" begin
     Tests.sd_test(factory, config, [
+        # with γ=3.9 it should be infeasible: Test Failed at /home/blegat/.julia/dev/SumOfSquares/test/Tests/maxcut.jl:37
+        # Expression: JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
+        #  Evaluated: MathOptInterface.INFEASIBLE_POINT == MathOptInterface.INFEASIBILITY_CERTIFICATE
+        "maxcut",
+        # ITERATION_LIMIT
+        "choi_term", "motzkin",
+        # ArgumentError: ModelLike of type ProxSDP.Optimizer does not support accessing the attribute MathOptInterface.ConstraintDual(1)
+        "sos_univariate_quadratic",
         "sos_horn",
         "sos_bivariate_quadratic",
         "quadratic_infeasible_lyapunov_switched_system",
