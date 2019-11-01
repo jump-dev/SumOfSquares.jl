@@ -57,12 +57,10 @@ end
 # If a variable is bridged, the `VectorOfVariables`-in-`SOSPolynomialSet` is
 # bridged by `MOI.Bridges.Constraint.VectorFunctionizeBridge` and it has
 # to pass the constraint to the SOS bridge.
-function MOI.get(model::MOI.ModelLike,
-                 attr::Union{CertificateMonomials, GramMatrixAttribute,
-                             MomentMatrixAttribute, LagrangianMultipliers,
-                             PolyJuMP.MomentsAttribute},
-                 bridge::MOI.Bridges.Constraint.VectorFunctionizeBridge)
-    return MOI.get(model, attr, bridge.constraint)
+function MOI.Bridges.Constraint.invariant_under_function_conversion(::Union{
+    CertificateMonomials, GramMatrixAttribute,
+    MomentMatrixAttribute, LagrangianMultipliers})
+    return true
 end
 
 # This is type piracy but we tolerate it.

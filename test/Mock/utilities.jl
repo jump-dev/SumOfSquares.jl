@@ -1,6 +1,12 @@
 using JuMP
 const MOIT = MOI.Test
 
+MOIU.@model(NoFreeVariable,
+            (), (MOI.EqualTo, MOI.LessThan, MOI.GreaterThan), (MOI.Nonnegatives, MOI.Nonpositives, MOI.Zeros, MOI.RotatedSecondOrderCone, MOI.PositiveSemidefiniteConeTriangle), (),
+            (), (MOI.ScalarAffineFunction,), (MOI.VectorOfVariables,), (MOI.VectorAffineFunction,))
+# No free variables to make sure variable bridges are used to increase coverage
+MOI.supports_constraint(::NoFreeVariable, ::Type{MOI.VectorOfVariables}, ::Type{MOI.Reals}) = false
+
 function bridged_mock(mock_optimize!::Function...;
                       model = MOI.Utilities.Model{Float64}())
     mock = MOI.Utilities.MockOptimizer(model)
