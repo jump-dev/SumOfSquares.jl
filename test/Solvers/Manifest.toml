@@ -243,9 +243,9 @@ uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [[PolyJuMP]]
 deps = ["JuMP", "LinearAlgebra", "MathOptInterface", "MultivariateMoments", "MultivariatePolynomials", "SemialgebraicSets"]
-git-tree-sha1 = "481e3278c66511ef7e384e0dabde379966091a71"
+git-tree-sha1 = "e25628d44af34666f669c80de458036b1cb3cf05"
 uuid = "ddf597a6-d67e-5340-b84c-e37d84115374"
-version = "0.3.3"
+version = "0.3.4"
 
 [[Printf]]
 deps = ["Unicode"]
@@ -300,6 +300,12 @@ deps = ["BinaryProvider", "DelimitedFiles", "Libdl", "LinearAlgebra", "MathOptIn
 git-tree-sha1 = "6787480c2fc87c48f2c7d81a8a995244d084602a"
 uuid = "bfe18334-aefd-11e9-1109-4bf2b15a5b91"
 version = "0.1.1"
+
+[[SDPT3]]
+deps = ["LinearAlgebra", "MATLAB", "MathOptInterface", "SparseArrays"]
+git-tree-sha1 = "2c410fe322a3175bb293539d0cb8bb7f6df0c0a7"
+uuid = "e33b2407-87ff-50a0-8b27-f0fe7855237d"
+version = "0.0.2"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
