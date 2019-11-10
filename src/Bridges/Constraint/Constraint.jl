@@ -2,6 +2,9 @@ module Constraint
 
 using LinearAlgebra
 
+using MutableArithmetics
+const MA = MutableArithmetics
+
 using MathOptInterface
 const MOI = MathOptInterface
 const MOIU = MOI.Utilities
