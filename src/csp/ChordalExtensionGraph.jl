@@ -1,6 +1,53 @@
 module ChordalExtensionGraph
 
 export Graph, add_node!, add_edge!, add_clique!, sub_graph, chordal_extension
+
+struct _Graph
+    edges::Vector{Vector{Int}}
+end
+_Graph() = _Graph(Vector{Int}[])
+Base.copy(G::_Graph) = _Graph(deepcopy(G.edges))
+function add_node!(G::_Graph)
+    push!(G.edges, Int[])
+    return length(G.edges)
+end
+function add_edge!(G::_Graph, i::Int, j::Int)
+    if !(j in G.edges[i])
+        push!(G.edges[i], j)
+        push!(G.edges[j], i)
+    end
+    return (i, j)
+
+end
+function add_clique!(G::_Graph, nodes::Vector{Int})
+    for i in 1:(length(nodes) - 1)
+        for j in (i + 1):length(nodes)
+            add_edge!(G, nodes[i], nodes[j])
+        end
+    end
+end
+function neighbors(G::_Graph, i::Int)
+    return G.edges[i]
+end
+function num_edges_subgraph(G::_Graph, nodes::Vector{Int})
+    return sum(nodes) do node
+        length(nodes ∩ neighbors(G, node))
+    end
+end
+function num_missing_edges_subgraph(G::_Graph, nodes::Vector{Int})
+    n = length(nodes)
+    # A clique is a completely connected graph. As such it has n*(n-1)/2 undirected
+    # or equivalently n*(n-1) directed edges.
+    return div(n * (n - 1) - num_edges_subgraph(G, nodes), 2)
+end
+function fill_in(G::_Graph, node::Int)
+    return num_missing_edges_subgraph(G, neighbors(G, node))
+end
+function is_clique(G::_Graph, nodes::Vector{Int})
+    return iszero(num_missing_edges_subgraph(G, nodes))
+end
+
+
 """
     struct Graph{T}
         n2int::Dict{T,Int}
@@ -11,16 +58,16 @@ export Graph, add_node!, add_edge!, add_clique!, sub_graph, chordal_extension
 Type to represend a graph with nodes of type T.
 """
 struct Graph{T}
-    n2int::Dict{T,Int}
+    n2int::Dict{T, Int}
     int2n::Vector{T}
-    edges::Vector{Vector{Int}}
+    graph::_Graph
 end
 
 Base.broadcastable(g::Graph) = Ref(g)
-Base.copy(G::Graph{T}) where T = Graph(copy(G.n2int), copy(G.int2n), deepcopy(G.edges))
+Base.copy(G::Graph{T}) where T = Graph(copy(G.n2int), copy(G.int2n), copy(G.graph))
 
 function Graph{T}() where T
-    return Graph(Dict{T,Int}(), T[], Vector{Vector{Int}}())
+    return Graph(Dict{T, Int}(), T[], _Graph())
 end
 
 function Graph()
@@ -38,7 +85,7 @@ function Base.show(io::IO, G::Graph{T}) where T
     end
     println(io, "Edges:")
     for (x, i) in G.n2int
-        for j in G.edges[i]
+        for j in G.graph.edges[i]
             println(io, "( $x, $(G.int2n[j]) )")
         end
     end
@@ -55,8 +102,8 @@ function add_node!(G::Graph{T}, i::T) where T
         idx = G.n2int[i]
     else
         push!(G.int2n, i)
-        push!(G.edges, [])
-        idx = length(G.int2n)
+        idx = add_node!(G.graph)
+        @assert idx == length(G.int2n)
         G.n2int[i] = idx
     end
     return idx
@@ -68,11 +115,7 @@ end
 Add the unweighted edge (i, j) to graph G. Duplicate edges are not taken into account.
 """
 function add_edge!(G::Graph{T}, xi::T, xj::T) where T
-    i, j = add_node!.(G, [xi, xj])
-    if !(j in G.edges[i])
-        push!(G.edges[i], j)
-        push!(G.edges[j], i)
-    end
+    add_edge!(G.graph, add_node!(G, xi), add_node!(G, xj))
     return (xi, xj)
 end
 
@@ -92,11 +135,7 @@ Add all elements of x as nodes to G and add edges such that x is fully
 connected in G.
 """
 function add_clique!(G::Graph{T}, x::Vector{T}) where T
-    for i in 1:length(x)-1
-        for j in i+1:length(x)
-            add_edge!(G, x[i], x[j])
-        end
-    end
+    add_clique!(G.graph, add_node!.(G, x))
 end
 
 """
@@ -108,9 +147,9 @@ function sub_graph(G::Graph{T}, x::Vector{T}) where T
     S = Graph{T}()
     add_node!.(S, x)
     for node in x
-        for idn in G.edges[G.n2int[node]]
+        for idn in G.graph.edges[G.n2int[node]]
             if G.int2n[idn] in x
-                push!(S.edges[S.n2int[node]], S.n2int[G.int2n[idn]])
+                push!(S.graph.edges[S.n2int[node]], S.n2int[G.int2n[idn]])
             end
         end
     end
@@ -123,11 +162,11 @@ end
 Return neighbors of i in G.
 """
 function neighbors(G::Graph{T}, i::T) where T
-    return [G.int2n[j] for j in G.edges[G.n2int[i]]]
+    return [G.int2n[j] for j in neighbors(G.graph, G.n2int[i])]
 end
 
 function n_edges(G::Graph{T}) where T
-    return sum(length(neighbor) for neighbor in G.edges)
+    return sum(length(neighbor) for neighbor in G.graph.edges)
 end
 
 """
@@ -136,9 +175,7 @@ end
 Return number of edges that need to be added to make the neighbors of `i` a clique.
 """
 function fill_in(G::Graph{T}, i::T) where T
-    S = sub_graph(G, neighbors(G, i))
-    n = length(S.int2n)
-    return div(n * (n - 1) - n_edges(S), 2)
+    return fill_in(G.graph, G.n2int[i])
 end
 
 """
@@ -147,11 +184,7 @@ end
 Return a `Bool` indication whether `x` is a clique in `G`.
 """
 function is_clique(G::Graph{T}, x::Vector{T}) where T
-    S = sub_graph(G, x)
-    n = length(x)
-    # A clique is a completely connected graph. As such it has n*(n-1)/2 undirected
-    # or equivalently n*(n-1) directed edges.
-    return n_edges(S) == n * (n - 1)
+    return is_clique(G.graph, [G.n2int[i] for i in x])
 end
 
 """

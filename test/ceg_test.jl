@@ -26,7 +26,7 @@ const CEG = SumOfSquares.ChordalExtensionGraph
         CEG.add_clique!(G, [:x, :y, :z])
         H = CEG.sub_graph(G, [:x, :y])
         @test H.int2n == [:x, :y]
-        @test H.edges == [[2], [1]]
+        @test H.graph.edges == [[2], [1]]
         @test CEG.neighbors(G, :x) == [:y, :z]
     end
 
@@ -44,7 +44,7 @@ const CEG = SumOfSquares.ChordalExtensionGraph
         CEG.add_edge!.(G, [(:x, :y), (:y, :z)])
         H, cliques = CEG.chordal_extension(G)
         @test H.int2n == G.int2n
-        @test H.edges == G.edges
+        @test H.graph.edges == G.graph.edges
         @test cliques == [[:y, :z], [:x, :y]]
 
         G = CEG.Graph{Int}()
