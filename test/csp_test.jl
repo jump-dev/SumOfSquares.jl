@@ -16,8 +16,8 @@
         H, cliques = chordal_csp_graph(p, [q1, q2])
         @test length(cliques) == 2
         svar = cliques[1]∪cliques[2]
-        @test CEG.contains(svar, H.int2n)
-        @test CEG.contains(H.int2n, svar)
+        @test H.int2n ⊆ svar
+        @test svar ⊆ H.int2n
         @test sort!(svar)== sort!(H.int2n)
         @test CEG.n_edges(H) == 4
         I, cliquesI = chordal_csp_graph(p)

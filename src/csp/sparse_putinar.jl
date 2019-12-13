@@ -119,14 +119,14 @@ function chordal_putinar(
 
             if K isa BasicSemialgebraicSet
                 for ineq in inequalities(K)
-                    if CEG.contains(clique, variables(ineq))
+                    if variables(ineq) ⊆ clique
                         addinequality!(Ki, ineq)
                     end
                 end
             end
 
             for eq in equalities(K)
-                if CEG.contains(clique, variables(eq))
+                if variables(eq) ⊆ clique
                     deg = degree - MP.maxdegree(eq)
                     if deg >= 0
                         mvec = MP.monomials(vars, 0:deg)

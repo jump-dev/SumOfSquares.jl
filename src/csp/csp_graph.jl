@@ -19,11 +19,9 @@ function effective_variables(p::APL)
     return ev
 end
 
-element_type(v::Array{T}) where T = T
-
 function JuMP.variable_type(v::Vector{<:APL})
     vararr = [i for i in variables(sum(vi for vi in v))]
-    return element_type(vararr)
+    return eltype(vararr)
 end
 
 function JuMP.variable_type(p::APL)

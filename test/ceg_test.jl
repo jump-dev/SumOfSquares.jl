@@ -39,22 +39,6 @@ const CEG = SumOfSquares.ChordalExtensionGraph
         @test CEG.is_clique(G, [:x, :y])
     end
 
-    @testset "contains" begin
-        foo  = [1, 2, 3]
-        bar = [1, 2]
-        goo = [1, 2, 4]
-        mar = [3, 2]
-        @test CEG.contains(foo, foo)
-        @test CEG.contains(foo, bar)
-        @test !CEG.contains(foo, goo)
-        @test CEG.contains(foo, mar)
-        @test !CEG.contains(bar, foo)
-        @test !CEG.contains(bar, goo)
-        @test !CEG.contains(bar, mar)
-        @test !CEG.contains(goo, mar)
-    end
-
-
     @testset "chordal" begin
         G = CEG.Graph{Symbol}()
         CEG.add_edge!.(G, [(:x, :y), (:y, :z)])
