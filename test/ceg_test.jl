@@ -24,9 +24,6 @@ const CEG = SumOfSquares.ChordalExtensionGraph
     @testset "sub_sets" begin
         G = CEG.Graph{Symbol}()
         CEG.add_clique!(G, [:x, :y, :z])
-        H = CEG.sub_graph(G, [:x, :y])
-        @test H.int2n == [:x, :y]
-        @test H.graph.edges == [[2], [1]]
         @test CEG.neighbors(G, :x) == [:y, :z]
     end
 

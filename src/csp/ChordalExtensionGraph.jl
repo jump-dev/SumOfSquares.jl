@@ -1,6 +1,6 @@
 module ChordalExtensionGraph
 
-export Graph, add_node!, add_edge!, add_clique!, sub_graph, chordal_extension
+export Graph, add_node!, add_edge!, add_clique!, chordal_extension
 
 struct _Graph
     edges::Vector{Vector{Int}}
@@ -136,24 +136,6 @@ connected in G.
 """
 function add_clique!(G::Graph{T}, x::Vector{T}) where T
     add_clique!(G.graph, add_node!.(G, x))
-end
-
-"""
-    sub_graph(G::Graph{T}, x::Vector{T})
-
-Return restriction of G to x.
-"""
-function sub_graph(G::Graph{T}, x::Vector{T}) where T
-    S = Graph{T}()
-    add_node!.(S, x)
-    for node in x
-        for idn in G.graph.edges[G.n2int[node]]
-            if G.int2n[idn] in x
-                push!(S.graph.edges[S.n2int[node]], S.n2int[G.int2n[idn]])
-            end
-        end
-    end
-    return S
 end
 
 """
