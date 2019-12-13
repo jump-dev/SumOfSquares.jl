@@ -6,6 +6,7 @@ struct _Graph
     edges::Vector{Vector{Int}}
 end
 _Graph() = _Graph(Vector{Int}[])
+Base.broadcastable(g::_Graph) = Ref(g)
 Base.copy(G::_Graph) = _Graph(deepcopy(G.edges))
 function add_node!(G::_Graph)
     push!(G.edges, Int[])
@@ -174,58 +175,47 @@ end
 
 Return a chordal extension of G and the corresponding maximal cliques.
 
-Algorithm 1 in Treewidth Computations I.Upper BoundsHans L. BodlaenderArie M. C. A. Koster
-Technical Report UU-CS-2008-032 September 2008 Department of Information and Computing Sciences
+The algoritm is Algorithm 3 in [BA10] with the GreedyFillIn heuristic of Table I.
+
+[BA10] Bodlaender, Hans L., and Arie MCA Koster.
+Treewidth computations I. Upper bounds.
+Information and Computation 208, no. 3 (2010): 259-275.
 Utrecht University, Utrecht, The Netherlands www.cs.uu.nl
 """
 function chordal_extension(G::Graph{T}) where T
     H = copy(G)
-    nodes = copy(H.int2n)
+    num_nodes = length(H.int2n)
 
     # bring into perfect elimination order based on fill_in
     # (less fill-in, earlier elimination)
-    fill_nodes = Dict(node => fill_in(H, node) for node in nodes)
-    sort!(nodes, by = i -> fill_nodes[i])
-    elimination_order = Dict(nodes[i] => i for i in 1:length(nodes))
+    σ = sortperm(fill_in.(H.graph, 1:num_nodes))
+    elimination_order = Dict(H.int2n[σ[i]] => i for i in 1:num_nodes)
 
+    # Computes elimination graph `H` using equation (6.1) of [VA15].
     # generate cliques that are potentially maximal in the resulting graph H
-    candidate_cliques = Vector{Vector{T}}()
-    for node in nodes
+    candidate_cliques = Vector{T}[]
+    for node_index in σ
+        node = H.int2n[node_index]
         elimination_node = elimination_order[node]
 
         # look at all its neighbors. In H we want the neighbors to form a clique.
         neighbor_nodes = neighbors(H, node)
 
         # add neighbors and node as a potentially maximal clique
-        candidate_clique = push!(copy(neighbor_nodes), node)
+        candidate_clique = [neighbor for neighbor in neighbor_nodes if elimination_order[neighbor] > elimination_node]
+        push!(candidate_clique, node)
+        push!(candidate_cliques, candidate_clique)
+
         # add edges to H to make the new candidate_clique at least potentially a clique
-        while !isempty(neighbor_nodes)
-
-            neighbor = popfirst!(neighbor_nodes)
-            other_neighbors = copy(neighbor_nodes)
-            non_neighbors = Vector{T}()
-            while !isempty(other_neighbors)
-                next_neighbor = popfirst!(other_neighbors)
-
-                # add an edge between neighbor and next_neighbor if both have more fill-in
-                if elimination_order[neighbor] > elimination_node
-                    if elimination_order[next_neighbor] > elimination_node
-                        add_edge!(H, neighbor, next_neighbor)
-                    else
-                        if !is_clique(H,[neighbor, next_neighbor])
-                            push!(non_neighbors, next_neighbor)
-                        end
-                    end
-                else
-                    if !is_clique(H,[neighbor, next_neighbor])
-                        push!(non_neighbors, neighbor)
+        for i in eachindex(neighbor_nodes)
+            if elimination_order[neighbor_nodes[i]] > elimination_node
+                for j in (i + 1):length(neighbor_nodes)
+                    if elimination_order[neighbor_nodes[j]] > elimination_node
+                        add_edge!(H, neighbor_nodes[i], neighbor_nodes[j])
                     end
                 end
             end
-            # remove neighbors that are missing an edge in candidate_clique
-            setdiff!(candidate_clique, non_neighbors)
         end
-        push!(candidate_cliques, candidate_clique)
     end
     sort!.(candidate_cliques)
     unique!(candidate_cliques)
