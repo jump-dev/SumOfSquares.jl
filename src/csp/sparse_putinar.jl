@@ -37,20 +37,20 @@ end
 
 """
     putinar(
-                         p::APL, 
-                         degree::Int,
-                         K::AbstractBasicSemialgebraicSet;
-                         model::JuMP.Model = SOSModel()
-                        )
+        p::APL,
+        degree::Int,
+        K::AbstractBasicSemialgebraicSet;
+        model::JuMP.Model = SOSModel()
+    )
 
 
 """
 function putinar(
-                         p::APL, 
-                         degree::Int,
-                         K::AbstractBasicSemialgebraicSet;
-                         model::JuMP.Model = SOSModel()
-                        )
+        p::APL,
+        degree::Int,
+        K::AbstractBasicSemialgebraicSet;
+        model::JuMP.Model = SOSModel()
+    )
 
     if K isa FullSpace
         println("Unbounded domain. Ignoring degree = $degree .")
@@ -85,7 +85,7 @@ end
 
 """
     chordal_putinar(
-                         p::APL, 
+                         p::APL,
                          degree::Int,
                          K::AbstractBasicSemialgebraicSet;
                          model::JuMP.Model = SOSModel()
@@ -94,7 +94,7 @@ end
 
 """
 function chordal_putinar(
-                         p::APL, 
+                         p::APL,
                          degree::Int,
                          K::AbstractBasicSemialgebraicSet;
                          model::JuMP.Model = SOSModel()
@@ -105,12 +105,12 @@ function chordal_putinar(
         model = chordal_sos(p, model)
     else
         H, cliques = chordal_csp_graph(p, K)
-        
+
         for clique in cliques
 
             vars = Tuple(unique!(sort!(clique, rev = true)))
             mvec = MP.monomials(vars, 0:degree)
-            pp = @variable model variable_type=Poly(mvec) 
+            pp = @variable model variable_type=Poly(mvec)
 
             p = p - pp
 

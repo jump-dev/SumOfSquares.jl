@@ -1,32 +1,17 @@
 using SumOfSquares
 using DynamicPolynomials
 using MosekTools
-using MathOptInterface
-const MOI = MathOptInterface
-using Profile, ProfileView
 using Test
 
-include("test_functions.jl")
+include("sparse_polynomials.jl")
 
 function test(test_function, factory)
-    m2 = SOSModel(factory)
-    @variable m2 t
-    @objective m2 Max t
-    chordal_sos(test_function-t; model = m2)
-    optimize!(m2)
-    println(termination_status(m2))
-
-    m = SOSModel(factory)
-    @variable m t
-    @objective m Max t
-    @constraint m test_function-t in SOSCone()
-    optimize!(m)
-    println(termination_status(m))
-    return abs(objective_value(m)-objective_value(m2))
+    sparse_model = sparse(test_function, factory)
+    dense_model = dense(test_function, factory)
+    return abs(objective_value(sparse_model) - objective_value(dense_model))
 end
 
-
-@testset "choral_sos" begin
+@testset "chordal_sos" begin
     factory = with_optimizer(Mosek.Optimizer)
 
     val = test(chained_singular(12), factory)

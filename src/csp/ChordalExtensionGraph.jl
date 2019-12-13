@@ -1,5 +1,3 @@
-__precompile__()
-
 module ChordalExtensionGraph
 
 export Graph, add_node!, add_edge!, add_clique!, sub_graph, chordal_extension
@@ -22,11 +20,11 @@ Base.broadcastable(g::Graph) = Ref(g)
 Base.copy(G::Graph{T}) where T = Graph(copy(G.n2int), copy(G.int2n), deepcopy(G.edges))
 
 function Graph{T}() where T
-    return Graph(Dict{T,Int}(),T[], Vector{Vector{Int}}())
+    return Graph(Dict{T,Int}(), T[], Vector{Vector{Int}}())
 end
 
 function Graph()
-    show("Specify type of nodes!")
+    error("`Graph()` constructor is not valid, you need to specify the type of nodes as type parameter, e.g. `Graph{Int}()`.")
 end
 
 function Base.show(io::IO, G::Graph{T}) where T

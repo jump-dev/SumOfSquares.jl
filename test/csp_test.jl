@@ -22,9 +22,6 @@
         @test CEG.n_edges(H) == 4
         I, cliquesI = chordal_csp_graph(p)
         @test sort!(I.int2n) == sort!(H.int2n)
-        @test sort!(I.edges) == sort!(H.edges)      
+        @test sort!(I.edges) == sort!(H.edges)
     end
 end
-
-
-

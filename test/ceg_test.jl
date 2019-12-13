@@ -1,7 +1,12 @@
+using Test
+
+using SumOfSquares
+const CEG = SumOfSquares.ChordalExtensionGraph
+
 @testset "Chordal Extensions" begin
     @testset "CEG.Graph" begin
         @test CEG.Graph{Int}() isa CEG.Graph{Int}
-        @test CEG.Graph() == nothing
+        @test_throws ErrorException CEG.Graph()
         G = CEG.Graph{Int}()
         @test CEG.add_node!(G, 1) == 1
         @test CEG.add_edge!(G, (1, 2)) == (1, 2)
@@ -41,7 +46,7 @@
         mar = [3, 2]
         @test CEG.contains(foo, foo)
         @test CEG.contains(foo, bar)
-        @test !CEG.contains(foo, goo)    
+        @test !CEG.contains(foo, goo)
         @test CEG.contains(foo, mar)
         @test !CEG.contains(bar, foo)
         @test !CEG.contains(bar, goo)

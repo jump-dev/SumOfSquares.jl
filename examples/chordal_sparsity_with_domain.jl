@@ -10,24 +10,25 @@ p = 1 - x*y - y*z
 
 # use chordal sparsity
 
-sm = SOSModel(with_optimizer(Mosek.Optimizer))
-@variable sm t
-@objective sm Max t
-chordal_putinar(p-t, 2, K,  model = sm)
+sparse_model = SOSModel(with_optimizer(Mosek.Optimizer))
+@variable(sparse_model, t)
+@objective(sparse_model, Max, t)
 
-optimize!(sm)
-sparse_value = objective_value(sm)
+chordal_putinar(p - t, 2, K, model = sparse_model)
+
+optimize!(sparse_model)
+sparse_value = objective_value(sparse_model)
 
 # no chordal sparsity
 
-m = SOSModel(with_optimizer(Mosek.Optimizer))
-@variable m t
-@objective m Max t
+dense_model = SOSModel(with_optimizer(Mosek.Optimizer))
+@variable(dense_model, t)
+@objective(dense_model, Max, t)
 
-@constraint m p-t in SOSCone() domain = K 
+@constraint(dense_model, p - t in SOSCone(), domain = K)
 
-optimize!(m)
-dense_value = objective_value(m)
+optimize!(dense_model)
+dense_value = objective_value(dense_model)
 
 println("Sparse and dense euqivalent?")
-abs(dense_value-sparse_value)<10^-8
+println("Absolute different of objective value: ", abs(dense_value - sparse_value))
