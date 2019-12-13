@@ -23,7 +23,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet}) where {T, F, DT, CT, UMCT, UMST, MT, MVT}
 
     @assert MOI.output_dimension(f) == length(set.monomials)
-    p = MP.polynomial(collect(MOIU.eachscalar(f)), set.monomials)
+    p = MP.polynomial(MOIU.scalarize(f), set.monomials)
     n = length(set.domain.p)
     λ_monos     = MVT[]
     λ_variables = Vector{MOI.VariableIndex}[]
