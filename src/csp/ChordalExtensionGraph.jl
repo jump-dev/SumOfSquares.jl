@@ -170,32 +170,22 @@ function is_clique(G::Graph{T}, x::Vector{T}) where T
     return is_clique(G.graph, [G.n2int[i] for i in x])
 end
 
-"""
-    chordal_extension(G::Graph{T})
-
-Return a chordal extension of G and the corresponding maximal cliques.
-
-The algoritm is Algorithm 3 in [BA10] with the GreedyFillIn heuristic of Table I.
-
-[BA10] Bodlaender, Hans L., and Arie MCA Koster.
-Treewidth computations I. Upper bounds.
-Information and Computation 208, no. 3 (2010): 259-275.
-Utrecht University, Utrecht, The Netherlands www.cs.uu.nl
-"""
-function chordal_extension(G::Graph{T}) where T
+function chordal_extension(G::_Graph)
     H = copy(G)
-    num_nodes = length(H.int2n)
+    num_nodes = length(H.edges)
 
-    # bring into perfect elimination order based on fill_in
+    # Bring into perfect elimination order based on `fill_in`.
     # (less fill-in, earlier elimination)
-    σ = sortperm(fill_in.(H.graph, 1:num_nodes))
-    elimination_order = Dict(H.int2n[σ[i]] => i for i in 1:num_nodes)
+    σ = sortperm(fill_in.(H, 1:num_nodes))
+    elimination_order = zeros(Int, num_nodes)
+    for i in 1:num_nodes
+        elimination_order[σ[i]] = i
+    end
 
     # Computes elimination graph `H` using equation (6.1) of [VA15].
     # generate cliques that are potentially maximal in the resulting graph H
-    candidate_cliques = Vector{T}[]
-    for node_index in σ
-        node = H.int2n[node_index]
+    candidate_cliques = Vector{Int}[]
+    for node in σ
         elimination_node = elimination_order[node]
 
         # look at all its neighbors. In H we want the neighbors to form a clique.
@@ -217,8 +207,10 @@ function chordal_extension(G::Graph{T}) where T
             end
         end
     end
+
     sort!.(candidate_cliques)
     unique!(candidate_cliques)
+
     # check whether candidate cliques are actually cliques
     candidate_cliques = candidate_cliques[[is_clique(H, clique) for clique in candidate_cliques]]
     sort!(candidate_cliques, by = x -> length(x))
@@ -230,13 +222,27 @@ function chordal_extension(G::Graph{T}) where T
         end
     end
 
-    # tests
-    control = collect(Iterators.flatten(maximal_cliques))
-    unique!(sort!(control))
-    if sort!(H.int2n) != control
+    if length(Set(Iterators.flatten(maximal_cliques))) != num_nodes
         error("Maximal cliques do not cover all nodes.")
     end
 
     return H, maximal_cliques
+end
+
+"""
+    chordal_extension(G::Graph{T})
+
+Return a chordal extension of G and the corresponding maximal cliques.
+
+The algoritm is Algorithm 3 in [BA10] with the GreedyFillIn heuristic of Table I.
+
+[BA10] Bodlaender, Hans L., and Arie MCA Koster.
+Treewidth computations I. Upper bounds.
+Information and Computation 208, no. 3 (2010): 259-275.
+Utrecht University, Utrecht, The Netherlands www.cs.uu.nl
+"""
+function chordal_extension(G::Graph{T}) where T
+    H, cliques = chordal_extension(G.graph)
+    return Graph{T}(G.n2int, G.int2n, H), [[G.int2n[i] for i in clique] for clique in cliques]
 end
 end #module
