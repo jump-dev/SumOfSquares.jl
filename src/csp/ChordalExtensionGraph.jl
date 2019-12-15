@@ -2,20 +2,26 @@ module ChordalExtensionGraph
 
 export Graph, add_node!, add_edge!, add_clique!, chordal_extension
 
+# With a `Vector{Vector{Int}}` with unsorted neighbors, computing fill-in
+# would be inefficient.
+# With a `Vector{Vector{Int}}` with sorted neighbors, adding an edge would be
+# inefficient.
+# With `Vector{Set{Int}}` both adding edges and computing fill-in is efficient.
+
 struct _Graph
-    edges::Vector{Vector{Int}}
+    neighbors::Vector{Set{Int}}
 end
-_Graph() = _Graph(Vector{Int}[])
+_Graph() = _Graph(Set{Int}[])
 Base.broadcastable(g::_Graph) = Ref(g)
-Base.copy(G::_Graph) = _Graph(deepcopy(G.edges))
+Base.copy(G::_Graph) = _Graph(deepcopy(G.neighbors))
 function add_node!(G::_Graph)
-    push!(G.edges, Int[])
-    return length(G.edges)
+    push!(G.neighbors, Set{Int}())
+    return length(G.neighbors)
 end
 function add_edge!(G::_Graph, i::Int, j::Int)
-    if !(j in G.edges[i])
-        push!(G.edges[i], j)
-        push!(G.edges[j], i)
+    if !(j in G.neighbors[i])
+        push!(G.neighbors[i], j)
+        push!(G.neighbors[j], i)
     end
     return (i, j)
 
@@ -28,14 +34,17 @@ function add_clique!(G::_Graph, nodes::Vector{Int})
     end
 end
 function neighbors(G::_Graph, i::Int)
-    return G.edges[i]
+    return G.neighbors[i]
 end
-function num_edges_subgraph(G::_Graph, nodes::Vector{Int})
+function num_edges_subgraph(G::_Graph, nodes::Union{Vector{Int}, Set{Int}})
     return sum(nodes) do node
-        length(nodes ∩ neighbors(G, node))
+        neighs = neighbors(G, node)
+        return count(nodes) do node
+            node in neighs
+        end
     end
 end
-function num_missing_edges_subgraph(G::_Graph, nodes::Vector{Int})
+function num_missing_edges_subgraph(G::_Graph, nodes::Union{Vector{Int}, Set{Int}})
     n = length(nodes)
     # A clique is a completely connected graph. As such it has n*(n-1)/2 undirected
     # or equivalently n*(n-1) directed edges.
@@ -86,7 +95,7 @@ function Base.show(io::IO, G::Graph{T}) where T
     end
     println(io, "Edges:")
     for (x, i) in G.n2int
-        for j in G.graph.edges[i]
+        for j in G.graph.neighbors[i]
             println(io, "( $x, $(G.int2n[j]) )")
         end
     end
@@ -139,40 +148,9 @@ function add_clique!(G::Graph{T}, x::Vector{T}) where T
     add_clique!(G.graph, add_node!.(G, x))
 end
 
-"""
-    neighbors(G::Graph{T}, i::T}
-
-Return neighbors of i in G.
-"""
-function neighbors(G::Graph{T}, i::T) where T
-    return [G.int2n[j] for j in neighbors(G.graph, G.n2int[i])]
-end
-
-function n_edges(G::Graph{T}) where T
-    return sum(length(neighbor) for neighbor in G.graph.edges)
-end
-
-"""
-    fill_in(G::Graph{T}, i::T}
-
-Return number of edges that need to be added to make the neighbors of `i` a clique.
-"""
-function fill_in(G::Graph{T}, i::T) where T
-    return fill_in(G.graph, G.n2int[i])
-end
-
-"""
-    is_clique(G::Graph{T}, x::Vector{T})
-
-Return a `Bool` indication whether `x` is a clique in `G`.
-"""
-function is_clique(G::Graph{T}, x::Vector{T}) where T
-    return is_clique(G.graph, [G.n2int[i] for i in x])
-end
-
 function chordal_extension(G::_Graph)
     H = copy(G)
-    num_nodes = length(H.edges)
+    num_nodes = length(H.neighbors)
 
     # Bring into perfect elimination order based on `fill_in`.
     # (less fill-in, earlier elimination)
@@ -189,7 +167,7 @@ function chordal_extension(G::_Graph)
         elimination_node = elimination_order[node]
 
         # look at all its neighbors. In H we want the neighbors to form a clique.
-        neighbor_nodes = neighbors(H, node)
+        neighbor_nodes = collect(neighbors(H, node))
 
         # add neighbors and node as a potentially maximal clique
         candidate_clique = [neighbor for neighbor in neighbor_nodes if elimination_order[neighbor] > elimination_node]

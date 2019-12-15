@@ -24,16 +24,16 @@ const CEG = SumOfSquares.ChordalExtensionGraph
     @testset "sub_sets" begin
         G = CEG.Graph{Symbol}()
         CEG.add_clique!(G, [:x, :y, :z])
-        @test CEG.neighbors(G, :x) == [:y, :z]
+        @test CEG.neighbors(G.graph, 1) == Set([2, 3])
     end
 
     @testset "cliques" begin
         G = CEG.Graph{Symbol}()
         CEG.add_edge!(G, :x, :y)
         CEG.add_edge!(G, :y, :z)
-        @test CEG.fill_in.(G, [:x, :y, :z]) == [0; 1; 0]
-        @test !CEG.is_clique(G, [:x, :y, :z])
-        @test CEG.is_clique(G, [:x, :y])
+        @test CEG.fill_in.(G.graph, [1, 2, 3]) == [0, 1, 0]
+        @test !CEG.is_clique(G.graph, [1, 2, 3])
+        @test CEG.is_clique(G.graph, [1, 2])
     end
 
     @testset "chordal" begin
@@ -41,13 +41,12 @@ const CEG = SumOfSquares.ChordalExtensionGraph
         CEG.add_edge!.(G, [(:x, :y), (:y, :z)])
         H, cliques = CEG.chordal_extension(G)
         @test H.int2n == G.int2n
-        @test H.graph.edges == G.graph.edges
+        @test H.graph.neighbors == G.graph.neighbors
         @test cliques == [[:y, :z], [:x, :y]]
 
         G = CEG.Graph{Int}()
         CEG.add_edge!.(G, [(1, 2), (1, 3), (3, 4), (2, 4)])
         H, cliques = CEG.chordal_extension(G)
-        @test CEG.n_edges(G) <= CEG.n_edges(H)
         @test length.(cliques) == [3, 3]
 
     end
