@@ -36,31 +36,31 @@ function csp_constraint_clique(p::APL)
     return effective_variables(p)
 end
 
-function csp_graph(::Type{T}, objective::APL, constraints::Vector{<:APL}, G::CEG.Graph{T} = CEG.Graph{T}() ) where T
+function csp_graph(::Type{T}, objective::APL, constraints::Vector{<:APL}, G::CEG.LabelledGraph{T} = CEG.LabelledGraph{T}() ) where T
     CEG.add_clique!.(G, csp_ojective_cliques(objective))
     CEG.add_clique!.(G, csp_constraint_clique.(constraints))
     return G
 end
 
-function csp_graph(objective::APL, constraints::Vector{<:APL}, G::CEG.Graph = CEG.Graph{variable_type(objective)}() )
+function csp_graph(objective::APL, constraints::Vector{<:APL}, G::CEG.LabelledGraph = CEG.LabelledGraph{variable_type(objective)}() )
     CEG.add_clique!.(G, csp_ojective_cliques(objective))
     CEG.add_clique!.(G, csp_constraint_clique.(constraints))
     return G
 end
 
-function chordal_csp_graph(::Type{T}, objective::APL, constraints::Vector{<:APL}, G::CEG.Graph{T} = CEG.Graph{T}() ) where T
+function chordal_csp_graph(::Type{T}, objective::APL, constraints::Vector{<:APL}, G::CEG.LabelledGraph{T} = CEG.LabelledGraph{T}() ) where T
     return CEG.chordal_extension(csp_graph(T, objective, constraints, G))
 end
 
-function chordal_csp_graph(objective::APL, constraints::Vector{<:APL}, G::CEG.Graph = CEG.Graph{variable_type(objective)}() )
+function chordal_csp_graph(objective::APL, constraints::Vector{<:APL}, G::CEG.LabelledGraph = CEG.LabelledGraph{variable_type(objective)}() )
     return CEG.chordal_extension(csp_graph(objective, constraints, G))
 end
 
-function chordal_csp_graph(objective::APL, G::CEG.Graph = CEG.Graph{variable_type(objective)}() )
+function chordal_csp_graph(objective::APL, G::CEG.LabelledGraph = CEG.LabelledGraph{variable_type(objective)}() )
     return CEG.chordal_extension(csp_graph(objective, typeof(objective)[], G))
 end
 
-function chordal_csp_graph(objective::APL, K::AbstractBasicSemialgebraicSet, G::CEG.Graph = CEG.Graph{variable_type(objective)}() )
+function chordal_csp_graph(objective::APL, K::AbstractBasicSemialgebraicSet, G::CEG.LabelledGraph = CEG.LabelledGraph{variable_type(objective)}() )
     constraints = Vector{typeof(objective)}()
     if K isa BasicSemialgebraicSet
         append!(constraints, inequalities(K))
