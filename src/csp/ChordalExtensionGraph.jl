@@ -10,14 +10,16 @@ export LabelledGraph, add_node!, add_edge!, add_clique!, chordal_extension
 
 struct Graph
     neighbors::Vector{Set{Int}}
+    disabled::BitSet
 end
-Graph() = Graph(Set{Int}[])
+Graph() = Graph(Set{Int}[], BitSet())
 Base.broadcastable(g::Graph) = Ref(g)
-Base.copy(G::Graph) = Graph(deepcopy(G.neighbors))
+Base.copy(G::Graph) = Graph(deepcopy(G.neighbors), copy(G.disabled))
 function add_node!(G::Graph)
     push!(G.neighbors, Set{Int}())
     return length(G.neighbors)
 end
+num_nodes(G::Graph) = length(G.neighbors)
 function add_edge!(G::Graph, i::Int, j::Int)
     if !(j in G.neighbors[i])
         push!(G.neighbors[i], j)
@@ -33,30 +35,84 @@ function add_clique!(G::Graph, nodes::Vector{Int})
         end
     end
 end
-function neighbors(G::Graph, i::Int)
-    return G.neighbors[i]
+disable_node!(G::Graph, node::Int) = push!(G.disabled, node)
+is_enabled(G::Graph, node::Int) = !(node in G.disabled)
+
+"""
+    neighbors(G::Graph, node::Int}
+
+Return neighbors of `node` in `G`.
+"""
+function neighbors(G::Graph, node::Int)
+    return G.neighbors[node]
 end
-function num_edges_subgraph(G::Graph, nodes::Union{Vector{Int}, Set{Int}})
-    return sum(nodes) do node
-        neighs = neighbors(G, node)
-        return count(nodes) do node
-            node in neighs
-        end
+
+function _num_edges_subgraph(G::Graph, nodes::Union{Vector{Int}, Set{Int}}, node::Int)
+    neighs = neighbors(G, node)
+    return count(nodes) do node
+        is_enabled(G, node) && node in neighs
     end
 end
+function num_edges_subgraph(G::Graph, nodes::Union{Vector{Int}, Set{Int}})
+    return mapreduce(+, nodes; init = 0) do node
+        is_enabled(G, node) ? _num_edges_subgraph(G, nodes, node) : 0
+    end
+end
+
 function num_missing_edges_subgraph(G::Graph, nodes::Union{Vector{Int}, Set{Int}})
-    n = length(nodes)
+    n = count(node -> is_enabled(G, node), nodes)
     # A clique is a completely connected graph. As such it has n*(n-1)/2 undirected
     # or equivalently n*(n-1) directed edges.
     return div(n * (n - 1) - num_edges_subgraph(G, nodes), 2)
 end
+
+"""
+    fill_in(G::Graph{T}, i::T}
+
+Return number of edges that need to be added to make the neighbors of `i` a clique.
+"""
 function fill_in(G::Graph, node::Int)
     return num_missing_edges_subgraph(G, neighbors(G, node))
 end
+
+"""
+    is_clique(G::Graph{T}, x::Vector{T})
+
+Return a `Bool` indication whether `x` is a clique in `G`.
+"""
 function is_clique(G::Graph, nodes::Vector{Int})
     return iszero(num_missing_edges_subgraph(G, nodes))
 end
 
+struct FillInCache
+    graph::Graph
+    fill_in::Vector{Int}
+end
+FillInCache(graph::Graph) = FillInCache(graph, [fill_in(graph, i) for i in 1:num_nodes(graph)])
+Base.copy(G::FillInCache) = FillInCache(copy(G.graph), copy(G.fill_in))
+
+neighbors(G::FillInCache, node::Int) = neighbors(G.graph, node)
+function add_edge!(G::FillInCache, i::Int, j::Int)
+    ni = neighbors(G, i)
+    nj = neighbors(G, j)
+    if i in nj
+        @assert j in ni
+        return
+    end
+    @assert !(j in ni)
+    for node in ni
+        @assert node != i
+        @assert node != j
+        if node in nj
+            G.fill_in[node] -= 1
+        end
+    end
+    G.fill_in[i] += length(ni) - _num_edges_subgraph(G.graph, ni, j)
+    G.fill_in[j] += length(nj) - _num_edges_subgraph(G.graph, nj, i)
+    add_edge!(G.graph, i, j)
+    return
+end
+fill_in(G::FillInCache, node::Int) = G.fill_in[node]
 
 """
     struct LabelledGraph{T}
@@ -150,13 +206,12 @@ end
 
 function chordal_extension(G::Graph)
     H = copy(G)
-    num_nodes = length(H.neighbors)
 
     # Bring into perfect elimination order based on `fill_in`.
     # (less fill-in, earlier elimination)
-    σ = sortperm(fill_in.(H, 1:num_nodes))
-    elimination_order = zeros(Int, num_nodes)
-    for i in 1:num_nodes
+    σ = sortperm(fill_in.(H, 1:num_nodes(H)))
+    elimination_order = zeros(Int, num_nodes(H))
+    for i in 1:num_nodes(H)
         elimination_order[σ[i]] = i
     end
 
@@ -200,7 +255,7 @@ function chordal_extension(G::Graph)
         end
     end
 
-    if length(Set(Iterators.flatten(maximal_cliques))) != num_nodes
+    if length(Set(Iterators.flatten(maximal_cliques))) != num_nodes(H)
         error("Maximal cliques do not cover all nodes.")
     end
 
