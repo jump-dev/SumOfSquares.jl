@@ -91,6 +91,7 @@ end
 FillInCache(graph::Graph) = FillInCache(graph, [fill_in(graph, i) for i in 1:num_nodes(graph)])
 Base.copy(G::FillInCache) = FillInCache(copy(G.graph), copy(G.fill_in))
 
+num_nodes(G::FillInCache) = num_nodes(G.graph)
 neighbors(G::FillInCache, node::Int) = neighbors(G.graph, node)
 function add_edge!(G::FillInCache, i::Int, j::Int)
     ni = neighbors(G, i)
@@ -119,6 +120,7 @@ function disable_node!(G::FillInCache, node::Int)
     end
     disable_node!(G.graph, node)
 end
+is_enabled(G::FillInCache, node::Int) = is_enabled(G.graph, node)
 
 """
     struct LabelledGraph{T}
@@ -210,42 +212,52 @@ function add_clique!(G::LabelledGraph{T}, x::Vector{T}) where T
     add_clique!(G.graph, add_node!.(G, x))
 end
 
-function chordal_extension(G::Graph)
-    H = copy(G)
+abstract type AbstractGreedyAlgorithm end
 
-    # Bring into perfect elimination order based on `fill_in`.
-    # (less fill-in, earlier elimination)
-    σ = sortperm(fill_in.(H, 1:num_nodes(H)))
-    elimination_order = zeros(Int, num_nodes(H))
-    for i in 1:num_nodes(H)
-        elimination_order[σ[i]] = i
-    end
+struct GreedyFillIn <: AbstractGreedyAlgorithm end
+cache(G::Graph, ::GreedyFillIn) = FillInCache(G)
+heuristic_value(G::FillInCache, node::Int, ::GreedyFillIn) = fill_in(G, node)
 
-    # Computes elimination graph `H` using equation (6.1) of [VA15].
-    # generate cliques that are potentially maximal in the resulting graph H
+function _greedy_triangulation!(G, algo::AbstractGreedyAlgorithm)
+    # Computes elimination graph `G` using equation (6.1) of [VA15].
+    # generate cliques that are potentially maximal in the resulting graph G
     candidate_cliques = Vector{Int}[]
-    for node in σ
-        elimination_node = elimination_order[node]
+    for i in 1:num_nodes(G)
+        node = argmin(map(1:num_nodes(G)) do node
+            if is_enabled(G, node)
+                heuristic_value(G, node, algo)
+            else
+                typemax(Int)
+            end
+        end)
 
-        # look at all its neighbors. In H we want the neighbors to form a clique.
-        neighbor_nodes = collect(neighbors(H, node))
+        # look at all its neighbors. In G we want the neighbors to form a clique.
+        neighbor_nodes = collect(neighbors(G, node))
 
         # add neighbors and node as a potentially maximal clique
-        candidate_clique = [neighbor for neighbor in neighbor_nodes if elimination_order[neighbor] > elimination_node]
+        candidate_clique = [neighbor for neighbor in neighbor_nodes if is_enabled(G, neighbor)]
         push!(candidate_clique, node)
         push!(candidate_cliques, candidate_clique)
 
-        # add edges to H to make the new candidate_clique at least potentially a clique
+        # add edges to G to make the new candidate_clique at least potentially a clique
         for i in eachindex(neighbor_nodes)
-            if elimination_order[neighbor_nodes[i]] > elimination_node
+            if is_enabled(G, i)
                 for j in (i + 1):length(neighbor_nodes)
-                    if elimination_order[neighbor_nodes[j]] > elimination_node
-                        add_edge!(H, neighbor_nodes[i], neighbor_nodes[j])
+                    if is_enabled(G, j)
+                        add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
                     end
                 end
             end
         end
+        disable_node!(G, node)
     end
+    return candidate_cliques
+end
+
+function chordal_extension(G::Graph, algo::AbstractGreedyAlgorithm)
+    H = copy(G)
+
+    candidate_cliques = _greedy_triangulation!(cache(H, algo), algo)
 
     sort!.(candidate_cliques)
     unique!(candidate_cliques)
@@ -280,8 +292,8 @@ Treewidth computations I. Upper bounds.
 Information and Computation 208, no. 3 (2010): 259-275.
 Utrecht University, Utrecht, The Netherlands www.cs.uu.nl
 """
-function chordal_extension(G::LabelledGraph{T}) where T
-    H, cliques = chordal_extension(G.graph)
+function chordal_extension(G::LabelledGraph{T}, algo::AbstractGreedyAlgorithm) where T
+    H, cliques = chordal_extension(G.graph, algo)
     return LabelledGraph{T}(G.n2int, G.int2n, H), [[G.int2n[i] for i in clique] for clique in cliques]
 end
 end #module

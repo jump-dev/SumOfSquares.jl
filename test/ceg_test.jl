@@ -174,14 +174,14 @@ end
     @testset "chordal" begin
         G = CEG.LabelledGraph{Symbol}()
         CEG.add_edge!.(G, [(:x, :y), (:y, :z)])
-        H, cliques = CEG.chordal_extension(G)
+        H, cliques = CEG.chordal_extension(G, CEG.GreedyFillIn())
         @test H.int2n == G.int2n
         @test H.graph.neighbors == G.graph.neighbors
         @test cliques == [[:y, :z], [:x, :y]]
 
         G = CEG.LabelledGraph{Int}()
         CEG.add_edge!.(G, [(1, 2), (1, 3), (3, 4), (2, 4)])
-        H, cliques = CEG.chordal_extension(G)
+        H, cliques = CEG.chordal_extension(G, CEG.GreedyFillIn())
         @test length.(cliques) == [3, 3]
     end
 

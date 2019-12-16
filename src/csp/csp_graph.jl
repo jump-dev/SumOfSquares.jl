@@ -49,15 +49,15 @@ function csp_graph(objective::APL, constraints::Vector{<:APL}, G::CEG.LabelledGr
 end
 
 function chordal_csp_graph(::Type{T}, objective::APL, constraints::Vector{<:APL}, G::CEG.LabelledGraph{T} = CEG.LabelledGraph{T}() ) where T
-    return CEG.chordal_extension(csp_graph(T, objective, constraints, G))
+    return CEG.chordal_extension(csp_graph(T, objective, constraints, G), CEG.GreedyFillIn())
 end
 
 function chordal_csp_graph(objective::APL, constraints::Vector{<:APL}, G::CEG.LabelledGraph = CEG.LabelledGraph{variable_type(objective)}() )
-    return CEG.chordal_extension(csp_graph(objective, constraints, G))
+    return CEG.chordal_extension(csp_graph(objective, constraints, G), CEG.GreedyFillIn())
 end
 
 function chordal_csp_graph(objective::APL, G::CEG.LabelledGraph = CEG.LabelledGraph{variable_type(objective)}() )
-    return CEG.chordal_extension(csp_graph(objective, typeof(objective)[], G))
+    return CEG.chordal_extension(csp_graph(objective, typeof(objective)[], G), CEG.GreedyFillIn())
 end
 
 function chordal_csp_graph(objective::APL, K::AbstractBasicSemialgebraicSet, G::CEG.LabelledGraph = CEG.LabelledGraph{variable_type(objective)}() )
