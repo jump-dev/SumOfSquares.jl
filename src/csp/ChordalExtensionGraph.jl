@@ -107,12 +107,18 @@ function add_edge!(G::FillInCache, i::Int, j::Int)
             G.fill_in[node] -= 1
         end
     end
-    G.fill_in[i] += length(ni) - _num_edges_subgraph(G.graph, ni, j)
-    G.fill_in[j] += length(nj) - _num_edges_subgraph(G.graph, nj, i)
+    G.fill_in[i] += count(k -> is_enabled(G.graph, k), ni) - _num_edges_subgraph(G.graph, ni, j)
+    G.fill_in[j] += count(k -> is_enabled(G.graph, k), nj) - _num_edges_subgraph(G.graph, nj, i)
     add_edge!(G.graph, i, j)
-    return
 end
 fill_in(G::FillInCache, node::Int) = G.fill_in[node]
+function disable_node!(G::FillInCache, node::Int)
+    for neighbor in neighbors(G, node)
+        nodes = neighbors(G, neighbor)
+        G.fill_in[neighbor] -= (length(nodes) - 1) - _num_edges_subgraph(G.graph, nodes, node)
+    end
+    disable_node!(G.graph, node)
+end
 
 """
     struct LabelledGraph{T}

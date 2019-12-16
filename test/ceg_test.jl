@@ -149,7 +149,7 @@ end
         y = CEG.add_node!(G)
         z = CEG.add_node!(G)
         fill_in_3_nodes_test(copy(G), x, y, z)
-        #fill_in_3_nodes_test(CEG.FillInCache(copy(G)), x, y, z)
+        fill_in_3_nodes_test(CEG.FillInCache(copy(G)), x, y, z)
     end
 
     @testset "fill_in with 4 nodes" begin
@@ -159,7 +159,7 @@ end
         y = CEG.add_node!(G)
         z = CEG.add_node!(G)
         fill_in_4_nodes_test(copy(G), w, x, y, z)
-        #fill_in_4_nodes_test(CEG.FillInCache(copy(G)), w, x, y, z)
+        fill_in_4_nodes_test(CEG.FillInCache(copy(G)), w, x, y, z)
     end
 
     @testset "cliques" begin
