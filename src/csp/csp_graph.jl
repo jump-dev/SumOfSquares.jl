@@ -1,18 +1,10 @@
 export csp_graph, effective_variables, chordal_csp_graph
 
-function MP.degree(p::APL, v::MP.AbstractVariable)
-    d = 0
-    for t in MP.terms(p)
-        d = max(d, MP.degree(t, v))
-    end
-    return d
-end
-
 function effective_variables(p::APL)
     vs = [v for v in MP.variables(p)]
     ev = typeof(vs)()
     for v in vs
-        if MP.degree(p, v) > 0
+        if MP.maxdegree(p, v) > 0
             push!(ev, v)
         end
     end
