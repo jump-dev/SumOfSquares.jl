@@ -32,6 +32,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
     r = SOS.Certificate.get(s.certificate, SOS.Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
     X = SOS.Certificate.get(s.certificate, SOS.Certificate.GramBasis(), r)
     g, Q, cQ = SOS.add_gram_matrix(model, MCT, X)
+    # MOI does not modify the coefficients of the functions so we can modify `r`.
+    # without altering `f`.
     q = MA.operate!(-, r, g)
     set = PolyJuMP.ZeroPolynomialSet(s.domain, SOS.Certificate.zero_basis(s.certificate), MP.monomials(q))
     coefs = MOIU.vectorize(MP.coefficients(q))

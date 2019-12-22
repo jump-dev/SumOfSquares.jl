@@ -5,15 +5,15 @@ export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
 Represend SOSDecomposition without domain
 """
-struct SOSDecomposition{T, PT <: MP.APL{T}} <: MP.APL{T} # If promote_op((x, y) -> x * y + x * y, T, T) != T then it might not be true
+struct SOSDecomposition{T, PT <: MP.APL{T}, U} <: MP.AbstractPolynomialLike{U}
     ps::Vector{PT}
-    function SOSDecomposition{T, PT}(ps::Vector{PT}) where {T, PT}
+    function SOSDecomposition{T, PT, U}(ps::Vector{PT}) where {T, PT, U}
         new(ps)
     end
 end
 
-SOSDecomposition(ps::Vector{PT}) where {T, PT <: MP.APL{T}} = SOSDecomposition{T, PT}(ps)
-MP.polynomialtype(::Type{SOSDecomposition{T, PT}}) where {T, PT} = MP.polynomialtype(PT)
+SOSDecomposition(ps::Vector{PT}) where {T, PT <: MP.APL{T}} = SOSDecomposition{T, PT, _promote_add_mul(T)}(ps)
+MP.polynomialtype(::Union{SOSDecomposition{T, PT, U}, Type{SOSDecomposition{T, PT, U}}}) where {T, PT, U} = MP.polynomialtype(PT, U)
 
 #function SOSDecomposition(ps::Vector)
 #    T = reduce(promote_type, Int, map(eltype, ps))
@@ -48,7 +48,7 @@ function SOSDecomposition(p::GramMatrix, ranktol=0.0,
     return SOSDecomposition(ps)
 end
 # Without LDL^T, we need to do float(T)
-SOSDecomposition(p::GramMatrix{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)
+#SOSDecomposition(p::GramMatrix{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)
 
 Base.length(p::SOSDecomposition) = length(p.ps)
 Base.isempty(p::SOSDecomposition) = isempty(p.ps)
@@ -77,11 +77,12 @@ function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
     end
 end
 
-function Base.promote_rule(::Type{SOSDecomposition{T1, PT1}}, ::Type{SOSDecomposition{T2, PT2}}) where {T1, T2, PT1<:MP.APL{T1}, PT2<:MP.APL{T2}}
-    return SOSDecomposition{promote_type(T1, T2), promote_type(PT1, PT2)} 
+function Base.promote_rule(::Type{SOSDecomposition{T1, PT1, U1}}, ::Type{SOSDecomposition{T2, PT2, U2}}) where {T1, T2, PT1<:MP.APL{T1}, PT2<:MP.APL{T2}, U1, U2}
+    T = promote_type(T1, T2)
+    return SOSDecomposition{T, promote_type(PT1, PT2), _promote_add_mul(T)}
 end
 
-function Base.convert(::Type{SOSDecomposition{T, PT}}, p::SOSDecomposition) where {T, PT}
+function Base.convert(::Type{SOSDecomposition{T, PT, U}}, p::SOSDecomposition) where {T, PT, U}
     return SOSDecomposition(convert(Vector{PT}, p.ps))
 end
 
@@ -106,14 +107,14 @@ end
 
 Represend SOSDecomposition on a basic semi-algebraic domain.
 """
-struct SOSDecompositionWithDomain{T, PT <: MP.APL{T}, S <: AbstractSemialgebraicSet }
-    sos::SOSDecomposition{T, PT}
-    sosj::Vector{SOSDecomposition{T, PT}}
+struct SOSDecompositionWithDomain{T, PT <: MP.APL{T}, U, S <: AbstractSemialgebraicSet}
+    sos::SOSDecomposition{T, PT, U}
+    sosj::Vector{SOSDecomposition{T, PT, U}}
     domain::S
 end
 
-function SOSDecompositionWithDomain(ps::SOSDecomposition{T1, PT1}, vps::Vector{SOSDecomposition{T2, PT2}}, set::AbstractSemialgebraicSet ) where {T1, T2, PT1, PT2}
-    ptype = promote_type(SOSDecomposition{T1,PT1}, SOSDecomposition{T2, PT2})
+function SOSDecompositionWithDomain(ps::SOSDecomposition{T1, PT1, U1}, vps::Vector{SOSDecomposition{T2, PT2, U2}}, set::AbstractSemialgebraicSet ) where {T1, T2, PT1, PT2, U1, U2}
+    ptype = promote_type(SOSDecomposition{T1, PT1, U1}, SOSDecomposition{T2, PT2, U2})
     return SOSDecompositionWithDomain(convert(ptype, ps), convert(Vector{ptype}, vps), set)
 end
 
@@ -148,7 +149,7 @@ end
 """
     sos_decomposition(cref::JuMP.ConstraintRef, K<:AbstractBasicSemialgebraicSet)
 
-Return representation in the quadraic module associated with K. 
+Return representation in the quadraic module associated with K.
 """
 function sos_decomposition(cref::JuMP.ConstraintRef, K::AbstractBasicSemialgebraicSet, args...)
     lm = SOSDecomposition.(lagrangian_multipliers(cref), args...)

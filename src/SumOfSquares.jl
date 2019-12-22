@@ -4,6 +4,9 @@ using LinearAlgebra
 
 import Reexport
 
+import MutableArithmetics
+const MA = MutableArithmetics
+
 # MultivariatePolynomials extension
 
 import MultivariatePolynomials
@@ -11,6 +14,8 @@ const MP = MultivariatePolynomials
 # @set assumes that `SemialgebraicSets` is defined
 Reexport.@reexport using SemialgebraicSets
 Reexport.@reexport using MultivariateMoments
+_promote_sum(T::Type) = MA.promote_operation(+, T, T)
+_promote_add_mul(T::Type) = MA.promote_operation(MA.add_mul, T, T, T)
 
 include("gram_matrix.jl")
 
