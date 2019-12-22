@@ -23,7 +23,10 @@ function MOI.Bridges.Constraint.bridge_constraint(
     s::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet}) where {T, F, DT, UMCT, UMST, MCT, BT, CT, MT, MVT}
 
     @assert MOI.output_dimension(f) == length(s.monomials)
-    p = MP.polynomial(MOIU.scalarize(f), s.monomials)
+    # MOI does not modify the coefficients of the functions so we can modify `p`.
+    # without altering `f`.
+    # The monomials may be copied by MA however so we need to copy it.
+    p = MP.polynomial(MOIU.scalarize(f), copy(s.monomials))
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
     # need to call `changecoefficienttype`. This is critical since `T` is
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
