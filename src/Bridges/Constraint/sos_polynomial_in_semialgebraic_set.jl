@@ -39,7 +39,9 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
         g = Certificate.get(set.certificate, Certificate.Generator(), index, set.domain)
-        p -= λ * MP.changecoefficienttype(g, T)
+        # MOI does not modify the coefficients of the functions so we can modify `p`.
+        # without altering `f`.
+        p = MA.operate!(MA.sub_mul, p, λ, MP.changecoefficienttype(g, T))
     end
     new_set = SOS.SOSPolynomialSet(
         set.domain.V, MP.monomials(p),
