@@ -17,6 +17,9 @@ end
         "quadratic_infeasible_lyapunov_switched_system",
         "quadratic_feasible_lyapunov_switched_system",
         # ALMOST_OPTIMAL
-        "maxcut", "chebyshev", "sos_quartic_comparison"
+        "maxcut", "chebyshev", "sos_quartic_comparison",
+        #   Expression: JuMP.primal_status(model) == MOI.FEASIBLE_POINT
+        #    Evaluated: MathOptInterface.NEARLY_FEASIBLE_POINT == MathOptInterface.FEASIBLE_POINT
+        "sosdemo5_feasible"
     ])
 end

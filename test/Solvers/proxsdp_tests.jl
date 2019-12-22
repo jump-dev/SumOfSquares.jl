@@ -36,6 +36,7 @@ end
         "sos_horn",
         "sos_bivariate_quadratic",
         "quadratic_infeasible_lyapunov_switched_system",
-        "quartic_infeasible_lyapunov_switched_system"
+        "quartic_infeasible_lyapunov_switched_system",
+        "sosdemo5_infeasible"
     ])
 end

@@ -1,7 +1,7 @@
 include("solver_preamble.jl")
 import SCS
 factory = with_optimizer(SCS.Optimizer, verbose=0)
-config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5)
+config = MOI.Test.TestConfig(atol=5e-4, rtol=5e-4)
 @testset "Linear" begin
     Tests.linear_test(factory, config)
 end
