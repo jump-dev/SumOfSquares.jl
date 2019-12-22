@@ -12,12 +12,13 @@ export gram_operate, getmat
 Gram matrix ``x^\\top Q x`` where `Q` is a symmetric matrix indexed by the
 vector of monomials `x`.
 """
-struct GramMatrix{T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MP.APL{T} # should be MP.APL{eltype(T)} but it doesn't work
+struct GramMatrix{T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}, U} <: MP.AbstractPolynomialLike{U}
     Q::SymMatrix{T}
     x::MVT
 end
+GramMatrix{T, MT, MVT}(Q::SymMatrix{T}, x::MVT) where {T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} = GramMatrix{T, MT, MVT, _promote_sum(T)}(Q, x)
+GramMatrix(Q::SymMatrix{T}, x::MVT) where {T, MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} = GramMatrix{T, MT, MVT}(Q, x)
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
-MP.coefficienttype(::Type{<:GramMatrix{T}}) where {T} = Base.promote_op(+, T, T)
 function MP.constantmonomial(p::GramMatrix)
     if isempty(p.x)
         return MP.constantmonomial(MP.monomialtype(p))
@@ -29,12 +30,11 @@ function MP.monomialtype(::Union{GramMatrix{T, MT},
                                  Type{<:GramMatrix{T, MT}}}) where {T, MT}
     return MT
 end
-MP.polynomialtype(::Type{GramMatrix{T, MT, MVT}}) where {T, MT, MVT} = MP.polynomialtype(MT, MP.coefficienttype(GramMatrix{T, MT, MVT}))
-MP.polynomialtype(::Type{GramMatrix{T, MT, MVT}}, ::Type{S}) where {S, T, MT, MVT} = MP.polynomialtype(MT, S)
+MP.polynomialtype(::Union{GramMatrix{T, MT, MVT, U}, Type{GramMatrix{T, MT, MVT, U}}}) where {T, MT, MVT, U} = MP.polynomialtype(MT, U)
 MP.variables(p::GramMatrix) = MP.variables(p.x)
 MP.nvariables(p::GramMatrix) = MP.nvariables(p.x)
 
-Base.zero(::Type{GramMatrix{T, MT, MVT}}) where {T, MT, MVT} = GramMatrix{T, MT, MP.monovectype(MT)}(SymMatrix{T}(T[], 0), MP.emptymonovec(MT))
+Base.zero(::Type{GramMatrix{T, MT, MVT, U}}) where {T, MT, MVT, U} = GramMatrix{T, MT, MP.monovectype(MT), U}(SymMatrix{T}(T[], 0), MP.emptymonovec(MT))
 Base.iszero(p::GramMatrix) = iszero(MP.polynomial(p))
 
 Base.getindex(p::GramMatrix, I...) = getindex(p.Q, I...)
@@ -64,11 +64,11 @@ end
 #    # coefficienttype(p) may be different than T and MP.polynomial(p) may be different than PT (different module)
 #    convert(PT, MP.polynomial(p))
 #end
-function MP.polynomial(p::GramMatrix)
-    MP.polynomial(getmat(p), p.x)
+function MP.polynomial(p::GramMatrix{T, MT, MVT, U}) where {T, MT, MVT, U}
+    return MP.polynomial(p, U)
 end
 function MP.polynomial(p::GramMatrix, ::Type{S}) where {S}
-    MP.polynomial(getmat(p), p.x, S)
+    return MP.polynomial(getmat(p), p.x, S)
 end
 
 # The `i`th index of output is the index of occurence of `x[i]` in `y`,

@@ -84,6 +84,16 @@
                           7 0 0 9]
             @test r.x == [x*y, x, y, 1]
         end
+        @testset "With SingleVariable" begin
+            a = MOI.SingleVariable(MOI.VariableIndex(1))
+            g = GramMatrix(SymMatrix([a, a, a], 2), [x, y])
+            U = MOI.ScalarAffineFunction{Float64}
+            @test coefficienttype(g) == U
+            @test g isa AbstractPolynomialLike{U}
+            @test polynomialtype(g) <: AbstractPolynomial{U}
+            @test polynomialtype(typeof(g)) <: AbstractPolynomial{U}
+            @test polynomial(g) isa AbstractPolynomial{U}
+        end
     end
     @testset "SOSDecomposition" begin
         @polyvar x y
@@ -106,6 +116,17 @@
             @test isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x+y, x-y]))
             @test isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x-y, x+y+1e-8]), ztol=1e-7)
         end
+        @testset "With SingleVariable" begin
+            a = MOI.SingleVariable(MOI.VariableIndex(1))
+            p = polynomial([a], [x])
+            q = polynomial([a], [y])
+            s = SOSDecomposition([p, q])
+            U = MOI.ScalarQuadraticFunction{Float64}
+            @test coefficienttype(s) == U
+            @test s isa AbstractPolynomialLike{U}
+            @test polynomialtype(s) <: AbstractPolynomial{U}
+            @test polynomialtype(typeof(s)) <: AbstractPolynomial{U}
+        end
     end
 
     @testset "SOSDecompositionWithDomain" begin
@@ -114,7 +135,7 @@
         ps = SOSDecomposition([x+y, x-y])
         ps1 = SOSDecomposition([x])
         ps2 = SOSDecomposition([y])
-        @test [ps, ps1] isa Vector{SOSDecomposition{Int, T}} where T<:AbstractPolynomialLike
+        @test [ps, ps1] isa Vector{SOSDecomposition{Int, T, Int}} where {T<:AbstractPolynomialLike}
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) == "(x + y)^2 + (x - y)^2 + (x)^2 * (-x^2 + 1) + (y)^2 * (-y^2 + 1)"
 
         @testset "SOSDecompositionWithDomain equality" begin
@@ -127,8 +148,8 @@
             sosdec = SOSDecompositionWithDomain(ps, [ps1, ps2], K)
             @test typeof(polynomial(sosdec)) <: AbstractPolynomialLike
             @test isapprox(sosdec, sosdec)
-            @test !isapprox(sosdec, SOSDecompositionWithDomain(ps, [ps1, ps2], B))	
-            @test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps1], K), sosdec)	
+            @test !isapprox(sosdec, SOSDecompositionWithDomain(ps, [ps1, ps2], B))
+            @test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps1], K), sosdec)
         end
     end
 end

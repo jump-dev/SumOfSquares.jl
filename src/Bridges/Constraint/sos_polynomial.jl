@@ -23,7 +23,10 @@ function MOI.Bridges.Constraint.bridge_constraint(
     s::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet}) where {T, F, DT, UMCT, UMST, MCT, BT, CT, MT, MVT}
 
     @assert MOI.output_dimension(f) == length(s.monomials)
-    p = MP.polynomial(collect(MOIU.eachscalar(f)), s.monomials)
+    # MOI does not modify the coefficients of the functions so we can modify `p`.
+    # without altering `f`.
+    # The monomials may be copied by MA however so we need to copy it.
+    p = MP.polynomial(MOIU.scalarize(f), copy(s.monomials))
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
     # need to call `changecoefficienttype`. This is critical since `T` is
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
@@ -32,7 +35,9 @@ function MOI.Bridges.Constraint.bridge_constraint(
     r = SOS.Certificate.get(s.certificate, SOS.Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
     X = SOS.Certificate.get(s.certificate, SOS.Certificate.GramBasis(), r)
     g, Q, cQ = SOS.add_gram_matrix(model, MCT, X)
-    q = r - g
+    # MOI does not modify the coefficients of the functions so we can modify `r`.
+    # without altering `f`.
+    q = MA.operate!(-, r, g)
     set = PolyJuMP.ZeroPolynomialSet(s.domain, SOS.Certificate.zero_basis(s.certificate), MP.monomials(q))
     coefs = MOIU.vectorize(MP.coefficients(q))
     zero_constraint = MOI.add_constraint(model, coefs, set)

@@ -23,7 +23,10 @@ function MOI.Bridges.Constraint.bridge_constraint(
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet}) where {T, F, DT, CT, UMCT, UMST, MT, MVT}
 
     @assert MOI.output_dimension(f) == length(set.monomials)
-    p = MP.polynomial(collect(MOIU.eachscalar(f)), set.monomials)
+    # MOI does not modify the coefficients of the functions so we can modify `p`.
+    # without altering `f`.
+    # The monomials may be copied by MA however so we need to copy it.
+    p = MP.polynomial(MOIU.scalarize(f), copy(set.monomials))
     n = length(set.domain.p)
     λ_monos     = MVT[]
     λ_variables = Vector{MOI.VariableIndex}[]
@@ -39,7 +42,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
         g = Certificate.get(set.certificate, Certificate.Generator(), index, set.domain)
-        p -= λ * MP.changecoefficienttype(g, T)
+        # TODO replace with `MA.sub_mul` when it works.
+        p = MA.operate!(MA.add_mul, p, -one(T), λ, MP.changecoefficienttype(g, T))
     end
     new_set = SOS.SOSPolynomialSet(
         set.domain.V, MP.monomials(p),
