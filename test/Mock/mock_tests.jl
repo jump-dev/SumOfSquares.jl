@@ -39,6 +39,9 @@ end
 @testset "Quartic comparison" begin
     include("quartic_comparison.jl")
 end
+@testset "SOSDEMO5" begin
+    include("sosdemo5.jl")
+end
 @testset "SOSDEMO9" begin
     include("sosdemo9.jl")
 end
