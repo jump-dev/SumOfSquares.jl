@@ -32,7 +32,7 @@ const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
 function PolyJuMP.polytype(m::JuMP.Model, cone::PosPoly,
                            basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}}
-    return GramMatrix{JuMP.VariableRef, MT, MV}
+    return GramMatrix{JuMP.VariableRef, MT, MV, JuMP.AffExpr}
 end
 
 # Sum-of-Squares polynomial

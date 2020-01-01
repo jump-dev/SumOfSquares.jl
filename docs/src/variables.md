@@ -102,9 +102,9 @@ For instance, the following code creates a ``3 \times 4`` matrix of
 sum-of-squares polynomial variables:
 ```jldoctest variables
 julia> @variable(model, [1:2], SOSPoly(X))
-2-element Array{GramMatrix{VariableRef,Monomial{true},MonomialVector{true}},1}:
- GramMatrix{VariableRef,Monomial{true},MonomialVector{true}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1])
- GramMatrix{VariableRef,Monomial{true},MonomialVector{true}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1])
+2-element Array{GramMatrix{VariableRef,Monomial{true},MonomialVector{true},GenericAffExpr{Float64,VariableRef}},1}:
+ GramMatrix{VariableRef,Monomial{true},MonomialVector{true},GenericAffExpr{Float64,VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1])
+ GramMatrix{VariableRef,Monomial{true},MonomialVector{true},GenericAffExpr{Float64,VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1])
 ```
 There is however an *important* difference between the signification of the
 vector of monomials `X` between `Poly` and `SOSPoly`. For `SOSPoly`, it
