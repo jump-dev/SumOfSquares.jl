@@ -33,6 +33,7 @@ solver_test(:ECOS)
 solver_test(:CSDP)
 solver_test(:SDPA)
 solver_test(:SDPAFamily)
+solver_test(:SDPNAL)
 
 # SDP+SOC solvers
 solver_test(:CDCS)
