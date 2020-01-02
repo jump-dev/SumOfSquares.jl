@@ -4,6 +4,7 @@ factory = with_optimizer(ProxSDP.Optimizer, log_verbose=false)
 config = MOI.Test.TestConfig(atol=2e-2, rtol=2e-2)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
+        "dsos_options_pricing",
         # Expression: termination_status(model) == MOI.OPTIMAL
         #  Evaluated: MathOptInterface.INFEASIBLE_OR_UNBOUNDED == MathOptInterface.OPTIMAL
         "dsos_concave_then_convex_cubic",
@@ -15,6 +16,7 @@ config = MOI.Test.TestConfig(atol=2e-2, rtol=2e-2)
 end
 @testset "SOC" begin
     Tests.soc_test(factory, config, [
+        "sdsos_options_pricing",
         # Expression: termination_status(model) == MOI.OPTIMAL
         #  Evaluated: MathOptInterface.INFEASIBLE_OR_UNBOUNDED == MathOptInterface.OPTIMAL
         "sdsos_concave_then_convex_cubic",
@@ -25,6 +27,7 @@ end
 end
 @testset "SDP" begin
     Tests.sd_test(factory, config, [
+        "sos_options_pricing",
         # with γ=3.9 it should be infeasible: Test Failed at /home/blegat/.julia/dev/SumOfSquares/test/Tests/maxcut.jl:37
         # Expression: JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
         #  Evaluated: MathOptInterface.INFEASIBLE_POINT == MathOptInterface.INFEASIBILITY_CERTIFICATE

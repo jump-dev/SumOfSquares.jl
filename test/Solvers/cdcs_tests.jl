@@ -10,8 +10,12 @@ config = MOI.Test.TestConfig(atol=3e-3, rtol=3e-3, query=false)
     Tests.linear_test(factory, config)
 end
 @testset "SOC" begin
-    Tests.soc_test(factory, config)
+    Tests.soc_test(factory, config, [
+        "sdsos_options_pricing"
+    ])
 end
 @testset "SDP" begin
-    Tests.sd_test(factory, config)
+    Tests.sd_test(factory, config, [
+        "sos_options_pricing"
+    ])
 end

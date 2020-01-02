@@ -48,3 +48,6 @@ end
 @testset "SOSDEMO10" begin
     include("sosdemo10.jl")
 end
+@testset "Options Pricing" begin
+    include("options_pricing.jl")
+end

@@ -4,6 +4,9 @@ factory = with_optimizer(SDPNAL.Optimizer, printlevel=0, tol=1e-4)
 config = MOI.Test.TestConfig(atol=5e-3, rtol=5e-3, query=false)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
+        # Expression: ≈(JuMP.objective_value(model), expected, atol=atol, rtol=rtol)
+        # Evaluated: 142.57342982938655 ≈ 132.63 (atol=0.05, rtol=0.05)
+        "dsos_options_pricing",
         # Infeasible not supported
         "dsos_horn"
     ])
@@ -14,6 +17,9 @@ end
         # create free variables. See
         # https://github.com/JuliaOpt/MathOptInterface.jl/issues/987
         "sosdemo5_feasible",
+        # Expression: ≈(JuMP.objective_value(model), expected, atol=atol, rtol=rtol)
+        # Evaluated: 20.161198836088243 ≈ 17.17 (atol=0.05, rtol=0.05)
+        "sos_options_pricing",
         # Infeasible not supported
         "sos_horn",
         "maxcut",
@@ -21,6 +27,6 @@ end
         "motzkin",
         "quadratic_infeasible_lyapunov_switched_system",
         "sosdemo5_infeasible",
-        "quartic_infeasible_lyapunov_switched_system"
+        "quartic_infeasible_lyapunov_switched_system",
     ])
 end
