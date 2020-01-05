@@ -43,7 +43,7 @@ function horn_test(optimizer,
 
     delete(model, cref)
     orthant = orthant ∩ basicsemialgebraicset(
-        algebraicset(polynomialtype(x[1])[]), polynomial.(monomials(x, 3)))
+        FullSpace(), polynomial.(monomials(x, 3)))
     cref = @constraint(model, sum(x) * x' * H * x in cone, domain = orthant)
     optimize!(model)
 

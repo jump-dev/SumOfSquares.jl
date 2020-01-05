@@ -12,6 +12,9 @@ end
 @testset "Quadratic" begin
     include("quadratic.jl")
 end
+@testset "Quartic ideal" begin
+    include("quartic_ideal.jl")
+end
 @testset "Choi" begin
     include("choi.jl")
 end

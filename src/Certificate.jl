@@ -57,7 +57,6 @@ struct Putinar{IC <: AbstractIdealCertificate, CT <: SumOfSquares.SOSLikeCone, B
     ideal_certificate::IC
     cone::CT
     basis::Type{BT}
-    mindegree::Int
     maxdegree::Int
 end
 
@@ -67,7 +66,6 @@ end
 
 function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::BasicSemialgebraicSet, p)
     q = domain.p[index.value]
-    # TODO mindegree is no longer needed in here, maybe remove it as an keyword argument
     maxdegree_s2 = certificate.maxdegree - MP.maxdegree(q)
     # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
     # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
@@ -86,22 +84,48 @@ get(::Type{<:Putinar{IC}}, ::IdealCertificate) where {IC} = IC
 
 SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC, CT}}) where {IC, CT} = SumOfSquares.matrix_cone_type(CT)
 
-struct Remainder{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis, NPT <: Tuple} <: AbstractIdealCertificate
+######################
+# Ideal certificates #
+######################
+
+struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis} <: AbstractIdealCertificate
     cone::CT
     basis::Type{BT}
-    newton_polytope::NPT
+    maxdegree::Int
+end
+function get(certificate::MaxDegree, ::GramBasis, poly)
+    return monomials(MP.variables(poly), 0:div(certificate.maxdegree, 2))
+end
+
+struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis, NPT <: Tuple} <: AbstractIdealCertificate
+    cone::CT
+    basis::Type{BT}
+    variable_groups::NPT
+end
+function get(certificate::Newton, ::GramBasis, poly)
+    return monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups)
+end
+
+get(::Union{MaxDegree, Newton}, ::ReducedPolynomial, poly, domain) = poly
+
+SumOfSquares.matrix_cone_type(::Type{<:Union{MaxDegree{CT}, Newton{CT}}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
+zero_basis(certificate::Union{MaxDegree, Newton}) = certificate.basis
+zero_basis_type(::Type{<:Union{MaxDegree{CT, BT}, Newton{CT, BT}}}) where {CT, BT} = BT
+
+struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
+    gram_certificate::GCT
 end
 
 function get(::Remainder, ::ReducedPolynomial, poly, domain)
     return convert(typeof(poly), rem(poly, ideal(domain)))
 end
 
-function get(certificate::Remainder, ::GramBasis, poly)
-    return monomials_half_newton_polytope(MP.monomials(poly), certificate.newton_polytope)
+function get(certificate::Remainder, attr::GramBasis, poly)
+    return get(certificate.gram_certificate, attr, poly)
 end
 
-SumOfSquares.matrix_cone_type(::Type{<:Remainder{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
-zero_basis(certificate::Remainder) = certificate.basis
-zero_basis_type(::Type{<:Remainder{CT, BT}}) where {CT, BT} = BT
+SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT} = SumOfSquares.matrix_cone_type(GCT)
+zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
+zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
 
 end
