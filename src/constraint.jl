@@ -65,19 +65,45 @@ end
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return set.certificate.cone
 end
-function JuMP.moi_set(cone::SOSLikeCone,
-                      monos::AbstractVector{<:MP.AbstractMonomial};
-                      domain::AbstractSemialgebraicSet=FullSpace(),
-                      basis=MonomialBasis,
-                      newton_polytope::Tuple=tuple(),
-                      mindegree=MP.mindegree(monos),
-                      maxdegree=MP.maxdegree(monos))
-    ideal_certificate = Certificate.Remainder(cone, basis, newton_polytope)
+function default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+    if maxdegree === nothing
+        return Certificate.Newton(cone, basis, newton_polytope)
+    else
+        return Certificate.MaxDegree(cone, basis, maxdegree)
+    end
+end
+function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, newton_polytope, maxdegree)
+    return Certificate.Remainder(Certificate.Newton(cone, basis, newton_polytope))
+end
+function default_ideal_certificate(domain::Union{FullSpace, FixedVariablesSet}, cone, basis, newton_polytope, maxdegree)
+    return Certificate.Newton(cone, basis, newton_polytope)
+end
+function default_ideal_certificate(domain::AbstractAlgebraicSet, cone, basis, newton_polytope, maxdegree, remainder)
+    c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+    if remainder && !(c isa SumOfSquares.Certificate.Remainder)
+        return SumOfSquares.Certificate.Remainder(c)
+    end
+    return c
+end
+function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
+    return default_ideal_certificate(domain.V, args...)
+end
+function JuMP.moi_set(
+    cone::SOSLikeCone,
+    monos::AbstractVector{<:MP.AbstractMonomial};
+    domain::AbstractSemialgebraicSet=FullSpace(),
+    basis=MonomialBasis,
+    newton_polytope::Tuple=tuple(),
+    maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
+    remainder=false,
+    ideal_certificate=default_ideal_certificate(
+        domain, cone, basis, newton_polytope, maxdegree, remainder)
+    )
     if domain isa AbstractAlgebraicSet
         certificate = ideal_certificate
     else
         certificate = Certificate.Putinar(
-            ideal_certificate, cone, basis, mindegree, maxdegree)
+            ideal_certificate, cone, basis, maxdegree)
     end
     return SOSPolynomialSet(domain, monos, certificate)
 end

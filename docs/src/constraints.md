@@ -115,6 +115,7 @@ For instance, to use the diagonally-dominant-sum-of-squares cone (see
 julia> PolyJuMP.setdefault!(model, PolyJuMP.NonNegPoly, DSOSCone)
 NonnegPolyInnerCone{SumOfSquares.DiagonallyDominantConeTriangle}
 ```
+
 ## Changing the polynomial basis
 
 As introduced in [Choosing a polynomial basis](@ref), there may be numerical

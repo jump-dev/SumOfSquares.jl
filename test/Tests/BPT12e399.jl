@@ -17,8 +17,8 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig)
     @variable(model, α)
 
     @polyvar x y
-    cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(),
-                       domain = @set x^2 + y^2 == 1)
+    cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(), remainder = true,
+                       maxdegree = nothing, domain = @set x^2 + y^2 == 1)
 
     @objective(model, Max, α)
     JuMP.optimize!(model)
