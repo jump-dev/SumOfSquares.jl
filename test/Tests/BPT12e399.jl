@@ -8,7 +8,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function BPT12e399_test(optimizer, config::MOIT.TestConfig)
+function BPT12e399_test(optimizer, config::MOIT.TestConfig, remainder::Bool)
     atol = config.atol
     rtol = config.rtol
 
@@ -17,8 +17,12 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig)
     @variable(model, α)
 
     @polyvar x y
-    cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(), remainder = true,
-                       maxdegree = nothing, domain = @set x^2 + y^2 == 1)
+    if remainder
+        cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(), remainder = true,
+                           maxdegree = nothing, domain = @set x^2 + y^2 == 1)
+    else
+        cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(), maxdegree = 2, domain = @set x^2 + y^2 == 1)
+    end
 
     @objective(model, Max, α)
     JuMP.optimize!(model)
@@ -91,4 +95,7 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig)
     @test monomial(moments(μ)[3]) == 1
 end
 
-sd_tests["BPT12e399"] = BPT12e399_test
+BPT12e399_rem_test(optimizer, config) = BPT12e399_test(optimizer, config, true)
+sd_tests["BPT12e399_rem"] = BPT12e399_rem_test
+BPT12e399_maxdegree_test(optimizer, config) = BPT12e399_test(optimizer, config, false)
+sd_tests["BPT12e399_maxdegree"] = BPT12e399_maxdegree_test

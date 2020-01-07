@@ -21,6 +21,9 @@ function quartic_ideal_test(optimizer, config::MOIT.TestConfig,
     else
         @test termination_status(model) == MOI.OPTIMAL
         @test primal_status(model) == MOI.FEASIBLE_POINT
+        @show dual(cref)
+        @show moment_matrix(cref)
+        @show moments(cref)
     end
 end
 quartic_ideal_test(optimizer, config)   = quartic_ideal_test(optimizer, config, nothing, false)
