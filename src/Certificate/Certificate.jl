@@ -88,7 +88,14 @@ SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC, CT}}) where {IC, CT} = SumOfS
 # Ideal certificates #
 ######################
 
-struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis} <: AbstractIdealCertificate
+abstract type SimpleIdealCertificate{CT, BT} <: AbstractIdealCertificate end
+get(::SimpleIdealCertificate, ::ReducedPolynomial, poly, domain) = poly
+
+SumOfSquares.matrix_cone_type(::Type{<:SimpleIdealCertificate{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
+zero_basis(certificate::SimpleIdealCertificate) = certificate.basis
+zero_basis_type(::Type{<:SimpleIdealCertificate{CT, BT}}) where {CT, BT} = BT
+
+struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
     cone::CT
     basis::Type{BT}
     maxdegree::Int
@@ -97,7 +104,7 @@ function get(certificate::MaxDegree, ::GramBasis, poly)
     return monomials(MP.variables(poly), 0:div(certificate.maxdegree, 2))
 end
 
-struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis, NPT <: Tuple} <: AbstractIdealCertificate
+struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis, NPT <: Tuple} <: SimpleIdealCertificate{CT, BT}
     cone::CT
     basis::Type{BT}
     variable_groups::NPT
@@ -105,12 +112,6 @@ end
 function get(certificate::Newton, ::GramBasis, poly)
     return monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups)
 end
-
-get(::Union{MaxDegree, Newton}, ::ReducedPolynomial, poly, domain) = poly
-
-SumOfSquares.matrix_cone_type(::Type{<:Union{MaxDegree{CT}, Newton{CT}}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
-zero_basis(certificate::Union{MaxDegree, Newton}) = certificate.basis
-zero_basis_type(::Type{<:Union{MaxDegree{CT, BT}, Newton{CT, BT}}}) where {CT, BT} = BT
 
 struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
     gram_certificate::GCT

@@ -65,20 +65,20 @@ end
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return set.certificate.cone
 end
-function default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+function default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree, sparse)
     if maxdegree === nothing
         return Certificate.Newton(cone, basis, newton_polytope)
     else
         return Certificate.MaxDegree(cone, basis, maxdegree)
     end
 end
-function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, newton_polytope, maxdegree)
+function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, newton_polytope, maxdegree, sparse)
     return Certificate.Remainder(Certificate.Newton(cone, basis, newton_polytope))
 end
-function default_ideal_certificate(domain::Union{FullSpace, FixedVariablesSet}, cone, basis, newton_polytope, maxdegree)
+function default_ideal_certificate(domain::Union{FullSpace, FixedVariablesSet}, cone, basis, newton_polytope, maxdegree, sparse)
     return Certificate.Newton(cone, basis, newton_polytope)
 end
-function default_ideal_certificate(domain::AbstractAlgebraicSet, cone, basis, newton_polytope, maxdegree, remainder)
+function default_ideal_certificate(domain::AbstractAlgebraicSet, cone, basis, newton_polytope, maxdegree, sparse, remainder)
     c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
     if remainder && !(c isa SumOfSquares.Certificate.Remainder)
         return SumOfSquares.Certificate.Remainder(c)
@@ -95,7 +95,8 @@ function JuMP.moi_set(
     basis=MonomialBasis,
     newton_polytope::Tuple=tuple(),
     maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
-    remainder=false,
+    sparse::Bool=false,
+    remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(
         domain, cone, basis, newton_polytope, maxdegree, remainder)
     )
