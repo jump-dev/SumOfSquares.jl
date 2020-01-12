@@ -92,7 +92,7 @@ function MOI.get(bridge::SOSPolynomialBridge{T, F, DT, UMCT, UMST},
 end
 _list_constraints(cQ::Vector{C}, ::Type{C}) where C = cQ
 _list_constraints(cQ::C, ::Type{C}) where C = [cQ]
-_list_constraints(cQ, ::Type) = C[]
+_list_constraints(cQ, C::Type) = C[]
 function MOI.get(bridge::SOSPolynomialBridge{T, F, DT, UMCT, UMST},
                  ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables, S}) where {T, F, DT, UMCT, UMST, S<:UMST}
     return _list_constraints(bridge.cQ, MOI.ConstraintIndex{MOI.VectorOfVariables, S})
