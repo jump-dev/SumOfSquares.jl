@@ -1,5 +1,5 @@
-function lagrangian_multiplier(model::MOI.ModelLike, p, certificate, index, domain, T::Type)
-    monos = Certificate.get(certificate, Certificate.MultiplierBasis(), index, domain, p)
+function lagrangian_multiplier(model::MOI.ModelLike, certificate, index, preprocessed, T::Type)
+    monos = Certificate.get(certificate, Certificate.MultiplierBasis(), index, preprocessed)
     MCT = SOS.matrix_cone_type(typeof(certificate))
     return SOS.add_gram_matrix(model, MCT, monos)..., monos
 end
@@ -7,11 +7,12 @@ end
 struct SOSPolynomialInSemialgebraicSetBridge{
     T, F <: MOI.AbstractVectorFunction, DT <: SemialgebraicSets.AbstractSemialgebraicSet,
     CT <: Certificate.AbstractIdealCertificate,
-    UMCT <: MOI.ConstraintIndex{MOI.VectorOfVariables},
+    UMCT <: Union{Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
+                  MOI.ConstraintIndex{MOI.VectorOfVariables}},
     UMST,
     MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MOIB.Constraint.AbstractBridge
-    lagrangian_monomials::Vector{MVT}
-    lagrangian_variables::Vector{Vector{MOI.VariableIndex}}
+    lagrangian_monomials::Vector{Union{MVT, Vector{MVT}}}
+    lagrangian_variables::Vector{Union{Vector{MOI.VariableIndex}, Vector{Vector{MOI.VariableIndex}}}}
     lagrangian_constraints::Vector{UMCT}
     constraint::MOI.ConstraintIndex{F, SOS.SOSPolynomialSet{DT, MT, MVT, CT}}
     monomials::MVT
@@ -27,13 +28,13 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
     p = MP.polynomial(MOIU.scalarize(f), copy(set.monomials))
-    n = length(set.domain.p)
-    λ_monos     = MVT[]
-    λ_variables = Vector{MOI.VariableIndex}[]
+    λ_monos     = Union{MVT, Vector{MVT}}[]
+    λ_variables = Union{Vector{MOI.VariableIndex}, Vector{Vector{MOI.VariableIndex}}}[]
     λ_constraints = UMCT[]
-    for index in Certificate.get(set.certificate, Certificate.PreorderIndices(), set.domain)
+    preprocessed = Certificate.get(set.certificate, Certificate.PreprocessedDomain(), set.domain, p)
+    for index in Certificate.get(set.certificate, Certificate.PreorderIndices(), preprocessed)
         λ, λ_variable, λ_constraint, λ_mono = lagrangian_multiplier(
-            model, p, set.certificate, index, set.domain, T)
+            model, set.certificate, index, preprocessed, T)
         push!(λ_variables, λ_variable)
         push!(λ_constraints, λ_constraint)
         push!(λ_monos, λ_mono)
@@ -41,7 +42,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # need to call `changecoefficienttype`. This is critical since `T` is
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
-        g = Certificate.get(set.certificate, Certificate.Generator(), index, set.domain)
+        g = Certificate.get(set.certificate, Certificate.Generator(), index, preprocessed)
         # TODO replace with `MA.sub_mul` when it works.
         p = MA.operate!(MA.add_mul, p, -one(T), λ, MP.changecoefficienttype(g, T))
     end
@@ -85,19 +86,20 @@ end
 # Attributes, Bridge acting as an model
 function MOI.get(bridge::SOSPolynomialInSemialgebraicSetBridge,
                  ::MOI.NumberOfVariables)
-    return reduce((n, vis) -> n + length(vis), bridge.lagrangian_variables, init=0)
+    return mapreduce(_num_variables, +, bridge.lagrangian_variables, init=0)
 end
 function MOI.get(bridge::SOSPolynomialInSemialgebraicSetBridge, ::MOI.ListOfVariableIndices)
-    return Iterators.flatten(bridge.lagrangian_variables)
+    return Iterators.flatten([_list_variables(Qi) for Qi in bridge.lagrangian_variables])
 end
 function MOI.get(bridge::SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, UMCT, UMST},
                  ::MOI.NumberOfConstraints{MOI.VectorOfVariables, S}) where {T, F, DT, CT, UMCT, UMST, S<:UMST}
-    return reduce((n, ci) -> n + (ci isa MOI.ConstraintIndex{MOI.VectorOfVariables, S}),
-                  bridge.lagrangian_constraints, init=0)
+    return mapreduce(cQ -> _num_constraints(cQ, MOI.ConstraintIndex{MOI.VectorOfVariables, S}), +,
+                     bridge.lagrangian_constraints, init=0)
 end
 function MOI.get(b::SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, UMCT, UMST},
                  ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables, S}) where {T, F, DT, CT, UMCT, UMST, S<:UMST}
-    return filter(ci -> ci isa MOI.ConstraintIndex{MOI.VectorOfVariables, S}, bridge.lagrangian_constraints)
+    C = MOI.ConstraintIndex{MOI.VectorOfVariables, S}
+    return Iterators.flatten([_list_constraints(cQ, C) for cQ in bridge.lagrangian_constraints])
 end
 function MOI.get(::SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, UMCT, UMST, MT, MVT},
                  ::MOI.NumberOfConstraints{F, SOS.SOSPolynomialSet{DT, MT, MVT, CT}}) where {T, F, DT, CT, UMCT, UMST, MT, MVT}
@@ -113,7 +115,7 @@ function MOI.delete(model::MOI.ModelLike,
                     bridge::SOSPolynomialInSemialgebraicSetBridge)
     MOI.delete(model, bridge.constraint)
     for variables in bridge.lagrangian_variables
-        MOI.delete(model, variables)
+        _delete_variables(model, variables)
     end
 end
 
@@ -149,8 +151,7 @@ end
 function MOI.get(model::MOI.ModelLike, attr::SOS.LagrangianMultipliers,
                  bridge::SOSPolynomialInSemialgebraicSetBridge)
     @assert eachindex(bridge.lagrangian_variables) == eachindex(bridge.lagrangian_monomials)
-    map(i -> SOS.build_gram_matrix(MOI.get(model, MOI.VariablePrimal(attr.N),
-                                           bridge.lagrangian_variables[i]),
-                                   bridge.lagrangian_monomials[i]),
+    map(i -> _gram(Q -> MOI.get(model, MOI.VariablePrimal(attr.N), Q),
+                   bridge.lagrangian_variables[i], bridge.lagrangian_monomials[i]),
         eachindex(bridge.lagrangian_variables))
 end

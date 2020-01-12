@@ -34,6 +34,7 @@ struct Cone <: Attribute end
 struct GramBasis <: Attribute end
 struct ReducedPolynomial <: Attribute end
 struct IdealCertificate <: Attribute end
+struct PreprocessedDomain <: Attribute end
 
 # Only for PreorderIndex
 struct PreorderIndices <: Attribute end
@@ -60,23 +61,31 @@ struct Putinar{IC <: AbstractIdealCertificate, CT <: SumOfSquares.SOSLikeCone, B
     maxdegree::Int
 end
 
-function get(::Putinar, index::PreorderIndices, domain::BasicSemialgebraicSet)
-    return map(PreorderIndex, eachindex(domain.p))
+struct DomainWithVariables{S, V}
+    domain::S
+    variables::V
+end
+function get(::Putinar, ::PreprocessedDomain, domain::BasicSemialgebraicSet, p)
+    return DomainWithVariables(domain, MP.variables(p))
 end
 
-function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::BasicSemialgebraicSet, p)
-    q = domain.p[index.value]
+function get(::Putinar, index::PreorderIndices, domain::DomainWithVariables)
+    return map(PreorderIndex, eachindex(domain.domain.p))
+end
+
+function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::DomainWithVariables)
+    q = domain.domain.p[index.value]
     maxdegree_s2 = certificate.maxdegree - MP.maxdegree(q)
     # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
     # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
     maxdegree_s = div(maxdegree_s2 + 1, 2)
-    vars = sort!([MP.variables(p)..., MP.variables(q)...], rev = true)
+    vars = sort!([domain.variables..., MP.variables(q)...], rev = true)
     unique!(vars)
     return MP.monomials(vars, 0:maxdegree_s)
 end
 
-function get(::Putinar, ::Generator, index::PreorderIndex, domain::BasicSemialgebraicSet)
-    return domain.p[index.value]
+function get(::Putinar, ::Generator, index::PreorderIndex, domain::DomainWithVariables)
+    return domain.domain.p[index.value]
 end
 
 get(certificate::Putinar, ::IdealCertificate) = certificate.ideal_certificate
@@ -128,5 +137,8 @@ end
 SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT} = SumOfSquares.matrix_cone_type(GCT)
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
+
+include("csp/ChordalExtensionGraph.jl")
+include("csp/sparse_putinar.jl")
 
 end

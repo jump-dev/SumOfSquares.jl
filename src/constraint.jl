@@ -65,21 +65,31 @@ end
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return set.certificate.cone
 end
-function default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree, sparse)
+function default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
     if maxdegree === nothing
         return Certificate.Newton(cone, basis, newton_polytope)
     else
         return Certificate.MaxDegree(cone, basis, maxdegree)
     end
 end
-function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, newton_polytope, maxdegree, sparse)
+function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, newton_polytope, maxdegree)
     return Certificate.Remainder(Certificate.Newton(cone, basis, newton_polytope))
 end
-function default_ideal_certificate(domain::Union{FullSpace, FixedVariablesSet}, cone, basis, newton_polytope, maxdegree, sparse)
+function default_ideal_certificate(domain::FullSpace, cone, basis, newton_polytope, maxdegree)
     return Certificate.Newton(cone, basis, newton_polytope)
 end
-function default_ideal_certificate(domain::AbstractAlgebraicSet, cone, basis, newton_polytope, maxdegree, sparse, remainder)
-    c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+function default_ideal_certificate(
+    domain::AbstractAlgebraicSet, cone, basis,
+    newton_polytope, maxdegree, sparse::Bool, remainder::Bool)
+
+    if sparse
+        if maxdegree === nothing
+            error("`maxdegree` cannot be `nothing` when `sparse` is `true`.")
+        end
+        c = Certificate.ChordalIdeal(cone, basis, maxdegree)
+    else
+        c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+    end
     if remainder && !(c isa SumOfSquares.Certificate.Remainder)
         return SumOfSquares.Certificate.Remainder(c)
     end
@@ -98,10 +108,13 @@ function JuMP.moi_set(
     sparse::Bool=false,
     remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(
-        domain, cone, basis, newton_polytope, maxdegree, remainder)
+        domain, cone, basis, newton_polytope, maxdegree, sparse, remainder)
     )
     if domain isa AbstractAlgebraicSet
         certificate = ideal_certificate
+    elseif sparse
+        certificate = Certificate.ChordalPutinar(
+            cone, basis, maxdegree)
     else
         certificate = Certificate.Putinar(
             ideal_certificate, cone, basis, maxdegree)

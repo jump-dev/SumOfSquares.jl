@@ -14,6 +14,11 @@ function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
     q = build_gram_matrix(Q, monos)
     return q, Q, cQ
 end
+function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
+                         monos::Vector{<:AbstractVector{<:MP.AbstractMonomial}})
+    qQcQ = add_gram_matrix.(model, matrix_cone_type, monos)
+    return SparseGramMatrix(getindex.(qQcQ, 1)), getindex.(qQcQ, 2), getindex.(qQcQ, 3)
+end
 
 function build_moment_matrix(q::Vector,
                              monos::AbstractVector{<:MP.AbstractMonomial})

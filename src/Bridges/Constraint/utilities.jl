@@ -2,7 +2,12 @@ function union_constraint_types(MCT)
     return Union{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 0))},
                  MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 1))},
                  MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 2))},
-                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 3))}}
+                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 3))},
+                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 0))}},
+                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 1))}},
+                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 2))}},
+                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 3))}}}
+    # `Vector{<:MOI.ConstraintIndex}` is for sparse SOS
 end
 function union_set_types(MCT)
     return Union{typeof(SOS.matrix_cone(MCT, 0)),

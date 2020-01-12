@@ -26,6 +26,7 @@ Base.broadcastable(cone::SOSLikeCone) = Ref(cone)
 
 function matrix_cone_type end
 
+export Certificate
 include("Certificate/Certificate.jl")
 include("rand.jl")
 
@@ -54,14 +55,6 @@ include("sosdec.jl")
 include("utilities.jl")
 include("variable.jl")
 include("constraint.jl")
-
-# Graphs 
-include("csp/ChordalExtensionGraph.jl")
-const CEG = SumOfSquares.ChordalExtensionGraph
-const APL = MP.AbstractPolynomialLike
-include("csp/csp_graph.jl")
-include("csp/sparse_putinar.jl")
-
 
 function setdefaults!(data::PolyJuMP.Data)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPoly, SOSCone)
