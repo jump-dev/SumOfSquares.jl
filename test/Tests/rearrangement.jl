@@ -29,9 +29,9 @@ function rearrangement_test(optimizer, config::MOIT.TestConfig)
     p = gram_matrix(cref)
     @test p isa SumOfSquares.SparseGramMatrix
     @test length(p.sub_gram_matrices) == 2
-    @test getmat(p.sub_gram_matrices[1]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol=atol rtol=rtol
+    @test getmat(p.sub_gram_matrices[1]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol=9atol rtol=9rtol
     @test p.sub_gram_matrices[1].x == [y, z, 1]
-    @test getmat(p.sub_gram_matrices[2]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol=atol rtol=rtol
+    @test getmat(p.sub_gram_matrices[2]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol=9atol rtol=9rtol
     @test p.sub_gram_matrices[2].x == [x, y, 1]
 
     λ = lagrangian_multipliers(cref)

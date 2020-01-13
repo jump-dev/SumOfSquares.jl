@@ -220,8 +220,6 @@ cache(G::Graph, ::GreedyFillIn) = FillInCache(G)
 heuristic_value(G::FillInCache, node::Int, ::GreedyFillIn) = fill_in(G, node)
 
 function _greedy_triangulation!(G, algo::AbstractGreedyAlgorithm)
-    # Computes elimination graph `G` using equation (6.1) of [VA15].
-    # generate cliques that are potentially maximal in the resulting graph G
     candidate_cliques = Vector{Int}[]
     for i in 1:num_nodes(G)
         node = argmin(map(1:num_nodes(G)) do node

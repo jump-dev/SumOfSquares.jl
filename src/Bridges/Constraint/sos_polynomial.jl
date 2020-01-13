@@ -74,7 +74,7 @@ end
 
 # Attributes, Bridge acting as an model
 _num_variables(Q::Vector{MOI.VariableIndex}) = length(Q)
-_num_variables(Q::Vector{Vector{MOI.VariableIndex}}) = mapreduce(length, +, bridge.Q, init = 0)
+_num_variables(Q::Vector{Vector{MOI.VariableIndex}}) = mapreduce(length, +, Q, init = 0)
 function MOI.get(bridge::SOSPolynomialBridge, ::MOI.NumberOfVariables)
     _num_variables(bridge.Q)
 end

@@ -31,7 +31,7 @@ function chebyshev_test(optimizer, config::MOIT.TestConfig)
     @test JuMP.termination_status(model) == MOI.OPTIMAL
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
 
-    @test isapprox(JuMP.value(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=config.atol, atol=config.atol, rtol=config.rtol)
+    @test isapprox(JuMP.value(p), 128x^8 - 256x^6 + 160x^4 - 32x^2 + 1, ztol=4config.atol, atol=4config.atol, rtol=4config.rtol)
     @test isapprox(JuMP.value(γ), 128, atol=config.atol, rtol=config.rtol)
 end
 sd_tests["chebyshev"] = chebyshev_test

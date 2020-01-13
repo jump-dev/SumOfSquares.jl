@@ -15,6 +15,12 @@ end
 @testset "Quartic ideal" begin
     include("quartic_ideal.jl")
 end
+@testset "Univariate Sum" begin
+    include("univariate_sum.jl")
+end
+@testset "Rearrangement" begin
+    include("rearrangement.jl")
+end
 @testset "Choi" begin
     include("choi.jl")
 end
