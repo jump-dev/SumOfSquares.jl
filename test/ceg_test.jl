@@ -185,4 +185,25 @@ end
         @test length.(cliques) == [3, 3]
     end
 
+    @testset "Add edges between two `chordal_extension` calls" begin
+        G = CEG.LabelledGraph{Int}()
+        CEG.add_node!.(G, [1, 2, 3, 4, 5])
+        CEG.add_edge!(G, 1, 2)
+        CEG.add_edge!(G, 2, 3)
+        CEG.add_edge!(G, 3, 4)
+        CEG.add_edge!(G, 1, 4)
+
+        H, cliques = CEG.chordal_extension(G, CEG.GreedyFillIn())
+        @test cliques == [[2, 3, 4], [1, 2, 4], [5]]
+        @test isempty(G.graph.disabled)
+        @test isempty(H.graph.disabled)
+
+        CEG.add_edge!(H, 1, 5)
+        I, cliques = CEG.chordal_extension(H, CEG.GreedyFillIn())
+        @test cliques == [[1, 2, 3, 4], [1, 5]]
+        @test isempty(G.graph.disabled)
+        @test isempty(H.graph.disabled)
+        @test isempty(I.graph.disabled)
+    end
+
 end

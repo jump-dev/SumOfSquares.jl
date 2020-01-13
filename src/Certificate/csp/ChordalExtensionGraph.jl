@@ -37,6 +37,7 @@ function add_clique!(G::Graph, nodes::Vector{Int})
 end
 disable_node!(G::Graph, node::Int) = push!(G.disabled, node)
 is_enabled(G::Graph, node::Int) = !(node in G.disabled)
+enable_all_nodes!(G::Graph) = empty!(G.disabled)
 
 """
     neighbors(G::Graph, node::Int}
@@ -258,6 +259,7 @@ function chordal_extension(G::Graph, algo::AbstractGreedyAlgorithm)
     H = copy(G)
 
     candidate_cliques = _greedy_triangulation!(cache(H, algo), algo)
+    enable_all_nodes!(H)
 
     sort!.(candidate_cliques)
     unique!(candidate_cliques)
