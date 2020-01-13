@@ -316,3 +316,15 @@ Bridges are automatically added using the following utilities:
 SumOfSquares.PolyJuMP.bridgeable
 SumOfSquares.PolyJuMP.bridges
 ```
+
+Chordal extension:
+```@docs
+SumOfSquares.Certificate.ChordalExtensionGraph.neighbors
+SumOfSquares.Certificate.ChordalExtensionGraph.fill_in
+SumOfSquares.Certificate.ChordalExtensionGraph.is_clique
+SumOfSquares.Certificate.ChordalExtensionGraph.LabelledGraph
+SumOfSquares.Certificate.ChordalExtensionGraph.add_node!
+SumOfSquares.Certificate.ChordalExtensionGraph.add_edge!
+SumOfSquares.Certificate.ChordalExtensionGraph.add_clique!
+SumOfSquares.Certificate.ChordalExtensionGraph.chordal_extension
+```
