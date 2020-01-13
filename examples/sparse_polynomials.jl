@@ -44,24 +44,13 @@ function generalized_rosenbrock(n::Int)
     return p
 end
 
-function dense(p, factory)
-    dense_model = SOSModel(factory)
-    @variable dense_model t
-    @objective dense_model Max t
-    @constraint dense_model p-t in SOSCone()
-    optimize!(dense_model)
-    println(termination_status(dense_model))
-    println(objective_value(dense_model))
-    return dense_model
-end
-
-function sparse(p, factory)
-    sparse_model = SOSModel(factory)
-    @variable sparse_model t
-    @objective sparse_model Max t
-    chordal_sos(p-t, model=sparse_model)
-    optimize!(sparse_model)
-    println(termination_status(sparse_model))
-    println(objective_value(sparse_model))
-    return sparse_model
+function sos_lower_bound(p, factory, sparse::Bool)
+    model = Model(factory)
+    @variable(model, t)
+    @objective(model, Max, t)
+    @constraint(model, p - t in SOSCone(), sparse=sparse)
+    optimize!(model)
+    println(termination_status(model))
+    println(objective_value(model))
+    return model
 end

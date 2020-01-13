@@ -2,33 +2,26 @@ using SumOfSquares
 using MosekTools
 using DynamicPolynomials
 
-@polyvar x y z
 
-K = @set 1-x^2-y^2>=0 && 1-y^2-z^2>=0
+function sos_lower_bound(factory, sparse::Bool)
+    @polyvar x y z
+    K = @set 1-x^2-y^2>=0 && 1-y^2-z^2>=0
+    p = 1 - x*y - y*z
+    model = Model(factory)
+    @variable(model, t)
+    @objective(model, Max, t)
+    @constraint(model, p - t in SOSCone(), domain = K, sparse = sparse)
+    optimize!(model)
+    return objective_value(model)
+end
 
-p = 1 - x*y - y*z
+const factory = with_optimizer(Mosek.Optimizer)
 
 # use chordal sparsity
-
-sparse_model = SOSModel(with_optimizer(Mosek.Optimizer))
-@variable(sparse_model, t)
-@objective(sparse_model, Max, t)
-
-chordal_putinar(p - t, 2, K, model = sparse_model)
-
-optimize!(sparse_model)
-sparse_value = objective_value(sparse_model)
+sparse_value = sos_lower_bound(factory, true)
 
 # no chordal sparsity
+dense_value = sos_lower_bound(factory, false)
 
-dense_model = SOSModel(with_optimizer(Mosek.Optimizer))
-@variable(dense_model, t)
-@objective(dense_model, Max, t)
-
-@constraint(dense_model, p - t in SOSCone(), domain = K)
-
-optimize!(dense_model)
-dense_value = objective_value(dense_model)
-
-println("Sparse and dense euqivalent?")
+println("Sparse and dense equivalent?")
 println("Absolute different of objective value: ", abs(dense_value - sparse_value))
