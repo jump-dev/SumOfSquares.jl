@@ -6,8 +6,8 @@ using Test
 include("sparse_polynomials.jl")
 
 function test(test_function, factory)
-    sparse_model = sos_lower_bound(test_function, factory, true)
-    dense_model  = sos_lower_bound(test_function, factory, false)
+    sparse_model = sos_lower_bound(test_function, factory, VariableSparsity())
+    dense_model  = sos_lower_bound(test_function, factory, NoSparsity())
     return abs(objective_value(sparse_model) - objective_value(dense_model))
 end
 

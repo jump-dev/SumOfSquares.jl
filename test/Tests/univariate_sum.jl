@@ -12,7 +12,7 @@ function univariate_sum_test(optimizer,
 
     @polyvar x y
     # (x - 1)^2 + (y + 1)^2
-    cref = @constraint(model, x^2 + y^2 + 2(y - x) + 2 in cone, sparse=true)
+    cref = @constraint(model, x^2 + y^2 + 2(y - x) + 2 in cone, sparse=VariableSparsity())
 
     optimize!(model)
 
