@@ -26,7 +26,8 @@ Base.broadcastable(cone::SOSLikeCone) = Ref(cone)
 
 function matrix_cone_type end
 
-include("Certificate.jl")
+export Certificate
+include("Certificate/Certificate.jl")
 include("rand.jl")
 
 # MOI extension

@@ -64,7 +64,7 @@ function MOI.Bridges.Constraint.invariant_under_function_conversion(::Union{
 end
 
 # This is type piracy but we tolerate it.
-const ObjectWithoutIndex = GramMatrix{<:MOI.Utilities.ObjectWithoutIndex}
+const ObjectWithoutIndex = AbstractGramMatrix{<:MOI.Utilities.ObjectWithoutIndex}
 const ObjectOrTupleWithoutIndex = Union{ObjectWithoutIndex, Tuple{Vararg{ObjectWithoutIndex}}}
 const ObjectOrTupleOrArrayWithoutIndex = Union{ObjectOrTupleWithoutIndex, AbstractArray{<:ObjectOrTupleWithoutIndex}}
 MOI.Utilities.map_indices(::Function, x::ObjectOrTupleOrArrayWithoutIndex) = x

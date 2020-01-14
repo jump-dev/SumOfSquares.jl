@@ -50,3 +50,6 @@ end
         end
     end
 end
+
+include("ceg_test.jl")
+include("csp_test.jl")

@@ -17,7 +17,7 @@ function quartic_ideal_test(optimizer, config::MOIT.TestConfig,
     optimize!(model)
 
     if remainder && (degree === nothing || degree < 4)
-        @test termination_status(model) == MOI.INFEASIBLE
+        @test termination_status(model) in [MOI.INFEASIBLE, MOI.INFEASIBLE_OR_UNBOUNDED]
     else
         @test termination_status(model) == MOI.OPTIMAL
         @test primal_status(model) == MOI.FEASIBLE_POINT

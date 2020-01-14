@@ -13,6 +13,8 @@ config = MOI.Test.TestConfig(atol=5e-3, rtol=5e-3, query=false)
 end
 @testset "SDP" begin
     Tests.sd_test(factory, config, [
+        # MathOptInterface.NUMERICAL_ERROR == MathOptInterface.OPTIMAL
+        "chebyshev",
         # SDPNAL supports LessThan on Nonnegatives variables but cannot
         # create free variables. See
         # https://github.com/JuliaOpt/MathOptInterface.jl/issues/987
@@ -21,6 +23,8 @@ end
         # Evaluated: 20.161198836088243 ≈ 17.17 (atol=0.05, rtol=0.05)
         "sos_options_pricing",
         # Infeasible not supported
+        "quartic_ideal_rem",
+        "quartic_ideal_2_rem",
         "sos_horn",
         "maxcut",
         "choi_term",

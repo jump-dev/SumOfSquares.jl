@@ -4,6 +4,15 @@ factory = with_optimizer(SDPA.Optimizer)
 config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5, query=false)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
+        # cholesky miss condition :: not positive definite :: info = 13 :: line 785 in sdpa_linear.cpp
+        # There are some possibilities. :: line 786 in sdpa_linear.cpp
+        # 1. SDPA terminates due to inaccuracy of numerical error :: line 787 in sdpa_linear.cpp
+        # 2. The input problem may not have (any) interior-points :: line 788 in sdpa_linear.cpp
+        # 3. Input matrices are linearly dependent :: line 789 in sdpa_linear.cpp
+        # dsos_univariate_sum:
+        #   Expression: termination_status(model) == MOI.OPTIMAL
+        #    Evaluated: MathOptInterface.ITERATION_LIMIT == MathOptInterface.OPTIMAL
+        "dsos_univariate_sum",
         # The termination status is
         # `INFEASIBLE_OR_UNBOUNDED` instead of `INFEASIBLE`.
         "dsos_horn",
