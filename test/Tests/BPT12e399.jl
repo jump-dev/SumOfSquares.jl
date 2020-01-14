@@ -27,72 +27,113 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig, remainder::Bool)
     @objective(model, Max, α)
     JuMP.optimize!(model)
 
+    α_value = remainder ? 6.0 : 10.0
+
     @test termination_status(model) == MOI.OPTIMAL
-    @test objective_value(model) ≈ 6.0 atol=atol rtol=rtol
+    @test objective_value(model) ≈ α_value atol=atol rtol=rtol
 
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-    @test JuMP.value(α) ≈ 6 atol=atol rtol=rtol
+    @test JuMP.value(α) ≈ α_value atol=atol rtol=rtol
 
     @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
-    @test getmat(p) ≈ [1 -3; -3 9] atol=atol rtol=rtol
-    @test p.x == [y, 1]
+    if remainder
+        @test getmat(p) ≈ [1 -3; -3 9] atol=atol rtol=rtol
+        @test p.x == [y, 1]
+    else
+        @test getmat(p) ≈ [4.0 0.0 0.0; 0.0 5.0 -5.0; 0.0 -5.0 5.0] atol=atol rtol=rtol
+        @test p.x == [x, y, 1]
+    end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     μ = dual(cref)
     @test μ isa AbstractMeasure{Float64}
     @test length(moments(μ)) == 3
-    @test moment_value(moments(μ)[1]) ≈ -8/3 atol=atol rtol=rtol
+    @test moment_value(moments(μ)[1]) ≈ (remainder ? -8/3 : 0.0) atol=atol rtol=rtol
     @test monomial(moments(μ)[1]) == x^2
     @test moment_value(moments(μ)[2]) ≈ 1 atol=atol rtol=rtol
     @test monomial(moments(μ)[2]) == y
-    @test moment_value(moments(μ)[3]) ≈ 1/3 atol=atol rtol=rtol
+    @test moment_value(moments(μ)[3]) ≈ (remainder ? 1/3 : 1.0) atol=atol rtol=rtol
     @test monomial(moments(μ)[3]) == 1
 
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
-    @test length(moments(μ)) == 3
-    @test moment_value(moments(μ)[1]) ≈ 3 atol=atol rtol=rtol
-    @test monomial(moments(μ)[1]) == y^2
-    @test moment_value(moments(μ)[2]) ≈ 1 atol=atol rtol=rtol
-    @test monomial(moments(μ)[2]) == y
-    @test moment_value(moments(μ)[3]) ≈ 1/3 atol=atol rtol=rtol
-    @test monomial(moments(μ)[3]) == 1
+    if remainder
+        @test length(moments(μ)) == 3
+        @test moment_value(moments(μ)[1]) ≈ 3 atol=atol rtol=rtol
+        @test monomial(moments(μ)[1]) == y^2
+        @test moment_value(moments(μ)[2]) ≈ 1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[2]) == y
+        @test moment_value(moments(μ)[3]) ≈ 1/3 atol=atol rtol=rtol
+        @test monomial(moments(μ)[3]) == 1
+    else
+        @test length(moments(μ)) == 5
+        @test moment_value(moments(μ)[1]) ≈ 0 atol=atol rtol=rtol
+        @test monomial(moments(μ)[1]) == x*y
+        @test moment_value(moments(μ)[2]) ≈ 1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[2]) == y^2
+        @test moment_value(moments(μ)[3]) ≈ 0 atol=atol rtol=rtol
+        @test monomial(moments(μ)[3]) == x
+        @test moment_value(moments(μ)[4]) ≈ 1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[4]) == y
+        @test moment_value(moments(μ)[5]) ≈ 1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[5]) == 1
+    end
 
     @objective(model, Min, α)
     JuMP.optimize!(model)
 
     @test termination_status(model) == MOI.OPTIMAL
-    @test objective_value(model) ≈ -6.0 atol=atol rtol=rtol
+    @test objective_value(model) ≈ -α_value atol=atol rtol=rtol
 
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-    @test JuMP.value(α) ≈ -6.0 atol=atol rtol=rtol
+    @test JuMP.value(α) ≈ -α_value atol=atol rtol=rtol
 
     @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
-    @test getmat(p) ≈ [1 3; 3 9] atol=atol rtol=rtol
-    @test p.x == [y, 1]
+    if remainder
+        @test getmat(p) ≈ [1 3; 3 9] atol=atol rtol=rtol
+        @test p.x == [y, 1]
+    else
+        @test getmat(p) ≈ [4.0 0.0 0.0; 0.0 5.0 5.0; 0.0 5.0 5.0] atol=atol rtol=rtol
+        @test p.x == [x, y, 1]
+    end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     μ = dual(cref)
     @test μ isa AbstractMeasure{Float64}
     @test length(moments(μ)) == 3
-    @test moment_value(moments(μ)[1]) ≈ -8/3 atol=atol rtol=rtol
+    @test moment_value(moments(μ)[1]) ≈ (remainder ? -8/3 : 0.0) atol=atol rtol=rtol
     @test monomial(moments(μ)[1]) == x^2
     @test moment_value(moments(μ)[2]) ≈ -1 atol=atol rtol=rtol
     @test monomial(moments(μ)[2]) == y
-    @test moment_value(moments(μ)[3]) ≈ 1/3 atol=atol rtol=rtol
+    @test moment_value(moments(μ)[3]) ≈ (remainder ? 1/3 : 1.0) atol=atol rtol=rtol
     @test monomial(moments(μ)[3]) == 1
 
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
-    @test length(moments(μ)) == 3
-    @test moment_value(moments(μ)[1]) ≈ 3 atol=atol rtol=rtol
-    @test monomial(moments(μ)[1]) == y^2
-    @test moment_value(moments(μ)[2]) ≈ -1 atol=atol rtol=rtol
-    @test monomial(moments(μ)[2]) == y
-    @test moment_value(moments(μ)[3]) ≈ 1/3 atol=atol rtol=rtol
-    @test monomial(moments(μ)[3]) == 1
+    if remainder
+        @test length(moments(μ)) == 3
+        @test moment_value(moments(μ)[1]) ≈ 3 atol=atol rtol=rtol
+        @test monomial(moments(μ)[1]) == y^2
+        @test moment_value(moments(μ)[2]) ≈ -1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[2]) == y
+        @test moment_value(moments(μ)[3]) ≈ 1/3 atol=atol rtol=rtol
+        @test monomial(moments(μ)[3]) == 1
+    else
+        @test length(moments(μ)) == 5
+        @test moment_value(moments(μ)[1]) ≈ 0 atol=atol rtol=rtol
+        @test monomial(moments(μ)[1]) == x*y
+        @test moment_value(moments(μ)[2]) ≈ 1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[2]) == y^2
+        @test moment_value(moments(μ)[3]) ≈ 0 atol=atol rtol=rtol
+        @test monomial(moments(μ)[3]) == x
+        @test moment_value(moments(μ)[4]) ≈ -1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[4]) == y
+        @test moment_value(moments(μ)[5]) ≈ 1 atol=atol rtol=rtol
+        @test monomial(moments(μ)[5]) == 1
+    end
+
 end
 
 BPT12e399_rem_test(optimizer, config) = BPT12e399_test(optimizer, config, true)

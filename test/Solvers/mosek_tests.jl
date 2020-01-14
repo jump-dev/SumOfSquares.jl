@@ -16,6 +16,11 @@ end
 end
 @testset "SDP" begin
     Tests.sd_test(factory, config, [
+        # Expression: termination_status(model) == MOI.OPTIMAL
+        #  Evaluated: MathOptInterface.SLOW_PROGRESS == MathOptInterface.OPTIMAL
+        # Expression: ≈(objective_value(model), α_value, atol=atol, rtol=rtol)
+        #  Evaluated: 0.6847213936286884 ≈ 10.0 (atol=1.0e-5, rtol=1.0e-5)
+        "BPT12e399_maxdegree",
         # FIXME AssertionError: m.x_type[ref2id(vi)] == Deleted
         "maxcut", "sos_horn", "motzkin",
         # Expression: JuMP.termination_status(model) == MOI.INFEASIBLE

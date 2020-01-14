@@ -28,6 +28,8 @@ end
 @testset "SDP" begin
     Tests.sd_test(factory, config, [
         "sos_options_pricing",
+        # ProxSDP does not return duals for nonlinear Conic constraints. Only linear constraints (equalities and inequalities) can be queried.
+        "quartic_ideal", "quartic_ideal_4", "quartic_ideal_4_rem",
         # with γ=3.9 it should be infeasible: Test Failed at /home/blegat/.julia/dev/SumOfSquares/test/Tests/maxcut.jl:37
         # Expression: JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
         #  Evaluated: MathOptInterface.INFEASIBLE_POINT == MathOptInterface.INFEASIBILITY_CERTIFICATE
