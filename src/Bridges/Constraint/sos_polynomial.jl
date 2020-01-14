@@ -137,12 +137,17 @@ function MOI.get(::MOI.ModelLike,
 end
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintDual,
-                 bridge::SOSPolynomialBridge)
+                 bridge::SOSPolynomialBridge{T}) where T
     dual = MOI.get(model, attr, bridge.zero_constraint)
     set = MOI.get(model, MOI.ConstraintSet(), bridge.zero_constraint)
     μ = MultivariateMoments.measure(dual, set.monomials)
-    I = SemialgebraicSets.ideal(bridge.domain)
-    return [dot(rem(mono, I), μ) for mono in bridge.monomials]
+    function reduced(mono)
+        p = MP.polynomial(mono, T)
+        domain = MP.changecoefficienttype(bridge.domain, T)
+        return SOS.Certificate.get(
+            bridge.certificate, SOS.Certificate.ReducedPolynomial(), p, domain)
+    end
+    return [dot(reduced(mono), μ) for mono in bridge.monomials]
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::MOI.ConstraintDual,
