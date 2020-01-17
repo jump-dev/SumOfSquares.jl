@@ -44,6 +44,8 @@ struct ChordalPutinar{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPol
     maxdegree::Int
 end
 
+get(certificate::ChordalPutinar, ::Cone) = certificate.cone
+
 struct ChordalDomain{S, V}
     domain::S
     cliques::Vector{V}
