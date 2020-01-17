@@ -61,6 +61,8 @@ struct Putinar{IC <: AbstractIdealCertificate, CT <: SumOfSquares.SOSLikeCone, B
     maxdegree::Int
 end
 
+get(certificate::Putinar, ::Cone) = certificate.cone
+
 struct DomainWithVariables{S, V}
     domain::S
     variables::V
@@ -100,6 +102,7 @@ SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC, CT}}) where {IC, CT} = SumOfS
 abstract type SimpleIdealCertificate{CT, BT} <: AbstractIdealCertificate end
 get(::SimpleIdealCertificate, ::ReducedPolynomial, poly, domain) = poly
 
+get(certificate::SimpleIdealCertificate, ::Cone) = certificate.cone
 SumOfSquares.matrix_cone_type(::Type{<:SimpleIdealCertificate{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
 zero_basis(certificate::SimpleIdealCertificate) = certificate.basis
 zero_basis_type(::Type{<:SimpleIdealCertificate{CT, BT}}) where {CT, BT} = BT
@@ -134,6 +137,7 @@ function get(certificate::Remainder, attr::GramBasis, poly)
     return get(certificate.gram_certificate, attr, poly)
 end
 
+get(certificate::Remainder, attr::Cone) = get(certificate.gram_certificate, attr)
 SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT} = SumOfSquares.matrix_cone_type(GCT)
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
