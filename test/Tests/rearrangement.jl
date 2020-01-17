@@ -48,5 +48,11 @@ function rearrangement_test(optimizer, config::MOIT.TestConfig)
     @test λ[4] isa SumOfSquares.SparseGramMatrix
     @test length(λ[4].sub_gram_matrices) == 1
     @test λ[4].sub_gram_matrices[1].x == [y, z, 1]
+
+    ν = moment_matrix(cref)
+    @test ν isa SparseMomentMatrix
+    @test length(ν.sub_moment_matrices) == 2
+    @test ν.sub_moment_matrices[1].x == [y, z, 1]
+    @test ν.sub_moment_matrices[2].x == [x, y, 1]
 end
 sd_tests["rearrangement"] = rearrangement_test
