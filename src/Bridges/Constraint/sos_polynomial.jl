@@ -179,10 +179,10 @@ function MOI.get(model::MOI.ModelLike,
                  attr::SOS.MomentMatrixAttribute,
                  bridge::SOSPolynomialBridge)
     if bridge.cQ isa Vector{<:MOI.ConstraintIndex}
-        return [
+        return MultivariateMoments.SparseMomentMatrix([
             SOS.build_moment_matrix(MOI.get(model, MOI.ConstraintDual(attr.N), cQ), monos)
             for (cQ, monos) in zip(bridge.cQ, bridge.certificate_monomials)
-        ]
+        ])
     else
         return SOS.build_moment_matrix(MOI.get(model, MOI.ConstraintDual(attr.N),
                                                bridge.cQ),
