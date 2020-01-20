@@ -11,15 +11,15 @@ function PolyJuMP.bridges(::Type{<:CopositiveInnerCone})
 end
 
 function JuMP.value(p::GramMatrix{<:JuMP.AbstractJuMPScalar})
-    GramMatrix(map(JuMP.value, p.Q), p.x)
+    GramMatrix(map(JuMP.value, p.Q), p.basis)
 end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
     @eval begin
-        struct $poly{PB<:PolyJuMP.AbstractPolynomialBasis} <: PolyJuMP.AbstractPoly
+        struct $poly{PB<:MB.AbstractPolynomialBasis} <: PolyJuMP.AbstractPoly
             polynomial_basis::PB
         end
-        $poly(x::AbstractVector{<:MP.APL}) = $poly(MonomialBasis(x))
+        $poly(x::AbstractVector{<:MP.APL}) = $poly(MB.MonomialBasis(x))
     end
 end
 
@@ -31,8 +31,8 @@ const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
 JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
 function PolyJuMP.polytype(m::JuMP.Model, cone::PosPoly,
-                           basis::PolyJuMP.MonomialBasis{MT, MV}) where {MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}}
-    return GramMatrix{JuMP.VariableRef, MT, MV, JuMP.AffExpr}
+                           basis::MB.AbstractPolynomialBasis)
+    return GramMatrix{JuMP.VariableRef, typeof(basis), JuMP.AffExpr}
 end
 
 # Sum-of-Squares polynomial
@@ -56,10 +56,9 @@ function moi_add_variable(model::MOI.ModelLike, set::MOI.AbstractVectorSet,
 end
 
 function JuMP.add_variable(model::JuMP.AbstractModel,
-                           v::PolyJuMP.Variable{<:PosPoly{<:PolyJuMP.MonomialBasis}},
+                           v::PolyJuMP.Variable{<:PosPoly{<:MB.MonomialBasis}},
                            name::String="")
-    monos = v.p.polynomial_basis.monomials
-    set = matrix_cone(matrix_cone_type(v.p), length(monos))
+    set = matrix_cone(matrix_cone_type(v.p), length(v.p.polynomial_basis))
     # FIXME There is no variable bridge mechanism yet:
     #       https://github.com/JuliaOpt/MathOptInterface.jl/issues/710
     #       so there is not equivalent to `BridgeableConstraint`.
@@ -75,5 +74,7 @@ function JuMP.add_variable(model::JuMP.AbstractModel,
     JuMP.add_bridge(model, Bridges.Constraint.DiagonallyDominantBridge)
     Q = moi_add_variable(backend(model), set, v.binary, v.integer)
     return build_gram_matrix(
-        JuMP.VariableRef[JuMP.VariableRef(model, vi) for vi in Q], monos)
+        JuMP.VariableRef[JuMP.VariableRef(model, vi) for vi in Q],
+        v.p.polynomial_basis
+    )
 end

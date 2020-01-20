@@ -20,15 +20,15 @@
                 @test P[i, j] == i + j
             end
         end
-        for P in (GramMatrix((i,j) -> i * j, [y, x]),
-                  GramMatrix((i,j) -> (3-i) * (3-j), monovec([y, x])),
+        for P in (GramMatrix{Int}((i,j) -> i * j, [y, x]),
+                  GramMatrix{Int}((i,j) -> (3-i) * (3-j), monovec([y, x])),
                   GramMatrix([1 2; 2 4], [y, x]),
                   GramMatrix([4 2; 2 1], monovec([y, x])))
             @test P.Q.Q == [4, 2, 1]
-            @test P.x[1] == x
-            @test P.x[2] == y
+            @test P.basis.monomials[1] == x
+            @test P.basis.monomials[2] == y
         end
-        P = GramMatrix((i,j) -> ((i,j) == (1,1) ? 2 : 0), [x*y, x^2, y^2])
+        P = GramMatrix{Int}((i,j) -> ((i,j) == (1,1) ? 2 : 0), [x*y, x^2, y^2])
         Q = GramMatrix([0 1; 1 0], [x^2, y^2])
         @test P == Q
         p = GramMatrix([2 3; 3 2], [x, y])
@@ -68,21 +68,21 @@
             q = GramMatrix(5 * ones(1, 1), [x])
             r = @inferred gram_operate(/, q, 5)
             @test r.Q == ones(1, 1)
-            @test r.x == [x]
+            @test r.basis.monomials == [x]
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [7 3; 3 2]
-            @test r.x == [x, y]
+            @test r.basis.monomials == [x, y]
             q = GramMatrix(5 * ones(1, 1), [y])
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [2 3; 3 7]
-            @test r.x == [x, y]
+            @test r.basis.monomials == [x, y]
             q = GramMatrix([5.0 7; 7 9], [x*y, 1])
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [5 0 0 7
                           0 2 3 0
                           0 3 2 0
                           7 0 0 9]
-            @test r.x == [x*y, x, y, 1]
+            @test r.basis.monomials == [x*y, x, y, 1]
         end
         @testset "With SingleVariable" begin
             a = MOI.SingleVariable(MOI.VariableIndex(1))
@@ -101,7 +101,7 @@
         #       ps = [1, x + y, x^2, x*y, 1 + x + x^2]
         #       P = GramMatrix(SOSDecomposition(ps))
         #       P.Q == [2 0 1 0 1; 0 1 0 0 0; 1 0 2 1 1; 0 0 1 1 0; 1 0 1 0 2]
-        #       P.x == [x^2, x*y, x, y, 1]
+        #       P.basis.monomials == [x^2, x*y, x, y, 1]
         #       @test P == P
         #       @test isapprox(GramMatrix(SOSDecomposition(P)), P)
         P = GramMatrix{Int}((i,j) -> i + j, [x^2, x*y, y^2])

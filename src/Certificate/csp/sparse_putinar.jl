@@ -38,7 +38,7 @@ function chordal_csp_graph(poly::MP.APL, domain::AbstractBasicSemialgebraicSet)
 
 end
 
-struct ChordalPutinar{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis} <: AbstractPreorderCertificate
+struct ChordalPutinar{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: AbstractPreorderCertificate
     cone::CT
     basis::Type{BT}
     maxdegree::Int
@@ -65,8 +65,10 @@ function get(certificate::ChordalPutinar, ::MultiplierBasis, index::PreorderInde
     maxdegree_s2 = certificate.maxdegree - MP.maxdegree(q)
     # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
     # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
-    maxdegree_s = div(maxdegree_s2 + 1, 2)
-    return [MP.monomials(clique, 0:maxdegree_s) for clique in domain.cliques if variables(q) ⊆ clique]
+    return [maxdegree_basis(certificate.basis, clique, maxdegree_s2 + 1) for clique in domain.cliques if variables(q) ⊆ clique]
+end
+function get(::Type{ChordalPutinar{CT, BT}}, ::MultiplierBasisType) where {CT, BT}
+    return Vector{BT}
 end
 
 function get(::ChordalPutinar, ::Generator, index::PreorderIndex, domain::ChordalDomain)
@@ -78,7 +80,7 @@ get(::Type{<:ChordalPutinar{CT, BT}}, ::IdealCertificate) where {CT, BT} = Chord
 
 SumOfSquares.matrix_cone_type(::Type{<:ChordalPutinar{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
 
-struct ChordalIdeal{CT <: SumOfSquares.SOSLikeCone, BT <: PolyJuMP.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+struct ChordalIdeal{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
     cone::CT
     basis::Type{BT}
     maxdegree::Int
@@ -86,6 +88,9 @@ end
 function get(certificate::ChordalIdeal, ::GramBasis, poly)
     H, cliques = chordal_csp_graph(poly, FullSpace())
     return map(cliques) do clique
-        return MP.monomials(clique, 0:div(certificate.maxdegree, 2))
+        return maxdegree_basis(certificate.basis, clique, certificate.maxdegree)
     end
+end
+function get(::Type{ChordalIdeal{CT, BT}}, ::GramBasisType) where {CT, BT}
+    return Vector{BT}
 end

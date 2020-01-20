@@ -112,7 +112,7 @@ function JuMP.moi_set(
     cone::SOSLikeCone,
     monos::AbstractVector{<:MP.AbstractMonomial};
     domain::AbstractSemialgebraicSet=FullSpace(),
-    basis=MonomialBasis,
+    basis=MB.MonomialBasis,
     newton_polytope::Tuple=tuple(),
     maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
     sparse::Sparsity=NoSparsity(),
@@ -205,16 +205,27 @@ function MultivariateMoments.moment_matrix(cref::JuMP.ConstraintRef)
     return MOI.get(cref.model, MomentMatrixAttribute(), cref)
 end
 
-# Equivalent but more efficient than moment_matrix(cref).x as it does not need
-# to query any result from the solver
+# Equivalent but more efficient than `moment_matrix(cref).basis` as it does not
+# need to query any result from the solver
+"""
+    certificate_basis(cref::JuMP.ConstraintRef)
+
+Return the [`CertificateBasis`](@ref) of `cref`.
+"""
+function certificate_basis(cref::JuMP.ConstraintRef)
+    return MOI.get(cref.model, CertificateBasis(), cref)
+end
+
 """
     certificate_monomials(cref::JuMP.ConstraintRef)
 
-Return the [`CertificateMonomials`](@ref) of `cref`.
+Return the monomials of [`certificate_basis`](@ref). If the basis if not
+`MonomialBasis`, an error is thrown.
 """
 function certificate_monomials(cref::JuMP.ConstraintRef)
-    return MOI.get(cref.model, CertificateMonomials(), cref)
+    return basis_monomials(certificate_basis(cref))
 end
+basis_monomials(basis::MB.MonomialBasis) = basis.monomials
 
 """
     lagrangian_multipliers(cref::JuMP.ConstraintRef)

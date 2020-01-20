@@ -40,7 +40,7 @@ function quadratic_test(
     @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
     @test getmat(p) ≈ ones(2, 2) atol=atol rtol=rtol
-    @test p.x == cert_monos
+    @test p.basis.monomials == cert_monos
 
     a = moment_value.(moments(dual(cref)))
     @test a[2] ≈ -1.0 atol=atol rtol=rtol
@@ -57,10 +57,10 @@ function quadratic_test(
     ν = moment_matrix(cref)
     @test getmat(ν) ≈ [a[1] a[2]
                        a[2] a[3]] atol=atol rtol=rtol
-    @test ν.x == cert_monos
+    @test ν.basis.monomials == cert_monos
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MonomialBasis, Tuple{}}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MB.MonomialBasis, Tuple{}}
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     test_delete_bridge(
@@ -69,7 +69,7 @@ function quadratic_test(
          (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}, 0),
          (MOI.VectorAffineFunction{Float64},
           SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-              SumOfSquares.FullSpace, SumOfSquares.MonomialBasis,
+              SumOfSquares.FullSpace, SumOfSquares.MB.MonomialBasis,
               Monomial{true}, MonomialVector{true}},
           0)))
 end

@@ -28,7 +28,7 @@ function term_fixed_test(
     @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
     @test getmat(p) ≈ zeros(1, 1) atol=atol rtol=rtol
-    @test p.x == [x]
+    @test p.basis.monomials == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     for (m, μ) in [(x^2 * y, dual(cref)), (x^2, moments(cref))]
@@ -40,10 +40,10 @@ function term_fixed_test(
 
     ν = moment_matrix(cref)
     @test getmat(ν) ≈ ones(1, 1) atol=atol rtol=rtol
-    @test ν.x == [x]
+    @test ν.basis.monomials == [x]
 
     S = SumOfSquares.SOSPolynomialSet{
-        typeof(set), Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Remainder{SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MonomialBasis, Tuple{}}}
+        typeof(set), Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Remainder{SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MB.MonomialBasis, Tuple{}}}
     }
     @test list_of_constraint_types(model) == [(Vector{JuMP.AffExpr}, S)]
     test_delete_bridge(
@@ -51,7 +51,7 @@ function term_fixed_test(
         ((MOI.VectorOfVariables, MOI.Nonnegatives, 0),
          (MOI.VectorAffineFunction{Float64},
           SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-              typeof(set), SumOfSquares.MonomialBasis,
+              typeof(set), SumOfSquares.MB.MonomialBasis,
               Monomial{true}, MonomialVector{true}},
           0)))
 end
