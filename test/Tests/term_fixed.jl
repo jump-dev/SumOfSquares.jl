@@ -43,7 +43,7 @@ function term_fixed_test(
     @test ν.basis.monomials == [x]
 
     S = SumOfSquares.SOSPolynomialSet{
-        typeof(set), Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Remainder{SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MB.MonomialBasis, Tuple{}}}
+        typeof(set), Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Remainder{SumOfSquares.Certificate.Newton{typeof(cone), MonomialBasis, Tuple{}}}
     }
     @test list_of_constraint_types(model) == [(Vector{JuMP.AffExpr}, S)]
     test_delete_bridge(
@@ -51,7 +51,7 @@ function term_fixed_test(
         ((MOI.VectorOfVariables, MOI.Nonnegatives, 0),
          (MOI.VectorAffineFunction{Float64},
           SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-              typeof(set), SumOfSquares.MB.MonomialBasis,
+              typeof(set), MonomialBasis,
               Monomial{true}, MonomialVector{true}},
           0)))
 end

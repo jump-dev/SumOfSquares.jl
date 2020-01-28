@@ -43,7 +43,7 @@ function term_test(optimizer,
     @test ν.basis.monomials == [x]
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MB.MonomialBasis, Tuple{}}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), MonomialBasis, Tuple{}}
     }
     @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
     test_delete_bridge(
@@ -51,7 +51,7 @@ function term_test(optimizer,
         ((MOI.VectorOfVariables, MOI.Nonnegatives, 0),
          (MOI.VectorAffineFunction{Float64},
           SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-              SumOfSquares.FullSpace, SumOfSquares.MB.MonomialBasis,
+              SumOfSquares.FullSpace, MonomialBasis,
               Monomial{true}, MonomialVector{true}},
           0)))
 end

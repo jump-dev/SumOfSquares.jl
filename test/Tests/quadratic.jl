@@ -1,10 +1,10 @@
 using Test
-using SumOfSquares
+import MultivariateBases
 using DynamicPolynomials
 
 function quadratic_test(
     optimizer, config::MOIT.TestConfig,
-    cone::SumOfSquares.PolyJuMP.PolynomialSet, bivariate::Bool)
+    cone::SumOfSquares.PolyJuMP.PolynomialSet, basis, bivariate::Bool)
     atol = config.atol
     rtol = config.rtol
 
@@ -23,16 +23,15 @@ function quadratic_test(
         cert_monos = [x, 1]
         monos = [x^2, x, 1]
     end
-    cref = @constraint(model, poly in cone)
+    cref = @constraint(model, poly in cone, basis = basis)
 
-    # See https://github.com/JuliaOpt/MathOptInterface.jl/issues/676
-    @objective(model, Max, α + 1)
+    @objective(model, Max, α)
     optimize!(model)
 
     @test certificate_monomials(cref) == cert_monos
 
     @test termination_status(model) == MOI.OPTIMAL
-    @test objective_value(model) ≈ 3.0 atol=atol rtol=rtol
+    @test objective_value(model) ≈ 2.0 atol=atol rtol=rtol
 
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 2.0 atol=atol rtol=rtol
@@ -60,7 +59,7 @@ function quadratic_test(
     @test ν.basis.monomials == cert_monos
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MB.MonomialBasis, Tuple{}}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), basis, Tuple{}}
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     test_delete_bridge(
@@ -69,19 +68,27 @@ function quadratic_test(
          (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}, 0),
          (MOI.VectorAffineFunction{Float64},
           SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-              SumOfSquares.FullSpace, SumOfSquares.MB.MonomialBasis,
+              SumOfSquares.FullSpace, basis,
               Monomial{true}, MonomialVector{true}},
           0)))
 end
-sos_univariate_quadratic_test(optimizer, config)   = quadratic_test(optimizer, config, SOSCone(), false)
+sos_univariate_quadratic_test(optimizer, config)   = quadratic_test(optimizer, config, SOSCone(), MonomialBasis, false)
 sd_tests["sos_univariate_quadratic"] = sos_univariate_quadratic_test
-sos_bivariate_quadratic_test(optimizer, config)    = quadratic_test(optimizer, config, SOSCone(), true)
+sos_bivariate_quadratic_test(optimizer, config)    = quadratic_test(optimizer, config, SOSCone(), MonomialBasis, true)
 sd_tests["sos_bivariate_quadratic"] = sos_bivariate_quadratic_test
-sdsos_univariate_quadratic_test(optimizer, config) = quadratic_test(optimizer, config, SDSOSCone(), false)
+sos_scaled_univariate_quadratic_test(optimizer, config)   = quadratic_test(optimizer, config, SOSCone(), ScaledMonomialBasis, false)
+sd_tests["sos_scaled_univariate_quadratic"] = sos_scaled_univariate_quadratic_test
+sos_scaled_bivariate_quadratic_test(optimizer, config)    = quadratic_test(optimizer, config, SOSCone(), ScaledMonomialBasis, true)
+sd_tests["sos_scaled_bivariate_quadratic"] = sos_scaled_bivariate_quadratic_test
+sos_cheby_univariate_quadratic_test(optimizer, config)   = quadratic_test(optimizer, config, SOSCone(), ChebyshevBasis, false)
+sd_tests["sos_cheby_univariate_quadratic"] = sos_cheby_univariate_quadratic_test
+sos_cheby_bivariate_quadratic_test(optimizer, config)    = quadratic_test(optimizer, config, SOSCone(), ChebyshevBasis, true)
+sd_tests["sos_scaled_bivariate_quadratic"] = sos_scaled_bivariate_quadratic_test
+sdsos_univariate_quadratic_test(optimizer, config) = quadratic_test(optimizer, config, SDSOSCone(), MonomialBasis, false)
 soc_tests["sdsos_univariate_quadratic"] = sdsos_univariate_quadratic_test
-sdsos_bivariate_quadratic_test(optimizer, config)  = quadratic_test(optimizer, config, SDSOSCone(), true)
+sdsos_bivariate_quadratic_test(optimizer, config)  = quadratic_test(optimizer, config, SDSOSCone(), MonomialBasis, true)
 soc_tests["sdsos_bivariate_quadratic"] = sdsos_bivariate_quadratic_test
-dsos_univariate_quadratic_test(optimizer, config)  = quadratic_test(optimizer, config, DSOSCone(), false)
+dsos_univariate_quadratic_test(optimizer, config)  = quadratic_test(optimizer, config, DSOSCone(), MonomialBasis, false)
 linear_tests["dsos_univariate_quadratic"] = dsos_univariate_quadratic_test
-dsos_bivariate_quadratic_test(optimizer, config)   = quadratic_test(optimizer, config, DSOSCone(), true)
+dsos_bivariate_quadratic_test(optimizer, config)   = quadratic_test(optimizer, config, DSOSCone(), MonomialBasis, true)
 linear_tests["dsos_bivariate_quadratic"] = dsos_bivariate_quadratic_test

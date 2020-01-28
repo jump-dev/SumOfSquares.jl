@@ -16,10 +16,10 @@ end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
     @eval begin
-        struct $poly{PB<:MB.AbstractPolynomialBasis} <: PolyJuMP.AbstractPoly
+        struct $poly{PB<:AbstractPolynomialBasis} <: PolyJuMP.AbstractPoly
             polynomial_basis::PB
         end
-        $poly(x::AbstractVector{<:MP.APL}) = $poly(MB.MonomialBasis(x))
+        $poly(x::AbstractVector{<:MP.APL}) = $poly(MonomialBasis(x))
     end
 end
 
@@ -31,7 +31,7 @@ const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
 JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
 function PolyJuMP.polytype(m::JuMP.Model, cone::PosPoly,
-                           basis::MB.AbstractPolynomialBasis)
+                           basis::AbstractPolynomialBasis)
     return GramMatrix{JuMP.VariableRef, typeof(basis), JuMP.AffExpr}
 end
 
@@ -56,12 +56,12 @@ function moi_add_variable(model::MOI.ModelLike, set::MOI.AbstractVectorSet,
 end
 
 function JuMP.add_variable(model::JuMP.AbstractModel,
-                           v::PolyJuMP.Variable{<:PosPoly{<:MB.MonomialBasis}},
+                           v::PolyJuMP.Variable{<:PosPoly},
                            name::String="")
     set = matrix_cone(matrix_cone_type(v.p), length(v.p.polynomial_basis))
     # FIXME There is no variable bridge mechanism yet:
     #       https://github.com/JuliaOpt/MathOptInterface.jl/issues/710
-    #       so there is not equivalent to `BridgeableConstraint`.
+    #       so there is no equivalent to `BridgeableConstraint`.
     #       Yet, we may need constraint bridges here if it goes through
     #       the `generic_variable_bridge`.
     #       We don't need the `ScaledDiagonallyDominantBridge` since it does

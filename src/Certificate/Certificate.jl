@@ -76,6 +76,9 @@ function get(::Putinar, index::PreorderIndices, domain::DomainWithVariables)
     return map(PreorderIndex, eachindex(domain.domain.p))
 end
 
+function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
+    return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
+end
 function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::DomainWithVariables)
     q = domain.domain.p[index.value]
     vars = sort!([domain.variables..., MP.variables(q)...], rev = true)
@@ -83,7 +86,7 @@ function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, doma
     maxdegree_s2 = certificate.maxdegree - MP.maxdegree(q)
     # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
     # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
-    return maxdegree_basis(certificate.basis, vars, maxdegree_s2 + 1)
+    return maxdegree_gram_basis(certificate.basis, vars, maxdegree_s2 + 1)
 end
 function get(::Type{Putinar{IC, CT, BT}}, ::MultiplierBasisType) where {IC, CT, BT}
     return BT
@@ -107,19 +110,18 @@ get(::SimpleIdealCertificate, ::ReducedPolynomial, poly, domain) = poly
 
 get(certificate::SimpleIdealCertificate, ::Cone) = certificate.cone
 SumOfSquares.matrix_cone_type(::Type{<:SimpleIdealCertificate{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
-zero_basis(certificate::SimpleIdealCertificate) = certificate.basis
-zero_basis_type(::Type{<:SimpleIdealCertificate{CT, BT}}) where {CT, BT} = BT
+
+# TODO return something else when `PolyJuMP` support other bases.
+zero_basis(certificate::SimpleIdealCertificate) = MB.MonomialBasis
+zero_basis_type(::Type{<:SimpleIdealCertificate{CT, BT}}) where {CT, BT} = MB.MonomialBasis
 
 struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
     cone::CT
     basis::Type{BT}
     maxdegree::Int
 end
-function maxdegree_basis(::Type{MB.MonomialBasis}, variables, maxdegree::Int)
-    return MB.MonomialBasis(MP.monomials(variables, 0:div(maxdegree, 2)))
-end
 function get(certificate::MaxDegree, ::GramBasis, poly) where CT
-    return maxdegree_basis(certificate.basis, MP.variables(poly), certificate.maxdegree)
+    return maxdegree_gram_basis(certificate.basis, MP.variables(poly), certificate.maxdegree)
 end
 function get(::Type{MaxDegree{CT, BT}}, ::GramBasisType) where {CT, BT}
     return BT
@@ -130,8 +132,8 @@ struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, 
     basis::Type{BT}
     variable_groups::NPT
 end
-function get(certificate::Newton{CT, MB.MonomialBasis}, ::GramBasis, poly) where CT
-    return MB.MonomialBasis(monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups))
+function get(certificate::Newton{CT, B}, ::GramBasis, poly) where {CT, B<:MB.AbstractMonomialBasis}
+    return B(monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups))
 end
 function get(::Type{<:Newton{CT, BT}}, ::GramBasisType) where {CT, BT}
     return BT

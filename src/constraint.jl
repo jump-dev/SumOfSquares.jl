@@ -108,30 +108,39 @@ end
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
     return default_ideal_certificate(domain.V, args...)
 end
+function default_certificate(::AbstractAlgebraicSet, sparse, ideal_certificate, cone, basis, maxdegree)
+    return ideal_certificate
+end
+function default_certificate(::BasicSemialgebraicSet, ::VariableSparsity,
+                             ideal_certificate::Certificate.ChordalIdeal, cone,
+                             basis, maxdegree)
+    return Certificate.ChordalPutinar(
+         cone, basis, maxdegree)
+end
+function default_certificate(::BasicSemialgebraicSet, ::MonomialSparsity,
+                             ideal_certificate, cone,
+                             basis, maxdegree)
+    error("Monomial sparsity not implemented yet")
+end
+function default_certificate(::BasicSemialgebraicSet, ::NoSparsity,
+                             ideal_certificate, cone, basis, maxdegree)
+    return Certificate.Putinar(
+        ideal_certificate, cone, basis, maxdegree)
+end
 function JuMP.moi_set(
     cone::SOSLikeCone,
     monos::AbstractVector{<:MP.AbstractMonomial};
     domain::AbstractSemialgebraicSet=FullSpace(),
-    basis=MB.MonomialBasis,
+    basis=MonomialBasis,
     newton_polytope::Tuple=tuple(),
     maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
     sparse::Sparsity=NoSparsity(),
     remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(
-        domain, cone, basis, newton_polytope, maxdegree, sparse, remainder)
+        domain, cone, basis, newton_polytope, maxdegree, sparse, remainder),
+    certificate=default_certificate(
+        domain, sparse, ideal_certificate, cone, basis, maxdegree)
     )
-    if domain isa AbstractAlgebraicSet
-        certificate = ideal_certificate
-    elseif sparse isa VariableSparsity
-        certificate = Certificate.ChordalPutinar(
-            cone, basis, maxdegree)
-    elseif sparse isa MonomialSparsity
-        error("Monomial sparsity not implemented yet")
-    else
-        @assert sparse isa NoSparsity
-        certificate = Certificate.Putinar(
-            ideal_certificate, cone, basis, maxdegree)
-    end
     return SOSPolynomialSet(domain, monos, certificate)
 end
 
@@ -220,12 +229,12 @@ end
     certificate_monomials(cref::JuMP.ConstraintRef)
 
 Return the monomials of [`certificate_basis`](@ref). If the basis if not
-`MonomialBasis`, an error is thrown.
+`MultivariateBases.AbstractMonomialBasis`, an error is thrown.
 """
 function certificate_monomials(cref::JuMP.ConstraintRef)
     return basis_monomials(certificate_basis(cref))
 end
-basis_monomials(basis::MB.MonomialBasis) = basis.monomials
+basis_monomials(basis::AbstractMonomialBasis) = basis.monomials
 
 """
     lagrangian_multipliers(cref::JuMP.ConstraintRef)

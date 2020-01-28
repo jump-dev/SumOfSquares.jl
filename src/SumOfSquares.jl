@@ -11,8 +11,7 @@ const MA = MutableArithmetics
 
 import MultivariatePolynomials
 const MP = MultivariatePolynomials
-import MultivariateBases
-const MB = MultivariateBases
+Reexport.@reexport using MultivariateBases
 # @set assumes that `SemialgebraicSets` is defined
 Reexport.@reexport using SemialgebraicSets
 Reexport.@reexport using MultivariateMoments
