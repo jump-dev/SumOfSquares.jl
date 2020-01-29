@@ -200,7 +200,7 @@ end
 
         CEG.add_edge!(H, 1, 5)
         I, cliques = CEG.chordal_extension(H, CEG.GreedyFillIn())
-        @test cliques == [[1, 2, 3, 4], [1, 5]]
+        @test cliques == [[1, 2, 4], [2, 3, 4], [1, 5]]
         @test isempty(G.graph.disabled)
         @test isempty(H.graph.disabled)
         @test isempty(I.graph.disabled)
