@@ -229,7 +229,7 @@ function _greedy_triangulation!(G, algo::AbstractGreedyAlgorithm)
                 typemax(Int)
             end
         end)
-
+#=
         # look at all its neighbors. In G we want the neighbors to form a clique.
         neighbor_nodes = collect(neighbors(G, node))
 
@@ -248,7 +248,16 @@ function _greedy_triangulation!(G, algo::AbstractGreedyAlgorithm)
                 end
             end
         end
-        disable_node!(G, node)
+=#
+	neighbor_nodes = [neighbor for neighbor in neighbors(G, node) if is_enabled(G, neighbor)]
+	push!(candidate_cliques, [node, neighbor_nodes...])
+	for i in eachindex(neighbor_nodes)
+		for j in (i+1):length(neighbor_nodes)
+			add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
+		end
+	end
+
+    disable_node!(G, node)
     end
     return candidate_cliques
 end
@@ -266,6 +275,7 @@ function chordal_extension(G::Graph, algo::AbstractGreedyAlgorithm)
     candidate_cliques = candidate_cliques[[is_clique(H, clique) for clique in candidate_cliques]]
     sort!(candidate_cliques, by = x -> length(x))
     reverse!(candidate_cliques) # TODO use `rev=true` in `sort!`.
+
     maximal_cliques = [first(candidate_cliques)]
     for clique in Iterators.drop(candidate_cliques, 1)
         if all(other_clique -> !(clique ⊆ other_clique), maximal_cliques)
