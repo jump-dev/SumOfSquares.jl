@@ -235,6 +235,7 @@ function certificate_monomials(cref::JuMP.ConstraintRef)
     return basis_monomials(certificate_basis(cref))
 end
 basis_monomials(basis::AbstractMonomialBasis) = basis.monomials
+basis_monomials(basis::AbstractPolynomialBasis) = error("`certificate_monomials` is not supported with `$(typeof(basis))`, use `certificate_basis` instead.")
 
 """
     lagrangian_multipliers(cref::JuMP.ConstraintRef)

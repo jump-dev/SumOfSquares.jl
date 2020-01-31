@@ -132,8 +132,8 @@ struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, 
     basis::Type{BT}
     variable_groups::NPT
 end
-function get(certificate::Newton{CT, B}, ::GramBasis, poly) where {CT, B<:MB.AbstractMonomialBasis}
-    return B(monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups))
+function get(certificate::Newton{CT, B}, ::GramBasis, poly) where {CT, B}
+    return MB.basis_covering_monomials(B, monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups))
 end
 function get(::Type{<:Newton{CT, BT}}, ::GramBasisType) where {CT, BT}
     return BT
