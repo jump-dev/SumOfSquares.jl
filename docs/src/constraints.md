@@ -294,21 +294,14 @@ gram_matrix
 gram_operate
 SumOfSquares.MomentMatrixAttribute
 moment_matrix
-SumOfSquares.CertificateMonomials
+SumOfSquares.CertificateBasis
+certificate_basis
 certificate_monomials
 SumOfSquares.LagrangianMultipliers
 lagrangian_multipliers
 SOSDecomposition
 SOSDecompositionWithDomain
 sos_decomposition
-```
-
-Polynomial basis:
-```@docs
-SumOfSquares.PolyJuMP.AbstractPolynomialBasis
-SumOfSquares.PolyJuMP.MonomialBasis
-SumOfSquares.PolyJuMP.ScaledMonomialBasis
-SumOfSquares.PolyJuMP.FixedPolynomialBasis
 ```
 
 Bridges are automatically added using the following utilities:

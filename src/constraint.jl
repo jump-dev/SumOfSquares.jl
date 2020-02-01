@@ -1,4 +1,4 @@
-export certificate_monomials, gram_matrix, lagrangian_multipliers
+export certificate_basis, certificate_monomials, gram_matrix, lagrangian_multipliers
 export NonnegPolyInnerCone, DSOSCone, SDSOSCone, SOSCone
 export PSDMatrixInnerCone, SOSMatrixCone
 export ConvexPolyInnerCone, SOSConvexCone
