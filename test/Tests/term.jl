@@ -28,7 +28,7 @@ function term_test(optimizer,
     @test_throws SumOfSquares.ValueNotSupported value(cref)
     p = gram_matrix(cref)
     @test getmat(p) ≈ zeros(1, 1) atol=atol rtol=rtol
-    @test p.x == [x]
+    @test p.basis.monomials == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     for μ in [dual(cref), moments(cref)]
@@ -40,10 +40,10 @@ function term_test(optimizer,
 
     ν = moment_matrix(cref)
     @test getmat(ν) ≈ ones(1, 1) atol=atol rtol=rtol
-    @test ν.x == [x]
+    @test ν.basis.monomials == [x]
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), SumOfSquares.MonomialBasis, Tuple{}}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Newton{typeof(cone), MonomialBasis, Tuple{}}
     }
     @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
     test_delete_bridge(
@@ -51,7 +51,7 @@ function term_test(optimizer,
         ((MOI.VectorOfVariables, MOI.Nonnegatives, 0),
          (MOI.VectorAffineFunction{Float64},
           SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-              SumOfSquares.FullSpace, SumOfSquares.MonomialBasis,
+              SumOfSquares.FullSpace, MonomialBasis,
               Monomial{true}, MonomialVector{true}},
           0)))
 end

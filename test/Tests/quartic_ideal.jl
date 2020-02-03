@@ -29,7 +29,7 @@ function quartic_ideal_test(optimizer, config::MOIT.TestConfig,
         @test monomial(moments(μ)[1]) == x^2
         @test monomial(moments(μ)[2]) == x^1
         @test monomial(moments(μ)[3]) == 1
-        @test moment_matrix(cref).x == [x^2, x, 1]
+        @test moment_matrix(cref).basis.monomials == [x^2, x, 1]
     end
 end
 quartic_ideal_test(optimizer, config)   = quartic_ideal_test(optimizer, config, nothing, false)

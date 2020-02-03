@@ -15,5 +15,6 @@ config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5)
 optimize!(mock) = MOIU.mock_optimize!(mock, [α, α, 0.0, β, 1 + α, 0.0, 1 + α, β, 0.0])
 for mock in mocks(optimize!)
     Tests.quadratic_feasible_lyapunov_switched_system_test(mock, config)
+    Tests.quadratic_feasible_scaled_lyapunov_switched_system_test(mock, config)
 end
 # TODO quadratic infeasible and quartic

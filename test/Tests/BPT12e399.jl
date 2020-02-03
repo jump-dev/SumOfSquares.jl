@@ -39,10 +39,10 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig, remainder::Bool)
     p = gram_matrix(cref)
     if remainder
         @test getmat(p) ≈ [1 -3; -3 9] atol=atol rtol=rtol
-        @test p.x == [y, 1]
+        @test p.basis.monomials == [y, 1]
     else
         @test getmat(p) ≈ [4.0 0.0 0.0; 0.0 5.0 -5.0; 0.0 -5.0 5.0] atol=atol rtol=rtol
-        @test p.x == [x, y, 1]
+        @test p.basis.monomials == [x, y, 1]
     end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
@@ -93,10 +93,10 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig, remainder::Bool)
     p = gram_matrix(cref)
     if remainder
         @test getmat(p) ≈ [1 3; 3 9] atol=atol rtol=rtol
-        @test p.x == [y, 1]
+        @test p.basis.monomials == [y, 1]
     else
         @test getmat(p) ≈ [4.0 0.0 0.0; 0.0 5.0 5.0; 0.0 5.0 5.0] atol=atol rtol=rtol
-        @test p.x == [x, y, 1]
+        @test p.basis.monomials == [x, y, 1]
     end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT

@@ -12,6 +12,7 @@ const MOIB = MOI.Bridges
 
 import MultivariatePolynomials
 const MP = MultivariatePolynomials
+import MultivariateBases
 import SemialgebraicSets
 import MultivariateMoments
 import PolyJuMP

@@ -7,6 +7,14 @@ for mock in mocks(optimize!)
     Tests.sos_bivariate_quadratic_test(mock, config)
     Tests.sdsos_univariate_quadratic_test(mock, config)
     Tests.sdsos_bivariate_quadratic_test(mock, config)
+    Tests.sos_scaled_univariate_quadratic_test(mock, config)
+    Tests.sos_scaled_bivariate_quadratic_test(mock, config)
+    Tests.sdsos_scaled_univariate_quadratic_test(mock, config)
+    Tests.sdsos_scaled_bivariate_quadratic_test(mock, config)
+    Tests.sos_cheby_univariate_quadratic_test(mock, config)
+    Tests.sos_cheby_bivariate_quadratic_test(mock, config)
+    Tests.sdsos_cheby_univariate_quadratic_test(mock, config)
+    Tests.sdsos_cheby_bivariate_quadratic_test(mock, config)
 end
 optimize!(mock) = MOIU.mock_optimize!(mock, [2.0, 1.0, 1.0, 1.0, 1.0],
     (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}) => [0.0, 2.0, 2.0, 0.0],
@@ -14,4 +22,8 @@ optimize!(mock) = MOIU.mock_optimize!(mock, [2.0, 1.0, 1.0, 1.0, 1.0],
 for mock in mocks(optimize!)
     Tests.dsos_univariate_quadratic_test(mock, config)
     Tests.dsos_bivariate_quadratic_test(mock, config)
+    Tests.dsos_scaled_univariate_quadratic_test(mock, config)
+    Tests.dsos_scaled_bivariate_quadratic_test(mock, config)
+    Tests.dsos_cheby_univariate_quadratic_test(mock, config)
+    Tests.dsos_cheby_bivariate_quadratic_test(mock, config)
 end

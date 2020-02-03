@@ -24,12 +24,12 @@ function univariate_sum_test(optimizer,
     @test p isa SumOfSquares.SparseGramMatrix
     @test length(p.sub_gram_matrices) == 2
     @test getmat(p.sub_gram_matrices[1]) ≈ ones(2, 2) atol=atol rtol=rtol
-    @test p.sub_gram_matrices[1].x == [y, 1]
+    @test p.sub_gram_matrices[1].basis.monomials == [y, 1]
     @test getmat(p.sub_gram_matrices[2]) ≈ [1 -1; -1 1] atol=atol rtol=rtol
-    @test p.sub_gram_matrices[2].x == [x, 1]
+    @test p.sub_gram_matrices[2].basis.monomials == [x, 1]
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.ChordalIdeal{typeof(cone), SumOfSquares.MonomialBasis}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.ChordalIdeal{typeof(cone), MonomialBasis}
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     test_delete_bridge(

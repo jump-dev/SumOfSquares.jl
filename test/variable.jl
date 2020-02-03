@@ -25,8 +25,8 @@ end
     X = monomials([x, y], 0:2)
     for cone in [SOSPoly(X), SDSOSPoly(X), DSOSPoly(X)]
         p = @variable(model, [1:2], cone)
-        @test p[1].x == X
-        @test p[2].x == X
+        @test p[1].basis.monomials == X
+        @test p[2].basis.monomials == X
         @test eltype(p) <: GramMatrix{JuMP.VariableRef}
     end
 end

@@ -1,10 +1,10 @@
 """
-    struct CertificateMonomials <: MOI.AbstractConstraintAttribute end
+    struct CertificateBasis <: MOI.AbstractConstraintAttribute end
 
-A constraint attribute for the monomials indexing the
+A constraint attribute for the basis indexing the
 [`GramMatrixAttribute`](@ref) and [`MomentMatrixAttribute`](@ref) certificates.
 """
-struct CertificateMonomials <: MOI.AbstractConstraintAttribute end
+struct CertificateBasis <: MOI.AbstractConstraintAttribute end
 
 """
     GramMatrixAttribute(N)
@@ -46,8 +46,8 @@ end
 LagrangianMultipliers() = LagrangianMultipliers(1)
 
 # Needs to declare it set by optimize that it is not queried in the Caching
-# optimize, even of `CertificateMonomials` which is set befor optimize.
-function MOI.is_set_by_optimize(::Union{CertificateMonomials,
+# optimize, even of `CertificateBasis` which is set befor optimize.
+function MOI.is_set_by_optimize(::Union{CertificateBasis,
                                         GramMatrixAttribute,
                                         MomentMatrixAttribute,
                                         LagrangianMultipliers})
@@ -58,7 +58,7 @@ end
 # bridged by `MOI.Bridges.Constraint.VectorFunctionizeBridge` and it has
 # to pass the constraint to the SOS bridge.
 function MOI.Bridges.Constraint.invariant_under_function_conversion(::Union{
-    CertificateMonomials, GramMatrixAttribute,
+    CertificateBasis, GramMatrixAttribute,
     MomentMatrixAttribute, LagrangianMultipliers})
     return true
 end
