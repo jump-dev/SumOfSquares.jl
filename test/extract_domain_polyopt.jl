@@ -4,7 +4,7 @@ using JuMP
 using SumOfSquares
 using MultivariateMoments
 
-@testset "Polynomial Optimization example with $(factory.constructor)" for factory in sdp_factories
+@testset "Polynomial Optimization example with $(factory.optimizer_constructor)" for factory in sdp_factories
     isscs(factory) && continue
     @polyvar x y
     p = x^3 - x^2 + 2x*y -y^2 + y^3

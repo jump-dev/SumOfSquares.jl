@@ -17,8 +17,6 @@ SemialgebraicSets = "8e049039-38e8-557d-ae3a-bc521ccf6204"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-DynamicPolynomials = "0.3.6"
-JuMP = "0.20"
 MathOptInterface = "~0.9.9"
 MultivariateBases = "0.1.1"
 MultivariateMoments = "0.3"

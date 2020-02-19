@@ -2,7 +2,7 @@
 # SOSDEMO1 --- Sum of Squares Test
 # Section 3.1 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO1 with $(factory.constructor)" for factory in sdp_factories
+@testset "SOSDEMO1 with $(factory.optimizer_constructor)" for factory in sdp_factories
     @polyvar x y
 
     m = SOSModel(factory)

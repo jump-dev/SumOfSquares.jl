@@ -2,7 +2,7 @@
 # SOSDEMO2 --- Lyapunov Function Search
 # Section 3.2 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO2 with $(factory.constructor)" for factory in sdp_factories
+@testset "SOSDEMO2 with $(factory.optimizer_constructor)" for factory in sdp_factories
     @polyvar x[1:3]
 
     # Constructing the vector field dx/dt = f
