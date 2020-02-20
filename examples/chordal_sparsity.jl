@@ -12,7 +12,7 @@ function test(test_function, factory)
 end
 
 @testset "chordal_sos" begin
-    factory = with_optimizer(Mosek.Optimizer)
+    factory = Mosek.Optimizer
 
     val = test(chained_singular(12), factory)
     @test abs(val) < 1e-6
