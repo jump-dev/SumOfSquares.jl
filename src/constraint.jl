@@ -87,17 +87,17 @@ end
 
 function default_ideal_certificate(
     domain::AbstractAlgebraicSet, cone, basis,
-    newton_polytope, maxdegree, sparse::Sparsity, remainder::Bool)
+    newton_polytope, maxdegree, sparsity::Sparsity, remainder::Bool)
 
-    if sparse isa VariableSparsity
+    if sparsity isa VariableSparsity
         if maxdegree === nothing
-            error("`maxdegree` cannot be `nothing` when `sparse` is `true`.")
+            error("`maxdegree` cannot be `nothing` when `sparsity` is no `NoSparsity`.")
         end
         c = Certificate.ChordalIdeal(cone, basis, maxdegree)
-    elseif sparse isa MonomialSparsity
+    elseif sparsity isa MonomialSparsity
         error("Monomial sparsity not implemented yet")
     else
-        @assert sparse isa NoSparsity
+        @assert sparsity isa NoSparsity
         c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
     end
     if remainder && !(c isa SumOfSquares.Certificate.Remainder)
@@ -108,7 +108,7 @@ end
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
     return default_ideal_certificate(domain.V, args...)
 end
-function default_certificate(::AbstractAlgebraicSet, sparse, ideal_certificate, cone, basis, maxdegree)
+function default_certificate(::AbstractAlgebraicSet, sparsity, ideal_certificate, cone, basis, maxdegree)
     return ideal_certificate
 end
 function default_certificate(::BasicSemialgebraicSet, ::VariableSparsity,
@@ -134,12 +134,12 @@ function JuMP.moi_set(
     basis=MonomialBasis,
     newton_polytope::Tuple=tuple(),
     maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
-    sparse::Sparsity=NoSparsity(),
+    sparsity::Sparsity=NoSparsity(),
     remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(
-        domain, cone, basis, newton_polytope, maxdegree, sparse, remainder),
+        domain, cone, basis, newton_polytope, maxdegree, sparsity, remainder),
     certificate=default_certificate(
-        domain, sparse, ideal_certificate, cone, basis, maxdegree)
+        domain, sparsity, ideal_certificate, cone, basis, maxdegree)
     )
     return SOSPolynomialSet(domain, monos, certificate)
 end

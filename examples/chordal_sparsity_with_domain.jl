@@ -3,14 +3,14 @@ using MosekTools
 using DynamicPolynomials
 
 
-function sos_lower_bound(factory, sparse::Sparsity)
+function sos_lower_bound(factory, sparsity::Sparsity)
     @polyvar x y z
     K = @set 1-x^2-y^2>=0 && 1-y^2-z^2>=0
     p = 1 - x*y - y*z
     model = Model(factory)
     @variable(model, t)
     @objective(model, Max, t)
-    @constraint(model, p - t in SOSCone(), domain = K, sparse = sparse)
+    @constraint(model, p - t in SOSCone(), domain = K, sparsity = sparsity)
     optimize!(model)
     return objective_value(model)
 end
