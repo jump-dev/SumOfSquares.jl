@@ -29,18 +29,6 @@ matrix_cone_type(::SDSOSPoly) = ScaledDiagonallyDominantConeTriangle
 
 const PosPoly{PB} = Union{DSOSPoly{PB}, SDSOSPoly{PB}, SOSPoly{PB}}
 
-JuMP.variable_type(m::JuMP.Model, p::PosPoly) = PolyJuMP.polytype(m, p, p.polynomial_basis)
-
-# TODO can all commented code be deleted?
-# function PolyJuMP.polytype(m::JuMP.Model, cone::PosPoly,
-#                            basis::AbstractPolynomialBasis)
-#     return GramMatrix{JuMP.VariableRef, typeof(basis), JuMP.AffExpr}
-# end
-
-# Sum-of-Squares polynomial
-
-# _polytype(m::JuMP.Model, ::PosPoly, x::MVT) where {MT<:MP.AbstractMonomial, MVT<:AbstractVector{MT}} = GramMatrix{JuMP.VariableRef, MT, MVT}
-
 function moi_add_variable(model::MOI.ModelLike, set::MOI.AbstractVectorSet,
                           binary::Bool, integer::Bool)
     Q, con_Q = MOI.add_constrained_variables(model, set)
