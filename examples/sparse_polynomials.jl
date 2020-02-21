@@ -44,11 +44,11 @@ function generalized_rosenbrock(n::Int)
     return p
 end
 
-function sos_lower_bound(p, factory, sparse::Sparsity)
+function sos_lower_bound(p, factory, sparsity::Sparsity)
     model = Model(factory)
     @variable(model, t)
     @objective(model, Max, t)
-    @constraint(model, p - t in SOSCone(), sparse=sparse)
+    @constraint(model, p - t in SOSCone(), sparsity=sparsity)
     optimize!(model)
     println(termination_status(model))
     println(objective_value(model))
