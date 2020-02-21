@@ -18,7 +18,7 @@ function BPT12e399_test(optimizer, config::MOIT.TestConfig, remainder::Bool)
 
     @polyvar x y
     if remainder
-        cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(), remainder = true,
+        cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(), newton_of_remainder = true,
                            maxdegree = nothing, domain = @set x^2 + y^2 == 1)
     else
         cref = @constraint(model, 10 - (x^2 + α*y) in SOSCone(), maxdegree = 2, domain = @set x^2 + y^2 == 1)
