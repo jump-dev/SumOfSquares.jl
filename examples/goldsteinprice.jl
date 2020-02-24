@@ -6,7 +6,7 @@ using MosekTools
 @polyvar x1 x2
 
 # Create a Sum of Squares JuMP model with the Mosek solver
-model = SOSModel(with_optimizer(Mosek.Optimizer))
+model = SOSModel(Mosek.Optimizer)
 
 # Create a JuMP decision variable for the lower bound
 @variable(model, γ)

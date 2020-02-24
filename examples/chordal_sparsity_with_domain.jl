@@ -15,7 +15,7 @@ function sos_lower_bound(factory, sparsity::Sparsity)
     return objective_value(model)
 end
 
-const factory = with_optimizer(Mosek.Optimizer)
+const factory = Mosek.Optimizer
 
 # use chordal sparsity
 sparse_value = sos_lower_bound(factory, VariableSparsity())

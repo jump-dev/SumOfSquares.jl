@@ -1,4 +1,4 @@
-@testset "Polynomial equality constraint with domain with $(factory.constructor)" for factory in sdp_factories
+@testset "Polynomial equality constraint with domain with $(factory.optimizer_constructor)" for factory in sdp_factories
     @polyvar(x, y)
 
     m = SOSModel(factory)

@@ -2,7 +2,7 @@
 # SOSDEMO8 --- Bounds in Probability
 # Section 3.8 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO8 with $(factory.constructor)" for factory in sdp_factories
+@testset "SOSDEMO8 with $(factory.optimizer_constructor)" for factory in sdp_factories
     @polyvar x
 
     # The probability adds up to one.
@@ -28,7 +28,7 @@
     P = a + b*x + c*x^2
 
     # Nonnegative on the support
-    K = @set 0 <= x && x <= 5 
+    K = @set 0 <= x && x <= 5
     cons = @constraint(m, P >= 0, domain = K)
 
     # Greater than one on the event

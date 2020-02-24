@@ -2,7 +2,7 @@
 # SOSDEMO3 --- Bound on Global Extremum
 # Section 3.3 of SOSTOOLS User's Manual
 
-@testset "SOSDEMO3 with $(factory.constructor)" for factory in sdp_factories
+@testset "SOSDEMO3 with $(factory.optimizer_constructor)" for factory in sdp_factories
     @polyvar x1 x2
 
     m = SOSModel(factory)

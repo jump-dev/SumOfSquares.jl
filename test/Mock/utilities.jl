@@ -22,7 +22,7 @@ function cached_mock(
     # If we just return `cached`, it will be emptied in `_model` and the state
     # will be `MOIU.ATTACHED_OPTIMIZER` which is not what we want. For this
     # reason we return a `JuMP.OptimizerFactory` which returns `cached` instead.
-    with_optimizer(() -> begin
+    return (() -> begin
         cached = MOIU.CachingOptimizer(cache(), MOIU.AUTOMATIC)
         optimizer = bridged_mock(args...; kws...)
         MOIU.reset_optimizer(cached, optimizer)

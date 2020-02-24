@@ -32,7 +32,7 @@
     end
 end
 
-@testset "Random SOS should be SOS with $(factory.constructor)" for factory in sdp_factories
+@testset "Random SOS should be SOS with $(factory.optimizer_constructor)" for factory in sdp_factories
     @polyvar x y
     x = [1, x, y, x^2, y^2, x*y]
     @test_throws ArgumentError randsos(x, monotype=:Unknown)
