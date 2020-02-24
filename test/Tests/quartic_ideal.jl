@@ -13,7 +13,7 @@ function quartic_ideal_test(optimizer, config::MOIT.TestConfig,
     # Set {-1, 0, 1}
     K = @set x^3 == x
     p = (x^2 - 1)^2
-    cref = @constraint(model, p in SOSCone(), domain = K, maxdegree=degree, remainder = remainder)
+    cref = @constraint(model, p in SOSCone(), domain = K, maxdegree=degree, newton_of_remainder = remainder)
     optimize!(model)
 
     if remainder && (degree === nothing || degree < 4)
