@@ -162,9 +162,10 @@ where ``X = (x, y)``.
 
 As the polynomial space is determined by the polynomial being constrained,
 only the basis *type* needs to be given. For instance, to use the scaled monomial
-basis, use
-```julia
-@constraint(model, p ≥ q, basis = ScaledMonomialBasis)
+basis in the example above, use
+```jldoctest constraint-xy
+julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y, basis = ScaledMonomialBasis)
+(α)x² + (-α + β)xy + (β)y² is SOS
 ```
 
 ## Polynomial nonnegativity on a subset of the space
