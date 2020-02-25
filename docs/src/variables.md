@@ -65,7 +65,7 @@ And data, a 2×5 Array{DynamicPolynomials.Polynomial{true,VariableRef},2}:
  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)     (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
 
 julia> @variable(model, [i=1:3, j=i:3], Poly(X))   # Creates a Dict
-JuMP.Containers.SparseAxisArray{Polynomial{true,VariableRef},2,Tuple{Any,Any}} with 6 entries:
+JuMP.Containers.SparseAxisArray{Polynomial{true,VariableRef},2,Tuple{Int64,Int64}} with 6 entries:
   [1, 2]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
   [2, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
   [3, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
