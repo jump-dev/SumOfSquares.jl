@@ -27,7 +27,7 @@ end
         "quartic_ideal_2_rem",
         "sos_horn",
         "maxcut",
-        "choi_term",
+        "choi",
         "motzkin",
         "quadratic_infeasible_lyapunov_switched_system",
         "sosdemo5_infeasible",

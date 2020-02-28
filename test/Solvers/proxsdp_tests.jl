@@ -35,7 +35,7 @@ end
         #  Evaluated: MathOptInterface.INFEASIBLE_POINT == MathOptInterface.INFEASIBILITY_CERTIFICATE
         "maxcut",
         # ITERATION_LIMIT
-        "choi_term", "motzkin",
+        "choi", "motzkin",
         # ArgumentError: ModelLike of type ProxSDP.Optimizer does not support accessing the attribute MathOptInterface.ConstraintDual(1)
         "sos_univariate_quadratic",
         "sos_horn",

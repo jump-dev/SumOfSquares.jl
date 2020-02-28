@@ -33,4 +33,4 @@ function choi_test(optimizer, config::MOIT.TestConfig)
     @test JuMP.termination_status(model) == MOI.INFEASIBLE
     @test JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
 end
-sd_tests["choi_term"] = choi_test
+sd_tests["choi"] = choi_test

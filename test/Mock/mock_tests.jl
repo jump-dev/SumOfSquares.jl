@@ -24,6 +24,9 @@ end
 @testset "Choi" begin
     include("choi.jl")
 end
+@testset "Simple matrix" begin
+    include("simple_matrix.jl")
+end
 @testset "Concave then convex cubic" begin
     include("concave_then_convex_cubic.jl")
 end
