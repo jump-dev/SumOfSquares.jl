@@ -24,6 +24,7 @@ end
         # Expression: JuMP.termination_status(model) == MOI.INFEASIBLE
         # Evaluated: MathOptInterface.OPTIMAL == MathOptInterface.INFEASIBLE
         "quartic_infeasible_lyapunov_switched_system",
+        "quartic_infeasible_scaled_lyapunov_switched_system",
         "maxcut", "sos_horn", "motzkin"
     ])
 end

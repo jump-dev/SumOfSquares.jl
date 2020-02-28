@@ -30,7 +30,9 @@ end
         "choi",
         "motzkin",
         "quadratic_infeasible_lyapunov_switched_system",
+        "quadratic_infeasible_scaled_lyapunov_switched_system",
         "sosdemo5_infeasible",
         "quartic_infeasible_lyapunov_switched_system",
+        "quartic_infeasible_scaled_lyapunov_switched_system"
     ])
 end

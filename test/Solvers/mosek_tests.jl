@@ -27,6 +27,6 @@ end
         # Evaluated: MathOptInterface.SLOW_PROGRESS == MathOptInterface.INFEASIBLE
         # Contacted Mosek and they replied that there is nothing wrong as the
         # PrimalStatus and DualStatus are correct
-        "quartic_infeasible_lyapunov_switched_system"
+        "quartic_infeasible_lyapunov_switched_system", "quartic_infeasible_scaled_lyapunov_switched_system"
     ])
 end

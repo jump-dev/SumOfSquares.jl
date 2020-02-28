@@ -4,6 +4,15 @@ factory = with_optimizer(SDPA.Optimizer)
 config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5, query=false)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
+        # cholesky miss condition :: not positive definite :: info = 7 :: line 785 in sdpa_linear.cpp
+        # There are some possibilities. :: line 786 in sdpa_linear.cpp
+        # 1. SDPA terminates due to inaccuracy of numerical error :: line 787 in sdpa_linear.cpp
+        # 2. The input problem may not have (any) interior-points :: line 788 in sdpa_linear.cpp
+        # 3. Input matrices are linearly dependent :: line 789 in sdpa_linear.cpp
+        # dsos_cheby_bivariate_quadratic: Test Failed at /home/blegat/.julia/dev/SumOfSquares/test/Tests/quadratic.jl:38
+        #   Expression: termination_status(model) == MOI.OPTIMAL
+        #    Evaluated: MathOptInterface.SLOW_PROGRESS == MathOptInterface.OPTIMAL
+        "dsos_cheby_bivariate_quadratic", "dsos_cheby_univariate_quadratic", "dsos_scaled_bivariate_quadratic", "dsos_scaled_univariate_quadratic",
         # cholesky miss condition :: not positive definite :: info = 13 :: line 785 in sdpa_linear.cpp
         # There are some possibilities. :: line 786 in sdpa_linear.cpp
         # 1. SDPA terminates due to inaccuracy of numerical error :: line 787 in sdpa_linear.cpp
@@ -42,7 +51,7 @@ end
     # `dsos_concave_then_convex_cubic`.
     Tests.sd_test(factory, config, [
         "sos_concave_then_convex_cubic",
-        "quartic_infeasible_lyapunov_switched_system",
+        "quartic_infeasible_lyapunov_switched_system", "quartic_infeasible_scaled_lyapunov_switched_system",
         # Strange behavior : primal < dual :: line 144 in sdpa_solve.cpp
         # pdINF criteria :: line 1192 in sdpa_parts.cpp
         "maxcut",
