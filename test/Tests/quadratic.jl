@@ -29,7 +29,7 @@ function quadratic_test(
     optimize!(model)
 
     if basis == ChebyshevBasis
-        err = ErrorException("`certificate_monomials` is not supported with `ChebyshevBasisFirstKind{Polynomial{true,Float64}}`, use `certificate_basis` instead.")
+        err = ErrorException("`certificate_monomials` is not supported with `$(basis{typeof(x + 1.0)})`, use `certificate_basis` instead.")
         @test_throws err certificate_monomials(cref)
     else
         @test certificate_monomials(cref) == cert_monos

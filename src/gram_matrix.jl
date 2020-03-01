@@ -21,7 +21,7 @@ Base.:(==)(p::MP.APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
 Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 
 """
-    struct GramMatrix{T, B} <: MP.APL{T}
+    struct GramMatrix{T, B, U} <: AbstractGramMatrix{T, B, U}
         Q::SymMatrix{T}
         basis::B
     end

@@ -271,7 +271,7 @@ Society for Industrial and Applied Mathematics, 2012.
 """
 const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-function JuMP.build_constraint(_error::Function, P::Matrix{<:MP.APL},
+function JuMP.build_constraint(_error::Function, P::AbstractMatrix{<:MP.APL},
                                ::PSDMatrixInnerCone{MCT};
                                newton_polytope::Tuple = tuple(),
                                kws...) where MCT
