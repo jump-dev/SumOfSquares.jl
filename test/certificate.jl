@@ -1,9 +1,14 @@
 @testset "Monomial selection for certificate" begin
     @polyvar x y z
+    @ncpolyvar a b
+    @testset "Multipartite error not commutative" for parts in [([a],), ([a], [b])]
+        err = ArgumentError("Multipartite Newton polytope not supported with noncommutative variables.")
+        @test_throws err SumOfSquares.Certificate.monomials_half_newton_polytope([a*b, b^2], parts)
+    end
     @testset "Multipartite error not disjoint: $parts" for parts in [([x], [x]),
                                                                      ([x], [x, y]),
                                                                      ([x], [y], [x, y])]
-        err = ArgumentError("Parts are not disjoint in multipartite Newton polytope estimation: $parts")
+        err = ArgumentError("Parts are not disjoint in multipartite Newton polytope estimation: $parts.")
         @test_throws err SumOfSquares.Certificate.monomials_half_newton_polytope([x*y, y^2], parts)
     end
     @testset "Unipartite" begin
@@ -12,6 +17,11 @@
         @test SumOfSquares.Certificate.monomials_half_newton_polytope([x^2, y^2], tuple()) == [x, y]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope([x^2, y^2], ([x, y],)) == [x, y]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope([x^2, y^2], ([y, x],)) == [x, y]
+        @show SumOfSquares.Certificate.monomials_half_newton_polytope([x^2, x^3*y^2, x^4*y^4], tuple()) == [x^2*y^2, x]
+    end
+    @testset "Non-commutative" begin
+        @show SumOfSquares.Certificate.monomials_half_newton_polytope([a^4, a^3*b, a*b*a^2, a*b*a*b], tuple()) == [a^2, a*b]
+        @show SumOfSquares.Certificate.monomials_half_newton_polytope([a^2, a^10*b^20*a^11, a^11*b^20*a^10, a^10*b^20*a^20*b^20*a^10], tuple()) == [a^10*b^20*a^10, a]
     end
     @testset "Multipartite" begin
         # In the part [y, z], the degree is between 0 and 2
