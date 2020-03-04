@@ -20,7 +20,7 @@ function simple_matrix_test(optimizer, config::MOIT.TestConfig)
     JuMP.optimize!(mat_model)
     @test JuMP.termination_status(mat_model) == MOI.OPTIMAL
     @test JuMP.primal_status(mat_model) == MOI.FEASIBLE_POINT
-    @test length(gram_matrix(mat_cref).basis.monomials) == 4
+    @test length(gram_matrix(mat_cref).basis.monomials) == 3
 
     # Example 3.79
     @polyvar y[1:2]
@@ -30,6 +30,6 @@ function simple_matrix_test(optimizer, config::MOIT.TestConfig)
     JuMP.optimize!(model)
     @test JuMP.termination_status(model) == MOI.OPTIMAL
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-    @test length(gram_matrix(cref).basis.monomials) == 6
+    @test length(gram_matrix(cref).basis.monomials) == 3
 end
 sd_tests["simple_matrix"] = simple_matrix_test
