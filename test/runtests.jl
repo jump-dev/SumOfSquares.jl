@@ -15,6 +15,7 @@ end
 
 if try_import(:DynamicPolynomials)
     import DynamicPolynomials.@polyvar
+    import DynamicPolynomials.@ncpolyvar
 else
     if try_import(:TypedPolynomials)
         import TypedPolynomials.@polyvar

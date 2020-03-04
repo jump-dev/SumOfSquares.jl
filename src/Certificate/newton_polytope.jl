@@ -62,7 +62,7 @@ is_commutative(vars) = length(vars) < 2 || prod(vars[1:2]) == prod(reverse(vars[
 # Multipartite
 # TODO we might do this recursively : do 2 parts, merge them, merge with next
 #      one and so on so that the filter at the end prunes more.
-function half_newton_polytope(X::AbstractVector, parts::Tuple)
+function half_newton_polytope(X::AbstractVector, parts::Tuple; apply_post_filter = true)
     if !is_commutative(MP.variables(X))
         throw(ArgumentError("Multipartite Newton polytope not supported with noncommutative variables."))
     end
@@ -81,7 +81,7 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple)
     end
     if length(all_parts) == 1
         # all variables on same part, fallback to shortcut
-        return half_newton_polytope(X, tuple())
+        return half_newton_polytope(X, tuple(); apply_post_filter = apply_post_filter)
     end
     monovecs = map(vars -> sub_half_newton_polytope(X, vars), all_parts)
     # Cartesian product of the newton polytopes of the different parts
@@ -89,7 +89,12 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple)
     mindeg, maxdeg = cfld(MP.extdegree(X), 2)
     # We know that the degree inequalities are satisfied variable-wise and
     # part-wise but for all variables together so we filter with that
-    return post_filter(MP.monovec(filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product)), X)
+    monos = MP.monovec(filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product))
+    if apply_post_filter
+        return post_filter(monos, X)
+    else
+        return monos
+    end
 end
 
 function __chip(cur, i, vars, exps, n, op)
@@ -125,7 +130,7 @@ end
 
 # Shortcut for more efficient `extdeg` and `exp` function in case all the
 # variables are in the same part
-function half_newton_polytope(X::AbstractVector, parts::Tuple{})
+function half_newton_polytope(X::AbstractVector, parts::Tuple{}; apply_post_filter = true)
     vars = MP.variables(X)
     if is_commutative(vars)
         # Commutative variables
@@ -158,7 +163,11 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple{})
         end
         monos = MP.monovec(_monos)
     end
-    return post_filter(monos, X)
+    if apply_post_filter
+        return post_filter(monos, X)
+    else
+        return monos
+    end
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
@@ -217,6 +226,6 @@ function post_filter(monos, X)
     return monos[findall(keep)]
 end
 
-function monomials_half_newton_polytope(X::AbstractVector, parts)
-    half_newton_polytope(MP.monovec(X), parts)
+function monomials_half_newton_polytope(X::AbstractVector, parts; apply_post_filter = true)
+    half_newton_polytope(MP.monovec(X), parts; apply_post_filter = apply_post_filter)
 end
