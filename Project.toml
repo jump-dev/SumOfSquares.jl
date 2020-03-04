@@ -4,6 +4,9 @@ repo = "https://github.com/JuliaOpt/SumOfSquares.jl.git"
 version = "0.4.0"
 
 [deps]
+CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
+DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
