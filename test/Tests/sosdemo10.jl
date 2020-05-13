@@ -5,11 +5,11 @@
 function sosdemo10_test(optimizer, config::MOIT.TestConfig)
     @polyvar x[1:2]
 
-    eps = 1e-6
+    ε = 1e-6
     p = x[1]^2+x[2]^2
-    gamma = 1
+    γ = 1
     g0 = 2*x[1]
-    theta = 1
+    θ = 1
 
     model = _model(optimizer)
     PolyJuMP.setpolymodule!(model, SumOfSquares)
@@ -23,14 +23,15 @@ function sosdemo10_test(optimizer, config::MOIT.TestConfig)
     Z = monomials(x, 2:3)
     @variable(model, g1, Poly(Z))
 
-    Sc = [theta^2-s*(gamma-p) g0+g1; g0+g1 1]
+    Sc = [θ^2 - s * (γ - p) g0 + g1
+          g0 + g1           1]
 
-    @SDconstraint(model, Matrix(eps * I, 2, 2) ⪯ Sc)
+    @SDconstraint(model, Matrix(ε * I, 2, 2) ⪯ Sc)
 
     JuMP.optimize!(model)
 
     # Program is feasible, that is, the set
-    # { x |((g0+g1) + theta)(theta - (g0+g1)) >=0 }
+    # { x |((g0 + g1) + θ)(θ - (g0 + g1)) >=0 }
     # contains the set
     # { x | p <= gamma }
 

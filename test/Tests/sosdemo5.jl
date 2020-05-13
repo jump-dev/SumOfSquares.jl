@@ -8,13 +8,13 @@ function sosdemo5_test(optimizer, config::MOIT.TestConfig, feasible::Bool, γ)
     @polyvar x[1:8]
 
     # The matrix under consideration
-    alpha = 3 + sqrt(3);
-    beta = sqrt(3) - 1;
-    a = sqrt(2/alpha);
-    b = 1/sqrt(alpha);
+    α = 3 + sqrt(3);
+    β = sqrt(3) - 1;
+    a = sqrt(2/α);
+    b = 1/sqrt(α);
     c = b;
-    d = -sqrt(beta/alpha);
-    f = (1 + im)*sqrt(1/(alpha*beta));
+    d = -sqrt(β/α);
+    f = (1 + im)*sqrt(1/(α*β));
     U = [a 0; b b; c im*c; d f];
     V = [0 a; b -b; c -im*c; -im*f -d];
     M = U*V';
