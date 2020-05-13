@@ -9,6 +9,9 @@ end
 @testset "Term fixed" begin
     include("term_fixed.jl")
 end
+@testset "Quartic constant" begin
+    include("quartic_constant.jl")
+end
 @testset "Quadratic" begin
     include("quadratic.jl")
 end

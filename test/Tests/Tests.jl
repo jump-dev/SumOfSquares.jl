@@ -8,6 +8,7 @@ const sd_tests = Dict{String, Function}()
 
 include("term.jl")
 include("term_fixed.jl")
+include("quartic_constant.jl")
 include("quadratic.jl")
 include("quartic_ideal.jl")
 include("univariate_sum.jl")

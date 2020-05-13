@@ -127,6 +127,17 @@ function get(::Type{MaxDegree{CT, BT}}, ::GramBasisType) where {CT, BT}
     return BT
 end
 
+struct FixedBasis{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+    cone::CT
+    basis::BT
+end
+function get(certificate::FixedBasis, ::GramBasis, poly) where CT
+    return certificate.basis
+end
+function get(::Type{FixedBasis{CT, BT}}, ::GramBasisType) where {CT, BT}
+    return BT
+end
+
 struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, NPT <: Tuple} <: SimpleIdealCertificate{CT, BT}
     cone::CT
     basis::Type{BT}
