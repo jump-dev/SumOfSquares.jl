@@ -98,7 +98,11 @@ function default_ideal_certificate(
         error("Monomial sparsity not implemented yet")
     else
         @assert sparsity isa NoSparsity
-        c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+        if basis isa AbstractPolynomialBasis
+            c = Certificate.FixedBasis(cone, basis)
+        else
+            c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+        end
     end
     if newton_of_remainder && !(c isa SumOfSquares.Certificate.Remainder)
         return SumOfSquares.Certificate.Remainder(c)
