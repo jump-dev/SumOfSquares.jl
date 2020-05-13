@@ -127,7 +127,7 @@ is_enabled(G::FillInCache, node::Int) = is_enabled(G.graph, node)
     struct LabelledGraph{T}
         n2int::Dict{T,Int}
         int2n::Vector{T}
-        edges::Vector{Vector{Int}}
+        graph::Graph
     end
 
 Type to represend a graph with nodes of type T.
