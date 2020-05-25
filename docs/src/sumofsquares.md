@@ -18,7 +18,7 @@ Moreover, a certificate of nonnegativity can be extracted from the Cholesky deco
 ## Polynomial nonnegativity and Semidefinite programming
 
 This can be generalized to a polynomial of arbitrary degree.
-A polynomial ``p(x)`` is nonnegative is it can be rewritten as ``p(x) = X^\top Q X`` where ``Q`` is a real symmetric positive semidefinite matrix and ``X`` is a vector of monomials.
+A polynomial ``p(x)`` is nonnegative if it can be rewritten as ``p(x) = X^\top Q X`` where ``Q`` is a real symmetric positive semidefinite matrix and ``X`` is a vector of monomials.
 
 For instance
 ```math
