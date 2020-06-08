@@ -73,7 +73,7 @@ end
 
 # TODO ConstraintPrimal, ConstraintDual
 
-# See https://www.juliaopt.org/MathOptInterface.jl/v0.9.1/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle
+# See https://jump.dev/MathOptInterface.jl/v0.9.1/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle
 function matrix_indices(k)
     j = div(1 + isqrt(8k - 7), 2)
     i = k - div((j - 1) * j, 2)

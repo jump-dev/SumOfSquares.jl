@@ -5,7 +5,7 @@
 Equality between polynomials in
 [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl) uses the same syntax as
 equality between affine or quadratic expression in
-[JuMP](https://github.com/JuliaOpt/JuMP.jl).
+[JuMP](https://github.com/jump-dev/JuMP.jl).
 For instance, creating two quadratic `n`-variate polynomials `p` and `q` that
 must sum up to one can be done as follows:
 ```jldoctest constraint-pq
