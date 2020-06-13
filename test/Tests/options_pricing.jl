@@ -8,7 +8,7 @@ using MultivariateMoments
 function options_pricing_test(optimizer, config::MOIT.TestConfig,
                               cone::SumOfSquares.PolyJuMP.PolynomialSet,
                               K::Int, expected::Float64)
-    VERSION < v"1.0.3" && return # see https://github.com/JuliaOpt/SumOfSquares.jl/issues/48
+    VERSION < v"1.0.3" && return # see https://github.com/jump-dev/SumOfSquares.jl/issues/48
     atol = 100config.atol
     rtol = 100config.rtol
 

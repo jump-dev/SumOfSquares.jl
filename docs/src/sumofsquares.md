@@ -44,7 +44,7 @@ The first explicit example of polynomial that was not a sum of squares was given
 x_1^4x_2^2 + x_1^2x_2^4 + 1 - 3x_1^2x_2^2 \geq 0 \quad \forall x
 ```
 While it is not a sum of squares, it can still be certified to be nonnegative using sum-of-squares programming by identifying it with a rational sum-of-squares decomposition.
-These facts can be verified numerically using this package as detailed in the [motzkin notebook](https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/motzkin.ipynb).
+These facts can be verified numerically using this package as detailed in the [motzkin notebook](https://github.com/jump-dev/SumOfSquares.jl/blob/master/examples/motzkin.ipynb).
 
 ### References
 

@@ -18,5 +18,5 @@ makedocs(
 )
 
 deploydocs(
-    repo   = "github.com/JuliaOpt/SumOfSquares.jl.git",
+    repo   = "github.com/jump-dev/SumOfSquares.jl.git",
 )

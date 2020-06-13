@@ -4,7 +4,7 @@
 
 While [JuMP](https://github.com/jump-dev/JuMP.jl) allows to create decision
 variables representing a number whose value needs to be optimized upon by the
-optimizer, [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl) allows to create
+optimizer, [PolyJuMP](https://github.com/jump-dev/PolyJuMP.jl) allows to create
 *polynomial* decision variables. In order to do that, we first need to create
 polynomial variables with the `@polyvar` macro:
 ```jldoctest variables

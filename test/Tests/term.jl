@@ -15,7 +15,7 @@ function term_test(optimizer,
     @polyvar x
     cref = @constraint(model, α * x^2 in cone)
 
-    # See https://github.com/JuliaOpt/MathOptInterface.jl/issues/676
+    # See https://github.com/jump-dev/MathOptInterface.jl/issues/676
     @objective(model, Min, α + 1)
     optimize!(model)
 
