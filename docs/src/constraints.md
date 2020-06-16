@@ -3,7 +3,7 @@
 ## Equality constraints between polynomials
 
 Equality between polynomials in
-[PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl) uses the same syntax as
+[PolyJuMP](https://github.com/jump-dev/PolyJuMP.jl) uses the same syntax as
 equality between affine or quadratic expression in
 [JuMP](https://github.com/jump-dev/JuMP.jl).
 For instance, creating two quadratic `n`-variate polynomials `p` and `q` that
@@ -184,7 +184,7 @@ julia> S = @set x >= 0 && y >= 0 && x + y >= 1;
 julia> @constraint(model, x^3 - x^2 + 2x*y -y^2 + y^3 >= α, domain = S)
 (1)x³ + (1)y³ + (-1)x² + (2)xy + (-1)y² + (-α) is SOS
 ```
-See [this notebook](https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb)
+See [this notebook](https://github.com/jump-dev/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb)
 for a detailed example.
 
 ## Dual of polynomial constraints
@@ -228,7 +228,7 @@ The `extractatoms` function of [MultivariateMoments](https://github.com/JuliaAlg
 can be used to check if there exists an *atomic* measure (i.e. a measure that is
 a sum of Dirac measures) that has the moments given in the the moment matrix
 `ν`. This can be used for instance in polynomial optimization (see
-[this notebook](https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb))
+[this notebook](https://github.com/jump-dev/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb))
 or stability analysis (see
 [this notebook](https://github.com/blegat/SwitchOnSafety.jl/blob/master/examples/LPJ17e43.ipynb)).
 

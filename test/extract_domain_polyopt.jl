@@ -1,4 +1,4 @@
-# Test for the example https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb
+# Test for the example https://github.com/jump-dev/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb
 
 using JuMP
 using SumOfSquares

@@ -2,7 +2,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-# Inspired from https://github.com/JuliaOpt/SumOfSquares.jl/issues/79
+# Inspired from https://github.com/jump-dev/SumOfSquares.jl/issues/79
 function concave_then_convex_cubic_test(optimizer, config::MOIT.TestConfig,
                                         MCT::Type{<:MOI.AbstractVectorSet})
     atol = config.atol

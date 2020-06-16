@@ -50,7 +50,7 @@ function JuMP.add_variable(model::JuMP.AbstractModel,
                            name::String="")
     set = matrix_cone(matrix_cone_type(v.p), length(v.p.polynomial_basis))
     # FIXME There is no variable bridge mechanism yet:
-    #       https://github.com/JuliaOpt/MathOptInterface.jl/issues/710
+    #       https://github.com/jump-dev/MathOptInterface.jl/issues/710
     #       so there is no equivalent to `BridgeableConstraint`.
     #       Yet, we may need constraint bridges here if it goes through
     #       the `generic_variable_bridge`.

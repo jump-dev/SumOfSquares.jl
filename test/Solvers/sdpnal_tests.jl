@@ -17,7 +17,7 @@ end
         "chebyshev",
         # SDPNAL supports LessThan on Nonnegatives variables but cannot
         # create free variables. See
-        # https://github.com/JuliaOpt/MathOptInterface.jl/issues/987
+        # https://github.com/jump-dev/MathOptInterface.jl/issues/987
         "sosdemo5_feasible",
         # Expression: ≈(JuMP.objective_value(model), expected, atol=atol, rtol=rtol)
         # Evaluated: 20.161198836088243 ≈ 17.17 (atol=0.05, rtol=0.05)

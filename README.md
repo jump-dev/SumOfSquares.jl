@@ -3,10 +3,10 @@
 | **Documentation** | **Build Status** | **Social** | **References to cite** |
 |:-----------------:|:----------------:|:----------:|:----------------------:|
 | [![][docs-stable-img]][docs-stable-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] | [![Gitter][gitter-img]][gitter-url] | [![DOI][zenodo-img]][zenodo-url] |
-| [![][docs-latest-img]][docs-latest-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | [.bib](https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/CITATION.bib) |
+| [![][docs-latest-img]][docs-latest-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | [.bib](https://github.com/jump-dev/SumOfSquares.jl/blob/master/CITATION.bib) |
 
 This packages contains the Sum of Squares reformulation for polynomial optimization.
-When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl), it provides a Sum of Squares Programming extension for [JuMP](https://github.com/jump-dev/JuMP.jl).
+When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/jump-dev/PolyJuMP.jl), it provides a Sum of Squares Programming extension for [JuMP](https://github.com/jump-dev/JuMP.jl).
 Enabling the creation of sum of squares variables and constraints.
 
 ## Documentation
@@ -25,24 +25,24 @@ Some presentations on, or using, SumOfSquares (see [here](https://github.com/ble
 
 ## Citing
 
-See [CITATION.bib](https://github.com/JuliaOpt/SumOfSquares.jl/blob/master/CITATION.bib).
+See [CITATION.bib](https://github.com/jump-dev/SumOfSquares.jl/blob/master/CITATION.bib).
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-stable-url]: https://juliaopt.github.io/SumOfSquares.jl/stable
-[docs-latest-url]: https://juliaopt.github.io/SumOfSquares.jl/latest
+[docs-stable-url]: https://jump.dev/SumOfSquares.jl/stable
+[docs-latest-url]: https://jump.dev/SumOfSquares.jl/latest
 
-[build-img]: https://travis-ci.org/JuliaOpt/SumOfSquares.jl.svg?branch=master
-[build-url]: https://travis-ci.org/JuliaOpt/SumOfSquares.jl
+[build-img]: https://travis-ci.org/jump-dev/SumOfSquares.jl.svg?branch=master
+[build-url]: https://travis-ci.org/jump-dev/SumOfSquares.jl
 [winbuild-img]: https://ci.appveyor.com/api/projects/status/o49y96hl1xl5aytn?svg=true
 [winbuild-url]: https://ci.appveyor.com/project/JuliaOpt/sumofsquares-jl
-[coveralls-img]: https://coveralls.io/repos/github/JuliaOpt/SumOfSquares.jl/badge.svg?branch=master
-[coveralls-url]: https://coveralls.io/github/JuliaOpt/SumOfSquares.jl?branch=master
-[codecov-img]: http://codecov.io/github/JuliaOpt/SumOfSquares.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/JuliaOpt/SumOfSquares.jl?branch=master
+[coveralls-img]: https://coveralls.io/repos/github/jump-dev/SumOfSquares.jl/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/jump-dev/SumOfSquares.jl?branch=master
+[codecov-img]: http://codecov.io/github/jump-dev/SumOfSquares.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/jump-dev/SumOfSquares.jl?branch=master
 
-[gitter-url]: https://gitter.im/JuliaOpt/SumOfSquares.jl?utm_source=share-link&utm_medium=link&utm_campaign=share-link
-[gitter-img]: https://badges.gitter.im/JuliaOpt/SumOfSquares.jl.svg
+[gitter-url]: https://gitter.im/jump-dev/SumOfSquares.jl?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+[gitter-img]: https://badges.gitter.im/jump-dev/SumOfSquares.jl.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
 [zenodo-url]: https://doi.org/10.5281/zenodo.1208672

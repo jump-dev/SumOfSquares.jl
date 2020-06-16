@@ -1,6 +1,6 @@
 # SumOfSquares --- Sum of Squares Programming for Julia
 
-[SumOfSquares](https://github.com/JuliaOpt/SumOfSquares.jl) implements Sum of Squares reformulation for [PolyJuMP](https://github.com/JuliaOpt/PolyJuMP.jl),
+[SumOfSquares](https://github.com/jump-dev/SumOfSquares.jl) implements Sum of Squares reformulation for [PolyJuMP](https://github.com/jump-dev/PolyJuMP.jl),
 enabling the creation of sum of squares variables and constraints in [JuMP](https://github.com/jump-dev/JuMP.jl).
 
 The polynomial can be represented by any library implementing the [MultivariatePolynomial.jl](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) interface.
