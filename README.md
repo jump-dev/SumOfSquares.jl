@@ -41,8 +41,8 @@ See [CITATION.bib](https://github.com/jump-dev/SumOfSquares.jl/blob/master/CITAT
 [codecov-img]: http://codecov.io/github/jump-dev/SumOfSquares.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/jump-dev/SumOfSquares.jl?branch=master
 
-[gitter-url]: https://gitter.im/jump-dev/SumOfSquares.jl?utm_source=share-link&utm_medium=link&utm_campaign=share-link
-[gitter-img]: https://badges.gitter.im/jump-dev/SumOfSquares.jl.svg
+[gitter-url]: https://gitter.im/JuliaOpt/SumOfSquares.jl?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+[gitter-img]: https://badges.gitter.im/JuliaOpt/SumOfSquares.jl.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
 [zenodo-url]: https://doi.org/10.5281/zenodo.1208672
