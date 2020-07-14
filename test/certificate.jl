@@ -42,24 +42,19 @@
     end
 end
 
-@testset "Random SOS should be SOS with $(factory.optimizer_constructor)" for factory in sdp_factories
+@testset "Random SOS should be SOS" begin
     @polyvar x y
     x = [1, x, y, x^2, y^2, x*y]
     @test_throws ArgumentError randsos(x, monotype=:Unknown)
     for i in 1:10
         for monotype in [:Classic, :Gram]
             p = randsos(x, monotype=monotype)
-
-            m = SOSModel(factory)
-
-            @constraint m p >= 0
-
-            JuMP.optimize!(m)
-
-            @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
+            @test p isa GramMatrix
+            @test isposdef(Matrix(p.Q))
         end
     end
 end
 
 include("ceg_test.jl")
 include("csp_test.jl")
+include("sparsity.jl")

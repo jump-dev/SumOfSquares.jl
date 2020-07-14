@@ -1,42 +1,11 @@
-export sos, chordal_sos, putinar, chordal_putinar
+export Sparsity, NoSparsity, VariableSparsity, MonomialSparsity, SignSymmetry
+abstract type Sparsity end
+struct NoSparsity <: Sparsity end
 
-export csp_graph, chordal_csp_graph
-
-const CEG = ChordalExtensionGraph
-
-function csp_graph(poly::MP.APL, ::FullSpace)
-    G = CEG.LabelledGraph{MP.variable_union_type(poly)}()
-    for mono in MP.monomials(poly)
-        CEG.add_clique!(G, MP.effective_variables(mono))
-    end
-    return G
-end
-
-function csp_graph(poly::MP.APL, domain::AbstractAlgebraicSet)
-    G = csp_graph(poly, FullSpace())
-    for p in equalities(domain)
-        CEG.add_clique!(G, MP.effective_variables(p))
-    end
-    return G
-end
-
-function csp_graph(poly::MP.APL, domain::BasicSemialgebraicSet)
-    G = csp_graph(poly, domain.V)
-    for p in inequalities(domain)
-        CEG.add_clique!(G, MP.effective_variables(p))
-    end
-    return G
-end
-
-function chordal_csp_graph(poly::MP.APL, domain::AbstractBasicSemialgebraicSet)
-    H, cliques = CEG.chordal_extension(csp_graph(poly, domain), CEG.GreedyFillIn())
-    for clique in cliques
-        sort!(clique, rev=true)
-        unique!(clique)
-    end
-    return H, cliques
-
-end
+include("xor_space.jl")
+include("sign.jl")
+include("variable_sparsity.jl")
+include("monomial_sparsity.jl")
 
 struct ChordalPutinar{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: AbstractPreorderCertificate
     cone::CT
@@ -75,21 +44,30 @@ function get(::ChordalPutinar, ::Generator, index::PreorderIndex, domain::Chorda
     return domain.domain.p[index.value]
 end
 
-get(certificate::ChordalPutinar, ::IdealCertificate) = ChordalIdeal(certificate.cone, certificate.basis, certificate.maxdegree)
+get(certificate::ChordalPutinar, ::IdealCertificate) = ChordalIdeal(MonomialSparsity(), certificate.cone, certificate.basis, certificate.maxdegree)
 get(::Type{<:ChordalPutinar{CT, BT}}, ::IdealCertificate) where {CT, BT} = ChordalIdeal{CT, BT}
 
 SumOfSquares.matrix_cone_type(::Type{<:ChordalPutinar{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
 
-struct ChordalIdeal{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+struct ChordalIdeal{S <: Sparsity, CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+    sparsity::S
     cone::CT
     basis::Type{BT}
     maxdegree::Int
 end
-function get(certificate::ChordalIdeal, ::GramBasis, poly)
+function sparsity(poly::MP.AbstractPolynomial, sp::VariableSparsity, basis, maxdegree)
     H, cliques = chordal_csp_graph(poly, FullSpace())
     return map(cliques) do clique
-        return maxdegree_gram_basis(certificate.basis, clique, certificate.maxdegree)
+        return maxdegree_gram_basis(basis, clique, maxdegree)
     end
+end
+function monomial_sparsity()
+end
+function sparsity(poly::MP.AbstractPolynomial, sp::Union{SignSymmetry, MonomialSparsity}, basis::Type{<:MB.MonomialBasis}=MB.MonomialBasis, maxdegree=nothing)
+    return MB.MonomialBasis.(sparsity(monomials(poly), sp))
+end
+function get(certificate::ChordalIdeal, ::GramBasis, poly)
+    return sparsity(poly, certificate.sparsity, certificate.basis, certificate.maxdegree)
 end
 function get(::Type{ChordalIdeal{CT, BT}}, ::GramBasisType) where {CT, BT}
     return Vector{BT}

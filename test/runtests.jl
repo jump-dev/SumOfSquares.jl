@@ -24,6 +24,8 @@ else
     end
 end
 
+include("certificate.jl")
+
 include("gram_matrix.jl")
 
 include("variable.jl")
@@ -31,11 +33,9 @@ include("constraint.jl")
 
 include("Mock/mock_tests.jl")
 
+# Tests needed a solver
+# FIXME these tests should be moved to `Tests` and tested in `Mock`
 include("solvers.jl")
-
-include("certificate.jl")
-
-# SOSTools demos
 include("sospoly.jl")
 include("lyapunov.jl")
 include("sosdemo3.jl")
