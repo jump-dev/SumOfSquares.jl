@@ -69,6 +69,6 @@ end
 function get(certificate::ChordalIdeal, ::GramBasis, poly)
     return sparsity(poly, certificate.sparsity, certificate.basis, certificate.maxdegree)
 end
-function get(::Type{ChordalIdeal{CT, BT}}, ::GramBasisType) where {CT, BT}
+function get(::Type{ChordalIdeal{S, CT, BT}}, ::GramBasisType) where {S, CT, BT}
     return Vector{BT}
 end
