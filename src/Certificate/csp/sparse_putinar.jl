@@ -45,7 +45,7 @@ function get(::ChordalPutinar, ::Generator, index::PreorderIndex, domain::Chorda
     return domain.domain.p[index.value]
 end
 
-get(certificate::ChordalPutinar, ::IdealCertificate) = ChordalIdeal(MonomialSparsity(), certificate.cone, certificate.basis, certificate.maxdegree)
+get(certificate::ChordalPutinar, ::IdealCertificate) = ChordalIdeal(certificate.sparsity, certificate.cone, certificate.basis, certificate.maxdegree)
 get(::Type{ChordalPutinar{S, CT, BT}}, ::IdealCertificate) where {S, CT, BT} = ChordalIdeal{S, CT, BT}
 
 SumOfSquares.matrix_cone_type(::Type{<:ChordalPutinar{S, CT}}) where {S, CT} = SumOfSquares.matrix_cone_type(CT)
