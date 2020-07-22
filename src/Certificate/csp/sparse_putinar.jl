@@ -7,7 +7,8 @@ include("sign.jl")
 include("variable_sparsity.jl")
 include("monomial_sparsity.jl")
 
-struct ChordalPutinar{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: AbstractPreorderCertificate
+struct ChordalPutinar{S <: Sparsity, CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: AbstractPreorderCertificate
+    sparsity::S
     cone::CT
     basis::Type{BT}
     maxdegree::Int
@@ -36,7 +37,7 @@ function get(certificate::ChordalPutinar, ::MultiplierBasis, index::PreorderInde
     # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
     return [maxdegree_gram_basis(certificate.basis, clique, maxdegree_s2 + 1) for clique in domain.cliques if variables(q) ⊆ clique]
 end
-function get(::Type{ChordalPutinar{CT, BT}}, ::MultiplierBasisType) where {CT, BT}
+function get(::Type{ChordalPutinar{S, CT, BT}}, ::MultiplierBasisType) where {S, CT, BT}
     return Vector{BT}
 end
 
@@ -45,9 +46,9 @@ function get(::ChordalPutinar, ::Generator, index::PreorderIndex, domain::Chorda
 end
 
 get(certificate::ChordalPutinar, ::IdealCertificate) = ChordalIdeal(MonomialSparsity(), certificate.cone, certificate.basis, certificate.maxdegree)
-get(::Type{<:ChordalPutinar{CT, BT}}, ::IdealCertificate) where {CT, BT} = ChordalIdeal{CT, BT}
+get(::Type{ChordalPutinar{S, CT, BT}}, ::IdealCertificate) where {S, CT, BT} = ChordalIdeal{S, CT, BT}
 
-SumOfSquares.matrix_cone_type(::Type{<:ChordalPutinar{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
+SumOfSquares.matrix_cone_type(::Type{<:ChordalPutinar{S, CT}}) where {S, CT} = SumOfSquares.matrix_cone_type(CT)
 
 struct ChordalIdeal{S <: Sparsity, CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
     sparsity::S

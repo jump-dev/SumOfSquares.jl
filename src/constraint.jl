@@ -106,16 +106,11 @@ end
 function default_certificate(::AbstractAlgebraicSet, sparsity, ideal_certificate, cone, basis, maxdegree)
     return ideal_certificate
 end
-function default_certificate(::BasicSemialgebraicSet, ::Certificate.VariableSparsity,
+function default_certificate(::BasicSemialgebraicSet, sparsity::Certificate.Sparsity,
                              ideal_certificate::Certificate.ChordalIdeal, cone,
                              basis, maxdegree)
     return Certificate.ChordalPutinar(
-         cone, basis, maxdegree)
-end
-function default_certificate(::BasicSemialgebraicSet, ::Certificate.MonomialSparsity,
-                             ideal_certificate, cone,
-                             basis, maxdegree)
-    error("Monomial sparsity not implemented yet")
+         sparsity, cone, basis, maxdegree)
 end
 function default_certificate(::BasicSemialgebraicSet, ::Certificate.NoSparsity,
                              ideal_certificate, cone, basis, maxdegree)
