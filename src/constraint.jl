@@ -90,10 +90,7 @@ function default_ideal_certificate(
             c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
         end
     else
-        if maxdegree === nothing
-            error("`maxdegree` cannot be `nothing` when `sparsity` is not `NoSparsity`.")
-        end
-        c = Certificate.ChordalIdeal(sparsity, cone, basis, maxdegree)
+        c = Certificate.SparseIdeal(sparsity, cone, basis, maxdegree, newton_polytope)
     end
     if newton_of_remainder && !(c isa SumOfSquares.Certificate.Remainder)
         return SumOfSquares.Certificate.Remainder(c)
@@ -107,10 +104,10 @@ function default_certificate(::AbstractAlgebraicSet, sparsity, ideal_certificate
     return ideal_certificate
 end
 function default_certificate(::BasicSemialgebraicSet, sparsity::Certificate.Sparsity,
-                             ideal_certificate::Certificate.ChordalIdeal, cone,
+                             ideal_certificate::Certificate.SparseIdeal, cone,
                              basis, maxdegree)
-    return Certificate.ChordalPutinar(
-         sparsity, cone, basis, maxdegree)
+    return Certificate.SparsePreorder(
+        sparsity, Certificate.Putinar(ideal_certificate.certificate, cone, basis, maxdegree))
 end
 function default_certificate(::BasicSemialgebraicSet, ::Certificate.NoSparsity,
                              ideal_certificate, cone, basis, maxdegree)

@@ -22,12 +22,13 @@ function buckets_sign_symmetry(monos, r, ::Type{T}, ::Type{U}) where {T, U}
     end
     return collect(values(buckets))
 end
-function sign_symmetry(monos::AbstractVector{<:MP.AbstractMonomial}, n, ::Type{T}) where T
+function sign_symmetry(monos::AbstractVector{<:MP.AbstractMonomial}, n, ::Type{T}, gram_monos) where T
     r = xor_complement((binary_exponent(MP.exponents(mono), T) for mono in monos), n, T)
-    return buckets_sign_symmetry(SumOfSquares.Certificate.monomials_half_newton_polytope(monos, tuple()),
+    return buckets_sign_symmetry(gram_monos,
                                  r, T, appropriate_type(length(r)))
 end
-function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::SignSymmetry)
+function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::SignSymmetry,
+                  gram_monos::AbstractVector = SumOfSquares.Certificate.monomials_half_newton_polytope(monos, tuple()))
     n = MP.nvariables(monos)
-    return sign_symmetry(monos, n, appropriate_type(n))
+    return sign_symmetry(monos, n, appropriate_type(n), gram_monos)
 end

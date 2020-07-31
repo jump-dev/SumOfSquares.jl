@@ -31,6 +31,7 @@ abstract type Attribute end
 # For get
 struct Cone <: Attribute end
 struct GramBasis <: Attribute end
+# FIXME currently, this returns `MB.MonomialBasis` instead of `MB.MonomialBasis{MT, MVT}`
 struct GramBasisType <: Attribute end
 struct ReducedPolynomial <: Attribute end
 struct IdealCertificate <: Attribute end
@@ -72,21 +73,24 @@ function get(::Putinar, ::PreprocessedDomain, domain::BasicSemialgebraicSet, p)
     return DomainWithVariables(domain, MP.variables(p))
 end
 
-function get(::Putinar, index::PreorderIndices, domain::DomainWithVariables)
+function get(::Putinar, ::PreorderIndices, domain::DomainWithVariables)
     return map(PreorderIndex, eachindex(domain.domain.p))
 end
 
 function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
     return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
 end
+function multiplier_maxdegree(maxdegree, q)
+    maxdegree_s2 = maxdegree - MP.maxdegree(q)
+    # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
+    # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
+    return maxdegree_s2 + 1
+end
 function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::DomainWithVariables)
     q = domain.domain.p[index.value]
     vars = sort!([domain.variables..., MP.variables(q)...], rev = true)
     unique!(vars)
-    maxdegree_s2 = certificate.maxdegree - MP.maxdegree(q)
-    # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
-    # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
-    return maxdegree_gram_basis(certificate.basis, vars, maxdegree_s2 + 1)
+    return maxdegree_gram_basis(certificate.basis, vars, multiplier_maxdegree(certificate.maxdegree, q))
 end
 function get(::Type{Putinar{IC, CT, BT}}, ::MultiplierBasisType) where {IC, CT, BT}
     return BT

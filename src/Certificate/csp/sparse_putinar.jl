@@ -7,69 +7,84 @@ include("sign.jl")
 include("variable_sparsity.jl")
 include("monomial_sparsity.jl")
 
-struct ChordalPutinar{S <: Sparsity, CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: AbstractPreorderCertificate
+struct SparsePreorder{S <: Sparsity, C <: AbstractPreorderCertificate} <: AbstractPreorderCertificate
     sparsity::S
-    cone::CT
-    basis::Type{BT}
-    maxdegree::Int
+    certificate::C
 end
 
-get(certificate::ChordalPutinar, ::Cone) = certificate.cone
+get(certificate::SparsePreorder, attr::Cone) = get(certificate.certificate, attr)
 
-struct ChordalDomain{S, V}
+struct SparseDomain{S, P, B}
     domain::S
-    cliques::Vector{V}
+    processed::P
+    bases::Vector{Vector{B}}
 end
 
-function get(::ChordalPutinar, ::PreprocessedDomain, domain::BasicSemialgebraicSet, p)
-    H, cliques = chordal_csp_graph(p, domain)
-    return ChordalDomain(domain, cliques)
+function get(certificate::SparsePreorder, attr::PreprocessedDomain, domain::BasicSemialgebraicSet, p)
+    basis, preorder_bases = sparsity(p, domain, certificate.sparsity, certificate.certificate)
+    return SparseDomain(domain, get(certificate.certificate, attr, domain, p), preorder_bases)
 end
 
-function get(::ChordalPutinar, index::PreorderIndices, domain::ChordalDomain)
-    return map(PreorderIndex, eachindex(domain.domain.p))
+function get(certificate::SparsePreorder, attr::PreorderIndices, domain::SparseDomain)
+    return get(certificate.certificate, attr, domain.processed)
 end
 
-function get(certificate::ChordalPutinar, ::MultiplierBasis, index::PreorderIndex, domain::ChordalDomain)
-    q = domain.domain.p[index.value]
-    maxdegree_s2 = certificate.maxdegree - MP.maxdegree(q)
-    # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
-    # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
-    return [maxdegree_gram_basis(certificate.basis, clique, maxdegree_s2 + 1) for clique in domain.cliques if variables(q) ⊆ clique]
+function get(::SparsePreorder, ::MultiplierBasis, index::PreorderIndex, domain::SparseDomain)
+    return domain.bases[index.value]
 end
-function get(::Type{ChordalPutinar{S, CT, BT}}, ::MultiplierBasisType) where {S, CT, BT}
-    return Vector{BT}
+function get(::Type{SparsePreorder{S, C}}, attr::MultiplierBasisType) where {S, C}
+    return Vector{get(C, attr)}
 end
 
-function get(::ChordalPutinar, ::Generator, index::PreorderIndex, domain::ChordalDomain)
-    return domain.domain.p[index.value]
+function get(certificate::SparsePreorder, attr::Generator, index::PreorderIndex, domain::SparseDomain)
+    return get(certificate.certificate, attr, index, domain.processed)
 end
 
-get(certificate::ChordalPutinar, ::IdealCertificate) = ChordalIdeal(certificate.sparsity, certificate.cone, certificate.basis, certificate.maxdegree)
-get(::Type{ChordalPutinar{S, CT, BT}}, ::IdealCertificate) where {S, CT, BT} = ChordalIdeal{S, CT, BT}
+get(certificate::SparsePreorder, attr::IdealCertificate) = SparseIdeal(certificate.sparsity, get(certificate.certificate, attr))
+get(::Type{<:SparsePreorder{S, C}}, attr::IdealCertificate) where {S, C} = SparseIdeal{S, get(C, attr)}
 
-SumOfSquares.matrix_cone_type(::Type{<:ChordalPutinar{S, CT}}) where {S, CT} = SumOfSquares.matrix_cone_type(CT)
+SumOfSquares.matrix_cone_type(::Type{SparsePreorder{S, C}}) where {S, C} = SumOfSquares.matrix_cone_type(C)
 
-struct ChordalIdeal{S <: Sparsity, CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+struct SparseIdeal{S <: Sparsity, C <: AbstractIdealCertificate} <: AbstractIdealCertificate
     sparsity::S
-    cone::CT
-    basis::Type{BT}
-    maxdegree::Int
+    certificate::C
 end
-function sparsity(poly::MP.AbstractPolynomial, sp::VariableSparsity, basis, maxdegree)
+
+function SparseIdeal(sp::VariableSparsity, cone, basis, maxdegree::Nothing, newton_polytope)
+    error("`maxdegree` cannot be `nothing` when `sparsity` is `VariableSparsity`.")
+end
+function SparseIdeal(sp::VariableSparsity, cone, basis, maxdegree::Integer, newton_polytope)
+    return SparseIdeal(sp, MaxDegree(cone, basis, maxdegree))
+end
+function SparseIdeal(sp::VariableSparsity, cone, basis, maxdegree, newton_polytope)
+    return SparseIdeal(sp, Newton(cone, basis, newton_polytope))
+end
+
+function sparsity(poly::MP.AbstractPolynomial, ::VariableSparsity, certificate::MaxDegree)
     H, cliques = chordal_csp_graph(poly, FullSpace())
     return map(cliques) do clique
-        return maxdegree_gram_basis(basis, clique, maxdegree)
+        return maxdegree_gram_basis(certificate.basis, clique, certificate.maxdegree)
     end
 end
-function monomial_sparsity()
+function sparsity(monos, sp::Union{SignSymmetry, MonomialSparsity}, gram_basis::MB.MonomialBasis)
+    return MB.MonomialBasis.(sparsity(monos, sp, gram_basis.monomials))
 end
-function sparsity(poly::MP.AbstractPolynomial, sp::Union{SignSymmetry, MonomialSparsity}, basis::Type{<:MB.MonomialBasis}=MB.MonomialBasis, maxdegree=nothing)
-    return MB.MonomialBasis.(sparsity(monomials(poly), sp))
+function sparsity(poly::MP.AbstractPolynomial, sp::Union{SignSymmetry, MonomialSparsity}, certificate::AbstractIdealCertificate)
+    return sparsity(monomials(poly), sp, get(certificate, GramBasis(), poly))
 end
-function get(certificate::ChordalIdeal, ::GramBasis, poly)
-    return sparsity(poly, certificate.sparsity, certificate.basis, certificate.maxdegree)
+function get(certificate::SparseIdeal, ::GramBasis, poly)
+    return sparsity(poly, certificate.sparsity, certificate.certificate)
 end
-function get(::Type{ChordalIdeal{S, CT, BT}}, ::GramBasisType) where {S, CT, BT}
-    return Vector{BT}
+function get(::Type{SparseIdeal{S, C}}, attr::GramBasisType) where {S, C}
+    return Vector{<:get(C, attr)}
 end
+function get(certificate::SparseIdeal, attr::ReducedPolynomial, poly, domain)
+    return get(certificate.certificate, attr, poly, domain)
+end
+function get(certificate::SparseIdeal, attr::Cone)
+    return get(certificate.certificate, attr)
+end
+SumOfSquares.matrix_cone_type(::Type{SparseIdeal{S, C}}) where {S, C} = SumOfSquares.matrix_cone_type(C)
+
+zero_basis(certificate::SparseIdeal) = zero_basis(certificate.certificate)
+zero_basis_type(::Type{SparseIdeal{S, C}}) where {S, C} = zero_basis_type(C)

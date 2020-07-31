@@ -1,3 +1,9 @@
+import MultivariatePolynomials
+const MP = MultivariatePolynomials
+
+import MultivariateBases
+const MB = MultivariateBases
+
 @testset "Monomial selection for certificate" begin
     @polyvar x y z
     @ncpolyvar a b
@@ -51,6 +57,43 @@ end
             p = randsos(x, monotype=monotype)
             @test p isa GramMatrix
             @test isposdef(Matrix(p.Q))
+        end
+    end
+end
+
+function certificate_api(certificate::Certificate.AbstractIdealCertificate)
+    @polyvar x
+    poly = x + 1
+    domain = @set x == 1
+    @test Certificate.get(certificate, Certificate.ReducedPolynomial(), poly, domain) isa MP.AbstractPolynomial
+    basis = Certificate.get(certificate, Certificate.GramBasis(), poly)
+    @test basis isa MB.AbstractPolynomialBasis || basis isa Vector{<:MB.AbstractPolynomialBasis}
+    @test basis isa Certificate.get(typeof(certificate), Certificate.GramBasisType())
+    @test Certificate.get(certificate, Certificate.Cone()) isa SumOfSquares.SOSLikeCone
+    @test SumOfSquares.matrix_cone_type(typeof(certificate)) <: MOI.AbstractVectorSet
+    zbasis = Certificate.zero_basis(certificate)
+    @test zbasis <: MB.AbstractPolynomialBasis
+    @test zbasis == Certificate.zero_basis_type(typeof(certificate))
+end
+
+@testset "API" begin
+    @polyvar x
+    cone = SumOfSquares.SOSCone()
+    BT = MB.MonomialBasis
+    basis = BT([x^2, x])
+    @testset "$(typeof(certificate))" for certificate in [
+        Certificate.MaxDegree(cone, BT, 2),
+        Certificate.FixedBasis(cone, basis),
+        Certificate.Newton(cone, BT, tuple())
+    ]
+        certificate_api(certificate)
+        certificate_api(Certificate.Remainder(certificate))
+        if certificate isa Certificate.MaxDegree
+            certificate_api(Certificate.SparseIdeal(VariableSparsity(), certificate))
+        end
+        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), MonomialSparsity(1)]
+            certificate_api(Certificate.SparseIdeal(sparsity, certificate))
+            certificate_api(Certificate.SparseIdeal(sparsity, Certificate.Remainder(certificate)))
         end
     end
 end

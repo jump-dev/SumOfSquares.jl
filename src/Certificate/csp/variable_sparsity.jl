@@ -36,3 +36,15 @@ function chordal_csp_graph(poly::MP.APL, domain::AbstractBasicSemialgebraicSet)
 
 end
 
+function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet,
+                  sp::VariableSparsity, certificate::Putinar)
+    H, cliques = chordal_csp_graph(poly, domain)
+    function bases(q)
+        return [
+            maxdegree_gram_basis(certificate.basis, clique,
+                                 multiplier_maxdegree(certificate.maxdegree, q))
+            for clique in cliques if variables(q) ⊆ clique
+        ]
+    end
+    return bases(poly), map(bases, domain.p)
+end
