@@ -56,9 +56,11 @@ function wml19()
         @polyvar x[1:2]
         f = x[1]^4 + x[2]^4 + x[1] * x[2]
         K = @set 1 - 2x[1]^2 - x[2]^2 >= 0
-        basis, preorder_bases = Certificate.sparsity(f, K, MonomialSparsity(1), preorder_certificate)
-        @test set_monos(basis) == Set([[x[1]^2, x[1]*x[2], x[2]^2, 1], [x[1], x[2]]])
-        @test set_monos(preorder_bases[1]) == Set([[1], [x[1], x[2]]])
+        for i in 0:2
+            basis, preorder_bases = Certificate.sparsity(f, K, MonomialSparsity(i), preorder_certificate)
+            @test set_monos(basis) == Set([[x[1]^2, x[1]*x[2], x[2]^2, 1], [x[1], x[2]]])
+            @test set_monos(preorder_bases[1]) == Set([[1], [x[1], x[2]]])
+        end
     end
     @testset "Example 6.7" begin
         @polyvar x[1:2]
@@ -109,6 +111,21 @@ function l09()
         ])
     end
 end
+function square_domain()
+    d = 6
+    preorder_certificate = Certificate.Putinar(Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 6), SOSCone(), MB.MonomialBasis, 6)
+    @polyvar x y
+    f = x^2*y^4 + x^4*y^2 - 3*x^2*y*2 + 1
+    K = @set(1 - x^2 >= 0 && 1 - y^2 >= 0)
+    for i in 0:2
+        basis, preorder_bases = Certificate.sparsity(f, K, MonomialSparsity(i), preorder_certificate)
+        @test set_monos(basis) == Set([[x^3, x * y^2, x * y, x], [x^2 * y, y^3, x^2, y^2, y, 1]])
+        expected = Set([[x^2, y^2, y, 1], [x * y, x]])
+        @test set_monos(preorder_bases[1]) == expected
+        @test set_monos(preorder_bases[2]) == expected
+    end
+
+end
 function sum_square(n)
     @polyvar x[1:(2n)]
     certificate = Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple())
@@ -122,5 +139,6 @@ end
     xor_complement_test()
     wml19()
     l09()
+    square_domain()
     sum_square(8)
 end
