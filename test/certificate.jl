@@ -61,39 +61,79 @@ end
     end
 end
 
+function _certificate_api(certificate::Certificate.AbstractCertificate)
+    @test Certificate.get(certificate, Certificate.Cone()) isa SumOfSquares.SOSLikeCone
+    @test SumOfSquares.matrix_cone_type(typeof(certificate)) <: MOI.AbstractVectorSet
+end
+function _basis_check(basis, basis_type)
+    @test basis isa MB.AbstractPolynomialBasis || basis isa Vector{<:MB.AbstractPolynomialBasis}
+    if !(basis isa Vector)
+        # FIXME `basis_type` is `Vector{MB.MonomialBasis}` instead of `Vector{MB.MonomialBasis{...}}`
+        @test basis isa basis_type
+    end
+end
+
 function certificate_api(certificate::Certificate.AbstractIdealCertificate)
+    _certificate_api(certificate)
     @polyvar x
     poly = x + 1
     domain = @set x == 1
     @test Certificate.get(certificate, Certificate.ReducedPolynomial(), poly, domain) isa MP.AbstractPolynomial
-    basis = Certificate.get(certificate, Certificate.GramBasis(), poly)
-    @test basis isa MB.AbstractPolynomialBasis || basis isa Vector{<:MB.AbstractPolynomialBasis}
-    @test basis isa Certificate.get(typeof(certificate), Certificate.GramBasisType())
-    @test Certificate.get(certificate, Certificate.Cone()) isa SumOfSquares.SOSLikeCone
-    @test SumOfSquares.matrix_cone_type(typeof(certificate)) <: MOI.AbstractVectorSet
+    _basis_check(Certificate.get(certificate, Certificate.GramBasis(), poly),
+                 Certificate.get(typeof(certificate), Certificate.GramBasisType()))
     zbasis = Certificate.zero_basis(certificate)
     @test zbasis <: MB.AbstractPolynomialBasis
     @test zbasis == Certificate.zero_basis_type(typeof(certificate))
 end
 
+function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
+    _certificate_api(certificate)
+    @polyvar x
+    poly = x + 1
+    domain = @set x >= 1
+    processed = Certificate.get(certificate, Certificate.PreprocessedDomain(), domain, poly)
+    for idx in Certificate.get(certificate, Certificate.PreorderIndices(), processed)
+        _basis_check(Certificate.get(certificate, Certificate.MultiplierBasis(), idx, processed),
+                     Certificate.get(typeof(certificate), Certificate.MultiplierBasisType()))
+        @test Certificate.get(certificate, Certificate.Generator(), idx, processed) isa MP.AbstractPolynomial
+    end
+    icert = Certificate.get(certificate, Certificate.IdealCertificate())
+    @test icert isa Certificate.AbstractIdealCertificate
+    @test typeof(icert) == Certificate.get(typeof(certificate), Certificate.IdealCertificate())
+end
+
+
 @testset "API" begin
     @polyvar x
     cone = SumOfSquares.SOSCone()
     BT = MB.MonomialBasis
+    maxdegree = 2
+    function _test(certificate::Certificate.AbstractIdealCertificate)
+        certificate_api(certificate)
+        preorder = Certificate.Putinar(certificate, cone, BT, maxdegree)
+        certificate_api(preorder)
+        sparsities = Sparsity[VariableSparsity()]
+        if certificate isa Certificate.MaxDegree
+            push!(sparsities, MonomialSparsity(1))
+        end
+        @testset "$(typeof(sparsity))" for sparsity in sparsities
+            certificate_api(Certificate.SparsePreorder(sparsity, preorder))
+        end
+    end
     basis = BT([x^2, x])
     @testset "$(typeof(certificate))" for certificate in [
-        Certificate.MaxDegree(cone, BT, 2),
+        Certificate.MaxDegree(cone, BT, maxdegree),
         Certificate.FixedBasis(cone, basis),
         Certificate.Newton(cone, BT, tuple())
     ]
-        certificate_api(certificate)
-        certificate_api(Certificate.Remainder(certificate))
+        _test(certificate)
+        _test(Certificate.Remainder(certificate))
         if certificate isa Certificate.MaxDegree
-            certificate_api(Certificate.SparseIdeal(VariableSparsity(), certificate))
+            _test(Certificate.SparseIdeal(VariableSparsity(), certificate))
         end
         @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), MonomialSparsity(1)]
-            certificate_api(Certificate.SparseIdeal(sparsity, certificate))
-            certificate_api(Certificate.SparseIdeal(sparsity, Certificate.Remainder(certificate)))
+            _test(Certificate.SparseIdeal(sparsity, certificate))
+            _test(Certificate.SparseIdeal(sparsity, Certificate.Remainder(certificate)))
         end
     end
 end
