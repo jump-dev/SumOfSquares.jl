@@ -141,4 +141,10 @@ end
     l09()
     square_domain()
     sum_square(8)
+    @test Certificate.appropriate_type(32) == Int64
+    sum_square(32)
+    @test Certificate.appropriate_type(64) == Int128
+    sum_square(64)
+    @test Certificate.appropriate_type(128) == BigInt
+    sum_square(128)
 end
