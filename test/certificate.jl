@@ -1,3 +1,9 @@
+import MultivariatePolynomials
+const MP = MultivariatePolynomials
+
+import MultivariateBases
+const MB = MultivariateBases
+
 @testset "Monomial selection for certificate" begin
     @polyvar x y z
     @ncpolyvar a b
@@ -42,24 +48,96 @@
     end
 end
 
-@testset "Random SOS should be SOS with $(factory.optimizer_constructor)" for factory in sdp_factories
+@testset "Random SOS should be SOS" begin
     @polyvar x y
     x = [1, x, y, x^2, y^2, x*y]
     @test_throws ArgumentError randsos(x, monotype=:Unknown)
     for i in 1:10
         for monotype in [:Classic, :Gram]
             p = randsos(x, monotype=monotype)
+            @test p isa GramMatrix
+            @test isposdef(Matrix(p.Q))
+        end
+    end
+end
 
-            m = SOSModel(factory)
+function _certificate_api(certificate::Certificate.AbstractCertificate)
+    @test Certificate.get(certificate, Certificate.Cone()) isa SumOfSquares.SOSLikeCone
+    @test SumOfSquares.matrix_cone_type(typeof(certificate)) <: MOI.AbstractVectorSet
+end
+function _basis_check(basis, basis_type)
+    @test basis isa MB.AbstractPolynomialBasis || basis isa Vector{<:MB.AbstractPolynomialBasis}
+    if !(basis isa Vector)
+        # FIXME `basis_type` is `Vector{MB.MonomialBasis}` instead of `Vector{MB.MonomialBasis{...}}`
+        @test basis isa basis_type
+    end
+end
 
-            @constraint m p >= 0
+function certificate_api(certificate::Certificate.AbstractIdealCertificate)
+    _certificate_api(certificate)
+    @polyvar x
+    poly = x + 1
+    domain = @set x == 1
+    @test Certificate.get(certificate, Certificate.ReducedPolynomial(), poly, domain) isa MP.AbstractPolynomial
+    _basis_check(Certificate.get(certificate, Certificate.GramBasis(), poly),
+                 Certificate.get(typeof(certificate), Certificate.GramBasisType()))
+    zbasis = Certificate.zero_basis(certificate)
+    @test zbasis <: MB.AbstractPolynomialBasis
+    @test zbasis == Certificate.zero_basis_type(typeof(certificate))
+end
 
-            JuMP.optimize!(m)
+function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
+    _certificate_api(certificate)
+    @polyvar x
+    poly = x + 1
+    domain = @set x >= 1
+    processed = Certificate.get(certificate, Certificate.PreprocessedDomain(), domain, poly)
+    for idx in Certificate.get(certificate, Certificate.PreorderIndices(), processed)
+        _basis_check(Certificate.get(certificate, Certificate.MultiplierBasis(), idx, processed),
+                     Certificate.get(typeof(certificate), Certificate.MultiplierBasisType()))
+        @test Certificate.get(certificate, Certificate.Generator(), idx, processed) isa MP.AbstractPolynomial
+    end
+    icert = Certificate.get(certificate, Certificate.IdealCertificate())
+    @test icert isa Certificate.AbstractIdealCertificate
+    @test typeof(icert) == Certificate.get(typeof(certificate), Certificate.IdealCertificate())
+end
 
-            @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
+
+@testset "API" begin
+    @polyvar x
+    cone = SumOfSquares.SOSCone()
+    BT = MB.MonomialBasis
+    maxdegree = 2
+    function _test(certificate::Certificate.AbstractIdealCertificate)
+        certificate_api(certificate)
+        preorder = Certificate.Putinar(certificate, cone, BT, maxdegree)
+        certificate_api(preorder)
+        sparsities = Sparsity[VariableSparsity()]
+        if certificate isa Certificate.MaxDegree
+            push!(sparsities, MonomialSparsity(1))
+        end
+        @testset "$(typeof(sparsity))" for sparsity in sparsities
+            certificate_api(Certificate.SparsePreorder(sparsity, preorder))
+        end
+    end
+    basis = BT([x^2, x])
+    @testset "$(typeof(certificate))" for certificate in [
+        Certificate.MaxDegree(cone, BT, maxdegree),
+        Certificate.FixedBasis(cone, basis),
+        Certificate.Newton(cone, BT, tuple())
+    ]
+        _test(certificate)
+        _test(Certificate.Remainder(certificate))
+        if certificate isa Certificate.MaxDegree
+            _test(Certificate.SparseIdeal(VariableSparsity(), certificate))
+        end
+        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), MonomialSparsity(1)]
+            _test(Certificate.SparseIdeal(sparsity, certificate))
+            _test(Certificate.SparseIdeal(sparsity, Certificate.Remainder(certificate)))
         end
     end
 end
 
 include("ceg_test.jl")
 include("csp_test.jl")
+include("sparsity.jl")

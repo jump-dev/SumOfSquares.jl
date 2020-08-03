@@ -3,12 +3,6 @@ export NonnegPolyInnerCone, DSOSCone, SDSOSCone, SOSCone
 export PSDMatrixInnerCone, SOSMatrixCone
 export ConvexPolyInnerCone, SOSConvexCone
 
-export Sparsity, NoSparsity, VariableSparsity, MonomialSparsity
-abstract type Sparsity end
-struct NoSparsity <: Sparsity end
-struct VariableSparsity <: Sparsity end
-struct MonomialSparsity <: Sparsity end
-
 """
     struct NonnegPolyInnerCone{MCT <: MOI.AbstractVectorSet}
     end
@@ -87,22 +81,16 @@ end
 
 function default_ideal_certificate(
     domain::AbstractAlgebraicSet, cone, basis,
-    newton_polytope, maxdegree, sparsity::Sparsity, newton_of_remainder::Bool)
+    newton_polytope, maxdegree, sparsity::Certificate.Sparsity, newton_of_remainder::Bool)
 
-    if sparsity isa VariableSparsity
-        if maxdegree === nothing
-            error("`maxdegree` cannot be `nothing` when `sparsity` is no `NoSparsity`.")
-        end
-        c = Certificate.ChordalIdeal(cone, basis, maxdegree)
-    elseif sparsity isa MonomialSparsity
-        error("Monomial sparsity not implemented yet")
-    else
-        @assert sparsity isa NoSparsity
+    if sparsity isa Certificate.NoSparsity
         if basis isa AbstractPolynomialBasis
             c = Certificate.FixedBasis(cone, basis)
         else
             c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
         end
+    else
+        c = Certificate.SparseIdeal(sparsity, cone, basis, maxdegree, newton_polytope)
     end
     if newton_of_remainder && !(c isa SumOfSquares.Certificate.Remainder)
         return SumOfSquares.Certificate.Remainder(c)
@@ -115,18 +103,13 @@ end
 function default_certificate(::AbstractAlgebraicSet, sparsity, ideal_certificate, cone, basis, maxdegree)
     return ideal_certificate
 end
-function default_certificate(::BasicSemialgebraicSet, ::VariableSparsity,
-                             ideal_certificate::Certificate.ChordalIdeal, cone,
+function default_certificate(::BasicSemialgebraicSet, sparsity::Certificate.Sparsity,
+                             ideal_certificate::Certificate.SparseIdeal, cone,
                              basis, maxdegree)
-    return Certificate.ChordalPutinar(
-         cone, basis, maxdegree)
+    return Certificate.SparsePreorder(
+        sparsity, Certificate.Putinar(ideal_certificate.certificate, cone, basis, maxdegree))
 end
-function default_certificate(::BasicSemialgebraicSet, ::MonomialSparsity,
-                             ideal_certificate, cone,
-                             basis, maxdegree)
-    error("Monomial sparsity not implemented yet")
-end
-function default_certificate(::BasicSemialgebraicSet, ::NoSparsity,
+function default_certificate(::BasicSemialgebraicSet, ::Certificate.NoSparsity,
                              ideal_certificate, cone, basis, maxdegree)
     return Certificate.Putinar(
         ideal_certificate, cone, basis, maxdegree)
@@ -138,7 +121,7 @@ function JuMP.moi_set(
     basis=MonomialBasis,
     newton_polytope::Tuple=tuple(),
     maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
-    sparsity::Sparsity=NoSparsity(),
+    sparsity::Certificate.Sparsity=Certificate.NoSparsity(),
     newton_of_remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(
         domain, cone, basis, newton_polytope, maxdegree, sparsity, newton_of_remainder),

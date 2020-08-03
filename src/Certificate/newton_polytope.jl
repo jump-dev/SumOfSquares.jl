@@ -174,7 +174,11 @@ end
 # two different monomials of `monos` and `mono` is not in `X` then, the corresponding
 # diagonal entry of the Gram matrix will be zero hence the whole column and row
 # will be zero hence we can remove this monomial.
-# See [Section 2.4, BKP16].
+# See [Theorem 2, L09] or [Section 2.4, BKP16].
+#
+# [L09] Lofberg, Johan.
+# *Pre-and post-processing sum-of-squares programs in practice*.
+# IEEE transactions on automatic control 54.5 (2009): 1007-1011.
 #
 # [BKP16] Sabine Burgdorf, Igor Klep, and Janez Povh.
 # *Optimization of polynomials in non-commuting variables*.

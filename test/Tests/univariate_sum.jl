@@ -29,7 +29,7 @@ function univariate_sum_test(optimizer,
     @test p.sub_gram_matrices[2].basis.monomials == [x, 1]
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.ChordalIdeal{typeof(cone), MonomialBasis}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.SparseIdeal{VariableSparsity, SumOfSquares.Certificate.MaxDegree{typeof(cone), MonomialBasis}}
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     test_delete_bridge(
