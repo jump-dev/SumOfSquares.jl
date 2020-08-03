@@ -174,7 +174,7 @@ SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT} = SumOfSquares
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
 
-include("csp/ChordalExtensionGraph.jl")
-include("csp/sparse_putinar.jl")
+include("sparse/ChordalExtensionGraph.jl")
+include("sparse/sparse_putinar.jl")
 
 end
