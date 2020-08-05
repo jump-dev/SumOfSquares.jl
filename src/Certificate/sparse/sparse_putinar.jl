@@ -56,7 +56,7 @@ end
 function SparseIdeal(sp::VariableSparsity, cone, basis, maxdegree::Integer, newton_polytope)
     return SparseIdeal(sp, MaxDegree(cone, basis, maxdegree))
 end
-function SparseIdeal(sp::VariableSparsity, cone, basis, maxdegree, newton_polytope)
+function SparseIdeal(sp::Union{MonomialSparsity, SignSymmetry}, cone, basis, maxdegree, newton_polytope)
     return SparseIdeal(sp, Newton(cone, basis, newton_polytope))
 end
 
