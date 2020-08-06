@@ -8,6 +8,13 @@ function build_gram_matrix(q::Vector,
                       basis)
 end
 
+function union_constraint_indices_types(MCT)
+    return Union{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(matrix_cone(MCT, 0))},
+                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(matrix_cone(MCT, 1))},
+                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(matrix_cone(MCT, 2))},
+                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(matrix_cone(MCT, 3))}}
+end
+
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
                          basis::AbstractPolynomialBasis)
     Q, cQ = MOI.add_constrained_variables(model, matrix_cone(matrix_cone_type, length(basis)))
@@ -16,8 +23,14 @@ function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
 end
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
                          bases::Vector{<:AbstractPolynomialBasis})
-    qQcQ = add_gram_matrix.(model, matrix_cone_type, bases)
-    return SparseGramMatrix(getindex.(qQcQ, 1)), getindex.(qQcQ, 2), getindex.(qQcQ, 3)
+    Qs = Vector{Vector{MOI.VariableIndex}}(undef, length(bases))
+    cQs = Vector{union_constraint_indices_types(matrix_cone_type)}(undef, length(bases))
+    # We use `map` for `grams` as it's less easy to infer its type
+    grams = map(eachindex(bases)) do i
+        gram, Qs[i], cQs[i] = add_gram_matrix(model, matrix_cone_type, bases[i])
+        return gram
+    end
+    return SparseGramMatrix(grams), Qs, cQs
 end
 
 function build_moment_matrix(q::Vector,
