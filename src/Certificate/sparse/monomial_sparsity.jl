@@ -58,6 +58,8 @@ function monomial_sparsity_iteration(P, monos, multiplier_generator_monos)
     end
     return P_next, (cliques, multiplier_cliques)
 end
+_monovec(cliques::AbstractVector{<:MP.AbstractMonomial}) = MP.monovec(cliques)
+_monovec(cliques) = _monovec.(cliques)
 function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSparsity,
                   gram_monos::AbstractVector = SumOfSquares.Certificate.monomials_half_newton_polytope(monos, tuple()),
                   args...)
@@ -78,7 +80,7 @@ function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSpar
             length(P) == length(P_prev) && break
         end
     end
-    return cliques
+    return _monovec(cliques)
 end
 # This also checks that it is indeed a monomial basis
 _monos(basis::MB.MonomialBasis) = basis.monomials

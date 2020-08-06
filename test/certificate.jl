@@ -65,11 +65,32 @@ function _certificate_api(certificate::Certificate.AbstractCertificate)
     @test Certificate.get(certificate, Certificate.Cone()) isa SumOfSquares.SOSLikeCone
     @test SumOfSquares.matrix_cone_type(typeof(certificate)) <: MOI.AbstractVectorSet
 end
+function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
+    @test basis isa basis_type
+    if basis isa MB.AbstractMonomialBasis
+        # This fails if `basis` is `Vector{Monomial{true}}` instead of `MonomialVector{true}`
+        # for DynamicPolynomials. This is important as
+        # `polynomial(::AbstractMatrix, ::MonomialVector, ::Type)` is implemented but
+        # `polynomial(Q::AbstractMatrix, X::AbstractVector, ::Type)` falls back to
+        # `dot(X, Q * X)` which does not work (`promote_operation` calls `zero(eltype(X))`
+        # which gives `Polynomial{true, Int}` which then tries to multiply a
+        # `ScalarAffineFunction{Float64}` with an `Int`).
+        monos = basis.monomials
+        @test typeof(monos) == typeof(monovec(monos))
+        @test issorted(monos, rev=true)
+    end
+end
 function _basis_check(basis, basis_type)
     @test basis isa MB.AbstractPolynomialBasis || basis isa Vector{<:MB.AbstractPolynomialBasis}
-    if !(basis isa Vector)
+    if basis isa Vector
         # FIXME `basis_type` is `Vector{MB.MonomialBasis}` instead of `Vector{MB.MonomialBasis{...}}`
-        @test basis isa basis_type
+        # Once this is fixed, we should check
+        # @test basis isa basis_type
+        for b in basis
+            _basis_check_each(b, eltype(basis_type))
+        end
+    else
+        _basis_check_each(basis, basis_type)
     end
 end
 
@@ -120,7 +141,7 @@ end
             certificate_api(Certificate.SparsePreorder(sparsity, preorder))
         end
     end
-    basis = BT([x^2, x])
+    basis = BT(monovec([x^2, x]))
     @testset "$(typeof(certificate))" for certificate in [
         Certificate.MaxDegree(cone, BT, maxdegree),
         Certificate.FixedBasis(cone, basis),
