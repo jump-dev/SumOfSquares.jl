@@ -3,13 +3,15 @@ using SumOfSquares
 using JuMP
 using SCS
 
+# **Contributed by**: votroto
+
 # ------------------------------------------------------------------------------
 # A trivial SOS decomposition example
 # ------------------------------------------------------------------------------
 
 # The polynomial p = x^2 - x*y^2 + y^4 + 1 is SOS.
 # We can, for example, decompose it as
-# p = 3/4*(x-y^2)^2 + 1/4*(x + y)^2 + 1,
+# p = 3/4*(x - y^2)^2 + 1/4*(x + y)^2 + 1,
 # which clearly proves that p is SOS, and there are infinitely many other ways 
 # to decompose p into sums of squares.
 
