@@ -8,8 +8,10 @@ using SCS
 # ------------------------------------------------------------------------------
 
 # The polynomial p = x^2 - x*y^2 + y^4 + 1 is SOS.
-# Among infinite others, it has the decomposition:
-# p = 3/4*(x-y^2)^2 + 1/4*(x + y)^2 + 1.
+# We can, for example, decompose it as
+# p = 3/4*(x-y^2)^2 + 1/4*(x + y)^2 + 1,
+# which clearly proves that p is SOS, and there are infinitely many other ways 
+# to decompose p into sums of squares.
 
 # We can use SumOfSquares.jl to find such decompositions.
 
@@ -39,7 +41,7 @@ polynomial(sos_decomposition, Float32)
 # ------------------------------------------------------------------------------
 
 # p = x^2 - x*y^2 + y^4 + 1 can be represented in terms of its Gram matrix as
-gram = SumOfSquares.gram_matrix(cref)
+gram = gram_matrix(cref)
 gram.basis.monomials' * gram.Q * gram.basis.monomials
 # where the matrix gram.Q is positive semidefinite, because p is SOS. If we
 # could only get the decomposition gram.Q = V' * V, the SOS decomposition would
