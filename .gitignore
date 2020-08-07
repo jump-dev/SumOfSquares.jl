@@ -7,3 +7,4 @@ Manifest.toml
 # Documenter
 docs/build/
 docs/site/
+docs/src/generated

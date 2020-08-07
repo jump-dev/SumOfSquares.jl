@@ -1,4 +1,19 @@
-using Documenter, SumOfSquares
+using SumOfSquares
+using Documenter , Literate
+
+const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
+const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
+
+const EXAMPLES = [
+    "Sum-of-Squares Matrices.jl",
+]
+
+for example in EXAMPLES
+    example_filepath = joinpath(EXAMPLES_DIR, example)
+    Literate.markdown(example_filepath, OUTPUT_DIR)
+    Literate.notebook(example_filepath, OUTPUT_DIR)
+    Literate.script(example_filepath, OUTPUT_DIR)
+end
 
 makedocs(
     sitename = "SumOfSquares",
@@ -11,6 +26,9 @@ makedocs(
         "Sum-of-Squares Programming" => "sumofsquares.md",
         "Variables" => "variables.md",
         "Constraints" => "constraints.md",
+        "Examples" => Any[
+            "Sum-of-Squares Matrices" => "generated/Sum-of-Squares Matrices.md",
+        ]
     ],
     # The following ensures that we only include the docstrings from
     # this module for functions define in Base that we overwrite.
