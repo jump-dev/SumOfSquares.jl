@@ -86,14 +86,14 @@ _list_variables(Q::Vector{Vector{MOI.VariableIndex}}) = Iterators.flatten(Q)
 function MOI.get(bridge::SOSPolynomialBridge, ::MOI.ListOfVariableIndices)
     _list_variables(bridge.Q)
 end
-_num_constraints(cQ::Vector{C}, ::Type{C}) where C = length(cQ)
+_num_constraints(cQ::Vector, ::Type{C}) where C = count(ci -> ci isa C, cQ)
 _num_constraints(cQ::C, ::Type{C}) where C = 1
 _num_constraints(cQ, ::Type) = 0
 function MOI.get(bridge::SOSPolynomialBridge{T, F, DT, UMCT, UMST},
                  ::MOI.NumberOfConstraints{MOI.VectorOfVariables, S}) where {T, F, DT, UMCT, UMST, S<:UMST}
     return _num_constraints(bridge.cQ, MOI.ConstraintIndex{MOI.VectorOfVariables, S})
 end
-_list_constraints(cQ::Vector{C}, ::Type{C}) where C = cQ
+_list_constraints(cQ::Vector, ::Type{C}) where C = filter(ci -> ci isa C, cQ)
 _list_constraints(cQ::C, ::Type{C}) where C = [cQ]
 _list_constraints(cQ, C::Type) = C[]
 function MOI.get(bridge::SOSPolynomialBridge{T, F, DT, UMCT, UMST},

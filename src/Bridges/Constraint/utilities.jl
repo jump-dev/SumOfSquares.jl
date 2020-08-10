@@ -1,13 +1,9 @@
 function union_constraint_types(MCT)
-    return Union{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 0))},
-                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 1))},
-                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 2))},
-                 MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 3))},
-                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 0))}},
-                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 1))}},
-                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 2))}},
-                 Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(SOS.matrix_cone(MCT, 3))}}}
-    # `Vector{<:MOI.ConstraintIndex}` is for sparse SOS
+    UMCT = SOS.union_constraint_indices_types(MCT)
+    return Union{UMCT, Vector{UMCT}}
+    # `Vector{UMCT}` is for sparse SOS
+    # As basis can have different sizes, we need `Vector{Union{...}}` instead of
+    # `Union{Vector, ...}`.
 end
 function union_set_types(MCT)
     return Union{typeof(SOS.matrix_cone(MCT, 0)),
