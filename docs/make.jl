@@ -5,6 +5,7 @@ const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
 const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
 
 const EXAMPLES = [
+    "sos_decomposition.jl",
     "Sum-of-Squares Matrices.jl",
 ]
 
@@ -27,6 +28,7 @@ makedocs(
         "Variables" => "variables.md",
         "Constraints" => "constraints.md",
         "Examples" => Any[
+            "SOS decomposition" => "generated/sos_decomposition.md",
             "Sum-of-Squares Matrices" => "generated/Sum-of-Squares Matrices.md",
         ]
     ],

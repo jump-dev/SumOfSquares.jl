@@ -1,11 +1,10 @@
 using SumOfSquares
-using MosekTools
 using DynamicPolynomials
-
+using Test
 
 function sos_lower_bound(factory, sparsity::Sparsity)
     @polyvar x y z
-    K = @set 1-x^2-y^2>=0 && 1-y^2-z^2>=0
+    K = @set 1 - x^2 - y^2 >= 0 && 1 - y^2 - z^2 >= 0
     p = 1 - x*y - y*z
     model = Model(factory)
     @variable(model, t)
@@ -15,13 +14,15 @@ function sos_lower_bound(factory, sparsity::Sparsity)
     return objective_value(model)
 end
 
-const factory = Mosek.Optimizer
+function sparse_vs_dense(optimizer_constructor)
+    # use chordal sparsity
+    sparse_value = sos_lower_bound(optimizer_constructor, VariableSparsity())
 
-# use chordal sparsity
-sparse_value = sos_lower_bound(factory, VariableSparsity())
+    # no chordal sparsity
+    dense_value = sos_lower_bound(optimizer_constructor, NoSparsity())
 
-# no chordal sparsity
-dense_value = sos_lower_bound(factory, NoSparsity())
+    @test abs(sparse_value - dense_value) < 1e-6
+end
 
-println("Sparse and dense equivalent?")
-println("Absolute different of objective value: ", abs(dense_value - sparse_value))
+import CSDP
+sparse_vs_dense(CSDP.Optimizer)

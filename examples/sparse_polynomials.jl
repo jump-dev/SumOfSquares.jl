@@ -7,7 +7,7 @@ SIAM Journal on Optimization 17, no. 1 (2006): 218-242.
 """
 function chained_singular(n::Int)
     # clique size 3
-    @assert mod(n, 4)==0
+    @assert mod(n, 4) == 0
     @polyvar x[1:n]
     return sum([2*i-1 for i in 1:Int(n/2-1)]) do j
         (x[j] + 10*x[j+1])^2 + 5*(x[j+2] - x[j+3])^2 + (x[j+1] - 2*x[j+2])^4 + 10*(x[j] - x[j+3])^4
@@ -30,7 +30,7 @@ end
 
 function chained_wood(n::Int)
     # clique size 2
-    @assert mod(n, 4)==0
+    @assert mod(n, 4) == 0
     @polyvar x[1:n]
     p = 1 + sum(100*(x[j+1] - x[j]^2)^2 + (1 - x[j])^2 + 90*(x[j+3] - x[j+2]^2)^2  + (1 - x[j+2])^2
             + 10*(x[j+1] + x[j+3] - 2)^2 + 0.1*(x[j+1] - x[j+3])^4 for j in [2*i-1 for i in 1:Int(n/2-1)])

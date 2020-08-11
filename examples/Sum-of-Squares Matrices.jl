@@ -1,9 +1,8 @@
 # # Sum-of-Squares matrices
 
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
 # **Contributed by**: Benoît Legat
-
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/example.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/example.ipynb)
 
 # ### Introduction
 
@@ -19,7 +18,7 @@
 # *Semidefinite Optimization and Convex Algebraic Geometry*.
 # Society for Industrial and Applied Mathematics, **2012**.
 
-using Test #jl
+using Test #src
 using DynamicPolynomials
 @polyvar x
 P = [x^2 - 2x + 2 x
@@ -38,14 +37,14 @@ factory = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 model = SOSModel(factory)
 mat_cref = @constraint(model, P in PSDCone())
 optimize!(model)
-@test termination_status(model) == MOI.OPTIMAL #jl
-termination_status(model) #!jl
+@test termination_status(model) == MOI.OPTIMAL #src
+termination_status(model) #!src
 
 # While the reformulation of sos matrix to sos polynomial is rather simple, as explained in the "Sum-of-Squares reformulation" section below, there is a technical subtelty about the Newton polytope that if not handled correctly may result in an SDP of large size with bad numerical behavior. For this reason, it is recommended to model sos *matrix* constraints as such as will be shown in this notebook and not do the formulation manually unless there is a specific reason to do so.
 #
 # As we can verify as follows, only 3 monomials are used using the sos *matrix* constraint.
 
-@test length(certificate_monomials(mat_cref)) == 3 #jl
+@test length(certificate_monomials(mat_cref)) == 3 #src
 certificate_monomials(mat_cref) #!jl
 
 # ### Sum-of-Squares reformulation
@@ -70,12 +69,12 @@ nothing #md See https://github.com/JuliaDocs/Documenter.jl/issues/1387
 # without exploiting this multipartite structure gives the following 6 monomials.
 
 X = monomials(p)
-@test Certificate.monomials_half_newton_polytope(X, tuple(), apply_post_filter = false) == [x * y[1], x * y[2], y[1] * y[2], x, y[1], y[2]] #jl
+@test Certificate.monomials_half_newton_polytope(X, tuple(), apply_post_filter = false) == [x * y[1], x * y[2], y[1] * y[2], x, y[1], y[2]] #src
 Certificate.monomials_half_newton_polytope(X, tuple(), apply_post_filter = false) #!jl
 
 # Exploiting the multipartite structure gives 4 monomials.
 
-@test Certificate.monomials_half_newton_polytope(X, ([x], y), apply_post_filter = false) == [x * y[1], x * y[2], y[1], y[2]] #jl
+@test Certificate.monomials_half_newton_polytope(X, ([x], y), apply_post_filter = false) == [x * y[1], x * y[2], y[1], y[2]] #src
 Certificate.monomials_half_newton_polytope(X, ([x], y), apply_post_filter = false) #!jl
 
 # In the example above, there were only 3 monomials, where does the difference come from ?
@@ -85,12 +84,12 @@ Certificate.monomials_half_newton_polytope(X, ([x], y), apply_post_filter = fals
 # hence the whole column and row will be zero as well.
 # Therefore, we can remove this monomial.
 
-@test Certificate.monomials_half_newton_polytope(X, ([x], y)) == [x * y[1], x * y[2], y[1]] #jl
+@test Certificate.monomials_half_newton_polytope(X, ([x], y)) == [x * y[1], x * y[2], y[1]] #src
 Certificate.monomials_half_newton_polytope(X, ([x], y)) #!jl
 
 # The same reasoning can be used for monomials `y[1]y[2]` and `x` therefore whether
 # we exploit the multipartite structure or not, we get only 3 monomials thanks
 # to this post filter.
 
-@test Certificate.monomials_half_newton_polytope(X, tuple()) == [x * y[1], x * y[2], y[1]] #jl
+@test Certificate.monomials_half_newton_polytope(X, tuple()) == [x * y[1], x * y[2], y[1]] #src
 Certificate.monomials_half_newton_polytope(X, tuple()) #!jl
