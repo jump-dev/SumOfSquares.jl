@@ -21,7 +21,8 @@ import CSDP
 
 @polyvar x y
 p = x^2 - x*y^2 + y^4 + 1
-nothing #md See https://github.com/JuliaDocs/Documenter.jl/issues/1387
+#src See https://github.com/JuliaDocs/Documenter.jl/issues/1387
+nothing #md
 
 # Secondly, constrain the polynomial to be nonnegative.
 # SumOfSquares.jl transparently reinterprets polyonmial nonnegativity as the
@@ -42,7 +43,8 @@ sos_decomposition = SumOfSquares.sos_decomposition(cref, 1e-4)
 # Converting, rounding, and simplifying - Huzza, Back where we began!
 
 polynomial(sos_decomposition, Float32)
-nothing #md See https://github.com/JuliaDocs/Documenter.jl/issues/1387
+#src See https://github.com/JuliaDocs/Documenter.jl/issues/1387
+nothing #md
 
 # ## A deeper explanation and the unexplained `1e-4` parameter
 
@@ -53,7 +55,8 @@ gram = gram_matrix(cref)
 #-
 
 gram.basis.monomials' * gram.Q * gram.basis.monomials
-nothing #md See https://github.com/JuliaDocs/Documenter.jl/issues/1387
+#src See https://github.com/JuliaDocs/Documenter.jl/issues/1387
+nothing #md
 
 # where the matrix `gram.Q` is positive semidefinite, because `p` is SOS. If we
 # could only get the decomposition `gram.Q = V' * V`, the SOS decomposition would
