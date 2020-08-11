@@ -15,7 +15,6 @@ termination_status(model) #!src
 
 @polyvar y[1:2]
 p = vec(y)' * P * vec(y)
-nothing #md See https://github.com/JuliaDocs/Documenter.jl/issues/1387
 
 X = monomials(p)
 
