@@ -1,5 +1,5 @@
 using SumOfSquares
-using Documenter , Literate
+using Documenter, Literate
 
 const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
 const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")

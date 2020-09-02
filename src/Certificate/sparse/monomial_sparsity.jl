@@ -1,37 +1,65 @@
 struct MonomialSparsity <: Sparsity
     k::Int
+    use_all_monomials::Bool
+    function MonomialSparsity(k::Int=0, use_all_monomials::Bool=false)
+        return new(k, use_all_monomials)
+    end
 end
 
 const MP = SumOfSquares.MP
 const CEG = SumOfSquares.Certificate.ChordalExtensionGraph
-function monomial_sparsity_graph(monos, P)
+function monomial_sparsity_graph(monos, P, use_all_monomials::Bool)
     g = CEG.LabelledGraph{eltype(monos)}()
+    if use_all_monomials
+        squares = nothing # No need to record this
+    else
+        squares = Set{eltype(monos)}()
+    end
     for mono in monos
         CEG.add_node!(g, mono)
     end
     for a in monos
         for b in monos
-            if a != b && (a * b) in P
-                CEG.add_edge!(g, a, b)
+            if (a * b) in P
+                if a != b
+                    CEG.add_edge!(g, a, b)
+                elseif squares !== nothing
+                    push!(squares, a)
+                end
             end
         end
     end
-    return g
+    return g, squares
 end
-function _add_monos(add, monos, H)
+function _add_monos(add, monos, H, squares)
     for a in monos
-        add(a^2)
-        for bi in H.graph.neighbors[H.n2int[a]]
+        neighbors = H.graph.neighbors[H.n2int[a]]
+        # If `!isempty!(neighbors)`, the monomial part of a clique with another
+        # monomial so the diagonal entry should be nonzero.
+        # If `a in squares`, the monomial square is needed so it is added.
+        # e.g. if the polynomial is x^2 but the basis is `[x, 1]`,
+        # `squares` is `Set([x])` so `x^2` will be added but not `1^2`.
+        if squares === nothing || !isempty(neighbors) || a in squares
+            add(a^2)
+        end
+        for bi in neighbors
             b = H.int2n[bi]
             add(a * b)
         end
     end
 end
-function monomial_sparsity_iteration(P, monos)
-    P_next = Set{eltype(P)}()
-    g = monomial_sparsity_graph(monos, P)
+function chordal_with_squares(g, squares)
     H, cliques = CEG.chordal_extension(g, CEG.GreedyFillIn())
-    _add_monos(mono -> push!(P_next, mono), monos, H)
+    if squares !== nothing
+        cliques = filter(monos -> length(monos) > 1 || (monos[1] in squares), collect(cliques))
+    end
+    return H, cliques
+end
+function monomial_sparsity_iteration(P, use_all_monomials::Bool, monos)
+    P_next = Set{eltype(P)}()
+    g, squares = monomial_sparsity_graph(monos, P, use_all_monomials)
+    H, cliques = chordal_with_squares(g, squares)
+    _add_monos(mono -> push!(P_next, mono), monos, H, squares)
     return P_next, cliques
 end
 struct GeneratorP{PT, GT}
@@ -43,13 +71,13 @@ function Base.in(mono, g::GeneratorP)
         (mono * g_mono) in g.P
     end
 end
-function monomial_sparsity_iteration(P, monos, multiplier_generator_monos)
-    P_next, cliques = monomial_sparsity_iteration(P, monos)
+function monomial_sparsity_iteration(P, use_all_monomials::Bool, monos, multiplier_generator_monos)
+    P_next, cliques = monomial_sparsity_iteration(P, use_all_monomials, monos)
     multiplier_cliques = map(multiplier_generator_monos) do m
         multiplier_monos, generator_monos = m
-        g = monomial_sparsity_graph(multiplier_monos, GeneratorP(P, generator_monos))
-        H, _cliques = CEG.chordal_extension(g, CEG.GreedyFillIn())
-        _add_monos(multiplier_monos, H) do mono
+        g, squares = monomial_sparsity_graph(multiplier_monos, GeneratorP(P, generator_monos), use_all_monomials)
+        H, _cliques = chordal_with_squares(g, squares)
+        _add_monos(multiplier_monos, H, squares) do mono
             for b in generator_monos
                 push!(P_next, mono * b)
             end
@@ -64,14 +92,16 @@ function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSpar
                   gram_monos::AbstractVector = SumOfSquares.Certificate.monomials_half_newton_polytope(monos, tuple()),
                   args...)
     P = Set(monos)
-    for mono in gram_monos
-        push!(P, mono^2)
+    if sp.use_all_monomials
+        for mono in gram_monos
+            push!(P, mono^2)
+        end
     end
     cliques = nothing
     iter = 0
-    while iter < sp.k || iszero(iter)
+    while iter < sp.k || iszero(sp.k)
         P_prev = P
-        P, cliques = monomial_sparsity_iteration(P_prev, gram_monos, args...)
+        P, cliques = monomial_sparsity_iteration(P_prev, sp.use_all_monomials, gram_monos, args...)
         if iszero(iter)
             # If gram_monos + gram_monos !⊆ monos, then it's possible that P_prev !⊆ P
             P == P_prev && break
@@ -79,6 +109,7 @@ function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSpar
             length(P) >= length(P_prev) || error("Set of monomials should be increasing in monomial sparsity iterations.")
             length(P) == length(P_prev) && break
         end
+        iter += 1
     end
     return _monovec(cliques)
 end
