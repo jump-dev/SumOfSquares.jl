@@ -48,3 +48,4 @@ struct SOSPolynomialSet{DT <: AbstractSemialgebraicSet,
     certificate::CT
 end
 MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)
+Base.copy(set::SOSPolynomialSet) = set
