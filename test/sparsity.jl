@@ -44,22 +44,15 @@ function wml19()
             [x[1] * x[2], x[3]],
             [x[1]^2]
         ]))
-        expected_1_true = Set(monovec.([
-            [x[1]^2, x[2]^2, x[3]^2, 1],
-            [x[1] * x[3], x[2]],
-            [x[2], 1],
-            [x[2] * x[3], x[1]],
-            [x[1] * x[2], x[3]]
-        ]))
         expected_2 = Set(monovec.([
             [x[1]^2, x[2]^2, x[3]^2, 1],
-            [x[2] * x[3], x[1]],
             [x[2], 1],
+            [x[2] * x[3], x[1]],
             [x[1] * x[3], x[2]],
             [x[1] * x[2], x[3]]
         ]))
         @testset "$k $use_all_monomials" for k in 0:2, use_all_monomials in [false, true]
-            expected = k == 1 ? (use_all_monomials ? expected_1_true : expected_1_false) : expected_2
+            expected = (k == 1 && !use_all_monomials) ? expected_1_false : expected_2
             @test set_monos(Certificate.sparsity(f, MonomialSparsity(k, use_all_monomials), certificate)) == expected
         end
         expected = Set(monovec.([
