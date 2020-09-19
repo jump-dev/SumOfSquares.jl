@@ -6,8 +6,11 @@ MOIU.@model(NoFreeVariable,
             (), (MOI.ScalarAffineFunction,), (MOI.VectorOfVariables,), (MOI.VectorAffineFunction,))
 # No free variables to make sure variable bridges are used to increase coverage
 MOI.supports_add_constrained_variables(::NoFreeVariable, ::Type{MOI.Reals}) = false
-# Workaround for https://github.com/jump-dev/MathOptInterface.jl/pull/1164, TODO remove with MOI v0.9.17
-MOI.supports_add_constrained_variables(::MOI.Utilities.MockOptimizer{NoFreeVariable{T}}, ::Type{MOI.Reals}) where T = false
+MOI.supports_add_constrained_variables(::NoFreeVariable, ::Type{MOI.Nonnegatives}) = true
+MOI.supports_add_constrained_variables(::NoFreeVariable, ::Type{MOI.Nonpositives}) = true
+MOI.supports_add_constrained_variables(::NoFreeVariable, ::Type{MOI.Zeros}) = true
+MOI.supports_add_constrained_variables(::NoFreeVariable, ::Type{MOI.RotatedSecondOrderCone}) = true
+MOI.supports_add_constrained_variables(::NoFreeVariable, ::Type{MOI.PositiveSemidefiniteConeTriangle}) = true
 
 function bridged_mock(mock_optimize!::Function...;
                       model = MOI.Utilities.Model{Float64}())
