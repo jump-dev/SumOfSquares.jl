@@ -37,7 +37,7 @@ end
     include("horn.jl")
 end
 @testset "Lyapunov Switched System" begin
-    #include("lyapunov_switched_system.jl")
+    include("lyapunov_switched_system.jl")
 end
 @testset "Motzkin" begin
     include("motzkin.jl")
