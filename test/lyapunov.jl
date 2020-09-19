@@ -1,1 +1,1 @@
-#include("sosdemo2.jl")
+include("sosdemo2.jl")
