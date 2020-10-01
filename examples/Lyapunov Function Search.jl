@@ -20,7 +20,7 @@ f = [-x[1]^3 - x[1] * x[3]^2,
 using SumOfSquares
 using CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
-model = SOSModel(solver)
+model = SOSModel(solver);
 
 # We are searching for a Lyapunov function $V(x)$ with monomials $x_1^2$, $x_2^2$ and $x_3^2$.
 # We first define the monomials to be used for the Lyapunov function:

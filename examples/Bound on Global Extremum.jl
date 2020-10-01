@@ -24,7 +24,7 @@ nothing #md
 using SumOfSquares
 using CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
-model = SOSModel(solver)
+model = SOSModel(solver);
 
 # We create the decision variable $\gamma$ that will be the lower bound to the Goldstein-Price function.
 # We maximize it to have the highest possible lower bound.
