@@ -37,7 +37,6 @@ include("Mock/mock_tests.jl")
 # FIXME these tests should be moved to `Tests` and tested in `Mock`
 include("solvers.jl")
 include("sospoly.jl")
-include("sosdemo3.jl")
 include("domain.jl")
 include("sosquartic.jl")
 include("equalitypolyconstr.jl")
