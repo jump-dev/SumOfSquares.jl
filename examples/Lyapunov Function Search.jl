@@ -43,6 +43,7 @@ monos = x.^2
 # Hence, we constrain this numerator to be nonnegative:
 
 #src TODO split in 3 once https://github.com/JuliaDocs/Documenter.jl/issues/1387 is resolved
+using LinearAlgebra # Needed for `dot`
 dVdt = dot(differentiate(V, x), f)
 P = dVdt.num
 @constraint(model, P <= 0)
