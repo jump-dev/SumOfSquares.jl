@@ -6,6 +6,7 @@ const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
 
 const EXAMPLES = [
     "sos_decomposition.jl",
+    "Bound on Global Extremum.jl",
     "Lyapunov Function Search.jl",
     "Sum-of-Squares Matrices.jl",
 ]
@@ -30,6 +31,7 @@ makedocs(
         "Constraints" => "constraints.md",
         "Examples" => Any[
             "SOS decomposition" => "generated/sos_decomposition.md",
+            "Bound on Global Extremum" => "generated/Bound on Global Extremum.md",
             "Lyapunov Function Search" => "generated/Lyapunov Function Search.md",
             "Sum-of-Squares Matrices" => "generated/Sum-of-Squares Matrices.md",
         ]

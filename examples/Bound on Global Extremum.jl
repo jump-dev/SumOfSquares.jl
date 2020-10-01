@@ -1,30 +1,48 @@
-# Adapted from:
-# SOSDEMO3 --- Bound on Global Extremum
-# Section 3.3 of SOSTOOLS User's Manual
+# # Bound on Global Extremum
 
-@testset "SOSDEMO3 with $(factory.optimizer_constructor)" for factory in sdp_factories
-    @polyvar x1 x2
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Bound on Global Extremum.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Bound on Global Extremum.ipynb)
+# **Adapted from**: SOSTOOLS' SOSDEMO3 (See Section 4.3 of [SOSTOOLS User's Manual](http://sysos.eng.ox.ac.uk/sostools/sostools.pdf))
 
-    m = SOSModel(factory)
+using Test #src
+using DynamicPolynomials
+@polyvar x1 x2
 
-    @variable m γ
+# The Goldstein-Price function $f(x)$ is defined as follows:
 
-    # Constraint : r(x)*(f(x) - gam) >= 0
-    # f(x) is the Goldstein-Price function
-    f1 = x1+x2+1
-    f2 = 19-14*x1+3*x1^2-14*x2+6*x1*x2+3*x2^2
-    f3 = 2*x1-3*x2
-    f4 = 18-32*x1+12*x1^2+48*x2-36*x1*x2+27*x2^2
+f1 = x1 + x2 + 1
+f2 = 19 - 14x1 + 3x1^2 - 14x2 + 6x1*x2 + 3x2^2
+f3 = 2x1 - 3x2
+f4 = 18 - 32x1 + 12x1^2 + 48x2 - 36x1*x2 + 27x2^2
+f = (1 + f1^2 * f2) * (30 + f3^2 * f4)
 
-    f = (1+f1^2*f2)*(30+f3^2*f4)
+# We need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
+# We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
-    @constraint m f >= γ
+using SumOfSquares
+using CSDP
+solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+model = SOSModel(solver)
 
-    @objective m Max γ
+# We create the decision variable $\gamma$ that will be the lower bound to the Goldstein-Price function.
+# We maximize it to have the highest possible lower bound.
 
-    JuMP.optimize!(m)
+@variable(model, γ)
+@objective(model, Max, γ)
 
-    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT || JuMP.primal_status(m) == MOI.NEARLY_FEASIBLE_POINT
+# We constrain $\gamma$ to be a lower bound with the following constraint
+# that ensures that $f(x_1, x_2) \ge \gamma$ for all $x_1, x_2$.
 
-    @test isapprox(JuMP.objective_value(m), 3; rtol=1e-2)
-end
+@constraint(model, f >= γ)
+
+JuMP.optimize!(model)
+
+# We verify that the solver has found a feasible solution:
+
+JuMP.primal_status(model)
+@test JuMP.primal_status(model) == MOI.FEASIBLE_POINT || JuMP.primal_status(model) == MOI.NEARLY_FEASIBLE_POINT #src
+
+# We can now obtain the lower bound either with `value(γ)` or `objective_value(model)`:
+
+objective_value(model)
+@test objective_value(model) ≈ 3 rtol=1e-2 #src
