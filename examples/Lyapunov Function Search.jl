@@ -1,30 +1,61 @@
-# Adapted from:
-# SOSDEMO2 --- Lyapunov Function Search
-# Section 3.2 of SOSTOOLS User's Manual
+# # Lyapunov Function Search
 
-@testset "SOSDEMO2 with $(factory.optimizer_constructor)" for factory in sdp_factories
-    @polyvar x[1:3]
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Lyapunov Function Search.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Lyapunov Function Search.ipynb)
+# **Adapted from**: SOSTOOLS' SOSDEMO2 (See Section 4.2 of [SOSTOOLS User's Manual](http://sysos.eng.ox.ac.uk/sostools/sostools.pdf))
 
-    # Constructing the vector field dx/dt = f
-    f = [-x[1]^3-x[1]*x[3]^2,
-         -x[2]-x[1]^2*x[2],
-    -x[3]+3*x[1]^2*x[3]-3*x[3]/(x[3]^2+1)]
+using Test #src
+using DynamicPolynomials
+@polyvar x[1:3]
 
-    m = SOSModel(factory)
+# We define below the vector field ``\text{d}x/\text{d}t = f``
 
-    # The Lyapunov function V(x):
-    Z = vec(x).^2
-    @variable m V Poly(Z)
+f = [-x[1]^3 - x[1] * x[3]^2,
+     -x[2] - x[1]^2 * x[2],
+     -x[3] - 3x[3] / (x[3]^2 + 1) + 3x[1]^2 * x[3]]
 
-    @constraint m V >= sum(x.^2)
+# We need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
+# We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
-    # dV/dx*(x[3]^2+1)*f <= 0
-    P = dot(differentiate(V, x), f).num # the denominator is x[3]^2+1
-    @constraint m P <= 0
+using CSDP
+solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+model = SOSModel(solver)
 
-    JuMP.optimize!(m)
+# We are searching for a Lyapunov function $V(x)$ with monomials $x_1^2$, $x_2^2$ and $x_3^2$.
+# We first define the monomials to be used for the Lyapunov function:
 
-    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
+monos = x.^2
 
-    @test iszero(removemonomials(JuMP.value(V), Z))
-end
+# We now define the Lyapunov function as a polynomial decision variable with these monomials:
+
+@variable(model, V, Poly(monos))
+
+# We need to make sure that the Lyapunov function is strictly positive.
+# We can do this with a constraint $V(x) \ge \epsilon (x_1^2 + x_2^2 + x_3^2)$,
+# let's pick $\epsilon = 1$:
+
+@constraint(model, V >= sum(x.^2))
+
+# We now compute $\text{d}V/\text{d}x \cdot f$.
+# The denominator is $x[3]^2 + 1$ is strictly positive so the sign of `dVdt` is the
+# same as the sign of its numerator.
+# Hence, we constrain this numerator to be nonnegative:
+
+#src TODO split in 3 once https://github.com/JuliaDocs/Documenter.jl/issues/1387 is resolved
+dVdt = dot(differentiate(V, x), f)
+P = dVdt.num
+@constraint(model, P <= 0)
+
+# The model is ready to be optimized by the solver:
+
+JuMP.optimize!(model)
+
+# We verify that the solver has found a feasible solution:
+
+JuMP.primal_status(model)
+@test JuMP.primal_status(model) == MOI.FEASIBLE_POINT #src
+
+# We can now obtain this feasible solution with:
+
+value(V)
+@test iszero(removemonomials(value(V), monos)) #src
