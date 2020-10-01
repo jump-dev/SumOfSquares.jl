@@ -38,7 +38,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     r = SOS.Certificate.get(s.certificate, SOS.Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
     gram_basis = SOS.Certificate.get(s.certificate, SOS.Certificate.GramBasis(), r)
-    g, Q, cQ = SOS.add_gram_matrix(model, MCT, gram_basis)
+    g, Q, cQ = SOS.add_gram_matrix(model, MCT, gram_basis, T)
     # MOI does not modify the coefficients of the functions so we can modify `r`.
     # without altering `f`.
     q = MA.operate!(-, r, g)
@@ -166,17 +166,17 @@ function MOI.get(::MOI.ModelLike, ::SOS.CertificateBasis,
                  bridge::SOSPolynomialBridge)
     return bridge.gram_basis
 end
-function _gram(f::Function, Q::Vector{MOI.VariableIndex}, gram_basis)
-    return SOS.build_gram_matrix(f(Q), gram_basis)
+function _gram(f::Function, Q::Vector{MOI.VariableIndex}, gram_basis, T::Type)
+    return SOS.build_gram_matrix(f(Q), gram_basis, T)
 end
-function _gram(f::Function, Qs::Vector{Vector{MOI.VariableIndex}}, gram_bases)
-    return SOS.SparseGramMatrix([_gram(f, Q, gram_basis) for (Q, gram_basis) in zip(Qs, gram_bases)])
+function _gram(f::Function, Qs::Vector{Vector{MOI.VariableIndex}}, gram_bases, T::Type)
+    return SOS.SparseGramMatrix([_gram(f, Q, gram_basis, T) for (Q, gram_basis) in zip(Qs, gram_bases)])
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::SOS.GramMatrixAttribute,
-                 bridge::SOSPolynomialBridge)
+                 bridge::SOSPolynomialBridge{T}) where T
     return _gram(Q -> MOI.get(model, MOI.VariablePrimal(attr.N), Q),
-                 bridge.Q, bridge.gram_basis)
+                 bridge.Q, bridge.gram_basis, T::Type)
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::SOS.MomentMatrixAttribute,

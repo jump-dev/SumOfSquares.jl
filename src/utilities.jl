@@ -1,8 +1,13 @@
+# The second type is ignored. For `T = VariableRef`, it should be `Float64` anyway
+# since JuMP only supports `Float64`.
+_promote_sum(T::Type, ::Type=Float64) = MA.promote_operation(+, T, T)
 # `+` is not defined between `MOI.SingleVariable`.
-_promote_sum(::Type{MOI.SingleVariable}) = MOI.ScalarAffineFunction{Float64}
+_promote_sum(::Type{MOI.SingleVariable}, T::Type=Float64) = MOI.ScalarAffineFunction{T}
+
+_promote_add_mul(T::Type) = MA.promote_operation(MA.add_mul, T, T, T)
 _promote_add_mul(::Type{MOI.SingleVariable}) = MOI.ScalarQuadraticFunction{Float64}
-function MP.polynomial(p::GramMatrix{MOI.SingleVariable})
-    Q = convert(Vector{MOI.ScalarAffineFunction{Float64}}, p.Q.Q)
+function MP.polynomial(p::GramMatrix{MOI.SingleVariable, B, U}) where {B, U}
+    Q = convert(Vector{U}, p.Q.Q)
     return MP.polynomial(GramMatrix(SymMatrix(Q, p.Q.n), p.basis))
 end
 #function MP.polynomial(p::GramMatrix{F}) where {F <: MOI.AbstractFunction}
