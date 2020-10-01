@@ -152,4 +152,17 @@
             @test !isapprox(SOSDecompositionWithDomain(ps, [ps1, ps1], K), sosdec)
         end
     end
+
+    @testset "build_gram_matrix" begin
+        v = MOI.VariableIndex.(1:3)
+        @polyvar x y
+        basis = MonomialBasis(monomials([x, y], 1))
+        @testset "$T" for T in [Float64, Complex{Float64}, Int, BigFloat]
+            g = SumOfSquares.build_gram_matrix(v, basis, T)
+            @test g isa GramMatrix{MOI.SingleVariable, typeof(basis), MOI.ScalarAffineFunction{T}}
+            p = polynomial(g)
+            @test p isa AbstractPolynomial{MOI.ScalarAffineFunction{T}}
+            @test typeof(p) == polynomialtype(g)
+        end
+    end
 end

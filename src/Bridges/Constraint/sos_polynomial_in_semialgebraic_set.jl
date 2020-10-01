@@ -1,7 +1,7 @@
 function lagrangian_multiplier(model::MOI.ModelLike, certificate, index, preprocessed, T::Type)
     basis = Certificate.get(certificate, Certificate.MultiplierBasis(), index, preprocessed)
     MCT = SOS.matrix_cone_type(typeof(certificate))
-    return SOS.add_gram_matrix(model, MCT, basis)..., basis
+    return SOS.add_gram_matrix(model, MCT, basis, T)..., basis
 end
 
 struct SOSPolynomialInSemialgebraicSetBridge{
@@ -152,9 +152,9 @@ function MOI.get(model::MOI.ModelLike,
     return MOI.get(model, attr, bridge.constraint)
 end
 function MOI.get(model::MOI.ModelLike, attr::SOS.LagrangianMultipliers,
-                 bridge::SOSPolynomialInSemialgebraicSetBridge)
+                 bridge::SOSPolynomialInSemialgebraicSetBridge{T}) where T
     @assert eachindex(bridge.lagrangian_variables) == eachindex(bridge.lagrangian_bases)
     map(i -> _gram(Q -> MOI.get(model, MOI.VariablePrimal(attr.N), Q),
-                   bridge.lagrangian_variables[i], bridge.lagrangian_bases[i]),
+                   bridge.lagrangian_variables[i], bridge.lagrangian_bases[i], T),
         eachindex(bridge.lagrangian_variables))
 end

@@ -5,7 +5,7 @@ function gram_to_poly(n)
     model = MOIU.Model{Float64}()
     @polyvar x
     monos = monomials(x, 0:n)
-    q, Q, con_Q = SumOfSquares.add_gram_matrix(model, MOI.PositiveSemidefiniteConeTriangle, monos)
+    q, Q, con_Q = SumOfSquares.add_gram_matrix(model, MOI.PositiveSemidefiniteConeTriangle, monos, Float64)
     @time polynomial(q)
     return
 end

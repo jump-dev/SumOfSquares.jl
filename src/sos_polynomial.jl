@@ -1,11 +1,11 @@
 function build_gram_matrix(q::Vector{MOI.VariableIndex},
-                           basis::AbstractPolynomialBasis)
-    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], basis)
+                           basis::AbstractPolynomialBasis, T::Type)
+    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], basis, T)
 end
 function build_gram_matrix(q::Vector,
-                           basis::AbstractPolynomialBasis)
-    return GramMatrix(MultivariateMoments.SymMatrix(q, length(basis)),
-                      basis)
+                           basis::AbstractPolynomialBasis, T::Type)
+    return GramMatrix{eltype(q), typeof(basis), _promote_sum(eltype(q), T)}(
+        MultivariateMoments.SymMatrix(q, length(basis)), basis)
 end
 
 function union_constraint_indices_types(MCT)
@@ -16,18 +16,18 @@ function union_constraint_indices_types(MCT)
 end
 
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
-                         basis::AbstractPolynomialBasis)
+                         basis::AbstractPolynomialBasis, T::Type)
     Q, cQ = MOI.add_constrained_variables(model, matrix_cone(matrix_cone_type, length(basis)))
-    q = build_gram_matrix(Q, basis)
+    q = build_gram_matrix(Q, basis, T)
     return q, Q, cQ
 end
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
-                         bases::Vector{<:AbstractPolynomialBasis})
+                         bases::Vector{<:AbstractPolynomialBasis}, T::Type)
     Qs = Vector{Vector{MOI.VariableIndex}}(undef, length(bases))
     cQs = Vector{union_constraint_indices_types(matrix_cone_type)}(undef, length(bases))
     # We use `map` for `grams` as it's less easy to infer its type
     grams = map(eachindex(bases)) do i
-        gram, Qs[i], cQs[i] = add_gram_matrix(model, matrix_cone_type, bases[i])
+        gram, Qs[i], cQs[i] = add_gram_matrix(model, matrix_cone_type, bases[i], T)
         return gram
     end
     return SparseGramMatrix(grams), Qs, cQs
