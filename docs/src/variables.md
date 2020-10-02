@@ -58,7 +58,7 @@ julia> @variable(model, [1:3, 1:4], Poly(X))       # Creates a Matrix
 
 julia> @variable(model, [[:a, :b], -2:2], Poly(X)) # Creates a JuMPArray
 2-dimensional DenseAxisArray{DynamicPolynomials.Polynomial{true,VariableRef},2,...} with index sets:
-    Dimension 1, Symbol[:a, :b]
+    Dimension 1, [:a, :b]
     Dimension 2, -2:2
 And data, a 2×5 Array{DynamicPolynomials.Polynomial{true,VariableRef},2}:
  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)  …  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
@@ -158,7 +158,7 @@ julia> @variable(model, variable_type=Poly(scaled_basis))
 which is equivalent to
 ```jldoctest variables
 julia> scaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])
-FixedPolynomialBasis{Term{true,Float64},Array{Term{true,Float64},1}}(DynamicPolynomials.Term{true,Float64}[x², 1.41421xy, y²])
+FixedPolynomialBasis{Term{true,Float64},Array{Term{true,Float64},1}}(DynamicPolynomials.Term{true,Float64}[x², 1.4142135623730951xy, y²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (noname)x² + (1.4142135623730951 noname)xy + (noname)y²

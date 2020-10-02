@@ -38,14 +38,17 @@ monos = x.^2
 @constraint(model, V >= sum(x.^2))
 
 # We now compute $\text{d}V/\text{d}x \cdot f$.
-# The denominator is $x[3]^2 + 1$ is strictly positive so the sign of `dVdt` is the
-# same as the sign of its numerator.
-# Hence, we constrain this numerator to be nonnegative:
 
-#src TODO split in 3 once https://github.com/JuliaDocs/Documenter.jl/issues/1387 is resolved
 using LinearAlgebra # Needed for `dot`
 dVdt = dot(differentiate(V, x), f)
+
+# The denominator is $x[3]^2 + 1$ is strictly positive so the sign of `dVdt` is the
+# same as the sign of its numerator.
+
 P = dVdt.num
+
+# Hence, we constrain this numerator to be nonnegative:
+
 @constraint(model, P <= 0)
 
 # The model is ready to be optimized by the solver:

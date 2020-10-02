@@ -62,8 +62,6 @@ certificate_monomials(mat_cref) #!jl
 
 @polyvar y[1:2]
 p = vec(y)' * P * vec(y)
-#src See https://github.com/JuliaDocs/Documenter.jl/issues/1387
-nothing #md
 
 # We can see above that `p` is biquadratic polynomial in the variables `x` and `y`.
 # Computing the Newton polytope with the cheap outer approximation

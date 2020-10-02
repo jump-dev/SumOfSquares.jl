@@ -15,8 +15,6 @@ f2 = 19 - 14x1 + 3x1^2 - 14x2 + 6x1*x2 + 3x2^2
 f3 = 2x1 - 3x2
 f4 = 18 - 32x1 + 12x1^2 + 48x2 - 36x1*x2 + 27x2^2
 f = (1 + f1^2 * f2) * (30 + f3^2 * f4)
-#src See https://github.com/JuliaDocs/Documenter.jl/issues/1387
-nothing #md
 
 # We need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
