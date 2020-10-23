@@ -5,7 +5,7 @@ P = [x^2 - 2x + 2 x
 
 using SumOfSquares
 
-using CSDP
+import CSDP
 factory = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 
 model = SOSModel(factory)
