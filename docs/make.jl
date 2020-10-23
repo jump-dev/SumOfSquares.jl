@@ -35,7 +35,7 @@ makedocs(
             "Bound on Global Extremum" => "generated/Bound on Global Extremum.md",
             "Lyapunov Function Search" => "generated/Lyapunov Function Search.md",
             "Sum-of-Squares Matrices" => "generated/Sum-of-Squares Matrices.md",
-            "Noncommutative variables" => "generated/Sum-of-Squares Matrices.md"
+            "Noncommutative variables" => "generated/Noncommutative variables.md"
         ]
     ],
     # The following ensures that we only include the docstrings from
