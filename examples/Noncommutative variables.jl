@@ -45,7 +45,7 @@ sos_decomposition(con_ref) #!src
 
 dec = sos_decomposition(con_ref, 1e-6)                    #src
 @test length(dec.ps) == 1                                 #src
-@test sign(first(coefficients(dec.ps[1]))) * dec.ps[1] ≈ x * y + x^2 rtol=1e-5 atol=1e-5
+@test sign(first(coefficients(dec.ps[1]))) * dec.ps[1] ≈ x * y + x^2 rtol=1e-5 atol=1e-5 #src
 sos_decomposition(con_ref, 1e-6)       #!src
 
 # ## Example 2.2
