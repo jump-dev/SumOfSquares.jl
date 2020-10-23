@@ -18,10 +18,11 @@ using DynamicPolynomials
 @ncpolyvar x y
 p = (x * y + x^2)^2
 
-import CSDP
-using JuMP
-optimizer_constructor = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+# We first need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
+
 using SumOfSquares
+import CSDP
+optimizer_constructor = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 model = Model(optimizer_constructor)
 con_ref = @constraint(model, p in SOSCone())
 

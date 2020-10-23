@@ -31,7 +31,7 @@ using SumOfSquares
 
 # We first need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
 
-using CSDP
+import CSDP
 factory = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 
 model = SOSModel(factory)
