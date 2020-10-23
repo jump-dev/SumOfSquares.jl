@@ -13,6 +13,7 @@
 # We consider the Example 2.11 of [BKP16] in which the polynomial with noncommutative variables
 # $(x * y + x^2)^2 = x^4 + x^3y + xyx^2 + xyxy$ is tested to be sum-of-squares.
 
+using Test #src
 using DynamicPolynomials
 @ncpolyvar x y
 p = (x * y + x^2)^2
@@ -36,11 +37,15 @@ gram_matrix(con_ref).Q
 
 # When asking for the SOS decomposition, the numerically small entries makes the solution less readable.
 
-sos_decomposition(con_ref)
+@test length(sos_decomposition(con_ref).ps) == 2 #src
+sos_decomposition(con_ref) #!src
 
 # They are however easily discarded by using a nonzero tolerance:
 
-sos_decomposition(con_ref, 1e-6)
+dec = sos_decomposition(con_ref, 1e-6)                    #src
+@test length(dec.ps) == 1                                 #src
+@test sign(first(coefficients(dec.ps[1]))) * dec.ps[1] ≈ x * y + x^2 rtol=1e-5 atol=1e-5
+sos_decomposition(con_ref, 1e-6)       #!src
 
 # ## Example 2.2
 #
