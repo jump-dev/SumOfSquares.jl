@@ -50,9 +50,9 @@ function MOI.Bridges.Constraint.bridge_constraint(
 end
 
 function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
-                                 ::Type{<:MOI.AbstractVectorFunction},
+                                 F::Type{<:MOI.AbstractVectorFunction},
                                  ::Type{<:SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet}}) where T
-    return true
+    return MOIU.is_coefficient_type(F, T)
 end
 function MOIB.added_constrained_variable_types(::Type{<:SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT}}) where {T, F, DT, UMCT, UMST, MCT}
     return constrained_variable_types(MCT)
@@ -166,17 +166,17 @@ function MOI.get(::MOI.ModelLike, ::SOS.CertificateBasis,
                  bridge::SOSPolynomialBridge)
     return bridge.gram_basis
 end
-function _gram(f::Function, Q::Vector{MOI.VariableIndex}, gram_basis, T::Type)
-    return SOS.build_gram_matrix(f(Q), gram_basis, T)
+function _gram(f::Function, Q::Vector{MOI.VariableIndex}, gram_basis, T::Type, MCT)
+    return SOS.build_gram_matrix(convert(Vector{T}, f(Q)), gram_basis, T, SOS.matrix_constructor(MCT, T))
 end
-function _gram(f::Function, Qs::Vector{Vector{MOI.VariableIndex}}, gram_bases, T::Type)
-    return SOS.SparseGramMatrix([_gram(f, Q, gram_basis, T) for (Q, gram_basis) in zip(Qs, gram_bases)])
+function _gram(f::Function, Qs::Vector{Vector{MOI.VariableIndex}}, gram_bases, T::Type, MCT)
+    return SOS.SparseGramMatrix([_gram(f, Q, gram_basis, T, MCT) for (Q, gram_basis) in zip(Qs, gram_bases)])
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::SOS.GramMatrixAttribute,
-                 bridge::SOSPolynomialBridge{T}) where T
+                 bridge::SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT}) where {T, F, DT, UMCT, UMST, MCT}
     return _gram(Q -> MOI.get(model, MOI.VariablePrimal(attr.N), Q),
-                 bridge.Q, bridge.gram_basis, T::Type)
+                 bridge.Q, bridge.gram_basis, T::Type, MCT)
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::SOS.MomentMatrixAttribute,

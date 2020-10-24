@@ -48,7 +48,8 @@ end
 function JuMP.add_variable(model::JuMP.AbstractModel,
                            v::PolyJuMP.Variable{<:PosPoly},
                            name::String="")
-    set = matrix_cone(matrix_cone_type(v.p), length(v.p.polynomial_basis))
+    MCT = matrix_cone_type(v.p)
+    set = matrix_cone(MCT, length(v.p.polynomial_basis))
     # FIXME There is no variable bridge mechanism yet:
     #       https://github.com/jump-dev/MathOptInterface.jl/issues/710
     #       so there is no equivalent to `BridgeableConstraint`.
@@ -66,6 +67,6 @@ function JuMP.add_variable(model::JuMP.AbstractModel,
     return build_gram_matrix(
         JuMP.VariableRef[JuMP.VariableRef(model, vi) for vi in Q],
         v.p.polynomial_basis,
-        Float64
+        Float64, matrix_constructor(MCT)
     )
 end

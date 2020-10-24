@@ -29,11 +29,12 @@ Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 Gram matrix ``x^\\top Q x`` where `Q` is a symmetric matrix indexed by the
 vector of polynomials of the basis `basis`.
 """
-struct GramMatrix{T, B, U} <: AbstractGramMatrix{T, B, U}
-    Q::SymMatrix{T}
+struct GramMatrix{T, B, U, MT <: AbstractMatrix{T}} <: AbstractGramMatrix{T, B, U}
+    Q::MT
     basis::B
 end
-GramMatrix{T, B}(Q::SymMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis} = GramMatrix{T, B, _promote_sum(T)}(Q, basis)
+GramMatrix{T, B, U}(Q::AbstractMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis, U} = GramMatrix{T, B, U, typeof(Q)}(Q, basis)
+GramMatrix{T, B}(Q::AbstractMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis} = GramMatrix{T, B, _promote_sum(eltype(Q))}(Q, basis)
 function GramMatrix(Q::SymMatrix{T}, basis::AbstractPolynomialBasis) where T
     return GramMatrix{T, typeof(basis)}(Q, basis)
 end
@@ -87,7 +88,7 @@ end
 
 Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
 `p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
-obtained by `polynomial(gram_sum(p, q))`.
+obtained by `polynomial(gram_operate(+, p, q))`.
 """
 function gram_operate(::typeof(+), p::GramMatrix{S, B}, q::GramMatrix{T, B}) where {S, T, B}
     basis, Ip, Iq = MultivariateBases.merge_bases(p.basis, q.basis)
@@ -118,13 +119,12 @@ end
 """
     gram_operate(/, p::GramMatrix, α)
 
-Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
-`p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
-obtained by `polynomial(gram_sum(p, q))`.
+Computes the Gram matrix equal to `p / α`. On the opposite,
+`p / α` gives a polynomial equal to `p / α`. The polynomial `p / α` can also be
+obtained by `polynomial(gram_operate(/, p, α))`.
 """
 function gram_operate(::typeof(/), q::GramMatrix, α)
-    Q = SymMatrix(q.Q.Q / α, q.Q.n)
-    return GramMatrix(Q, q.basis)
+    return GramMatrix(map(x -> x / α, q.Q), q.basis)
 end
 
 function Base.isapprox(p::GramMatrix, q::GramMatrix; kwargs...)
