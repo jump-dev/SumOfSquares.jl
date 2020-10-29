@@ -114,12 +114,12 @@ of degree 2, then all the monomials of `p` will have degree 4 (i.e. `p` will be
 a quartic form).
 
 Similarly, to create diagonally-dominant-sum-of-squares polynomial variables
-(see [Definition 2, AM17]), use `DSOSPoly(X)`. This creates a diagonally
+(see [Definition 3.1, AM17]), use `DSOSPoly(X)`. This creates a diagonally
 dominant matrix of variables `Q` and sets the polynomial variables as the value
 of `X' * Q * X`.
 
 Finally, to create scaled-diagonally-dominant-sum-of-squares polynomial
-variables (see [Definition 2, AM17]), use `DSOSPoly(X)`. This creates a
+variables (see [Definition 3.2, AM17]), use `SDSOSPoly(X)`. This creates a
 scaled diagonally dominant matrix of variables `Q` and sets the polynomial
 variables as the value of `X' * Q * X`.
 
