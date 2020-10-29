@@ -167,7 +167,7 @@ function MOI.get(::MOI.ModelLike, ::SOS.CertificateBasis,
     return bridge.gram_basis
 end
 function _gram(f::Function, Q::Vector{MOI.VariableIndex}, gram_basis, T::Type, MCT)
-    return SOS.build_gram_matrix(convert(Vector{T}, f(Q)), gram_basis, T, SOS.matrix_constructor(MCT, T))
+    return SOS.build_gram_matrix(convert(Vector{T}, f(Q)), gram_basis, MCT, T)
 end
 function _gram(f::Function, Qs::Vector{Vector{MOI.VariableIndex}}, gram_bases, T::Type, MCT)
     return SOS.SparseGramMatrix([_gram(f, Q, gram_basis, T, MCT) for (Q, gram_basis) in zip(Qs, gram_bases)])

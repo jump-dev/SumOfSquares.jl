@@ -1,21 +1,34 @@
 struct HermitianVectorized end
 struct SymmetricVectorized end
 
-matrix_constructor(::Type, ::Type) = MultivariateMoments.SymMatrix
+import ComplexOptInterface
+const COI = ComplexOptInterface
+
+function matrix_cone(::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, d)
+    return COI.HermitianPositiveSemidefiniteConeTriangle(d)
+end
+
+vectorized_matrix(Q, basis, ::Type, ::Type) = MultivariateMoments.SymMatrix(Q, basis)
+function vectorized_matrix(Q, basis, ::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, T::Type)
+    return MultivariateMoments.VectorizedHermitianMatrix{eltype(Q), T}(Q, basis)
+end
+function vectorized_matrix(Q, basis, ::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, ::Type{Complex{T}}) where T
+    return vectorized_matrix(Q, basis, COI.HermitianPositiveSemidefiniteConeTriangle, T)
+end
 
 # Need these two methods to avoid ambiguity
 function build_gram_matrix(q::Vector{MOI.VariableIndex},
-                           basis::AbstractPolynomialBasis, T::Type, matrix_constructor)
-    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], basis, T, matrix_constructor)
+                           basis::AbstractPolynomialBasis, matrix_cone_type, T::Type)
+    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], basis, matrix_cone_type, T)
 end
 #function build_gram_matrix(q::Vector{MOI.VariableIndex},
 #                           basis::AbstractPolynomialBasis, T::Type, vectorization::HermitianVectorized)
 #    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], basis, T, vectorization)
 #end
 function build_gram_matrix(q::Vector,
-                           basis::AbstractPolynomialBasis, T::Type, matrix_constructor)
+                           basis::AbstractPolynomialBasis, matrix_cone_type, T::Type)
     n = length(basis)
-    Q = matrix_constructor(q, length(basis))
+    Q = vectorized_matrix(q, length(basis), matrix_cone_type, T)
     U = _promote_sum(eltype(Q), T)
 #    N = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(n))
 #    if length(q) != N
@@ -60,7 +73,7 @@ end
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
                          basis::AbstractPolynomialBasis, T::Type)
     Q, cQ = MOI.add_constrained_variables(model, matrix_cone(matrix_cone_type, length(basis)))
-    q = build_gram_matrix(Q, basis, T, matrix_constructor(matrix_cone_type, T))
+    q = build_gram_matrix(Q, basis, matrix_cone_type, T)
     return q, Q, cQ
 end
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,

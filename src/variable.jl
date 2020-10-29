@@ -66,7 +66,6 @@ function JuMP.add_variable(model::JuMP.AbstractModel,
     Q = moi_add_variable(backend(model), set, v.binary, v.integer)
     return build_gram_matrix(
         JuMP.VariableRef[JuMP.VariableRef(model, vi) for vi in Q],
-        v.p.polynomial_basis,
-        Float64, matrix_constructor(MCT)
+        v.p.polynomial_basis, MCT, Float64
     )
 end
