@@ -134,11 +134,11 @@ function Base.isapprox(p::GramMatrix, q::GramMatrix; kwargs...)
     p.basis == q.basis && isapprox(p.Q, q.Q; kwargs...)
 end
 
-struct SparseGramMatrix{T, B, U} <: AbstractGramMatrix{T, B, U}
-    sub_gram_matrices::Vector{GramMatrix{T, B, U}}
+struct SparseGramMatrix{T, B, U, MT} <: AbstractGramMatrix{T, B, U}
+    sub_gram_matrices::Vector{GramMatrix{T, B, U, MT}}
 end
 
-Base.zero(::Type{SparseGramMatrix{T, B, U}}) where {T, B, U} = SparseGramMatrix(GramMatrix{T, B, U}[])
+Base.zero(::Type{SparseGramMatrix{T, B, U, MT}}) where {T, B, U, MT} = SparseGramMatrix(GramMatrix{T, B, U, MT}[])
 function MP.polynomial(p::SparseGramMatrix)
     return mapreduce(identity, MA.add!, p.sub_gram_matrices, init = zero(MP.polynomialtype(p)))
 end
