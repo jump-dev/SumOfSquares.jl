@@ -1,6 +1,3 @@
-struct HermitianVectorized end
-struct SymmetricVectorized end
-
 import ComplexOptInterface
 const COI = ComplexOptInterface
 

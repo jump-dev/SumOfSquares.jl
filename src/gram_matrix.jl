@@ -21,8 +21,8 @@ Base.:(==)(p::MP.APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
 Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 
 """
-    struct GramMatrix{T, B, U} <: AbstractGramMatrix{T, B, U}
-        Q::SymMatrix{T}
+    struct GramMatrix{T, B, U, MT <: AbstractMatrix{T}} <: AbstractGramMatrix{T, B, U}
+        Q::MT
         basis::B
     end
 
@@ -35,7 +35,10 @@ struct GramMatrix{T, B, U, MT <: AbstractMatrix{T}} <: AbstractGramMatrix{T, B, 
 end
 GramMatrix{T, B, U}(Q::AbstractMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis, U} = GramMatrix{T, B, U, typeof(Q)}(Q, basis)
 GramMatrix{T, B}(Q::AbstractMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis} = GramMatrix{T, B, _promote_sum(eltype(Q))}(Q, basis)
-function GramMatrix(Q::SymMatrix{T}, basis::AbstractPolynomialBasis) where T
+function GramMatrix(
+    # We don't use `AbstractMatrix` to avoid clash with method below with `σ`.
+    Q::Union{MultivariateMoments.SymMatrix{T}, MultivariateMoments.VectorizedHermitianMatrix{T}},
+    basis::AbstractPolynomialBasis) where T
     return GramMatrix{T, typeof(basis)}(Q, basis)
 end
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
@@ -43,7 +46,7 @@ MP.constantmonomial(p::GramMatrix) = MP.constantmonomial(MP.monomialtype(p))
 MP.variables(p::GramMatrix) = MP.variables(p.basis)
 MP.nvariables(p::GramMatrix) = MP.nvariables(p.basis)
 
-Base.zero(::Type{GramMatrix{T, B, U}}) where {T, B, U} = GramMatrix{T, B, U}(SymMatrix{T}(T[], 0), MultivariateBases.empty_basis(B))
+Base.zero(::Type{GramMatrix{T, B, U, MT}}) where {T, B, U, MT} = GramMatrix{T, B, U, MT}(similar(MT, (0, 0)), MultivariateBases.empty_basis(B))
 Base.iszero(p::GramMatrix) = iszero(MP.polynomial(p))
 
 Base.getindex(p::GramMatrix, I...) = getindex(p.Q, I...)
@@ -90,7 +93,7 @@ Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
 `p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
 obtained by `polynomial(gram_operate(+, p, q))`.
 """
-function gram_operate(::typeof(+), p::GramMatrix{S, B}, q::GramMatrix{T, B}) where {S, T, B}
+function gram_operate(::typeof(+), p::GramMatrix{S, B, US, SymMatrix{S}}, q::GramMatrix{T, B, UT, SymMatrix{T}}) where {S, US, T, UT, B}
     basis, Ip, Iq = MultivariateBases.merge_bases(p.basis, q.basis)
     U = MA.promote_operation(+, S, T)
     n = length(basis)
