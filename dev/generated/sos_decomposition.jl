@@ -10,9 +10,9 @@ model = SOSModel(CSDP.Optimizer)
 
 optimize!(model)
 
-sos_decomposition = SumOfSquares.sos_decomposition(cref, 1e-4)
+sos_dec = sos_decomposition(cref, 1e-4)
 
-polynomial(sos_decomposition, Float32)
+polynomial(sos_dec, Float32)
 
 gram = gram_matrix(cref)
 
