@@ -36,11 +36,11 @@ optimize!(model)
 # Lastly, recover a SOS decomposition.
 # In general, SOS decompositions are not unique!
 
-sos_decomposition = SumOfSquares.sos_decomposition(cref, 1e-4)
+sos_dec = sos_decomposition(cref, 1e-4)
 
 # Converting, rounding, and simplifying - Huzza, Back where we began!
 
-polynomial(sos_decomposition, Float32)
+polynomial(sos_dec, Float32)
 
 # ## A deeper explanation and the unexplained `1e-4` parameter
 

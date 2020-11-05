@@ -171,6 +171,20 @@ function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
                                typeof(set))
 end
 
+_non_constant(a::Vector{T}) where T = convert.(MOI.ScalarAffineFunction{T}, a)
+_non_constant(a::Vector{<:MOI.AbstractFunction}) = a
+
+function add_constraint(model::MOI.ModelLike, p, cone::SOSLikeCone; kws...)
+    coefs = MOI.Utilities.vectorize(_non_constant(MP.coefficients(p)))
+    monos = MP.monomials(p)
+    set = JuMP.moi_set(cone, monos; kws...)
+    return MOI.add_constraint(model, coefs, set)
+end
+function add_constraint(model::JuMP.Model, p, cone::SOSLikeCone; kws...)
+    ci = add_constraint(JuMP.backend(model), p, cone; kws...)
+    return JuMP.ConstraintRef(model, ci, PolyJuMP.PolynomialShape(MP.monomials(p)))
+end
+
 struct ValueNotSupported <: Exception end
 function Base.showerror(io::IO, ::ValueNotSupported)
     print(io, "`value` is no supported for Sum-of-Squares constraints, use",

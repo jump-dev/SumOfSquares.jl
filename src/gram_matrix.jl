@@ -21,20 +21,24 @@ Base.:(==)(p::MP.APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
 Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 
 """
-    struct GramMatrix{T, B, U} <: AbstractGramMatrix{T, B, U}
-        Q::SymMatrix{T}
+    struct GramMatrix{T, B, U, MT <: AbstractMatrix{T}} <: AbstractGramMatrix{T, B, U}
+        Q::MT
         basis::B
     end
 
 Gram matrix ``x^\\top Q x`` where `Q` is a symmetric matrix indexed by the
 vector of polynomials of the basis `basis`.
 """
-struct GramMatrix{T, B, U} <: AbstractGramMatrix{T, B, U}
-    Q::SymMatrix{T}
+struct GramMatrix{T, B, U, MT <: AbstractMatrix{T}} <: AbstractGramMatrix{T, B, U}
+    Q::MT
     basis::B
 end
-GramMatrix{T, B}(Q::SymMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis} = GramMatrix{T, B, _promote_sum(T)}(Q, basis)
-function GramMatrix(Q::SymMatrix{T}, basis::AbstractPolynomialBasis) where T
+GramMatrix{T, B, U}(Q::AbstractMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis, U} = GramMatrix{T, B, U, typeof(Q)}(Q, basis)
+GramMatrix{T, B}(Q::AbstractMatrix{T}, basis::B) where {T, B<:AbstractPolynomialBasis} = GramMatrix{T, B, _promote_sum(eltype(Q))}(Q, basis)
+function GramMatrix(
+    # We don't use `AbstractMatrix` to avoid clash with method below with `σ`.
+    Q::Union{MultivariateMoments.SymMatrix{T}, MultivariateMoments.VectorizedHermitianMatrix{T}},
+    basis::AbstractPolynomialBasis) where T
     return GramMatrix{T, typeof(basis)}(Q, basis)
 end
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
@@ -42,7 +46,7 @@ MP.constantmonomial(p::GramMatrix) = MP.constantmonomial(MP.monomialtype(p))
 MP.variables(p::GramMatrix) = MP.variables(p.basis)
 MP.nvariables(p::GramMatrix) = MP.nvariables(p.basis)
 
-Base.zero(::Type{GramMatrix{T, B, U}}) where {T, B, U} = GramMatrix{T, B, U}(SymMatrix{T}(T[], 0), MultivariateBases.empty_basis(B))
+Base.zero(::Type{GramMatrix{T, B, U, MT}}) where {T, B, U, MT} = GramMatrix{T, B, U, MT}(similar(MT, (0, 0)), MultivariateBases.empty_basis(B))
 Base.iszero(p::GramMatrix) = iszero(MP.polynomial(p))
 
 Base.getindex(p::GramMatrix, I...) = getindex(p.Q, I...)
@@ -87,9 +91,9 @@ end
 
 Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
 `p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
-obtained by `polynomial(gram_sum(p, q))`.
+obtained by `polynomial(gram_operate(+, p, q))`.
 """
-function gram_operate(::typeof(+), p::GramMatrix{S, B}, q::GramMatrix{T, B}) where {S, T, B}
+function gram_operate(::typeof(+), p::GramMatrix{S, B, US, SymMatrix{S}}, q::GramMatrix{T, B, UT, SymMatrix{T}}) where {S, US, T, UT, B}
     basis, Ip, Iq = MultivariateBases.merge_bases(p.basis, q.basis)
     U = MA.promote_operation(+, S, T)
     n = length(basis)
@@ -118,24 +122,23 @@ end
 """
     gram_operate(/, p::GramMatrix, α)
 
-Computes the Gram matrix equal to the sum between `p` and `q`. On the opposite,
-`p + q` gives a polynomial equal to `p + q`. The polynomial `p + q` can also be
-obtained by `polynomial(gram_sum(p, q))`.
+Computes the Gram matrix equal to `p / α`. On the opposite,
+`p / α` gives a polynomial equal to `p / α`. The polynomial `p / α` can also be
+obtained by `polynomial(gram_operate(/, p, α))`.
 """
 function gram_operate(::typeof(/), q::GramMatrix, α)
-    Q = SymMatrix(q.Q.Q / α, q.Q.n)
-    return GramMatrix(Q, q.basis)
+    return GramMatrix(map(x -> x / α, q.Q), q.basis)
 end
 
 function Base.isapprox(p::GramMatrix, q::GramMatrix; kwargs...)
     p.basis == q.basis && isapprox(p.Q, q.Q; kwargs...)
 end
 
-struct SparseGramMatrix{T, B, U} <: AbstractGramMatrix{T, B, U}
-    sub_gram_matrices::Vector{GramMatrix{T, B, U}}
+struct SparseGramMatrix{T, B, U, MT} <: AbstractGramMatrix{T, B, U}
+    sub_gram_matrices::Vector{GramMatrix{T, B, U, MT}}
 end
 
-Base.zero(::Type{SparseGramMatrix{T, B, U}}) where {T, B, U} = SparseGramMatrix(GramMatrix{T, B, U}[])
+Base.zero(::Type{SparseGramMatrix{T, B, U, MT}}) where {T, B, U, MT} = SparseGramMatrix(GramMatrix{T, B, U, MT}[])
 function MP.polynomial(p::SparseGramMatrix)
     return mapreduce(identity, MA.add!, p.sub_gram_matrices, init = zero(MP.polynomialtype(p)))
 end

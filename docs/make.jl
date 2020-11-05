@@ -10,6 +10,7 @@ const EXAMPLES = [
     "Lyapunov Function Search.jl",
     "Sum-of-Squares Matrices.jl",
     "Noncommutative variables.jl",
+    "Sums of Hermitian squares.jl",
 ]
 
 for example in EXAMPLES
@@ -35,7 +36,8 @@ makedocs(
             "Bound on Global Extremum" => "generated/Bound on Global Extremum.md",
             "Lyapunov Function Search" => "generated/Lyapunov Function Search.md",
             "Sum-of-Squares Matrices" => "generated/Sum-of-Squares Matrices.md",
-            "Noncommutative variables" => "generated/Noncommutative variables.md"
+            "Noncommutative variables" => "generated/Noncommutative variables.md",
+            "Sums of Hermitian squares" => "generated/Sums of Hermitian squares.md",
         ]
     ],
     # The following ensures that we only include the docstrings from
