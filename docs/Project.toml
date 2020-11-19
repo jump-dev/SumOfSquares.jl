@@ -3,3 +3,6 @@ CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 SumOfSquares = "4b9e565b-77fc-50a5-a571-1244f986bda1"
+
+[compat]
+Documenter = "0.25.4"
