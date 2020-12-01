@@ -11,6 +11,7 @@ const EXAMPLES = [
     "Sum-of-Squares Matrices.jl",
     "Noncommutative variables.jl",
     "Sums of Hermitian squares.jl",
+    "Symmetry reduction.jl",
 ]
 
 for example in EXAMPLES
@@ -38,6 +39,7 @@ makedocs(
             "Sum-of-Squares Matrices" => "generated/Sum-of-Squares Matrices.md",
             "Noncommutative variables" => "generated/Noncommutative variables.md",
             "Sums of Hermitian squares" => "generated/Sums of Hermitian squares.md",
+            "Symmetry reduction" => "generated/Symmetry reduction.md",
         ]
     ],
     # The following ensures that we only include the docstrings from
