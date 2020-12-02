@@ -32,8 +32,8 @@ See [CITATION.bib](https://github.com/jump-dev/SumOfSquares.jl/blob/master/CITAT
 [docs-stable-url]: https://jump.dev/SumOfSquares.jl/stable
 [docs-latest-url]: https://jump.dev/SumOfSquares.jl/latest
 
-[build-img]: https://travis-ci.com/jump-dev/SumOfSquares.jl.svg?branch=master
-[build-url]: https://travis-ci.com/jump-dev/SumOfSquares.jl
+[build-img]: https://github.com/jump-dev/SumOfSquares.jl/workflows/CI/badge.svg?branch=master
+[build-url]: https://github.com/jump-dev/SumOfSquares.jl/actions?query=workflow%3ACI
 [codecov-img]: http://codecov.io/github/jump-dev/SumOfSquares.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/jump-dev/SumOfSquares.jl?branch=master
 
