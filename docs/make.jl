@@ -4,15 +4,7 @@ using Documenter, Literate
 const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
 const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
 
-const EXAMPLES = [
-    "sos_decomposition.jl",
-    "Bound on Global Extremum.jl",
-    "Lyapunov Function Search.jl",
-    "Sum-of-Squares Matrices.jl",
-    "Noncommutative variables.jl",
-    "Sums of Hermitian squares.jl",
-    "Symmetry reduction.jl",
-]
+include(joinpath(EXAMPLES_DIR, "all_examples.jl"))
 
 for example in EXAMPLES
     example_filepath = joinpath(EXAMPLES_DIR, example)
@@ -32,15 +24,10 @@ makedocs(
         "Sum-of-Squares Programming" => "sumofsquares.md",
         "Variables" => "variables.md",
         "Constraints" => "constraints.md",
-        "Examples" => Any[
-            "SOS decomposition" => "generated/sos_decomposition.md",
-            "Bound on Global Extremum" => "generated/Bound on Global Extremum.md",
-            "Lyapunov Function Search" => "generated/Lyapunov Function Search.md",
-            "Sum-of-Squares Matrices" => "generated/Sum-of-Squares Matrices.md",
-            "Noncommutative variables" => "generated/Noncommutative variables.md",
-            "Sums of Hermitian squares" => "generated/Sums of Hermitian squares.md",
-            "Symmetry reduction" => "generated/Symmetry reduction.md",
-        ]
+        "Examples" => map(EXAMPLES) do jl_file
+            name = split(jl_file, ".")[1]
+            return name => "generated/$name.md"
+        end
     ],
     # The following ensures that we only include the docstrings from
     # this module for functions define in Base that we overwrite.
@@ -49,4 +36,5 @@ makedocs(
 
 deploydocs(
     repo   = "github.com/jump-dev/SumOfSquares.jl.git",
+    push_preview = true,
 )
