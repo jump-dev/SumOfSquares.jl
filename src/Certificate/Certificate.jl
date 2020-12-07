@@ -175,6 +175,9 @@ zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
 
 include("sparse/ChordalExtensionGraph.jl")
+using .ChordalExtensionGraph: ChordalCompletion, ClusterCompletion
+export ChordalCompletion, ClusterCompletion
+
 include("sparse/sparse_putinar.jl")
 
 end
