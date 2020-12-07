@@ -5,6 +5,8 @@ const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
 const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
 
 include(joinpath(EXAMPLES_DIR, "all_examples.jl"))
+deleteat!(EXAMPLES, findfirst(isequal("chordal_sparsity.jl"), EXAMPLES))
+deleteat!(EXAMPLES, findfirst(isequal("chordal_sparsity_with_domain.jl"), EXAMPLES))
 
 for example in EXAMPLES
     example_filepath = joinpath(EXAMPLES_DIR, example)
@@ -25,7 +27,8 @@ makedocs(
         "Variables" => "variables.md",
         "Constraints" => "constraints.md",
         "Examples" => map(EXAMPLES) do jl_file
-            name = split(jl_file, ".")[1]
+            # Need `string` as Documenter fails if `name` is a `SubString{String}`.
+            name = string(split(jl_file, ".")[1])
             return name => "generated/$name.md"
         end
     ],
