@@ -27,8 +27,8 @@ function matrix_cone_type end
 
 export Certificate
 include("Certificate/Certificate.jl")
-using .Certificate: Sparsity, NoSparsity, VariableSparsity, MonomialSparsity, SignSymmetry
-export Sparsity, NoSparsity, VariableSparsity, MonomialSparsity, SignSymmetry
+using .Certificate: Sparsity, NoSparsity, VariableSparsity, MonomialSparsity, SignSymmetry, ChordalCompletion, ClusterCompletion
+export Sparsity, NoSparsity, VariableSparsity, MonomialSparsity, SignSymmetry, ChordalCompletion, ClusterCompletion
 include("rand.jl")
 
 # MOI extension

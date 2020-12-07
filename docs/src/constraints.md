@@ -285,6 +285,11 @@ Approximations of the cone of copositive matrices:
 SumOfSquares.CopositiveInner
 ```
 
+Sparsity certificates:
+```@docs
+SumOfSquares.Certificate.MonomialSparsity
+```
+
 Attributes
 ```@docs
 SumOfSquares.PolyJuMP.MomentsAttribute
@@ -320,5 +325,5 @@ SumOfSquares.Certificate.ChordalExtensionGraph.LabelledGraph
 SumOfSquares.Certificate.ChordalExtensionGraph.add_node!
 SumOfSquares.Certificate.ChordalExtensionGraph.add_edge!
 SumOfSquares.Certificate.ChordalExtensionGraph.add_clique!
-SumOfSquares.Certificate.ChordalExtensionGraph.chordal_extension
+SumOfSquares.Certificate.ChordalExtensionGraph.completion
 ```

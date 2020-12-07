@@ -33,8 +33,9 @@ include("constraint.jl")
 
 include("Mock/mock_tests.jl")
 
-# Tests needed a solver
-# FIXME these tests should be moved to `Tests` and tested in `Mock`
+# Tests needing a solver
+# FIXME these tests should be converted to Literate and moved to `examples` or
+# converted to be used with `MockOptimizer` and moved to `test/Tests`
 include("solvers.jl")
 include("sospoly.jl")
 include("domain.jl")

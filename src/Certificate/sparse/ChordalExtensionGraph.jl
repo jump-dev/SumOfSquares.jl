@@ -1,6 +1,20 @@
 module ChordalExtensionGraph
 
+using DataStructures
+
+export AbstractCompletion, ChordalCompletion, ClusterCompletion
 export LabelledGraph, add_node!, add_edge!, add_clique!, chordal_extension
+
+abstract type AbstractGreedyAlgorithm end
+
+abstract type AbstractCompletion end
+
+struct ChordalCompletion{A<:AbstractGreedyAlgorithm} <: AbstractCompletion
+    algo::A
+end
+ChordalCompletion() = ChordalCompletion(GreedyFillIn())
+
+struct ClusterCompletion <: AbstractCompletion end
 
 # With a `Vector{Vector{Int}}` with unsorted neighbors, computing fill-in
 # would be inefficient.
@@ -213,8 +227,6 @@ function add_clique!(G::LabelledGraph{T}, x::Vector{T}) where T
     add_clique!(G.graph, add_node!.(G, x))
 end
 
-abstract type AbstractGreedyAlgorithm end
-
 struct GreedyFillIn <: AbstractGreedyAlgorithm end
 cache(G::Graph, ::GreedyFillIn) = FillInCache(G)
 heuristic_value(G::FillInCache, node::Int, ::GreedyFillIn) = fill_in(G, node)
@@ -262,10 +274,22 @@ function _greedy_triangulation!(G, algo::AbstractGreedyAlgorithm)
     return candidate_cliques
 end
 
-function chordal_extension(G::Graph, algo::AbstractGreedyAlgorithm)
+"""
+    completion(G::Graph, comp::ChordalCompletion)
+
+Return a chordal extension of `G` and the corresponding maximal cliques.
+
+The algoritm is Algorithm 3 in [BA10] with the GreedyFillIn heuristic of Table I.
+
+[BA10] Bodlaender, Hans L., and Arie MCA Koster.
+Treewidth computations I. Upper bounds.
+Information and Computation 208, no. 3 (2010): 259-275.
+Utrecht University, Utrecht, The Netherlands www.cs.uu.nl
+"""
+function completion(G::Graph, comp::ChordalCompletion)
     H = copy(G)
 
-    candidate_cliques = _greedy_triangulation!(cache(H, algo), algo)
+    candidate_cliques = _greedy_triangulation!(cache(H, comp.algo), comp.algo)
     enable_all_nodes!(H)
 
     sort!.(candidate_cliques)
@@ -291,19 +315,41 @@ function chordal_extension(G::Graph, algo::AbstractGreedyAlgorithm)
 end
 
 """
-    chordal_extension(G::LabelledGraph{T})
+    completion(G::Graph, comp::ChordalCompletion)
 
-Return a chordal extension of G and the corresponding maximal cliques.
-
-The algoritm is Algorithm 3 in [BA10] with the GreedyFillIn heuristic of Table I.
-
-[BA10] Bodlaender, Hans L., and Arie MCA Koster.
-Treewidth computations I. Upper bounds.
-Information and Computation 208, no. 3 (2010): 259-275.
-Utrecht University, Utrecht, The Netherlands www.cs.uu.nl
+Return a cluster completion of `G` and the corresponding maximal cliques.
 """
-function chordal_extension(G::LabelledGraph{T}, algo::AbstractGreedyAlgorithm) where T
-    H, cliques = chordal_extension(G.graph, algo)
+function completion(G::Graph, ::ClusterCompletion)
+    H = copy(G)
+    union_find = IntDisjointSets(num_nodes(G))
+    for from in 1:num_nodes(G)
+        for to in neighbors(G, from)
+            union!(union_find, from, to)
+        end
+    end
+    cliques = [Int[] for i in 1:num_groups(union_find)]
+    ids = zeros(Int, num_nodes(G))
+    k = 0
+    for node in 1:num_nodes(G)
+        root = find_root!(union_find, node)
+        if iszero(ids[root])
+            k += 1
+            ids[root] = k
+        end
+        push!(cliques[ids[root]], node)
+    end
+    @assert k == length(cliques)
+    for clique in cliques
+        add_clique!(H, clique)
+    end
+    return H, cliques
+end
+
+function completion(G::LabelledGraph{T}, comp::AbstractCompletion) where T
+    H, cliques = completion(G.graph, comp)
     return LabelledGraph{T}(G.n2int, G.int2n, H), [[G.int2n[i] for i in clique] for clique in cliques]
 end
+
+chordal_extension(G, algo) = completion(G, ChordalCompletion(algo))
+
 end #module

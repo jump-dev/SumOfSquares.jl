@@ -1,8 +1,8 @@
-# # Lyapunov Function Search
+# # Symmetry reduction
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Lyapunov Function Search.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Lyapunov Function Search.ipynb)
-# **Adapted from**: SOSTOOLS' SOSDEMO2 (See Section 4.2 of [SOSTOOLS User's Manual](http://sysos.eng.ox.ac.uk/sostools/sostools.pdf))
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Symmetry reduction.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Symmetry reduction.ipynb)
+# **Adapted from**: https://github.com/kalmarek/SymbolicWedderburn.jl/blob/tw/ex_sos/examples/ex_C4.jl
 
 using Pkg
 pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#tw/ex_sos"

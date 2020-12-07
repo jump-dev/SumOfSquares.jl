@@ -135,7 +135,7 @@ end
         certificate_api(preorder)
         sparsities = Sparsity[VariableSparsity()]
         if certificate isa Certificate.MaxDegree
-            push!(sparsities, MonomialSparsity(1))
+            push!(sparsities, MonomialSparsity(ChordalCompletion(), 1))
         end
         @testset "$(typeof(sparsity))" for sparsity in sparsities
             certificate_api(Certificate.SparsePreorder(sparsity, preorder))
@@ -152,7 +152,7 @@ end
         if certificate isa Certificate.MaxDegree
             _test(Certificate.SparseIdeal(VariableSparsity(), certificate))
         end
-        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), MonomialSparsity(1)]
+        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), MonomialSparsity(ChordalCompletion(), 1)]
             _test(Certificate.SparseIdeal(sparsity, certificate))
             _test(Certificate.SparseIdeal(sparsity, Certificate.Remainder(certificate)))
         end
