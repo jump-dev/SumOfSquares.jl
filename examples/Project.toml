@@ -1,6 +1,7 @@
 [deps]
 CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
 Cyclotomics = "da8f5974-afbb-4dc8-91d8-516d5257c83b"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
 IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
@@ -8,4 +9,5 @@ MultivariateBases = "be282fd4-ad43-11e9-1d11-8bd9d7e43378"
 MultivariatePolynomials = "102ac46a-7ee4-5c85-9060-abc95bfdeaa3"
 MutableArithmetics = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
 PermutationGroups = "8bc5a954-2dfc-11e9-10e6-cd969bffa420"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 SumOfSquares = "4b9e565b-77fc-50a5-a571-1244f986bda1"
