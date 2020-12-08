@@ -1,4 +1,14 @@
+"""
+    struct SignSymmetry <: Sparsity end
+
+Sign symmetry as developed in [Section III.C, L09].
+
+[L09] Lofberg, Johan.
+*Pre-and post-processing sum-of-squares programs in practice*.
+IEEE transactions on automatic control 54, no. 5 (2009): 1007-1011.
+"""
 struct SignSymmetry <: Sparsity end
+
 function binary_exponent(exponents, ::Type{T}) where T
     cur = zero(T)
     for exponent in exponents

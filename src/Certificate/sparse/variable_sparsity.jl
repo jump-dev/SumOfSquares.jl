@@ -1,3 +1,10 @@
+"""
+    struct VariableSparsity <: Sparsity end
+
+Variable or correlative sparsity as developed in [WSMM06].
+
+[WSMM06] Waki, Hayato, Sunyoung Kim, Masakazu Kojima, and Masakazu Muramatsu. "Sums of squares and semidefinite program relaxations for polynomial optimization problems with structured sparsity." SIAM Journal on Optimization 17, no. 1 (2006): 218-242.
+"""
 struct VariableSparsity <: Sparsity end
 
 const CEG = ChordalExtensionGraph
