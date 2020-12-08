@@ -7,6 +7,16 @@ include("sign.jl")
 include("variable_sparsity.jl")
 include("monomial_sparsity.jl")
 
+"""
+    struct SparsePreorder{S <: Sparsity, C <: AbstractPreorderCertificate} <: AbstractPreorderCertificate
+        sparsity::S
+        certificate::C
+    end
+
+Same certificate as `C` except that the Sum-of-Squares polynomials `σ_i`
+are modelled as a sum of Sum-of-Squares polynomials with smaller basis
+using the sparsity reduction `sparsity`.
+"""
 struct SparsePreorder{S <: Sparsity, C <: AbstractPreorderCertificate} <: AbstractPreorderCertificate
     sparsity::S
     certificate::C
@@ -45,6 +55,16 @@ get(::Type{<:SparsePreorder{S, C}}, attr::IdealCertificate) where {S, C} = Spars
 
 SumOfSquares.matrix_cone_type(::Type{SparsePreorder{S, C}}) where {S, C} = SumOfSquares.matrix_cone_type(C)
 
+"""
+    struct SparseIdeal{S <: Sparsity, C <: AbstractIdealCertificate} <: AbstractIdealCertificate
+        sparsity::S
+        certificate::C
+    end
+
+Same certificate as `C` except that the Sum-of-Squares polynomial `σ`
+is modelled as a sum of Sum-of-Squares polynomials with smaller basis
+using the sparsity reduction `sparsity`.
+"""
 struct SparseIdeal{S <: Sparsity, C <: AbstractIdealCertificate} <: AbstractIdealCertificate
     sparsity::S
     certificate::C

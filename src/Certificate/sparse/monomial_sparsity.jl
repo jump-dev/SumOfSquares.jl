@@ -2,20 +2,26 @@ const CEG = SumOfSquares.Certificate.ChordalExtensionGraph
 
 """
     struct MonomialSparsity{C<:CEG.AbstractCompletion} <: Sparsity
-        k::Int
         completion::C
+        k::Int
         use_all_monomials::Bool
     end
 
-Monomial or term sparsity as developed in [].
+Monomial or term sparsity as developed in [WML20a, WML20b].
+The `completion` field should be `ClusterCompletion()` [default] for the block-closure or cluster completion [WML20a],
+and `ChordalCompletion()` for chordal completion [WML20b].
+The integer `k` [default=0] corresponds to `Σ_k` defined in [(3.2), WML20a]
+and `k = 0` corresponds to `Σ_*` defined in [(3.3), WML20a].
+If `use_all_monomials` is `false` then some monomials of the basis
+might be dropped from the basis if not needed.
 
-# [WML20a] Wang, Jie, Victor Magron, and Jean-Bernard Lasserre.
-# *TSSOS: A Moment-SOS hierarchy that exploits term sparsity*.
-# arXiv preprint arXiv:1912.08899 (2020).
-#
-# [WML20b] Wang, Jie, Victor Magron, and Jean-Bernard Lasserre.
-# *Chordal-TSSOS: a moment-SOS hierarchy that exploits term sparsity with chordal extension*.
-# arXiv preprint arXiv:2003.03210 (2020).
+[WML20a] Wang, Jie, Victor Magron, and Jean-Bernard Lasserre.
+*TSSOS: A Moment-SOS hierarchy that exploits term sparsity*.
+arXiv preprint arXiv:1912.08899 (2020).
+
+[WML20b] Wang, Jie, Victor Magron, and Jean-Bernard Lasserre.
+*Chordal-TSSOS: a moment-SOS hierarchy that exploits term sparsity with chordal extension*.
+arXiv preprint arXiv:2003.03210 (2020).
 """
 struct MonomialSparsity{C<:CEG.AbstractCompletion} <: Sparsity
     completion::C

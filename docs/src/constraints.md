@@ -285,9 +285,26 @@ Approximations of the cone of copositive matrices:
 SumOfSquares.CopositiveInner
 ```
 
-Sparsity certificates:
+Types of sparsity
 ```@docs
+SumOfSquares.Certificate.VariableSparsity
 SumOfSquares.Certificate.MonomialSparsity
+SumOfSquares.Certificate.SignSymmetry
+```
+
+Ideal certificates:
+```@docs
+SumOfSquares.Certificate.MaxDegree
+SumOfSquares.Certificate.FixedBasis
+SumOfSquares.Certificate.Newton
+SumOfSquares.Certificate.Remainder
+SumOfSquares.Certificate.SparseIdeal
+```
+
+Preorder certificates:
+```@docs
+SumOfSquares.Certificate.Putinar
+SumOfSquares.Certificate.SparsePreorder
 ```
 
 Attributes
