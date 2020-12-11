@@ -11,3 +11,6 @@ MutableArithmetics = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
 PermutationGroups = "8bc5a954-2dfc-11e9-10e6-cd969bffa420"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 SumOfSquares = "4b9e565b-77fc-50a5-a571-1244f986bda1"
+
+[compat]
+Documenter = "~0.26"
