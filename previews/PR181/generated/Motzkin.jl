@@ -39,13 +39,19 @@ primal_status(model)
 value(deno)
 
 using RecipesBase
-using MultivariatePolynomials
 @recipe function f(x::AbstractVector, y::AbstractVector, p::Polynomial)
     x, y, (x, y) -> p(variables(p) => [x, y])
 end
-using Plots
-plot(range(-2, stop=2, length=100), range(-2, stop=2, length=100), motzkin,
-     st = [:surface], seriescolor=:heat, colorbar=:none, clims = (-10, 80))
+import Plots
+Plots.plot(
+    range(-2, stop=2, length=100),
+    range(-2, stop=2, length=100),
+    motzkin,
+    st = [:surface],
+    seriescolor=:heat,
+    colorbar=:none,
+    clims = (-10, 80)
+)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 
