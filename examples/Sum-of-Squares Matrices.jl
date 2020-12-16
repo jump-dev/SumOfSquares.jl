@@ -2,21 +2,22 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
-# **Contributed by**: Benoît Legat
+# **Adapted from**: Examples 3.77 of [BPT12]
+#
+# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
+# *Semidefinite Optimization and Convex Algebraic Geometry*.
+# Society for Industrial and Applied Mathematics, **2012**.
+
 
 # ### Introduction
 
-# Consider the symmetric polynomial matrix (taken from [Example 3.77, BPT13])
+# Consider the symmetric polynomial matrix
 # $$P(x) =
 # \begin{bmatrix}
 #     x^2 - 2x + 2 & x\\
 #     x            & x^2
 # \end{bmatrix}.$$
 # We could like to know whether $P(x)$ is positive semidefinite for all $x \in \mathbb{R}$.
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
 
 using Test #src
 using DynamicPolynomials
@@ -32,9 +33,9 @@ using SumOfSquares
 # We first need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
 
 import CSDP
-factory = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 
-model = SOSModel(factory)
+model = SOSModel(solver)
 mat_cref = @constraint(model, P in PSDCone())
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
