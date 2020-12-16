@@ -6,9 +6,9 @@ P = [x^2 - 2x + 2 x
 using SumOfSquares
 
 import CSDP
-factory = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 
-model = SOSModel(factory)
+model = SOSModel(solver)
 mat_cref = @constraint(model, P in PSDCone())
 optimize!(model)
 termination_status(model) #!src
