@@ -174,14 +174,18 @@ end
 _non_constant(a::Vector{T}) where T = convert.(MOI.ScalarAffineFunction{T}, a)
 _non_constant(a::Vector{<:MOI.AbstractFunction}) = a
 
-function add_constraint(model::MOI.ModelLike, p, cone::SOSLikeCone; kws...)
+# Add constraint with `p` having coefficients being MOI functions.
+# This is needed as a workaround as JuMP does not support complex numbers yet.
+# We can remove it when https://github.com/jump-dev/JuMP.jl/pull/2391 is done
+# We overload `JuMP.add_constraint` to avoid clash with the name.
+function JuMP.add_constraint(model::MOI.ModelLike, p, cone::SOSLikeCone; kws...)
     coefs = MOI.Utilities.vectorize(_non_constant(MP.coefficients(p)))
     monos = MP.monomials(p)
     set = JuMP.moi_set(cone, monos; kws...)
     return MOI.add_constraint(model, coefs, set)
 end
-function add_constraint(model::JuMP.Model, p, cone::SOSLikeCone; kws...)
-    ci = add_constraint(JuMP.backend(model), p, cone; kws...)
+function JuMP.add_constraint(model::JuMP.Model, p, cone::SOSLikeCone; kws...)
+    ci = JuMP.add_constraint(JuMP.backend(model), p, cone; kws...)
     return JuMP.ConstraintRef(model, ci, PolyJuMP.PolynomialShape(MP.monomials(p)))
 end
 
