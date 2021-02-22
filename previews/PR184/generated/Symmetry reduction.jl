@@ -1,5 +1,5 @@
 using Pkg
-pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#enh/symmetry_adapted_basis"
+pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl"
 
 import MutableArithmetics
 const MA = MutableArithmetics
@@ -61,7 +61,7 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-con_ref = @constraint(model, sum(x) + sum(x.^2) - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G))
+con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G))
 optimize!(model)
 value(t)
 
