@@ -5,7 +5,7 @@
 # **Adapted from**: https://github.com/kalmarek/SymbolicWedderburn.jl/blob/tw/ex_sos/examples/ex_C4.jl
 
 using Pkg
-pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl"
+pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#bl/nonperm"
 
 import MutableArithmetics
 const MA = MutableArithmetics
