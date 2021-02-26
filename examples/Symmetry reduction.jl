@@ -33,20 +33,17 @@ using PermutationGroups
 using Cyclotomics
 using SumOfSquares
 
-function SymbolicWedderburn.ExtensionHomomorphism(basis::MB.MonomialBasis)
-    monos = basis.monomials
-    basis_exps = Vector{Vector{Int}}(undef, length(monos))
-    basis_dict = Dict{Vector{Int}, Int}()
-    sizehint!(basis_dict, length(monos))
-
-    for (i, b) in enumerate(monos)
-        e = MP.exponents(b) # so that we allocate exponents only once
-        basis_exps[i] = e
-        basis_dict[e] = i
-    end
-
-    return SymbolicWedderburn.ExtensionHomomorphism(basis_exps, basis_dict)
+function SymbolicWedderburn.ExtensionHomomorphism(basis::MB.MonomialBasis, action)
+    monos = collect(basis.monomials)
+    mono_to_index = Dict(monos[i] => i for i in eachindex(monos))
+    return SymbolicWedderburn.ExtensionHomomorphism(monos, mono_to_index, action)
 end
+
+function permuted(mono::AbstractMonomial, p::Perm)
+    v = variables(mono)
+    MP.substitute(MP.Eval(), mono, v => [v[i^p] for i in eachindex(v)])
+end
+
 function MP.polynomialtype(::Type{<:MB.AbstractPolynomialVectorBasis{PT}}, T::Type) where PT
     C = MP.coefficienttype(PT)
     U = MA.promote_operation(*, C, T)
@@ -64,7 +61,7 @@ Certificate.zero_basis(::SymmetricIdeal) = MB.MonomialBasis
 Certificate.get(::SymmetricIdeal, ::Certificate.ReducedPolynomial, poly, domain) = poly
 function Certificate.get(cert::SymmetricIdeal, ::Certificate.GramBasis, poly)
     basis = Certificate.maxdegree_gram_basis(MB.MonomialBasis, MP.variables(poly), MP.maxdegree(poly))
-    R = SymbolicWedderburn.symmetry_adapted_basis(cert.group, basis)
+    R = SymbolicWedderburn.symmetry_adapted_basis(cert.group, basis, permuted)
     return map(R) do Ri
         FixedPolynomialBasis(convert(Matrix{Float64}, Ri) * basis.monomials)
     end
