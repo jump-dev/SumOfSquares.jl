@@ -18,32 +18,65 @@ using PermutationGroups
 using Cyclotomics
 using SumOfSquares
 
-struct ScaledPerm2{T, I} <: AbstractPerm
+struct ScaledPerm{T, I} <: AbstractPerm
     indices::Vector{Pair{I, T}}
 end
-Base.one(p::ScaledPerm2{T}) where {T} = ScaledPerm2([i => one(T) for i in eachindex(p.indices)])
-Base.:(==)(p::ScaledPerm2, q::ScaledPerm2) = p.indices == q.indices
-Base.hash(p::ScaledPerm2, u::UInt64) = hash(p.indices, u)
-SymbolicWedderburn.degree(p::ScaledPerm2) = length(p.indices)
-Base.:^(i::Integer, p::ScaledPerm2) = p.indices[i]
+function trace_matrix_representative(p::ScaledPerm)
+    return sum(pair.second for (i, pair) in enumerate(p.indices) if pair.first == i)
+end
+function Base.inv(p::ScaledPerm{T,I}) where {T,I}
+    indices = Vector{Pair{I,T}}(undef, length(p.indices))
+    for i in eachindex(indices)
+        pair = p.indices[i]
+        indices[pair.first] = i => inv(pair.second)
+    end
+    return ScaledPerm(indices)
+end
+
+function PermutationGroups.order(p::ScaledPerm)
+    cur = p
+    _one = one(p)
+    o = 1
+    while cur != _one
+        o += 1
+        cur *= p
+    end
+    return o
+end
+Base.one(p::ScaledPerm{T}) where {T} = ScaledPerm([i => one(T) for i in eachindex(p.indices)])
+Base.:(==)(p::ScaledPerm, q::ScaledPerm) = p.indices == q.indices
+Base.hash(p::ScaledPerm, u::UInt64) = hash(p.indices, u)
+SymbolicWedderburn.degree(p::ScaledPerm) = length(p.indices)
+Base.:^(i::Integer, p::ScaledPerm) = p.indices[i]
 function SymbolicWedderburn.add_inverse_permutation!(result, val, i::Int, j::Pair)
     result[i, j.first] += val / j.second
+end
+function SymbolicWedderburn.action_character(conjugacy_cls::AbstractVector{<:AbstractOrbit{<:ScaledPerm}})
+    vals = Int[trace_matrix_representative(first(cc)) for cc in conjugacy_cls]
+    return SymbolicWedderburn.Character(vals, conjugacy_cls)
+end
+function Base.:*(p::ScaledPerm, q::ScaledPerm)
+    return ScaledPerm(map(eachindex(q.indices)) do i
+        pair_q = q.indices[i]
+        pair_p = p.indices[pair_q.first]
+        pair_p.first => pair_p.second * pair_q.second
+    end)
 end
 
 function permutation(ehom::SymbolicWedderburn.ExtensionHomomorphism{T}, els::Vector{T}) where {T}
     return Perm([ehom[el] for el in els])
 end
 function permutation(ehom::SymbolicWedderburn.ExtensionHomomorphism{<:AbstractMonomial}, terms::Vector{<:AbstractTerm})
-    return ScaledPerm2([ehom[monomial(term)] => coefficient(term) for term in terms])
+    return ScaledPerm([ehom[monomial(term)] => coefficient(term) for term in terms])
 end
 function (ehom::SymbolicWedderburn.ExtensionHomomorphism)(action)
-    return permutation(ehom, [f^action for f in ehom.features])
+    return permutation(ehom, [ehom.op(f, action) for f in ehom.features])
 end
 
-function SymbolicWedderburn.ExtensionHomomorphism(basis::MB.MonomialBasis)
+function SymbolicWedderburn.ExtensionHomomorphism(basis::MB.MonomialBasis, action)
     monos = collect(basis.monomials)
     mono_to_index = Dict(monos[i] => i for i in eachindex(monos))
-    return SymbolicWedderburn.ExtensionHomomorphism(monos, mono_to_index)
+    return SymbolicWedderburn.ExtensionHomomorphism(monos, mono_to_index, action)
 end
 
 function MP.polynomialtype(::Type{<:MB.AbstractPolynomialVectorBasis{PT}}, T::Type) where PT
@@ -64,7 +97,7 @@ Certificate.zero_basis(::SymmetricIdeal) = MB.MonomialBasis
 Certificate.get(::SymmetricIdeal, ::Certificate.ReducedPolynomial, poly, domain) = poly
 function Certificate.get(cert::SymmetricIdeal, ::Certificate.GramBasis, poly)
     basis = Certificate.maxdegree_gram_basis(MB.MonomialBasis, MP.variables(poly), MP.maxdegree(poly))
-    R = SymbolicWedderburn.symmetry_adapted_basis(Float64, cert.group, basis)
+    R = SymbolicWedderburn.symmetry_adapted_basis(Float64, cert.group, basis, action)
     return map(R) do Ri
         FixedPolynomialBasis(convert(Matrix{Float64}, Ri) * basis.monomials)
     end
@@ -77,7 +110,7 @@ PermutationGroups.order(a::EvenOddAction) = a.identity ? 1 : 2
 Base.one(::EvenOddAction) = EvenOddAction(true)
 Base.inv(a::EvenOddAction) = a
 PermutationGroups.mul!(::EvenOddAction, a::EvenOddAction, b::EvenOddAction) = EvenOddAction(xor(a.identity, b.identity))
-function Base.:^(mono::AbstractMonomial, a::EvenOddAction)
+function action(mono::AbstractMonomial, a::EvenOddAction)
     if a.identity || iseven(MP.degree(mono))
         return 1 * mono
     else
