@@ -1,6 +1,3 @@
-using Pkg
-pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#bl/nonperm"
-
 import MutableArithmetics
 const MA = MutableArithmetics
 using MultivariatePolynomials
@@ -13,43 +10,13 @@ using DynamicPolynomials
 
 poly = sum(x) + sum(x.^2)
 
-using SymbolicWedderburn
-using PermutationGroups
-using Cyclotomics
 using SumOfSquares
+include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
 
-function SymbolicWedderburn.ExtensionHomomorphism(basis::MB.MonomialBasis, action)
-    monos = collect(basis.monomials)
-    mono_to_index = Dict(monos[i] => i for i in eachindex(monos))
-    return SymbolicWedderburn.ExtensionHomomorphism(monos, mono_to_index, action)
-end
-
-function permuted(mono::AbstractMonomial, p::Perm)
+using PermutationGroups
+function action(mono::AbstractMonomial, p::Perm)
     v = variables(mono)
     MP.substitute(MP.Eval(), mono, v => [v[i^p] for i in eachindex(v)])
-end
-
-function MP.polynomialtype(::Type{<:MB.AbstractPolynomialVectorBasis{PT}}, T::Type) where PT
-    C = MP.coefficienttype(PT)
-    U = MA.promote_operation(*, C, T)
-    V = MA.promote_operation(+, U, U)
-    return MP.polynomialtype(PT, V)
-end
-struct SymmetricIdeal{CT, GT} <: Certificate.AbstractIdealCertificate
-    cone::CT
-    group::GT
-end
-SumOfSquares.matrix_cone_type(::Type{<:SymmetricIdeal{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
-Certificate.get(::Type{<:SymmetricIdeal}, ::SumOfSquares.Certificate.GramBasisType) = Vector{MB.FixedPolynomialBasis}
-Certificate.zero_basis_type(::Type{<:SymmetricIdeal}) = MB.MonomialBasis
-Certificate.zero_basis(::SymmetricIdeal) = MB.MonomialBasis
-Certificate.get(::SymmetricIdeal, ::Certificate.ReducedPolynomial, poly, domain) = poly
-function Certificate.get(cert::SymmetricIdeal, ::Certificate.GramBasis, poly)
-    basis = Certificate.maxdegree_gram_basis(MB.MonomialBasis, MP.variables(poly), MP.maxdegree(poly))
-    R = SymbolicWedderburn.symmetry_adapted_basis(cert.group, basis, permuted)
-    return map(R) do Ri
-        FixedPolynomialBasis(convert(Matrix{Float64}, Ri) * basis.monomials)
-    end
 end
 G = PermGroup([perm"(1,2,3,4)"])
 
@@ -58,7 +25,7 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G))
+con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G, action))
 optimize!(model)
 value(t)
 
