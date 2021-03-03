@@ -111,7 +111,6 @@ value(t)
 
 for g in gram_matrix(con_ref).sub_gram_matrices
     println(g.basis.polynomials)
-    display(g.Q)
 end
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
