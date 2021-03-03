@@ -94,6 +94,7 @@ end
 
 # The Robinson form is invariant under the following action of the Dihedral group on monomials:
 # The action of each element of the groups is to map the variables `x, y` to:
+#
 # | id | rotation | reflection |
 # |----|----------|------------|
 # | 0  | x, y     | y, x       |
@@ -168,5 +169,4 @@ end #src
 @test g[4].Q[1, 1] ≈ 0   atol=1e-3 #src
 for g in gram_matrix(con_ref).sub_gram_matrices
     println(g.basis.polynomials)
-    display(g.Q)
 end
