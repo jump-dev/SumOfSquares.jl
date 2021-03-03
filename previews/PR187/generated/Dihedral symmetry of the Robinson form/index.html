@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Dihedral symmetry of the Robinson form · SumOfSquares</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">SumOfSquares</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Index</a></li><li><a class="tocitem" href="../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../variables/">Variables</a></li><li><a class="tocitem" href="../../constraints/">Constraints</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../Bound on Global Extremum/">Bound on Global Extremum</a></li><li class="is-active"><a class="tocitem" href>Dihedral symmetry of the Robinson form</a></li><li><a class="tocitem" href="../Even reduction/">Even reduction</a></li><li><a class="tocitem" href="../Getting started/">Getting started</a></li><li><a class="tocitem" href="../Lyapunov Function Search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../Motzkin/">Motzkin</a></li><li><a class="tocitem" href="../Noncommutative variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../Polynomial Optimization/">Polynomial Optimization</a></li><li><a class="tocitem" href="../SOS decomposition/">SOS decomposition</a></li><li><a class="tocitem" href="../Stabilization of nonlinear systems/">Stabilization of nonlinear systems</a></li><li><a class="tocitem" href="../Sum-of-Squares Matrices/">Sum-of-Squares Matrices</a></li><li><a class="tocitem" href="../Sums of Hermitian squares/">Sums of Hermitian squares</a></li><li><a class="tocitem" href="../Symmetry reduction/">Symmetry reduction</a></li><li><a class="tocitem" href="../Term sparsity/">Term sparsity</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Dihedral symmetry of the Robinson form</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Dihedral symmetry of the Robinson form</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/master/examples/Dihedral symmetry of the Robinson form.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Dihedral-symmetry-of-the-Robinson-form"><a class="docs-heading-anchor" href="#Dihedral-symmetry-of-the-Robinson-form">Dihedral symmetry of the Robinson form</a><a id="Dihedral-symmetry-of-the-Robinson-form-1"></a><a class="docs-heading-anchor-permalink" href="#Dihedral-symmetry-of-the-Robinson-form" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR187/generated/Dihedral symmetry of the Robinson form.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR187/generated/Dihedral symmetry of the Robinson form.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Adapted from</strong>: Example 5.4 of [GP04]</p><p>[GP04] Gatermann, Karin and Parrilo, Pablo A. <em>Symmetry groups, semidefinite programs, and sums of squares</em>. Journal of Pure and Applied Algebra 192.1-3 (2004): 95-128.</p><p>Symmetry reduction is still a work in progress in SumOfSquares, so we include the following files that will be incorporated into SumOfSquares.jl once SymbolicWedderburn.jl is released:</p><pre><code class="language-julia">using SumOfSquares
+include(joinpath(dirname(dirname(pathof(SumOfSquares))), &quot;examples&quot;, &quot;symmetry.jl&quot;))
+include(joinpath(dirname(dirname(pathof(SumOfSquares))), &quot;examples&quot;, &quot;scaled_perm.jl&quot;))</code></pre><pre class="documenter-example-output">   Updating git-repo `https://github.com/kalmarek/SymbolicWedderburn.jl`
+[?25l[2K[?25h  Resolving package versions...
+No Changes to `~/work/SumOfSquares.jl/SumOfSquares.jl/docs/Project.toml`
+No Changes to `~/work/SumOfSquares.jl/SumOfSquares.jl/docs/Manifest.toml`</pre><p>We start by defining the Dihedral group of order 8. This group is isomorphic to the following permutation group:</p><pre><code class="language-julia">d = perm&quot;(1, 2, 3, 4)&quot;
+c = perm&quot;(1, 3)&quot;
+G = PermGroup([c, d])</code></pre><pre class="documenter-example-output">Permutation group on 2 generators generated by
+ (1,3)
+ (1,2,3,4)</pre><p>We could rely on this isomorphism to define this group. However, in order to illustrate how to do symmetry reduction with a custom group, we show in this example what should be implemented to define a new group.</p><pre><code class="language-julia">struct DihedralElement &lt;: GroupElem
+    n::Int
+    reflection::Bool
+    id::Int
+end
+function PermutationGroups.order(el::DihedralElement)
+    if el.reflection
+        return 2
+    else
+        if iszero(el.id)
+            return 1
+        else
+            return div(el.n, gcd(el.n, el.id))
+        end
+    end
+end
+Base.one(el::Union{DihedralElement}) = DihedralElement(el.n, false, 0)
+function Base.inv(el::DihedralElement)
+    if el.reflection || iszero(el.id)
+        return el
+    else
+        return DihedralElement(el.n, false, el.n - el.id)
+    end
+end
+function PermutationGroups.mul!(::DihedralElement, a::DihedralElement, b::DihedralElement)
+    a.n == b.n || error(&quot;Cannot multiply elements from different Dihedral groups&quot;)
+    id = mod(a.reflection ? a.id - b.id : a.id + b.id, a.n)
+    return DihedralElement(a.n, a.reflection != b.reflection, id)
+end
+function Base.:^(el::DihedralElement, k::Integer)
+    if el.reflection
+        return iseven(k) ? one(el) : el
+    else
+        return DihedralElement(el.n, false, mod(el.id * k, el.n))
+    end
+end
+
+struct DihedralGroup &lt;: Group
+    n::Int
+end
+_orbit(cc::Vector{&lt;:GroupElem}) = PermutationGroups.Orbit(cc, Dict(a =&gt; nothing for a in cc))
+_orbit(el::GroupElem) = _orbit([el])
+function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup)
+    orbits = [_orbit(DihedralElement(d.n, false, 0))]
+    for i in 1:div(d.n - 1, 2)
+        push!(orbits, _orbit([
+            DihedralElement(d.n, false, i),
+            DihedralElement(d.n, false, d.n - i),
+        ]))
+    end
+    if iseven(d.n)
+        push!(orbits, _orbit(DihedralElement(d.n, false, div(d.n, 2))))
+        push!(orbits, _orbit([
+            DihedralElement(d.n, true, i) for i in 0:2:(d.n - 2)
+        ]))
+        push!(orbits, _orbit([
+            DihedralElement(d.n, true, i) for i in 1:2:(d.n - 1)
+        ]))
+    else
+        push!(orbits, _orbit([
+            DihedralElement(d.n, true, i) for i in 0:(d.n - 1)
+        ]))
+    end
+end</code></pre><p>The Robinson form is invariant under the following action of the Dihedral group on monomials: The action of each element of the groups is to map the variables <code>x, y</code> to: | id | rotation | reflection | |––|–––––|––––––| | 0  | x, y     | y, x       | | 1  | -y, x    | -x, y      | | 2  | -x, -y   | -y, -x     | | 3  | y, -x    | x, -y      |</p><pre><code class="language-julia">using DynamicPolynomials
+@polyvar x y
+function action(mono::MP.AbstractMonomial, el::DihedralElement)
+    if iseven(el.reflection + el.id)
+        var_x, var_y = x, y
+    else
+        var_x, var_y = y, x
+    end
+    sign_x = 1 &lt;= el.id &lt;= 2 ? -1 : 1
+    sign_y = 2 &lt;= el.id ? -1 : 1
+    return MP.substitute(MP.Eval(), mono, [x, y] =&gt; [sign_x * var_x, sign_y * var_y])
+end
+function action(term::MP.AbstractTerm, el::DihedralElement)
+    return MP.coefficient(term) * action(MP.monomial(term), el)
+end
+function action(poly::MP.AbstractPolynomial, el::DihedralElement)
+    return MP.polynomial([action(term, el) for term in MP.terms(poly)])
+end
+
+poly = x^6 + y^6 - x^4 * y^2 - y^4 * x^2 - x^4 - y^4 - x^2 - y^2 + 3x^2 * y^2 + 1</code></pre><p class="math-container">\[ x^{6} - x^{4}y^{2} - x^{2}y^{4} + y^{6} - x^{4} + 3x^{2}y^{2} - y^{4} - x^{2} - y^{2} + 1 \]</p><p>We can verify that <code>poly</code> is indeed invariant under each element of the group as follows.</p><pre><code class="language-julia">G = DihedralGroup(4)
+for cc in SymbolicWedderburn.conjugacy_classes_orbit(G)
+    for g in cc
+        @show action(poly, g)
+        @show action(poly, g) == poly
+    end
+end</code></pre><pre class="documenter-example-output">action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true
+action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true
+action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true
+action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true
+action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true
+action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true
+action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true
+action(poly, g) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+action(poly, g) == poly = true</pre><p>We can exploit this symmetry for reducing the problem using the <code>SymmetricIdeal</code> certificate as follows:</p><pre><code class="language-julia">import CSDP
+solver = CSDP.Optimizer
+model = Model(solver)
+@variable(model, t)
+@objective(model, Max, t)
+con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G, action))
+optimize!(model)
+value(t)</code></pre><pre class="documenter-example-output">-0.93338346876774</pre><p>We indeed find <code>-3825/4096</code>, let&#39;s verify that symmetry was exploited:</p><pre><code class="language-julia">for g in gram_matrix(con_ref).sub_gram_matrices
+    println(g.basis.polynomials)
+    display(g.Q)
+end</code></pre><pre class="documenter-example-output">DynamicPolynomials.Polynomial{true,Float64}[x³, x²y, xy², y³, x, y]
+DynamicPolynomials.Polynomial{true,Float64}[x² + y², 1.0]
+DynamicPolynomials.Polynomial{true,Float64}[xy]
+DynamicPolynomials.Polynomial{true,Float64}[x² - y²]</pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Bound on Global Extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../Even reduction/">Even reduction »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 3 March 2021 11:26">Wednesday 3 March 2021</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
