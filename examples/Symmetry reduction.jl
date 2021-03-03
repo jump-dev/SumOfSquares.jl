@@ -4,9 +4,6 @@
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Symmetry reduction.ipynb)
 # **Adapted from**: https://github.com/kalmarek/SymbolicWedderburn.jl/blob/tw/ex_sos/examples/ex_C4.jl
 
-using Pkg
-pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#bl/nonperm"
-
 import MutableArithmetics
 const MA = MutableArithmetics
 using MultivariatePolynomials
@@ -26,45 +23,18 @@ poly = sum(x) + sum(x.^2)
 # minimum value 0.25, we would expect to get `-1` as answer.
 # Can this decoupling be exploited by SumOfSquares as well ?
 # For this, we need to use a certificate that can exploit the permutation symmetry of the polynomial.
-# This is still a work in progress in SumOfSquares, so we need to define things here:
-
-using SymbolicWedderburn
-using PermutationGroups
-using Cyclotomics
+# Symmetry reduction is still a work in progress in SumOfSquares, so we include the following files that will be incorporated into SumOfSquares.jl once SymbolicWedderburn.jl is released:
 using SumOfSquares
+include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
 
-function SymbolicWedderburn.ExtensionHomomorphism(basis::MB.MonomialBasis, action)
-    monos = collect(basis.monomials)
-    mono_to_index = Dict(monos[i] => i for i in eachindex(monos))
-    return SymbolicWedderburn.ExtensionHomomorphism(monos, mono_to_index, action)
-end
+# We define the symmetry group as a permutation group in the variables.
+# In order to do that, we define the action of a permutation on a monomial
+# as the monomial obtained after permuting the variables.
 
-function permuted(mono::AbstractMonomial, p::Perm)
+using PermutationGroups
+function action(mono::AbstractMonomial, p::Perm)
     v = variables(mono)
     MP.substitute(MP.Eval(), mono, v => [v[i^p] for i in eachindex(v)])
-end
-
-function MP.polynomialtype(::Type{<:MB.AbstractPolynomialVectorBasis{PT}}, T::Type) where PT
-    C = MP.coefficienttype(PT)
-    U = MA.promote_operation(*, C, T)
-    V = MA.promote_operation(+, U, U)
-    return MP.polynomialtype(PT, V)
-end
-struct SymmetricIdeal{CT, GT} <: Certificate.AbstractIdealCertificate
-    cone::CT
-    group::GT
-end
-SumOfSquares.matrix_cone_type(::Type{<:SymmetricIdeal{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
-Certificate.get(::Type{<:SymmetricIdeal}, ::SumOfSquares.Certificate.GramBasisType) = Vector{MB.FixedPolynomialBasis}
-Certificate.zero_basis_type(::Type{<:SymmetricIdeal}) = MB.MonomialBasis
-Certificate.zero_basis(::SymmetricIdeal) = MB.MonomialBasis
-Certificate.get(::SymmetricIdeal, ::Certificate.ReducedPolynomial, poly, domain) = poly
-function Certificate.get(cert::SymmetricIdeal, ::Certificate.GramBasis, poly)
-    basis = Certificate.maxdegree_gram_basis(MB.MonomialBasis, MP.variables(poly), MP.maxdegree(poly))
-    R = SymbolicWedderburn.symmetry_adapted_basis(cert.group, basis, permuted)
-    return map(R) do Ri
-        FixedPolynomialBasis(convert(Matrix{Float64}, Ri) * basis.monomials)
-    end
 end
 G = PermGroup([perm"(1,2,3,4)"])
 
@@ -75,7 +45,7 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G))
+con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G, action))
 optimize!(model)
 @test value(t) ≈ -1 #src
 value(t)
