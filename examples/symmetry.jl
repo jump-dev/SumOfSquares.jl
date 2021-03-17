@@ -1,5 +1,5 @@
 using Pkg
-pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#bl/nonperm"
+pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#bl/sos"
 
 import MutableArithmetics
 const MA = MutableArithmetics
@@ -26,20 +26,53 @@ function MP.polynomialtype(::Type{<:MB.AbstractPolynomialVectorBasis{PT}}, T::Ty
     return MP.polynomialtype(PT, V)
 end
 
-struct SymmetricIdeal{CT, GT, AT} <: Certificate.AbstractIdealCertificate
-    cone::CT
+struct SymmetricIdeal{C, GT, AT} <: Certificate.AbstractIdealCertificate
+    certificate::C
     group::GT
     action::AT
 end
-SumOfSquares.matrix_cone_type(::Type{<:SymmetricIdeal{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
-Certificate.get(::Type{<:SymmetricIdeal}, ::SumOfSquares.Certificate.GramBasisType) = Vector{MB.FixedPolynomialBasis}
+SumOfSquares.matrix_cone_type(::Type{<:SymmetricIdeal{C}}) where {C} = SumOfSquares.matrix_cone_type(C)
+Certificate.get(::Type{<:SymmetricIdeal}, ::SumOfSquares.Certificate.GramBasisType) = Vector{Vector{MB.FixedPolynomialBasis}}
 Certificate.zero_basis_type(::Type{<:SymmetricIdeal}) = MB.MonomialBasis
 Certificate.zero_basis(::SymmetricIdeal) = MB.MonomialBasis
-Certificate.get(::SymmetricIdeal, ::Certificate.ReducedPolynomial, poly, domain) = poly
-function Certificate.get(cert::SymmetricIdeal, ::Certificate.GramBasis, poly)
-    basis = Certificate.maxdegree_gram_basis(MB.MonomialBasis, MP.variables(poly), MP.maxdegree(poly))
-    R = SymbolicWedderburn.symmetry_adapted_basis(Float64, cert.group, basis, cert.action)
-    return map(R) do Ri
-        FixedPolynomialBasis(convert(Matrix{Float64}, Ri) * basis.monomials)
+function Certificate.get(certificate::SymmetricIdeal, attr::Certificate.ReducedPolynomial, poly, domain)
+    return Certificate.get(certificate.certificate, attr, poly, domain)
+end
+_type(::Type{MOI.PositiveSemidefiniteConeTriangle}) = Float64
+_type(::Type{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}) = Complex{Float64}
+function Certificate.get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly)
+    basis = Certificate.get(cert.certificate, attr, poly)
+    T = _type(SumOfSquares.matrix_cone_type(typeof(cert)))
+    Rs, ms = SymbolicWedderburn.symmetry_adapted_basis(T, cert.group, basis, cert.action)
+    return map(zip(Rs, ms)) do (R, m)
+        F = convert(Matrix{T}, R)
+        N = size(R, 1)
+        d = div(N, m)
+        if d > 1
+            if m > 1
+                ps = R * basis.monomials
+                S = map(gens(G)) do g
+                    Si = Matrix{Float64}(undef, N, N)
+                    for i in eachindex(ps)
+                        p = ps[i]
+                        q = action(p, g)
+                        coefs = coefficients(q, basis.monomials)
+                        col = row_echelon_linsolve(R, coefs)
+                        Si[:, i] = col
+                    end
+                    return Si
+                end
+                U = ordered_block_diag(S, d)
+            else
+                U = F
+            end
+            map(1:d) do i
+                FixedPolynomialBasis((U[:, i:d:(i+d*(m-1))]' * F) * basis.monomials)
+            end
+        else
+            [FixedPolynomialBasis(F * basis.monomials)]
+        end
     end
 end
+
+include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "block_diag.jl"))

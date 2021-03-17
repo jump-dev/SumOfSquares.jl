@@ -4,8 +4,11 @@ struct SOSPolynomialBridge{
     UMCT <: Union{Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
                   MOI.ConstraintIndex{MOI.VectorOfVariables}},
     UMST, MCT,
-    GB <: Union{Vector{<:MultivariateBases.AbstractPolynomialBasis},
-                MultivariateBases.AbstractPolynomialBasis},
+    GB <: Union{
+        Vector{<:Vector{<:MultivariateBases.AbstractPolynomialBasis}}, # Symmetry
+        Vector{<:MultivariateBases.AbstractPolynomialBasis},           # Sparsity
+        MultivariateBases.AbstractPolynomialBasis,                     # No reduction
+    },
     ZB <: MultivariateBases.AbstractPolynomialBasis,
     CT <: SOS.Certificate.AbstractIdealCertificate,
     MT <: MP.AbstractMonomial,
@@ -170,7 +173,9 @@ function _gram(f::Function, Q::Vector{MOI.VariableIndex}, gram_basis, T::Type, M
     return SOS.build_gram_matrix(convert(Vector{T}, f(Q)), gram_basis, MCT, T)
 end
 function _gram(f::Function, Qs::Vector{Vector{MOI.VariableIndex}}, gram_bases, T::Type, MCT)
-    return SOS.SparseGramMatrix([_gram(f, Q, gram_basis, T, MCT) for (Q, gram_basis) in zip(Qs, gram_bases)])
+    return SOS.build_gram_matrix(gram_bases, MCT, T) do i
+        return convert(Vector{T}, f(Qs[i]))
+    end
 end
 function MOI.get(model::MOI.ModelLike,
                  attr::SOS.GramMatrixAttribute,

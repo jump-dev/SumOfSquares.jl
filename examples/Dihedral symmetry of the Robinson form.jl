@@ -43,7 +43,7 @@ function PermutationGroups.order(el::DihedralElement)
         end
     end
 end
-Base.one(el::Union{DihedralElement}) = DihedralElement(el.n, false, 0)
+Base.one(el::DihedralElement) = DihedralElement(el.n, false, 0)
 function Base.inv(el::DihedralElement)
     if el.reflection || iszero(el.id)
         return el
@@ -136,17 +136,21 @@ function solve(G)
     model = Model(solver)
     @variable(model, t)
     @objective(model, Max, t)
-    con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G, action))
+    certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, action)
+    con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
     optimize!(model)
-    @test value(t) ≈ -3825/4096 rtol=1e-3 #src
+    @test value(t) ≈ -3825/4096 rtol=1e-2 #src
     @show value(t)
 
 
     g = gram_matrix(con_ref).sub_gram_matrices #src
-    @test length(g) == 4                       #src
-    @test g[1].basis.polynomials == [x^3, x^2*y, x*y^2, y^3, x, y] #src
-    for I in [[5, 1, 3], [6, 4, 2]]            #src
-        Q = g[1].Q[I, I]                       #src
+    @test length(g) == 5                       #src
+    @test g[1].basis.polynomials == [x*y^2, x^3, x] #src
+    @test g[2].basis.polynomials == [x^2*y, y^3, y] #src
+    for i in 1:2                        #src
+        I = 3:-1:1                      #src
+        Q = g[i].Q[I, I]                #src
+        @test size(Q) == (3, 3)         #src
         @test Q[1, 1] ≈ 25/64 rtol=1e-3 #src
         @test Q[1, 2] ≈ -5/8  rtol=1e-3 #src
         @test Q[1, 3] ≈  5/8  rtol=1e-3 #src
@@ -154,14 +158,17 @@ function solve(G)
         @test Q[2, 3] ≈ -1    rtol=1e-3 #src
         @test Q[3, 3] ≈  1    rtol=1e-3 #src
     end #src
-    @test g[2].basis.polynomials == [x^2 + y^2, 1.0] #src
-    @test g[2].Q[2, 2] ≈ 7921/4096 rtol=1e-3 #src
-    @test g[2].Q[1, 2] ≈  -89/128 rtol=1e-3  #src
-    @test g[2].Q[1, 1] ≈ 1/4 rtol=1e-3 #src
-    @test g[3].basis.polynomials == [x * y] #src
-    @test g[3].Q[1, 1] ≈ 0   atol=1e-3 #src
-    @test g[4].basis.polynomials == [x^2 - y^2] #src
+    @test g[3].basis.polynomials == [x^2 + y^2, 1.0] #src
+    @test size(g[3].Q) == (2, 2)             #src
+    @test g[3].Q[2, 2] ≈ 7921/4096 rtol=1e-3 #src
+    @test g[3].Q[1, 2] ≈  -89/128 rtol=1e-3  #src
+    @test g[3].Q[1, 1] ≈ 1/4 rtol=1e-3 #src
+    @test g[4].basis.polynomials == [x * y] #src
+    @test size(g[4].Q) == (1, 1)       #src
     @test g[4].Q[1, 1] ≈ 0   atol=1e-3 #src
+    @test g[5].basis.polynomials == [x^2 - y^2] #src
+    @test size(g[5].Q) == (1, 1)       #src
+    @test g[5].Q[1, 1] ≈ 0   atol=1e-3 #src
     for g in gram_matrix(con_ref).sub_gram_matrices
         println(g.basis.polynomials)
     end
@@ -170,7 +177,7 @@ solve(G)
 
 # We notice that we indeed find `-3825/4096` and that symmetry was exploited.
 # In case the conjugacy classes are known, we can implement
-# `SymbolicWedderburn.conjugacy_classes_orbit` instead of `gens`, `order` and `iterate`.
+# `SymbolicWedderburn.conjugacy_classes_orbit` instead of `order` and `iterate`.
 # To show that these do not need to be implemented, we create a new dihedral group type
 # that do not implement these methods but that instead implement
 # `SymbolicWedderburn.conjugacy_classes_orbit`:
@@ -178,6 +185,7 @@ solve(G)
 struct DihedralGroup2 <: Group
     n::Int
 end
+PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
 _orbit(cc::Vector{<:GroupElem}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
 _orbit(el::GroupElem) = _orbit([el])
 function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
