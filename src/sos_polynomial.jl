@@ -60,18 +60,25 @@ end
 #    return build_gram_matrix(C, basis, T, SymmetricVectorized())
 #end
 
-function build_gram_matrix(Q::Function, bases::Vector{<:AbstractPolynomialBasis}, matrix_cone_type, T)
-    return SparseGramMatrix(map(eachindex(bases)) do i
-        return build_gram_matrix(Q(i), bases[i], matrix_cone_type, T)
-    end)
+function build_matrix(Q::Function, bases::Vector{<:AbstractPolynomialBasis}, f::Function)
+    return map(eachindex(bases)) do i
+        return f(Q(i), bases[i])
+    end
 end
-function build_gram_matrix(Q::Function, bases::Vector{<:Vector{<:AbstractPolynomialBasis}}, matrix_cone_type, T)
-    return SparseGramMatrix([
-        build_gram_matrix(Q(i), bases[i][j], matrix_cone_type, T)
+function build_matrix(Q::Function, bases::Vector{<:Vector{<:AbstractPolynomialBasis}}, f::Function)
+    return [
+        f(Q(i), bases[i][j])
         for i in eachindex(bases) for j in eachindex(bases[i])
-    ])
+    ]
 end
 
+function build_gram_matrix(Q::Function, bases::Vector, matrix_cone_type, T)
+    return SparseGramMatrix(build_matrix(Q, bases, (Q, b) -> build_gram_matrix(Q, b, matrix_cone_type, T)))
+end
+
+function build_moment_matrix(Q::Function, bases::Vector)
+    return MultivariateMoments.SparseMomentMatrix(build_matrix(Q, bases, build_moment_matrix))
+end
 
 function union_constraint_indices_types(MCT)
     return Union{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(matrix_cone(MCT, 0))},

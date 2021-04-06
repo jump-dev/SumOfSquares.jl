@@ -51,11 +51,11 @@ function Certificate.get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly
         if d > 1
             if m > 1
                 ps = R * basis.monomials
-                S = map(gens(G)) do g
-                    Si = Matrix{Float64}(undef, N, N)
+                S = map(gens(cert.group)) do g
+                    Si = Matrix{T}(undef, N, N)
                     for i in eachindex(ps)
                         p = ps[i]
-                        q = action(p, g)
+                        q = cert.action(p, g)
                         coefs = coefficients(q, basis.monomials)
                         col = row_echelon_linsolve(R, coefs)
                         Si[:, i] = col
@@ -64,10 +64,11 @@ function Certificate.get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly
                 end
                 U = ordered_block_diag(S, d)
             else
-                U = F
+                U = Matrix(1.0I, N, N)
             end
+            ordered_block_check(U, S, d)
             map(1:d) do i
-                FixedPolynomialBasis((U[:, i:d:(i+d*(m-1))]' * F) * basis.monomials)
+                FixedPolynomialBasis((transpose(U[:, i:d:(i+d*(m-1))]) * F) * basis.monomials)
             end
         else
             [FixedPolynomialBasis(F * basis.monomials)]

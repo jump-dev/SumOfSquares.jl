@@ -12,7 +12,7 @@ function row_echelon_linsolve(A::Matrix{T}, b::Vector{T}) where {T}
         end
         error("Not in row_echelon_form, cannot find for `$i`th entry.")
     end
-    @assert x'A == b'
+    @assert transpose(A) * x == b
     return x
 end
 
@@ -45,11 +45,15 @@ function ordered_block_diag(As, d)
         U[:, I] = U[:, I[σ_ok]]
         offset += d
     end
+    ordered_block_check(U, As, d)
+    return U
+end
+
+function ordered_block_check(U, As, d)
     iU = inv(U)
     @assert all(As) do A
         is_ordered_blockdim(U * A * iU, d)
     end
-    return U
 end
 
 function block_diag(As, d)
@@ -79,7 +83,7 @@ function block_diag(As, d)
                     Cs = [B[v, v] for B in Bs]
                     V = block_diag(Cs, d)
                     V === nothing && break
-                    V *= T[:, v]'
+                    V *= transpose(T[:, v])
                 end
                 U[:, offset .+ eachindex(v)] = V
                 offset += length(v)

@@ -187,13 +187,13 @@ function MOI.get(model::MOI.ModelLike,
                  attr::SOS.MomentMatrixAttribute,
                  bridge::SOSPolynomialBridge)
     if bridge.cQ isa Vector{<:MOI.ConstraintIndex}
-        return MultivariateMoments.SparseMomentMatrix([
-            SOS.build_moment_matrix(MOI.get(model, MOI.ConstraintDual(attr.N), cQ), monos)
-            for (cQ, monos) in zip(bridge.cQ, bridge.gram_basis)
-        ])
+        return SOS.build_moment_matrix(bridge.gram_basis) do i
+            MOI.get(model, MOI.ConstraintDual(attr.N), bridge.cQ[i])
+        end
     else
-        return SOS.build_moment_matrix(MOI.get(model, MOI.ConstraintDual(attr.N),
-                                               bridge.cQ),
-                                       bridge.gram_basis)
+        return SOS.build_moment_matrix(
+            MOI.get(model, MOI.ConstraintDual(attr.N), bridge.cQ),
+            bridge.gram_basis,
+        )
     end
 end
