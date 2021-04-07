@@ -66,7 +66,6 @@ function Certificate.get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly
             else
                 U = Matrix(1.0I, N, N)
             end
-            ordered_block_check(U, S, d)
             map(1:d) do i
                 FixedPolynomialBasis((transpose(U[:, i:d:(i+d*(m-1))]) * F) * basis.monomials)
             end

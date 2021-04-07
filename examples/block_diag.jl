@@ -19,8 +19,9 @@ end
 function ordered_block_diag(As, d)
     U = block_diag(As, d)
     U === nothing && return nothing
-    iU = inv(U)
-    Bs = [U * A * inv(U) for A in As]
+    iU = U'
+    @assert iU ≈ inv(U)
+    Bs = [iU * A * U for A in As]
     @assert all(Bs) do B
         isblockdim(B, d)
     end
@@ -50,9 +51,10 @@ function ordered_block_diag(As, d)
 end
 
 function ordered_block_check(U, As, d)
-    iU = inv(U)
+    iU = U'
+    @assert iU ≈ inv(U)
     @assert all(As) do A
-        is_ordered_blockdim(U * A * iU, d)
+        is_ordered_blockdim(iU * A * U, d)
     end
 end
 
@@ -60,7 +62,8 @@ function block_diag(As, d)
     for A in As
         #T = eigen(A).vectors
         T = schur(A).vectors
-        iT = inv(T)
+        iT = T'
+        @assert iT ≈ inv(T)
         n = LinearAlgebra.checksquare(A)
         union_find = IntDisjointSets(n)
         Bs = [iT * A * T for A in As]
