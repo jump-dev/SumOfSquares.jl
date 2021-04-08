@@ -20,7 +20,7 @@ using DynamicPolynomials
 motzkin = x^4*y^2 + x^2*y^4 + 1 - 3x^2*y^2
 
 # The Motzkin polynomial is nonnegative but is not a sum of squares as we can verify numerically as follows.
-# We first need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v0.21.6/installation/#Supported-solvers) for a list of the available choices.
 
 using SumOfSquares
 import CSDP
