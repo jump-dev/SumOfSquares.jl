@@ -60,6 +60,26 @@ end
 #    return build_gram_matrix(C, basis, T, SymmetricVectorized())
 #end
 
+function build_matrix(Q::Function, bases::Vector{<:AbstractPolynomialBasis}, f::Function)
+    return map(eachindex(bases)) do i
+        return f(Q(i), bases[i])
+    end
+end
+function build_matrix(Q::Function, bases::Vector{<:Vector{<:AbstractPolynomialBasis}}, f::Function)
+    return [
+        f(Q(i), bases[i][j])
+        for i in eachindex(bases) for j in eachindex(bases[i])
+    ]
+end
+
+function build_gram_matrix(Q::Function, bases::Vector, matrix_cone_type, T)
+    return SparseGramMatrix(build_matrix(Q, bases, (Q, b) -> build_gram_matrix(Q, b, matrix_cone_type, T)))
+end
+
+function build_moment_matrix(Q::Function, bases::Vector)
+    return MultivariateMoments.SparseMomentMatrix(build_matrix(Q, bases, build_moment_matrix))
+end
+
 function union_constraint_indices_types(MCT)
     return Union{MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(matrix_cone(MCT, 0))},
                  MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(matrix_cone(MCT, 1))},
@@ -73,16 +93,25 @@ function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
     q = build_gram_matrix(Q, basis, matrix_cone_type, T)
     return q, Q, cQ
 end
+_first(b::AbstractPolynomialBasis) = b
+_first(b::Vector) = first(b)
 function add_gram_matrix(model::MOI.ModelLike, matrix_cone_type::Type,
-                         bases::Vector{<:AbstractPolynomialBasis}, T::Type)
+                         bases::Vector, T::Type)
     Qs = Vector{Vector{MOI.VariableIndex}}(undef, length(bases))
     cQs = Vector{union_constraint_indices_types(matrix_cone_type)}(undef, length(bases))
-    # We use `map` for `grams` as it's less easy to infer its type
-    grams = map(eachindex(bases)) do i
-        gram, Qs[i], cQs[i] = add_gram_matrix(model, matrix_cone_type, bases[i], T)
-        return gram
+    cur = 0
+    g = build_gram_matrix(bases, matrix_cone_type, T) do i
+        # If `bases` is a vector of vector, the function
+        # is called several times for the same `i` but we only need to
+        # add it once.
+        if i != cur
+            @assert i == cur + 1
+            cur = i
+            Qs[i], cQs[i] = MOI.add_constrained_variables(model, matrix_cone(matrix_cone_type, length(_first(bases[i]))))
+        end
+        return Qs[i]
     end
-    return SparseGramMatrix(grams), Qs, cQs
+    return g, Qs, cQs
 end
 
 function build_moment_matrix(q::Vector,

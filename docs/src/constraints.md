@@ -93,10 +93,10 @@ be used with another JuMP extension that also has a special model constructor.
 A third alternative is the following:
 ```jldoctest constraint-pq
 julia> PolyJuMP.setdefault!(model, PolyJuMP.NonNegPoly, SOSCone)
-NonnegPolyInnerCone{MathOptInterface.PositiveSemidefiniteConeTriangle}
+SOSCone (alias for NonnegPolyInnerCone{MathOptInterface.PositiveSemidefiniteConeTriangle})
 
 julia> PolyJuMP.setdefault!(model, PolyJuMP.PosDefPolyMatrix, SOSMatrixCone)
-PSDMatrixInnerCone{MathOptInterface.PositiveSemidefiniteConeTriangle}
+SOSMatrixCone (alias for PSDMatrixInnerCone{MathOptInterface.PositiveSemidefiniteConeTriangle})
 ```
 This approach adds the flexibility to choose the default cone for
 
@@ -113,7 +113,7 @@ For instance, to use the diagonally-dominant-sum-of-squares cone (see
 [Definition 2, AM17]) for the first type of contraints, do
 ```jldoctest constraint-pq
 julia> PolyJuMP.setdefault!(model, PolyJuMP.NonNegPoly, DSOSCone)
-NonnegPolyInnerCone{SumOfSquares.DiagonallyDominantConeTriangle}
+DSOSCone (alias for NonnegPolyInnerCone{SumOfSquares.DiagonallyDominantConeTriangle})
 ```
 
 ## Changing the polynomial basis
