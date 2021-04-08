@@ -38,6 +38,5 @@ include("Mock/mock_tests.jl")
 # converted to be used with `MockOptimizer` and moved to `test/Tests`
 include("solvers.jl")
 include("sospoly.jl")
-include("domain.jl")
 include("sosquartic.jl")
 include("equalitypolyconstr.jl")

@@ -14,7 +14,7 @@ f = [-x[1]^3 - x[1] * x[3]^2,
      -x[2] - x[1]^2 * x[2],
      -x[3] - 3x[3] / (x[3]^2 + 1) + 3x[1]^2 * x[3]]
 
-# We need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v0.21.6/installation/#Supported-solvers) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
 using SumOfSquares

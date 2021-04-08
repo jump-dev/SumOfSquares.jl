@@ -16,7 +16,7 @@ f3 = 2x1 - 3x2
 f4 = 18 - 32x1 + 12x1^2 + 48x2 - 36x1*x2 + 27x2^2
 f = (1 + f1^2 * f2) * (30 + f3^2 * f4)
 
-# We need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v0.21.6/installation/#Supported-solvers) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
 using SumOfSquares

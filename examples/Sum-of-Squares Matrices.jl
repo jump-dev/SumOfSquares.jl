@@ -30,7 +30,7 @@ P = [x^2 - 2x + 2 x
 
 using SumOfSquares
 
-# We first need to pick an SDP solver, see [here](http://jump.dev/JuMP.jl/dev/installation/#Getting-Solvers-1) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v0.21.6/installation/#Supported-solvers) for a list of the available choices.
 
 import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
