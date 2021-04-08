@@ -51,27 +51,27 @@ Just like with classical JuMP's decision variables, containers of polynomial
 variables can be created as follows:
 ```jldoctest variables
 julia> @variable(model, [1:3, 1:4], Poly(X))       # Creates a Matrix
-3×4 Matrix{Polynomial{true,VariableRef}}:
+3×4 Matrix{Polynomial{true, VariableRef}}:
  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)  …  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)     (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)     (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
 
 julia> @variable(model, [[:a, :b], -2:2], Poly(X)) # Creates a DenseAxisArray
-2-dimensional DenseAxisArray{DynamicPolynomials.Polynomial{true,VariableRef},2,...} with index sets:
+2-dimensional DenseAxisArray{DynamicPolynomials.Polynomial{true, VariableRef},2,...} with index sets:
     Dimension 1, [:a, :b]
     Dimension 2, -2:2
-And data, a 2×5 Matrix{DynamicPolynomials.Polynomial{true,VariableRef}}:
+And data, a 2×5 Matrix{DynamicPolynomials.Polynomial{true, VariableRef}}:
  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)  …  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)     (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
 
 julia> @variable(model, [i=1:3, j=i:3], Poly(X))   # Creates a SparseAxisArray
 JuMP.Containers.SparseAxisArray{Polynomial{true, VariableRef}, 2, Tuple{Int64, Int64}} with 6 entries:
   [1, 2]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [2, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [3, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [2, 2]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
   [1, 1]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
+  [3, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
   [1, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
+  [2, 2]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
+  [2, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
 ```
 
 For more flexibility, polynomials parametrized by decision variables can also
@@ -102,9 +102,9 @@ For instance, the following code creates a ``3 \times 4`` matrix of
 sum-of-squares polynomial variables:
 ```jldoctest variables
 julia> @variable(model, [1:2], SOSPoly(X))
-2-element Vector{GramMatrix{VariableRef,MonomialBasis{Monomial{true},MonomialVector{true}},GenericAffExpr{Float64,VariableRef},SymMatrix{VariableRef}}}:
- GramMatrix{VariableRef,MonomialBasis{Monomial{true},MonomialVector{true}},GenericAffExpr{Float64,VariableRef},SymMatrix{VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], MonomialBasis{Monomial{true},MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
- GramMatrix{VariableRef,MonomialBasis{Monomial{true},MonomialVector{true}},GenericAffExpr{Float64,VariableRef},SymMatrix{VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], MonomialBasis{Monomial{true},MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
+2-element Vector{GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}}:
+ GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
+ GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
 ```
 There is however an *important* difference between the meaning of the
 vector of monomials `X` between `Poly` and `SOSPoly`. For `SOSPoly`, it
