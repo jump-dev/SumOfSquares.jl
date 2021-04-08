@@ -22,7 +22,7 @@ function PermutationGroups.order(el::DihedralElement)
         end
     end
 end
-Base.one(el::Union{DihedralElement}) = DihedralElement(el.n, false, 0)
+Base.one(el::DihedralElement) = DihedralElement(el.n, false, 0)
 function Base.inv(el::DihedralElement)
     if el.reflection || iszero(el.id)
         return el
@@ -100,7 +100,8 @@ function solve(G)
     model = Model(solver)
     @variable(model, t)
     @objective(model, Max, t)
-    con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = SymmetricIdeal(SOSCone(), G, action))
+    certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, action)
+    con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
     optimize!(model)
     @show value(t)
 
@@ -114,6 +115,7 @@ solve(G)
 struct DihedralGroup2 <: Group
     n::Int
 end
+PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
 _orbit(cc::Vector{<:GroupElem}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
 _orbit(el::GroupElem) = _orbit([el])
 function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
