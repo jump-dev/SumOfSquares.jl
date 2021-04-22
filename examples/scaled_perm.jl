@@ -45,5 +45,5 @@ end
 Base.:^(p::ScaledPerm, k::Integer) = Base.power_by_squaring(p, k)
 
 function SymbolicWedderburn.permutation(ehom::SymbolicWedderburn.ExtensionHomomorphism{<:AbstractMonomial}, terms::Vector{<:AbstractTerm})
-    return ScaledPerm([ehom[monomial(term)] => coefficient(term) for term in terms])
+    return ScaledPerm([ehom[monomial(term)] => MP.coefficient(term) for term in terms])
 end
