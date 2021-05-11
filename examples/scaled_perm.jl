@@ -1,4 +1,4 @@
-struct ScaledPerm{T, I} <: AbstractPerm
+struct ScaledPerm{T, I} <: GroupsCore.AbstractAlgebra.AbstractPerm
     indices::Vector{Pair{I, T}}
 end
 function trace_matrix_representative(p::ScaledPerm)
