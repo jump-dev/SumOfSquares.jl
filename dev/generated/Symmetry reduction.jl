@@ -14,14 +14,14 @@ using SumOfSquares
 include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
 
 using PermutationGroups
-function action(mono::AbstractMonomial, p::Perm)
+function action(mono::AbstractMonomial, p::Permutation)
     v = variables(mono)
     MP.substitute(MP.Eval(), mono, v => [v[i^p] for i in eachindex(v)])
 end
-function action(term::MP.AbstractTerm, el::Perm)
+function action(term::MP.AbstractTerm, el::Permutation)
     return MP.coefficient(term) * action(MP.monomial(term), el)
 end
-function action(poly::MP.AbstractPolynomial, el::Perm)
+function action(poly::MP.AbstractPolynomial, el::Permutation)
     return MP.polynomial([action(term, el) for term in MP.terms(poly)])
 end
 

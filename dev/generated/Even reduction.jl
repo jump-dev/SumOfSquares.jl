@@ -10,11 +10,11 @@ include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.j
 include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "scaled_perm.jl"))
 
 using PermutationGroups
-function action(mono::MP.AbstractMonomial, p::Perm)
-    if p == perm"(1)(2)" || iseven(MP.degree(mono))
+function action(mono::MP.AbstractMonomial, p::Permutation)
+    if p.perm == perm"(1)(2)" || iseven(MP.degree(mono))
         return 1 * mono
     else
-        @assert p == perm"(1,2)"
+        @assert p.perm == perm"(1,2)"
         return -1 * mono
     end
 end
