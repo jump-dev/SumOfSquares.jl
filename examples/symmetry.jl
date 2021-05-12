@@ -8,6 +8,7 @@ const MP = MultivariatePolynomials
 using MultivariateBases
 const MB = MultivariateBases
 
+using GroupsCore
 using SymbolicWedderburn
 using PermutationGroups
 using Cyclotomics

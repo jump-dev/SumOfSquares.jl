@@ -27,10 +27,13 @@ G = PermGroup([c, d])
 # However, in order to illustrate how to do symmetry reduction with a custom group,
 # we show in this example what should be implemented to define a new group.
 
-struct DihedralElement <: GroupElem
+struct DihedralElement <: GroupElement
     n::Int
     reflection::Bool
     id::Int
+end
+function Base.:(==)(g::DihedralElement, h::DihedralElement)
+    return g.n == h.n && g.reflection == h.reflection && g.id == h.id
 end
 function PermutationGroups.order(el::DihedralElement)
     if el.reflection
@@ -55,9 +58,6 @@ function Base.:*(a::DihedralElement, b::DihedralElement)
     a.n == b.n || error("Cannot multiply elements from different Dihedral groups")
     id = mod(a.reflection ? a.id - b.id : a.id + b.id, a.n)
     return DihedralElement(a.n, a.reflection != b.reflection, id)
-end
-function PermutationGroups.mul!(::DihedralElement, a::DihedralElement, b::DihedralElement)
-    return a * b
 end
 function Base.:^(el::DihedralElement, k::Integer)
     if el.reflection
@@ -186,8 +186,8 @@ struct DihedralGroup2 <: Group
     n::Int
 end
 PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
-_orbit(cc::Vector{<:GroupElem}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
-_orbit(el::GroupElem) = _orbit([el])
+_orbit(cc::Vector{<:GroupElement}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
+_orbit(el::GroupElement) = _orbit([el])
 function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
     orbits = [_orbit(DihedralElement(d.n, false, 0))]
     for i in 1:div(d.n - 1, 2)
