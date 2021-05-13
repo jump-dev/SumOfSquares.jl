@@ -1,5 +1,5 @@
-using Pkg
-pkg"add https://github.com/kalmarek/SymbolicWedderburn.jl#bl/sos"
+#using Pkg
+#pkg"dev https://github.com/kalmarek/SymbolicWedderburn.jl"
 
 import MutableArithmetics
 const MA = MutableArithmetics
@@ -14,6 +14,9 @@ using PermutationGroups
 using Cyclotomics
 using SumOfSquares
 
+function SymbolicWedderburn.decompose(m::T, hom::SymbolicWedderburn.ExtensionHomomorphism{T, A, I, V}) where {T<:MP.AbstractPolynomialLike, A, I, V}
+    return [hom[m]], [one(SymbolicWedderburn.coeff_type(hom.ac))]
+end
 function SymbolicWedderburn.decompose(k::MP.AbstractPolynomialLike, hom::SymbolicWedderburn.InducedActionHomomorphism)
     # correct only if features(hom) == monomials
 
