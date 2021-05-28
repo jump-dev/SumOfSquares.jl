@@ -14,14 +14,15 @@ using SumOfSquares
 include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
 
 using PermutationGroups
-function action(mono::AbstractMonomial, p::Permutation)
+struct OnVariables <: SymbolicWedderburn.ByPermutations end
+function SymbolicWedderburn.action(::OnVariables, p::Permutation, mono::AbstractMonomial)
     v = variables(mono)
     MP.substitute(MP.Eval(), mono, v => [v[i^p] for i in eachindex(v)])
 end
-function action(term::MP.AbstractTerm, el::Permutation)
+function SymbolicWedderburn.action(::OnVariables, el::Permutation, term::MP.AbstractTerm)
     return MP.coefficient(term) * action(MP.monomial(term), el)
 end
-function action(poly::MP.AbstractPolynomial, el::Permutation)
+function SymbolicWedderburn.action(::OnVariables, el::Permutation, poly::MP.AbstractPolynomial)
     return MP.polynomial([action(term, el) for term in MP.terms(poly)])
 end
 
@@ -32,7 +33,7 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, action)
+certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, OnVariables())
 con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
 optimize!(model)
 value(t)

@@ -1,6 +1,6 @@
 using SumOfSquares
 include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
-include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "scaled_perm.jl"))
+#include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "scaled_perm.jl"))
 
 d = perm"(1, 2, 3, 4)"
 c = perm"(1, 3)"
@@ -70,7 +70,9 @@ end
 
 using DynamicPolynomials
 @polyvar x y
-function action(mono::MP.AbstractMonomial, el::DihedralElement)
+struct DihedralAction <: SymbolicWedderburn.ByLinearTransformation end
+SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
+function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::MP.AbstractMonomial)
     if iseven(el.reflection + el.id)
         var_x, var_y = x, y
     else
@@ -80,18 +82,18 @@ function action(mono::MP.AbstractMonomial, el::DihedralElement)
     sign_y = 2 <= el.id ? -1 : 1
     return MP.substitute(MP.Eval(), mono, [x, y] => [sign_x * var_x, sign_y * var_y])
 end
-function action(term::MP.AbstractTerm, el::DihedralElement)
-    return MP.coefficient(term) * action(MP.monomial(term), el)
+function SymbolicWedderburn.action(a::DihedralAction, el::DihedralElement, term::MP.AbstractTerm)
+    return MP.coefficient(term) * SymbolicWedderburn.action(a, el, MP.monomial(term))
 end
-function action(poly::MP.AbstractPolynomial, el::DihedralElement)
-    return MP.polynomial([action(term, el) for term in MP.terms(poly)])
+function SymbolicWedderburn.action(a::DihedralAction, el::DihedralElement, poly::MP.AbstractPolynomial)
+    return MP.polynomial([SymbolicWedderburn.action(a, el, term) for term in MP.terms(poly)])
 end
 
 poly = x^6 + y^6 - x^4 * y^2 - y^4 * x^2 - x^4 - y^4 - x^2 - y^2 + 3x^2 * y^2 + 1
 
 G = DihedralGroup(4)
 for g in G
-    @show action(poly, g)
+    @show SymbolicWedderburn.action(DihedralAction(), g, poly)
 end
 
 import CSDP
@@ -100,7 +102,7 @@ function solve(G)
     model = Model(solver)
     @variable(model, t)
     @objective(model, Max, t)
-    certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, action)
+    certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, DihedralAction())
     con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
     optimize!(model)
     @show value(t)
@@ -144,7 +146,7 @@ end
 G = DihedralGroup2(4)
 for cc in SymbolicWedderburn.conjugacy_classes_orbit(G)
     for g in cc
-        @show action(poly, g)
+        @show SymbolicWedderburn.action(DihedralAction(), g, poly)
     end
 end
 
