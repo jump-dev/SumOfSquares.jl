@@ -14,10 +14,19 @@ using PermutationGroups
 using Cyclotomics
 using SumOfSquares
 
-function SymbolicWedderburn.ExtensionHomomorphism(basis::MB.MonomialBasis, action)
+function SymbolicWedderburn.decompose(k::MP.AbstractPolynomialLike, hom::SymbolicWedderburn.InducedActionHomomorphism)
+    # correct only if features(hom) == monomials
+
+    indcs = [hom[mono] for mono in MP.monomials(k)]
+    coeffs = MP.coefficients(k)
+
+    return indcs, coeffs
+end
+
+function SymbolicWedderburn.ExtensionHomomorphism(action::SymbolicWedderburn.Action, basis::MB.MonomialBasis)
     monos = collect(basis.monomials)
     mono_to_index = Dict(monos[i] => i for i in eachindex(monos))
-    return SymbolicWedderburn.ExtensionHomomorphism(monos, mono_to_index, action)
+    return SymbolicWedderburn.ExtensionHomomorphism(action, monos, mono_to_index)
 end
 
 function MP.polynomialtype(::Type{<:MB.AbstractPolynomialVectorBasis{PT}}, T::Type) where PT
@@ -56,7 +65,7 @@ function Certificate.get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly
                     Si = Matrix{T}(undef, N, N)
                     for i in eachindex(ps)
                         p = ps[i]
-                        q = cert.action(p, g)
+                        q = SymbolicWedderburn.action(cert.action, g, p)
                         coefs = coefficients(q, basis.monomials)
                         col = row_echelon_linsolve(R, coefs)
                         Si[:, i] = col
