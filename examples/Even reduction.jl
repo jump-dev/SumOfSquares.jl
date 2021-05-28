@@ -16,12 +16,14 @@ using SumOfSquares
 # Symmetry reduction is still a work in progress in SumOfSquares, so we include the following files that will be incorporated into SumOfSquares.jl once SymbolicWedderburn.jl is released:
 using SumOfSquares
 include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
-include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "scaled_perm.jl"))
+#include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "scaled_perm.jl"))
 
 # We define the custom action as follows:
 
 using PermutationGroups
-function action(mono::MP.AbstractMonomial, p::Permutation)
+struct OnSign <: SymbolicWedderburn.ByLinearTransformation end
+SymbolicWedderburn.coeff_type(::OnSign) = Float64
+function SymbolicWedderburn.action(::OnSign, p::Permutation, mono::MP.AbstractMonomial)
     if p.perm == perm"(1)(2)" || iseven(MP.degree(mono))
         return 1 * mono
     else
@@ -38,7 +40,7 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, action)
+certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, OnSign())
 con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
 optimize!(model)
 @test value(t) ≈ -1 #src
