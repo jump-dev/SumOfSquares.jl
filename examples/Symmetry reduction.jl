@@ -23,27 +23,14 @@ poly = sum(x) + sum(x.^2)
 # minimum value 0.25, we would expect to get `-1` as answer.
 # Can this decoupling be exploited by SumOfSquares as well ?
 # For this, we need to use a certificate that can exploit the permutation symmetry of the polynomial.
-# Symmetry reduction is still a work in progress in SumOfSquares, so we include the following files that will be incorporated into SumOfSquares.jl once SymbolicWedderburn.jl is released:
+
 using SumOfSquares
-include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
 
 # We define the symmetry group as a permutation group in the variables.
 # In order to do that, we define the action of a permutation on a monomial
 # as the monomial obtained after permuting the variables.
 
 using PermutationGroups
-struct OnVariables <: SymbolicWedderburn.ByPermutations end
-function SymbolicWedderburn.action(::OnVariables, p::Permutation, mono::AbstractMonomial)
-    v = variables(mono)
-    MP.substitute(MP.Eval(), mono, v => [v[i^p] for i in eachindex(v)])
-end
-function SymbolicWedderburn.action(::OnVariables, el::Permutation, term::MP.AbstractTerm)
-    return MP.coefficient(term) * action(MP.monomial(term), el)
-end
-function SymbolicWedderburn.action(::OnVariables, el::Permutation, poly::MP.AbstractPolynomial)
-    return MP.polynomial([action(term, el) for term in MP.terms(poly)])
-end
-
 G = PermGroup([perm"(1,2,3,4)"])
 
 # We can use this certificate as follows:
@@ -53,7 +40,7 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, OnVariables())
+certificate = Certificate.SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, Certificate.VariablePermutation())
 con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
 optimize!(model)
 @test value(t) ≈ -1 #src
