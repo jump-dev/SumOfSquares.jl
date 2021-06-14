@@ -4,6 +4,7 @@ repo = "https://github.com/jump-dev/SumOfSquares.jl.git"
 version = "0.4.6"
 
 [deps]
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 ComplexOptInterface = "25c3070e-1275-41b5-afef-2f982c87090a"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
@@ -17,8 +18,10 @@ PolyJuMP = "ddf597a6-d67e-5340-b84c-e37d84115374"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SemialgebraicSets = "8e049039-38e8-557d-ae3a-bc521ccf6204"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 
 [compat]
+Combinatorics = "1"
 ComplexOptInterface = "0.0.2"
 DataStructures = "0.18"
 DynamicPolynomials = "0.3.6"
@@ -31,6 +34,7 @@ MutableArithmetics = "0.2"
 PolyJuMP = "0.4.2"
 Reexport = "0.2, 1.0"
 SemialgebraicSets = "0.2"
+SymbolicWedderburn = "0.1"
 julia = "1"
 
 [extras]

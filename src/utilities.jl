@@ -20,3 +20,6 @@ function primal_value(model, p::GramMatrix{MOI.SingleVariable})
                 MOI.VariableIndex[sv.variable for sv in p.Q.Q])
     return GramMatrix(SymMatrix(Q, p.Q.n), p.basis)
 end
+
+_complex(::Type{T}, ::Type) where {T} = T
+_complex(::Type{T}, ::Type{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}) where {T} = Complex{T}

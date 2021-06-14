@@ -1,5 +1,7 @@
 module Certificate
 
+import MutableArithmetics
+const MA = MutableArithmetics
 import MultivariatePolynomials
 const MP = MultivariatePolynomials
 import MultivariateBases
@@ -252,5 +254,8 @@ using .ChordalExtensionGraph: ChordalCompletion, ClusterCompletion
 export ChordalCompletion, ClusterCompletion
 
 include("sparse/sparse_putinar.jl")
+
+include("symmetry.jl")
+include("block_diag.jl")
 
 end
