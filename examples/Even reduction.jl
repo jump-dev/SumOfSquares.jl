@@ -15,12 +15,12 @@ using SumOfSquares
 
 # We define the custom action as follows:
 
-struct OnSign <: Certificate.MonomialTransformation end
+struct OnSign <: Certificate.OnMonomials end
 using PermutationGroups
 import SymbolicWedderburn
 SymbolicWedderburn.coeff_type(::OnSign) = Float64
-function SymbolicWedderburn.action(::OnSign, p::PermutationGroups.Permutation, mono::MP.AbstractMonomial)
-    if p.perm == perm"(1)(2)" || iseven(MP.degree(mono))
+function SymbolicWedderburn.action(::OnSign, p::PermutationGroups.Permutation, mono::AbstractMonomial)
+    if p.perm == perm"(1)(2)" || iseven(degree(mono))
         return 1 * mono
     else
         @assert p.perm == perm"(1,2)"

@@ -96,12 +96,13 @@ end
 # | 2  | -x, -y   | -y, -x     |
 # | 3  | y, -x    | x, -y      |
 
+using SumOfSquares
 using DynamicPolynomials
 @polyvar x y
-struct DihedralAction <: Certificate.MonomialTransformation end
+struct DihedralAction <: Certificate.OnMonomials end
 import SymbolicWedderburn
 SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
-function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::MP.AbstractMonomial)
+function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::AbstractMonomial)
     if iseven(el.reflection + el.id)
         var_x, var_y = x, y
     else
@@ -109,7 +110,7 @@ function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::
     end
     sign_x = 1 <= el.id <= 2 ? -1 : 1
     sign_y = 2 <= el.id ? -1 : 1
-    return MP.substitute(MP.Eval(), mono, [x, y] => [sign_x * var_x, sign_y * var_y])
+    return mono([x, y] => [sign_x * var_x, sign_y * var_y])
 end
 
 poly = x^6 + y^6 - x^4 * y^2 - y^4 * x^2 - x^4 - y^4 - x^2 - y^2 + 3x^2 * y^2 + 1

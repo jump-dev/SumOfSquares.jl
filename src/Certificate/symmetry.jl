@@ -33,17 +33,17 @@ function SymbolicWedderburn.action(::VariablePermutation, p, mono::MP.AbstractMo
     v = variables(mono)
     MP.substitute(MP.Eval(), mono, v => _map_idx(i -> v[i^p], v))
 end
-abstract type MonomialTransformation <: SymbolicWedderburn.ByLinearTransformation end
+abstract type OnMonomials <: SymbolicWedderburn.ByLinearTransformation end
 
 function SymbolicWedderburn.action(
-    a::Union{VariablePermutation,MonomialTransformation},
+    a::Union{VariablePermutation,OnMonomials},
     el,
     term::MP.AbstractTerm,
 )
     return MP.coefficient(term) * SymbolicWedderburn.action(a, el, MP.monomial(term))
 end
 function SymbolicWedderburn.action(
-    a::Union{VariablePermutation,MonomialTransformation},
+    a::Union{VariablePermutation,OnMonomials},
     el,
     poly::MP.AbstractPolynomial,
 )
