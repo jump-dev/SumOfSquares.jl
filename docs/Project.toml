@@ -19,4 +19,4 @@ SumOfSquares = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 
 [compat]
-Documenter = "~0.26"
+Documenter = "~0.27"
