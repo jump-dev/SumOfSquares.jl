@@ -1,12 +1,10 @@
-using SumOfSquares
-include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
-#include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "scaled_perm.jl"))
-
+using PermutationGroups
 d = perm"(1, 2, 3, 4)"
 c = perm"(1, 3)"
 G = PermGroup([c, d])
 
-struct DihedralElement <: GroupElement
+import GroupsCore
+struct DihedralElement <: GroupsCore.GroupElement
     n::Int
     reflection::Bool
     id::Int
@@ -49,7 +47,7 @@ end
 Base.conj(a::DihedralElement, b::DihedralElement) = inv(b) * a * b
 Base.:^(a::DihedralElement, b::DihedralElement) = conj(a, b)
 
-struct DihedralGroup <: Group
+struct DihedralGroup <: GroupsCore.Group
     n::Int
 end
 Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
@@ -68,11 +66,13 @@ function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.
     return next, next
 end
 
+using SumOfSquares
 using DynamicPolynomials
 @polyvar x y
-struct DihedralAction <: SymbolicWedderburn.ByLinearTransformation end
+struct DihedralAction <: Certificate.OnMonomials end
+import SymbolicWedderburn
 SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
-function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::MP.AbstractMonomial)
+function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::AbstractMonomial)
     if iseven(el.reflection + el.id)
         var_x, var_y = x, y
     else
@@ -80,13 +80,7 @@ function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::
     end
     sign_x = 1 <= el.id <= 2 ? -1 : 1
     sign_y = 2 <= el.id ? -1 : 1
-    return MP.substitute(MP.Eval(), mono, [x, y] => [sign_x * var_x, sign_y * var_y])
-end
-function SymbolicWedderburn.action(a::DihedralAction, el::DihedralElement, term::MP.AbstractTerm)
-    return MP.coefficient(term) * SymbolicWedderburn.action(a, el, MP.monomial(term))
-end
-function SymbolicWedderburn.action(a::DihedralAction, el::DihedralElement, poly::MP.AbstractPolynomial)
-    return MP.polynomial([SymbolicWedderburn.action(a, el, term) for term in MP.terms(poly)])
+    return mono([x, y] => [sign_x * var_x, sign_y * var_y])
 end
 
 poly = x^6 + y^6 - x^4 * y^2 - y^4 * x^2 - x^4 - y^4 - x^2 - y^2 + 3x^2 * y^2 + 1
@@ -102,7 +96,7 @@ function solve(G)
     model = Model(solver)
     @variable(model, t)
     @objective(model, Max, t)
-    certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, DihedralAction())
+    certificate = Certificate.SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, DihedralAction())
     con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
     optimize!(model)
     @show value(t)
@@ -114,12 +108,12 @@ function solve(G)
 end
 solve(G)
 
-struct DihedralGroup2 <: Group
+struct DihedralGroup2 <: GroupsCore.Group
     n::Int
 end
 PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
-_orbit(cc::Vector{<:GroupElement}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
-_orbit(el::GroupElement) = _orbit([el])
+_orbit(cc::Vector{<:GroupsCore.GroupElement}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
+_orbit(el::GroupsCore.GroupElement) = _orbit([el])
 function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
     orbits = [_orbit(DihedralElement(d.n, false, 0))]
     for i in 1:div(d.n - 1, 2)

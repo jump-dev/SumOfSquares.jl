@@ -5,15 +5,12 @@ poly = x^4 - 2x^2
 
 using SumOfSquares
 
-using SumOfSquares
-include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "symmetry.jl"))
-#include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "scaled_perm.jl"))
-
+struct OnSign <: Certificate.OnMonomials end
 using PermutationGroups
-struct OnSign <: SymbolicWedderburn.ByLinearTransformation end
+import SymbolicWedderburn
 SymbolicWedderburn.coeff_type(::OnSign) = Float64
-function SymbolicWedderburn.action(::OnSign, p::Permutation, mono::MP.AbstractMonomial)
-    if p.perm == perm"(1)(2)" || iseven(MP.degree(mono))
+function SymbolicWedderburn.action(::OnSign, p::Permutation, mono::AbstractMonomial)
+    if p.perm == perm"(1)(2)" || iseven(DynamicPolynomials.degree(mono))
         return 1 * mono
     else
         @assert p.perm == perm"(1,2)"
@@ -27,7 +24,7 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-certificate = SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, OnSign())
+certificate = Certificate.SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, OnSign())
 con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
 optimize!(model)
 value(t)
