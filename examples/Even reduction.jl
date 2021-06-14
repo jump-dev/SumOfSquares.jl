@@ -19,8 +19,8 @@ struct OnSign <: Certificate.OnMonomials end
 using PermutationGroups
 import SymbolicWedderburn
 SymbolicWedderburn.coeff_type(::OnSign) = Float64
-function SymbolicWedderburn.action(::OnSign, p::PermutationGroups.Permutation, mono::AbstractMonomial)
-    if p.perm == perm"(1)(2)" || iseven(degree(mono))
+function SymbolicWedderburn.action(::OnSign, p::Permutation, mono::AbstractMonomial)
+    if p.perm == perm"(1)(2)" || iseven(DynamicPolynomials.degree(mono))
         return 1 * mono
     else
         @assert p.perm == perm"(1,2)"
