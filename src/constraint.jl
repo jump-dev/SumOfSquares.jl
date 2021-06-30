@@ -66,17 +66,17 @@ function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return Certificate.get(set.certificate, Certificate.Cone())
 end
 
-function default_ideal_certificate(domain, cone, basis, maxdegree, newton_polytope)
+function default_ideal_certificate(domain, basis, cone, maxdegree, newton_polytope)
     if maxdegree === nothing
         return Certificate.Newton(cone, basis, newton_polytope)
     else
         return Certificate.MaxDegree(cone, basis, maxdegree)
     end
 end
-function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, maxdegree, newton_polytope)
+function default_ideal_certificate(domain::FixedVariablesSet, basis, cone, maxdegree, newton_polytope)
     return Certificate.Remainder(Certificate.Newton(cone, basis, newton_polytope))
 end
-function default_ideal_certificate(domain::FullSpace, cone, basis, maxdegree, newton_polytope)
+function default_ideal_certificate(domain::FullSpace, basis, cone, maxdegree, newton_polytope)
     return Certificate.Newton(cone, basis, newton_polytope)
 end
 
@@ -140,7 +140,7 @@ function JuMP.moi_set(
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern}=nothing,
     newton_of_remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(
-        domain, newton_of_remainder, symmetry, sparsity, cone, basis, maxdegree, newton_polytope),
+        domain, newton_of_remainder, symmetry, sparsity, basis, cone, maxdegree, newton_polytope),
     certificate=default_certificate(
         domain, sparsity, ideal_certificate, cone, basis, maxdegree)
     )
