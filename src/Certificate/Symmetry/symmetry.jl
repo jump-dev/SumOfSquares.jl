@@ -1,8 +1,3 @@
-#import GroupsCore
-import SymbolicWedderburn
-#import PermutationGroups
-#import Cyclotomics
-
 function SymbolicWedderburn.decompose(
     k::MP.AbstractPolynomialLike,
     hom::SymbolicWedderburn.InducedActionHomomorphism,
@@ -30,7 +25,7 @@ _tuple_map_idx(f, ::Tuple{}, i) = tuple()
 _tuple_map_idx(f, v::Tuple, i) = (f(i), _tuple_map_idx(f, Base.tail(v), i + 1)...)
 _map_idx(f, v::Tuple) = _tuple_map_idx(f, v, 1)
 function SymbolicWedderburn.action(::VariablePermutation, p, mono::MP.AbstractMonomial)
-    v = variables(mono)
+    v = MP.variables(mono)
     MP.substitute(MP.Eval(), mono, v => _map_idx(i -> v[i^p], v))
 end
 abstract type OnMonomials <: SymbolicWedderburn.ByLinearTransformation end
@@ -61,23 +56,24 @@ function MP.polynomialtype(
     return MP.polynomialtype(PT, V)
 end
 
-struct SymmetricIdeal{C,GT,AT} <: AbstractIdealCertificate
+struct Ideal{C,GT,AT<:SymbolicWedderburn.Action} <: SumOfSquares.Certificate.AbstractIdealCertificate
+    pattern::Pattern{GT,AT}
     certificate::C
-    group::GT
-    action::AT
 end
-SumOfSquares.matrix_cone_type(::Type{<:SymmetricIdeal{C}}) where {C} =
-    SumOfSquares.matrix_cone_type(C)
-get(::Type{<:SymmetricIdeal}, ::GramBasisType) = Vector{Vector{MB.FixedPolynomialBasis}}
-zero_basis_type(::Type{<:SymmetricIdeal}) = MB.MonomialBasis
-zero_basis(::SymmetricIdeal) = MB.MonomialBasis
-function get(certificate::SymmetricIdeal, attr::Certificate.ReducedPolynomial, poly, domain)
-    return get(certificate.certificate, attr, poly, domain)
+SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Certificate.Cone) = SumOfSquares.Certificate.get(certificate.certificate, attr)
+function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
+    return SumOfSquares.matrix_cone_type(C)
 end
-function get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly)
-    basis = get(cert.certificate, attr, poly)
+SumOfSquares.Certificate.get(::Type{<:Ideal}, ::SumOfSquares.Certificate.GramBasisType) = Vector{Vector{MB.FixedPolynomialBasis}}
+SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.MonomialBasis
+SumOfSquares.Certificate.zero_basis(::Ideal) = MB.MonomialBasis
+function SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Certificate.ReducedPolynomial, poly, domain)
+    return SumOfSquares.Certificate.get(certificate.certificate, attr, poly, domain)
+end
+function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificate.GramBasis, poly)
+    basis = SumOfSquares.Certificate.get(cert.certificate, attr, poly)
     T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
-    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.group, basis, cert.action)
+    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, basis, cert.pattern.action)
     return map(summands) do summand
         R = SymbolicWedderburn.basis(summand)
         m = SymbolicWedderburn.multiplicity(summand)
@@ -87,11 +83,11 @@ function get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly)
         if d > 1
             if m > 1
                 ps = R * basis.monomials
-                S = map(SymbolicWedderburn.gens(cert.group)) do g
+                S = map(SymbolicWedderburn.gens(cert.pattern.group)) do g
                     Si = Matrix{T}(undef, N, N)
                     for i in eachindex(ps)
                         p = ps[i]
-                        q = SymbolicWedderburn.action(cert.action, g, p)
+                        q = SymbolicWedderburn.action(cert.pattern.action, g, p)
                         coefs = MP.coefficients(q, basis.monomials)
                         col = row_echelon_linsolve(R, coefs)
                         Si[:, i] = col
@@ -103,12 +99,12 @@ function get(cert::SymmetricIdeal, attr::Certificate.GramBasis, poly)
                 U = Matrix{T}(LinearAlgebra.I, N, N)
             end
             map(1:d) do i
-                FixedPolynomialBasis(
+                MB.FixedPolynomialBasis(
                     (transpose(U[:, i:d:(i + d * (m - 1))]) * F) * basis.monomials,
                 )
             end
         else
-            [FixedPolynomialBasis(F * basis.monomials)]
+            [MB.FixedPolynomialBasis(F * basis.monomials)]
         end
     end
 end

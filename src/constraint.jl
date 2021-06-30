@@ -65,41 +65,56 @@ end
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return Certificate.get(set.certificate, Certificate.Cone())
 end
-function default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
+
+function default_ideal_certificate(domain, cone, basis, maxdegree, newton_polytope)
     if maxdegree === nothing
         return Certificate.Newton(cone, basis, newton_polytope)
     else
         return Certificate.MaxDegree(cone, basis, maxdegree)
     end
 end
-function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, newton_polytope, maxdegree)
+function default_ideal_certificate(domain::FixedVariablesSet, cone, basis, maxdegree, newton_polytope)
     return Certificate.Remainder(Certificate.Newton(cone, basis, newton_polytope))
 end
-function default_ideal_certificate(domain::FullSpace, cone, basis, newton_polytope, maxdegree)
+function default_ideal_certificate(domain::FullSpace, cone, basis, maxdegree, newton_polytope)
     return Certificate.Newton(cone, basis, newton_polytope)
 end
 
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, cone, basis,
-    newton_polytope, maxdegree, sparsity::Certificate.Sparsity, newton_of_remainder::Bool)
+    domain::AbstractAlgebraicSet, sparsity::Certificate.NoSparsity, basis::AbstractPolynomialBasis, args...)
+    return Certificate.FixedBasis(cone, basis)
+end
+function default_ideal_certificate(
+    domain::AbstractAlgebraicSet, sparsity::Certificate.NoSparsity, args...)
+    return default_ideal_certificate(domain, args...)
+end
+function default_ideal_certificate(
+    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity, args...)
+    return Certificate.SparseIdeal(sparsity, args...)
+end
 
-    if sparsity isa Certificate.NoSparsity
-        if basis isa AbstractPolynomialBasis
-            c = Certificate.FixedBasis(cone, basis)
-        else
-            c = default_ideal_certificate(domain, cone, basis, newton_polytope, maxdegree)
-        end
-    else
-        c = Certificate.SparseIdeal(sparsity, cone, basis, maxdegree, newton_polytope)
-    end
+function default_ideal_certificate(
+    domain::AbstractAlgebraicSet, symmetry::Nothing, args...)
+    return default_ideal_certificate(domain, args...)
+end
+function default_ideal_certificate(
+    domain::AbstractAlgebraicSet, symmetry::Certificate.Symmetry.Pattern, args...)
+    return Certificate.Symmetry.Ideal(symmetry, default_ideal_certificate(domain, args...))
+end
+
+function default_ideal_certificate(
+    domain::AbstractAlgebraicSet, newton_of_remainder::Bool, args...)
+    c = default_ideal_certificate(domain, args...)
     if newton_of_remainder && !(c isa SumOfSquares.Certificate.Remainder)
         return SumOfSquares.Certificate.Remainder(c)
     end
     return c
 end
+
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
     return default_ideal_certificate(domain.V, args...)
 end
+
 function default_certificate(::AbstractAlgebraicSet, sparsity, ideal_certificate, cone, basis, maxdegree)
     return ideal_certificate
 end
@@ -122,9 +137,10 @@ function JuMP.moi_set(
     newton_polytope::Tuple=tuple(),
     maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
     sparsity::Certificate.Sparsity=Certificate.NoSparsity(),
+    symmetry::Union{Nothing,Certificate.Symmetry.Pattern}=nothing,
     newton_of_remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(
-        domain, cone, basis, newton_polytope, maxdegree, sparsity, newton_of_remainder),
+        domain, newton_of_remainder, symmetry, sparsity, cone, basis, maxdegree, newton_polytope),
     certificate=default_certificate(
         domain, sparsity, ideal_certificate, cone, basis, maxdegree)
     )
