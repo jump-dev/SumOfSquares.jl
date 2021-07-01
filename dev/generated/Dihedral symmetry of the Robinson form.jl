@@ -69,7 +69,7 @@ end
 using SumOfSquares
 using DynamicPolynomials
 @polyvar x y
-struct DihedralAction <: Certificate.OnMonomials end
+struct DihedralAction <: Symmetry.OnMonomials end
 import SymbolicWedderburn
 SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
 function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::AbstractMonomial)
@@ -96,8 +96,8 @@ function solve(G)
     model = Model(solver)
     @variable(model, t)
     @objective(model, Max, t)
-    certificate = Certificate.SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, DihedralAction())
-    con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
+    pattern = Symmetry.Pattern(G, DihedralAction())
+    con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
     optimize!(model)
     @show value(t)
 

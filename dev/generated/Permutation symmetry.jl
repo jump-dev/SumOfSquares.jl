@@ -20,8 +20,8 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-certificate = Certificate.SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, Certificate.VariablePermutation())
-con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
+pattern = Symmetry.Pattern(G, Symmetry.VariablePermutation())
+con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 value(t)
 

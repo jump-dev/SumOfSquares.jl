@@ -5,7 +5,7 @@ poly = x^4 - 2x^2
 
 using SumOfSquares
 
-struct OnSign <: Certificate.OnMonomials end
+struct OnSign <: Symmetry.OnMonomials end
 using PermutationGroups
 import SymbolicWedderburn
 SymbolicWedderburn.coeff_type(::OnSign) = Float64
@@ -24,8 +24,8 @@ solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
-certificate = Certificate.SymmetricIdeal(Certificate.MaxDegree(SOSCone(), MonomialBasis, maxdegree(poly)), G, OnSign())
-con_ref = @constraint(model, poly - t in SOSCone(), ideal_certificate = certificate)
+pattern = Symmetry.Pattern(G, OnSign())
+con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 value(t)
 
