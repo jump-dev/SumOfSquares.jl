@@ -70,6 +70,36 @@ SumOfSquares.Certificate.zero_basis(::Ideal) = MB.MonomialBasis
 function SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Certificate.ReducedPolynomial, poly, domain)
     return SumOfSquares.Certificate.get(certificate.certificate, attr, poly, domain)
 end
+
+function matrix_reps(group_els, action, R, basis, ::Type{T}) where {T}
+    polys = R * basis
+    return map(group_els) do g
+        S = Matrix{T}(undef, length(polys), length(polys))
+        for i in eachindex(polys)
+            p = polys[i]
+            q = SymbolicWedderburn.action(action, g, p)
+            coefs = MP.coefficients(q, basis)
+            col = row_echelon_linsolve(R, coefs)
+            S[:, i] = col
+        end
+        return S
+    end
+end
+
+function check_orthogonal(S, tol=1e-6)
+    n = LinearAlgebra.checksquare(S)
+    for i in 1:n
+        for j in 1:n
+            if i != j
+                s = LinearAlgebra.dot(S[:, i], S[:, j])
+                if abs(s) > tol
+                    @warn("Matrix not orthogonal, scalar product between column $i and $j is $s. Expect symmetry reduction to be conservative.")
+                end
+            end
+        end
+    end
+end
+
 function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificate.GramBasis, poly)
     basis = SumOfSquares.Certificate.get(cert.certificate, attr, poly)
     T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
@@ -80,24 +110,26 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
         F = convert(Matrix{T}, R)
         N = size(R, 1)
         d = SymbolicWedderburn.degree(summand)
+        S = matrix_reps(SymbolicWedderburn.gens(cert.pattern.group), cert.pattern.action, R, basis.monomials, T)
+        check_orthogonal.(S)
         if d > 1
             if m > 1
-                ps = R * basis.monomials
-                S = map(SymbolicWedderburn.gens(cert.pattern.group)) do g
-                    Si = Matrix{T}(undef, N, N)
-                    for i in eachindex(ps)
-                        p = ps[i]
-                        q = SymbolicWedderburn.action(cert.pattern.action, g, p)
-                        coefs = MP.coefficients(q, basis.monomials)
-                        col = row_echelon_linsolve(R, coefs)
-                        Si[:, i] = col
-                    end
-                    return Si
-                end
                 U = ordered_block_diag(S, d)
             else
                 U = Matrix{T}(LinearAlgebra.I, N, N)
             end
+            if U === nothing
+                error("Could not simultaneously block-diagonalize into $m identical $(d)x$d blocks")
+            end
+            # From Example 1.7.3 of
+            # Sagan, The symmetric group, Springer Science & Business Media, 2001
+            # we know that there exists `C` such that `Q = kron(C, I)` if we use
+            # `(U[1:d] * F)' * basis.monomials`, `(U[d+1:2d] * F)' * basis.monomials`, ...
+            # where `C` are some complex numbers as they are eigenvalues (see Corollary 1.6.8).
+            # As `Q` is symmetric, we now the eigenvalues are real so we can take `C` real as well.
+            # Moreover, `Q = kron(C, I)` is not block diagonal but we can get a block-diagonal
+            # `Q = kron(I, Q)` by permuting the rows and columns:
+            # `(U[1:d:(1+d*(m-1))] * F)' * basis.monomials`, `(U[2:d:(2+d*(m-1))] * F)' * basis.monomials`, ...
             map(1:d) do i
                 MB.FixedPolynomialBasis(
                     (transpose(U[:, i:d:(i + d * (m - 1))]) * F) * basis.monomials,

@@ -1,5 +1,7 @@
 module Symmetry
 
+import LinearAlgebra
+
 import MutableArithmetics
 const MA = MutableArithmetics
 import MultivariatePolynomials

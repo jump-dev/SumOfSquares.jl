@@ -1,4 +1,3 @@
-import LinearAlgebra
 import Combinatorics, DataStructures
 
 function row_echelon_linsolve(A::Matrix{T}, b::Vector{T}) where {T}
