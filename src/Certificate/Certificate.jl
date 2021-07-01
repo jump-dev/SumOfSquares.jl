@@ -255,7 +255,7 @@ export ChordalCompletion, ClusterCompletion
 
 include("sparse/sparse_putinar.jl")
 
-include("symmetry.jl")
-include("block_diag.jl")
+include("Symmetry/Symmetry.jl")
+export Symmetry
 
 end
