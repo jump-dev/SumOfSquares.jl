@@ -6,14 +6,14 @@ using DynamicPolynomials
     choi_test(optimizer, config::MOIT.TestConfig)
 
 Test using the example of polynomial matrix that is not a Sum-of-Squares matrix
-given in [C15] as the following biquadratic form:
+given in [C75] as the following biquadratic form:
 
 F(x; y) = (x_1^2 + 2 x_3^2) * y_1^2
         + (x_2^2 + 2 x_1^2) * y_2^2
         + (x_3^2 + 2 x_2^2) * y_3^2
         - 2 (x_1x_2 y_1y_2 + x_2x_3 y_2y_3 + x_3x_1 y_3y_1)
 
-[C15] Choi, M. D.
+[C75] Choi, M. D.
 *Positive semidefinite biquadratic forms*.
 Linear Algebra and its Applications, **1975**, 12(2), 95-100.
 """
