@@ -71,32 +71,17 @@ function SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Cer
     return SumOfSquares.Certificate.get(certificate.certificate, attr, poly, domain)
 end
 
-function matrix_reps(group_els, action, R, basis, ::Type{T}) where {T}
-    polys = R * basis
-    return map(group_els) do g
+function matrix_reps(cert, R, basis, ::Type{T}, form) where {T}
+    polys = R * basis.monomials
+    return map(SymbolicWedderburn.gens(cert.pattern.group)) do g
         S = Matrix{T}(undef, length(polys), length(polys))
         for i in eachindex(polys)
             p = polys[i]
-            q = SymbolicWedderburn.action(action, g, p)
-            coefs = MP.coefficients(q, basis)
-            col = row_echelon_linsolve(R, coefs)
-            S[:, i] = col
+            q = SymbolicWedderburn.action(cert.pattern.action, g, p)
+            coefs = MP.coefficients(q, basis.monomials)
+            S[:, i] = _linsolve(R, coefs, form)
         end
         return S
-    end
-end
-
-function check_orthogonal(S, tol=1e-6)
-    n = LinearAlgebra.checksquare(S)
-    for i in 1:n
-        for j in 1:n
-            if i != j
-                s = LinearAlgebra.dot(S[:, i], S[:, j])
-                if abs(s) > tol
-                    @warn("Matrix not orthogonal, scalar product between column $i and $j is $s. Expect symmetry reduction to be conservative.")
-                end
-            end
-        end
     end
 end
 
@@ -106,13 +91,42 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
     summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, basis, cert.pattern.action)
     return map(summands) do summand
         R = SymbolicWedderburn.basis(summand)
+        #@show typeof(R)
         m = SymbolicWedderburn.multiplicity(summand)
-        F = convert(Matrix{T}, R)
         N = size(R, 1)
         d = SymbolicWedderburn.degree(summand)
-        S = matrix_reps(SymbolicWedderburn.gens(cert.pattern.group), cert.pattern.action, R, basis.monomials, T)
-        check_orthogonal.(S)
-        if d > 1
+        display(R)
+        @show R * basis.monomials
+        @show m
+        @show d
+        #display.(matrix_reps(cert, Matrix(T(1) * LinearAlgebra.I, 4, 4), basis, T, _RowEchelonMatrix()))
+        S = matrix_reps(cert, R, basis, T, _RowEchelonMatrix())
+        decomose_semisimple = d > 1
+        if decomose_semisimple
+            # If it's not orthogonal, how can we conclude that we can still use the semisimple summands block-decomposition ?
+            # In Example 1.7.2 of Sagan's book, he uses Corollary 1.6.6 which requires that `X` and `Y` are irreducible.
+            # Here, given semisimple representations `X` and `Y`, they are not irreducible if `m > 1`.
+            # Furthermore, as they are not orthogonal, we have something like `T * X = Y^{-T} * T`, so how can we know that `X` and `X^{-T}`
+            # are not equivalent (to exclude the the case 1. of Corollary 1.6.6) ?
+            if !all(is_orthogonal, S)
+                R = orthogonalize(R)
+                display(R)
+                S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
+                display.(S)
+                for i in 1:size(R, 1)
+                    R[i, :] = LinearAlgebra.normalize(R[i, :])
+                end
+                display(R)
+                S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
+                display.(S)
+                if !all(is_orthogonal, S)
+                    @warn("One the matrix representation induced from the action on the polynomial basis is not orthogonal. The $(m * d)-dimensional semisimple summand can be decomposed onto $m simple summands of degree $d so that the $(m * d) x $(m * d) diagonal block is reduced to $d identical copied of a single $m x $m diagonal block. However, as the action is not orthogonal, this decomposition will not happen.")
+                    decomose_semisimple = false
+                end
+            end
+        end
+        F = convert(Matrix{T}, R)
+        if decomose_semisimple
             if m > 1
                 U = ordered_block_diag(S, d)
             else
@@ -136,6 +150,7 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
                 )
             end
         else
+            F = convert(Matrix{T}, R)
             [MB.FixedPolynomialBasis(F * basis.monomials)]
         end
     end

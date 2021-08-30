@@ -1,20 +1,5 @@
 import Combinatorics, DataStructures
 
-function row_echelon_linsolve(A::Matrix{T}, b::Vector{T}) where {T}
-    j = 0
-    x = map(1:size(A, 1)) do i
-        while j < size(A, 2)
-            j += 1
-            if isone(A[i, j]) && all(k -> k == i || iszero(A[k, j]), 1:size(A, 1))
-                return b[j]
-            end
-        end
-        error("Not in row_echelon_form, cannot find for `$i`th entry.")
-    end
-    @assert transpose(A) * x == b
-    return x
-end
-
 function ordered_block_diag(As, d)
     U = block_diag(As, d)
     U === nothing && return nothing

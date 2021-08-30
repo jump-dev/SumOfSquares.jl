@@ -18,6 +18,7 @@ struct Pattern{GT,AT<:SymbolicWedderburn.Action}
     action::AT
 end
 
+include("utils.jl")
 include("wedderburn.jl")
 include("block_diag.jl")
 
