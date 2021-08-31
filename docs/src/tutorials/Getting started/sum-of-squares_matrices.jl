@@ -1,7 +1,7 @@
 # # Sum-of-Squares matrices
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Getting started/Sum-of-Squares Matrices.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Getting started/Sum-of-Squares Matrices.ipynb)
 # **Adapted from**: Examples 3.77 of [BPT12]
 #
 # [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
