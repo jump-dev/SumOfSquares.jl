@@ -44,27 +44,30 @@ optimize!(model)
 @show termination_status(model)
 @show objective_value(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-3.694650363428309e-9</code></pre><p>As shown below, for <code>maxdegree = 5</code>, the dual variable is atomic as it is the moments of the measure <span>$0.5 \delta(x-1, y) + 0.5 \delta(x, y-1)$</span> where <span>$\delta(x, y)$</span> is the dirac measure centered at <span>$(0, 0)$</span>. Therefore the program provides both a certificate that <span>$0$</span> is a lower bound and a certificate that it is also an upper bound since it is attained at the global minimizers <span>$(1, 0)$</span> and <span>$(0, 1)$</span>.</p><pre><code class="language-julia hljs">ν5 = moment_matrix(c5)
 extractatoms(ν5, 1e-3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x, y with 2 atoms:
- at [-0.00027763189005216606, 1.0002776325695741] with weight 0.4999994799356062
- at [0.999794728440691, 0.00020527223883013397] with weight 0.500663359903419</code></pre><h2 id="A-deeper-look-into-atom-extraction"><a class="docs-heading-anchor" href="#A-deeper-look-into-atom-extraction">A deeper look into atom extraction</a><a id="A-deeper-look-into-atom-extraction-1"></a><a class="docs-heading-anchor-permalink" href="#A-deeper-look-into-atom-extraction" title="Permalink"></a></h2><p>The <code>extractatoms</code> function requires a <code>ranktol</code> argument that we have set to <code>1e-3</code> in the preceding section. This argument is used to transform the dual variable into a system of polynomials equations whose solutions give the atoms. This transformation uses the SVD decomposition of the moment matrix and discards the equations corresponding to a singular value lower than <code>ranktol</code>. When this system of equation has an infinite number of solutions, <code>extractatoms</code> concludes that the measure is not atomic. For instance, with <code>maxdegree = 3</code>, we obtain the system <span>$x + y = 1$</span> which contains a whole line of solution. This explains <code>extractatoms</code> returned <code>nothing</code>.</p><pre><code class="language-julia hljs">ν3 = moment_matrix(c3)
+ at [-0.00027763189005216616, 1.0002776325695741] with weight 0.4999994799356062
+ at [0.999794728440691, 0.00020527223883013386] with weight 0.500663359903419</code></pre><h2 id="A-deeper-look-into-atom-extraction"><a class="docs-heading-anchor" href="#A-deeper-look-into-atom-extraction">A deeper look into atom extraction</a><a id="A-deeper-look-into-atom-extraction-1"></a><a class="docs-heading-anchor-permalink" href="#A-deeper-look-into-atom-extraction" title="Permalink"></a></h2><p>The <code>extractatoms</code> function requires a <code>ranktol</code> argument that we have set to <code>1e-3</code> in the preceding section. This argument is used to transform the dual variable into a system of polynomials equations whose solutions give the atoms. This transformation uses the SVD decomposition of the moment matrix and discards the equations corresponding to a singular value lower than <code>ranktol</code>. When this system of equation has an infinite number of solutions, <code>extractatoms</code> concludes that the measure is not atomic. For instance, with <code>maxdegree = 3</code>, we obtain the system <span>$x + y = 1$</span> which contains a whole line of solution. This explains <code>extractatoms</code> returned <code>nothing</code>.</p><pre><code class="language-julia hljs">ν3 = moment_matrix(c3)
 SumOfSquares.MultivariateMoments.computesupport!(ν3, 1e-3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Algebraic Set defined by 1 equalitty
  -x - 0.9999999999999998*y + 1.00000000004984 = 0
-</code></pre><p>With <code>maxdegree = 5</code>, we obtain the system ``<code>math</code> \begin{aligned}   x + y &amp; = 1\
-  y^2 &amp; = y\
-  xy &amp; = 0\
-  x^2 + y &amp; = 1 \end{aligned}</p><pre><code class="nohighlight hljs">
-````@example polynomial_optimization
-ν5 = moment_matrix(c5)
-SumOfSquares.MultivariateMoments.computesupport!(ν5, 1e-3)
-````
-
-This system can be reduced to the equivalent system</code></pre><p>math \begin{aligned}   x + y &amp; = 1\
-  y^2 &amp; = y \end{aligned} ``` which has the solutions <span>$(0, 1)$</span> and <span>$(1, 0)$</span>.</p><pre><code class="language-julia hljs">SemialgebraicSets.computegröbnerbasis!(ideal(ν5.support))
+</code></pre><p>With <code>maxdegree = 5</code>, we obtain the system</p><p class="math-container">\[\begin{aligned}
+  x + y &amp; = 1\\
+  y^2 &amp; = y\\
+  xy &amp; = 0\\
+  x^2 + y &amp; = 1
+\end{aligned}\]</p><pre><code class="language-julia hljs">ν5 = moment_matrix(c5)
+SumOfSquares.MultivariateMoments.computesupport!(ν5, 1e-3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Algebraic Set defined by 3 equalities
+ -x - 0.999999999999999*y + 1.0000000006795213 = 0
+ -x*y + 0.4403063500907135*y^2 - 0.4410018802732259*y + 0.0002957369925164957 = 0
+ -x^2 + 1.0000005149411058*y^2 - 2.003159816917238*y + 1.0015796512972217 = 0
+</code></pre><p>This system can be reduced to the equivalent system</p><p class="math-container">\[\begin{aligned}
+  x + y &amp; = 1\\
+  y^2 &amp; = y
+\end{aligned}\]</p><p>which has the solutions <span>$(0, 1)$</span> and <span>$(1, 0)$</span>.</p><pre><code class="language-julia hljs">SemialgebraicSets.computegröbnerbasis!(ideal(ν5.support))
 ν5.support</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Algebraic Set defined by 2 equalities
  x + 0.999999999999999*y - 1.0000000006795213 = 0
  y^2 - 1.0004829048084047*y + 0.0002053292290892627 = 0
 </code></pre><p>The function <code>extractatoms</code> then reuses the matrix of moments to find the weights <span>$1/2$</span>, <span>$1/2$</span> corresponding to the diracs centered respectively at <span>$(0, 1)$</span> and <span>$(1, 0)$</span>. This details how the function obtained the result <span>$0.5 \delta(x-1, y) + 0.5 \delta(x, y-1)$</span> given in the previous section.</p><h2 id="HomotopyContinuation"><a class="docs-heading-anchor" href="#HomotopyContinuation">HomotopyContinuation</a><a id="HomotopyContinuation-1"></a><a class="docs-heading-anchor-permalink" href="#HomotopyContinuation" title="Permalink"></a></h2><p>As discussed in the previous section, the atom extraction relies on the solution of a system of algebraic equations. The <code>extractatoms</code> function takes an optional <code>solver</code> argument that is used to solve this system of equation. If no solver is provided, the default solver of SemialgebraicSets.jl is used which currently computes the Gröbner basis, then the multiplication matrices and then the Schur decomposition of a random combination of these matrices. As the system of equations is obtained from a numerical solution and is represented using floating point coefficients, homotopy continuation is recommended as it is more numerically robust than Gröbner basis computation. The following uses homotopy continuation to solve the system of equations.</p><pre><code class="language-julia hljs">using HomotopyContinuation
 solver = SemialgebraicSetsHCSolver(; compile = false)
-atoms5 = extractatoms(ν5, 1e-3, solver)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Tracking 4 paths...  50%|███████████████▌               |  ETA: 0:00:02
+atoms5 = extractatoms(ν5, 1e-3, solver)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Tracking 4 paths...  50%|███████████████▌               |  ETA: 0:00:01
   # paths tracked:                  2
   # non-singular solutions (real):  0 (0)
   # singular endpoints (real):      0 (0)
@@ -72,8 +75,8 @@ atoms5 = extractatoms(ν5, 1e-3, solver)</code></pre><pre class="documenter-exam
 
 
 
-Tracking 4 paths... 100%|███████████████████████████████| Time: 0:00:01
+Tracking 4 paths... 100%|███████████████████████████████| Time: 0:00:00
   # paths tracked:                  4
   # non-singular solutions (real):  0 (0)
   # singular endpoints (real):      0 (0)
-  # total solutions (real):         0 (0)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.5 on <span class="colophon-date" title="Wednesday 1 September 2021 11:34">Wednesday 1 September 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  # total solutions (real):         0 (0)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.5 on <span class="colophon-date" title="Wednesday 1 September 2021 13:19">Wednesday 1 September 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

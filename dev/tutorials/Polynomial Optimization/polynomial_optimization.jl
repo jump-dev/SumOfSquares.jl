@@ -142,7 +142,7 @@ SumOfSquares.MultivariateMoments.computesupport!(ν3, 1e-3)
 @test length(ν3.support.I.p) == 1 #src
 
 # With `maxdegree = 5`, we obtain the system
-# ```math`
+# ```math
 # \begin{aligned}
 #   x + y & = 1\\
 #   y^2 & = y\\
