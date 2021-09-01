@@ -18,7 +18,7 @@ using SumOfSquares
 struct OnSign <: Symmetry.OnMonomials end
 using PermutationGroups
 import SymbolicWedderburn
-SymbolicWedderburn.coeff_type(::OnSign) = Float64
+SymbolicWedderburn._coeff_type(::OnSign) = Float64
 function SymbolicWedderburn.action(::OnSign, p::Permutation, mono::AbstractMonomial)
     if isone(p) || iseven(DynamicPolynomials.degree(mono))
         return 1 * mono

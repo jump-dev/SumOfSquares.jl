@@ -88,7 +88,7 @@ end
 function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificate.GramBasis, poly)
     basis = SumOfSquares.Certificate.get(cert.certificate, attr, poly)
     T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
-    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, basis, cert.pattern.action)
+    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, cert.pattern.action, basis)
     # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
     # SymbolicWedderburn guarantees that the invariant subspace spanned by the
     # polynomials of the vector `R * basis.monomials` is invariant under the
@@ -99,16 +99,11 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
     # Or in equivalently: `Q * Diagonal(S for S in ...) = Diagonal(inv(S') for S in ...) * Q`.
     return map(summands) do summand
         R = SymbolicWedderburn.basis(summand)
-        #@show typeof(R)
         m = SymbolicWedderburn.multiplicity(summand)
         N = size(R, 1)
         d = SymbolicWedderburn.degree(summand)
-        display(R)
-        @show R * basis.monomials
-        @show m
-        @show d
-        #display.(matrix_reps(cert, Matrix(T(1) * LinearAlgebra.I, 4, 4), basis, T, _RowEchelonMatrix()))
-        S = matrix_reps(cert, R, basis, T, _RowEchelonMatrix())
+        S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
+        #S = matrix_reps(cert, R, basis, T, _RowEchelonMatrix())
         decomose_semisimple = d > 1
         if decomose_semisimple
             # If it's not orthogonal, how can we conclude that we can still use the semisimple summands block-decomposition ?
@@ -119,15 +114,11 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
             # `X` and `inv(Y')` are not equivalent (to exclude the case 1. of Corollary 1.6.6) ?
             if !all(is_orthogonal, S)
                 R = orthogonalize(R)
-                display(R)
                 S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
-                display.(S)
                 for i in 1:size(R, 1)
                     R[i, :] = LinearAlgebra.normalize(R[i, :])
                 end
-                display(R)
                 S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
-                display.(S)
                 if !all(is_orthogonal, S)
                     error("The matrix representation induced from the action on the polynomial basis is not orthogonal.")
                     # We would like to just throw this warning and just not decompose the semisimple summand but

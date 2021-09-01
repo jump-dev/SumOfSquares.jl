@@ -29,6 +29,7 @@ struct DihedralElement <: GroupsCore.GroupElement
     reflection::Bool
     id::Int
 end
+GroupsCore.parent(g::DihedralElement) = DihedralGroup(g.n)
 function Base.:(==)(g::DihedralElement, h::DihedralElement)
     return g.n == h.n && g.reflection == h.reflection && g.id == h.id
 end
@@ -71,8 +72,10 @@ struct DihedralGroup <: GroupsCore.Group
     n::Int
 end
 Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
+Base.isfinite(::DihedralGroup) = true
 PermutationGroups.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
 PermutationGroups.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
+Base.eltype(::Type{DihedralGroup}) = DihedralElement
 function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
     if prev.id + 1 >= G.n
         if prev.reflection
@@ -101,7 +104,7 @@ using DynamicPolynomials
 @polyvar x y
 struct DihedralAction <: Symmetry.OnMonomials end
 import SymbolicWedderburn
-SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
+SymbolicWedderburn._coeff_type(::DihedralAction) = Float64
 function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::AbstractMonomial)
     if iseven(el.reflection + el.id)
         var_x, var_y = x, y
