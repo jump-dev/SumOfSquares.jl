@@ -1,7 +1,7 @@
 # # Sums of Hermitian squares
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Sums of Hermitian squares.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Sums of Hermitian squares.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/sums_of_hermitian_squares.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/sums_of_hermitian_squares.ipynb)
 # **Contributed by**: Benoît Legat
 
 using Test #src

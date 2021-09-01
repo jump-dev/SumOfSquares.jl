@@ -9,6 +9,7 @@ const _TUTORIAL_SUBDIR = [
     "Getting started",
     "Polynomial Optimization",
     "Systems and Control",
+    "Other Applications",
     "Noncommutative and Hermitian",
     "Sparsity",
     "Symmetry",

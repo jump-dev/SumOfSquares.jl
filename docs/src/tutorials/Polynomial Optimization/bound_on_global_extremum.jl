@@ -1,7 +1,7 @@
 # # Bound on Global Extremum
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Bound on Global Extremum.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Bound on Global Extremum.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/bound_on_blobal_extremum.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/bound_on_global_extremum.ipynb)
 # **Adapted from**: SOSTOOLS' SOSDEMO3 (See Section 4.3 of [SOSTOOLS User's Manual](http://sysos.eng.ox.ac.uk/sostools/sostools.pdf))
 
 using Test #src
