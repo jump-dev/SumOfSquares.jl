@@ -1,7 +1,7 @@
 # # A trivial SOS decomposition example
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/sos_decomposition.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/sos_decomposition.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Getting started/sos_decomposition.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Getting started/sos_decomposition.ipynb)
 # **Contributed by**: votroto
 # **Adapted from**: Examples 3.25 of [BPT12]
 #

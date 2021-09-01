@@ -1,19 +1,34 @@
+# Inspired from https://github.com/jump-dev/JuMP.jl/blob/master/docs/make.jl
+
 using SumOfSquares
 using Documenter, Literate
 
-const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
-const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
+const _TUTORIAL_DIR = joinpath(@__DIR__, "src", "tutorials")
+const _OUTPUT_DIR   = joinpath(@__DIR__, "src", "generated")
+const _TUTORIAL_SUBDIR = [
+    "Getting started",
+    "Polynomial Optimization",
+    "Systems and Control",
+    "Other Applications",
+    "Noncommutative and Hermitian",
+    "Sparsity",
+    "Symmetry",
+]
 
-include(joinpath(EXAMPLES_DIR, "all_examples.jl"))
-deleteat!(EXAMPLES, findfirst(isequal("chordal_sparsity.jl"), EXAMPLES))
-deleteat!(EXAMPLES, findfirst(isequal("chordal_sparsity_with_domain.jl"), EXAMPLES))
-
-for example in EXAMPLES
-    example_filepath = joinpath(EXAMPLES_DIR, example)
-    Literate.markdown(example_filepath, OUTPUT_DIR)
-    Literate.notebook(example_filepath, OUTPUT_DIR)
-    Literate.script(example_filepath, OUTPUT_DIR)
+function literate_directory(dir)
+    output_dir = joinpath(_OUTPUT_DIR, dir)
+    for filename in readdir(joinpath(_TUTORIAL_DIR, dir))
+        if filename[1] == '_'
+            continue
+        end
+        path = joinpath(_TUTORIAL_DIR, dir, filename)
+        Literate.markdown(path, output_dir; documenter = true)
+        Literate.notebook(path, output_dir; documenter = true)
+        Literate.script(path, output_dir; documenter = true)
+    end
 end
+
+literate_directory.(_TUTORIAL_SUBDIR)
 
 makedocs(
     sitename = "SumOfSquares",
@@ -26,11 +41,17 @@ makedocs(
         "Sum-of-Squares Programming" => "sumofsquares.md",
         "Variables" => "variables.md",
         "Constraints" => "constraints.md",
-        "Examples" => map(EXAMPLES) do jl_file
-            # Need `string` as Documenter fails if `name` is a `SubString{String}`.
-            name = string(split(jl_file, ".")[1])
-            return name => "generated/$name.md"
-        end
+        "Tutorials" => map(
+            subdir ->
+                subdir => map(
+                    file -> joinpath("generated", subdir, file),
+                    filter(
+                        file -> endswith(file, ".md"),
+                        sort(readdir(joinpath(_OUTPUT_DIR, subdir))),
+                    ),
+                ),
+            _TUTORIAL_SUBDIR,
+        ),
     ],
     # The following ensures that we only include the docstrings from
     # this module for functions define in Base that we overwrite.

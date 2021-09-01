@@ -1,7 +1,7 @@
 # # Stabilization of nonlinear systems
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Stabilization of nonlinear systems.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Stabilization of nonlinear systems.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Systems and Control/stabilization_of_nonlinear_systems.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Systems and Control/stabilization_of_nonlinear_systems.ipynb)
 # **Adapted from**: Examples 1, 2 and 3 of [PPA04]
 #
 # [PPA04] Prajna, Stephen, Pablo A. Parrilo, and Anders Rantzer.

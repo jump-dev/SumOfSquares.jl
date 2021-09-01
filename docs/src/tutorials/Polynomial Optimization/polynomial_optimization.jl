@@ -1,7 +1,7 @@
 # # Polynomial Optimization
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/polynomial_optimization.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/polynomial_optimization.ipynb)
 # **Contributed by**: Benoît Legat
 
 # ## Introduction
@@ -89,10 +89,12 @@ extractatoms(ν3, 1e-3) # Returns nothing as the dual is not atomic
 # Fortunately, there is a hierarchy of programs with increasingly better bounds that can be solved until we get one with atom dual variables.
 # This comes from the way the Sum-of-Squares constraint with domain `S` is formulated.
 # The polynomial $p - \alpha$ is guaranteed to be nonnegative over the domain `S` if there exists Sum-of-Squares polynomials $s_0$, $s_1$, $s_2$, $s_3$ such that
-# $$ p - \alpha = s_0 + s_1 x + s_2 y + s_3 (x + y - 1). $$
+# ```math
+# p - \alpha = s_0 + s_1 x + s_2 y + s_3 (x + y - 1).
+# ```
 # Indeed, in the domain `S`, $x$, $y$ and $x + y - 1$ are nonnegative so the right-hand side is a sum of squares hence is nonnegative.
 # Once the degrees of $s_1$, $s_2$ and $s_3$ have been decided, the degree needed for $s_0$ will be determined but we have a freedom in choosing the degrees of $s_1$, $s_2$ and $s_3$.
-# By default, they are chosen so that the degrees of $s_1 x$, $s_2 y$ and $s_3 (x + y - 1)$ match those of $p - \alpha$ but this can be overwritten using the $maxdegree$ keyword argument.
+# By default, they are chosen so that the degrees of $s_1 x$, $s_2 y$ and $s_3 (x + y - 1)$ match those of $p - \alpha$ but this can be overwritten using the `maxdegree` keyword argument.
 
 # ### The maxdegree keyword argument
 
@@ -100,7 +102,7 @@ extractatoms(ν3, 1e-3) # Returns nothing as the dual is not atomic
 # That is, since $x$, $y$ and $x + y - 1$ have total degree 1, the sum of squares polynomials $s_1$, $s_2$ and $s_3$ have been chosen with maximum total degree $2$.
 # Since these polynomials are sums of squares, their degree must be even so the next maximum total degree to try is 4.
 # For this reason, the keywords `maxdegree = 4` and `maxdegree = 5` have the same effect in this example.
-# In general, if the polynomials in the domain are not all odd or all even, each value of `maxdegree` has different effect in the choice of the maximum total degree of $s_i$.
+# In general, if the polynomials in the domain are not all odd or all even, each value of `maxdegree` has a different effect in the choice of the maximum total degree of some $s_i$.
 
 model = SOSModel(solver)
 @variable(model, α)
@@ -112,7 +114,7 @@ optimize!(model)
 @test objective_value(model) ≈ 0.0 atol=1e-5 #src
 @show objective_value(model)
 
-# This time, the dual variable is atomic as it is the moments of the measure
+# As shown below, for `maxdegree = 5`, the dual variable is atomic as it is the moments of the measure
 # $$0.5 \delta(x-1, y) + 0.5 \delta(x, y-1)$$
 # where $\delta(x, y)$ is the dirac measure centered at $(0, 0)$.
 # Therefore the program provides both a certificate that $0$ is a lower bound and a certificate that it is also an upper bound since it is attained at the global minimizers $(1, 0)$ and $(0, 1)$.
@@ -140,28 +142,49 @@ SumOfSquares.MultivariateMoments.computesupport!(ν3, 1e-3)
 @test length(ν3.support.I.p) == 1 #src
 
 # With `maxdegree = 5`, we obtain the system
-# \begin{align}
+# ```math`
+# \begin{aligned}
 #   x + y & = 1\\
 #   y^2 & = y\\
 #   xy & = 0\\
 #   x^2 + y & = 1
-# \end{align}
+# \end{aligned}
+# ```
 
 ν5 = moment_matrix(c5)
 SumOfSquares.MultivariateMoments.computesupport!(ν5, 1e-3)
 
 # This system can be reduced to the equivalent system
-# \begin{align}
+# ```math
+# \begin{aligned}
 #   x + y & = 1\\
 #   y^2 & = y
-# \end{align}
+# \end{aligned}
+# ```
 # which has the solutions $(0, 1)$ and $(1, 0)$.
 
 SemialgebraicSets.computegröbnerbasis!(ideal(ν5.support))
 ν5.support
 @test length(ν5.support.I.p) == 2 #src
 
-# The function `extractatoms` then reuse the matrix of moments to find the weights $1/2$, $1/2$ corresponding to the diracs centered respectively at $(0, 1)$ and $(1, 0)$.
-# This details the how the function obtained the result
+# The function `extractatoms` then reuses the matrix of moments to find the weights $1/2$, $1/2$ corresponding to the diracs centered respectively at $(0, 1)$ and $(1, 0)$.
+# This details how the function obtained the result
 # $$0.5 \delta(x-1, y) + 0.5 \delta(x, y-1)$$
 # given in the previous section.
+
+# ## HomotopyContinuation
+
+# As discussed in the previous section, the atom extraction relies on the solution
+# of a system of algebraic equations. The `extractatoms` function takes an optional
+# `solver` argument that is used to solve this system of equation.
+# If no solver is provided, the default solver of SemialgebraicSets.jl is used which
+# currently computes the Gröbner basis, then the multiplication matrices and
+# then the Schur decomposition of a random combination of these matrices.
+# As the system of equations is obtained from a numerical solution and is represented
+# using floating point coefficients, homotopy continuation is recommended as it is
+# more numerically robust than Gröbner basis computation.
+# The following uses homotopy continuation to solve the system of equations.
+
+using HomotopyContinuation
+solver = SemialgebraicSetsHCSolver(; compile = false)
+atoms5 = extractatoms(ν5, 1e-3, solver)
