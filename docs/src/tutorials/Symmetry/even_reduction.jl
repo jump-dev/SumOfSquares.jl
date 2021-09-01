@@ -10,7 +10,6 @@ using DynamicPolynomials
 # We would like to find the minimum value of the polynomial
 
 poly = x^4 - 2x^2
-poly = x^6 - 2x^4 + 2x^2
 
 using SumOfSquares
 
