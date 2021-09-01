@@ -1,7 +1,7 @@
 # # Dihedral symmetry of the Robinson form
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Dihedral symmetry of the Robinson form.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Dihedral symmetry of the Robinson form.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/dihedral_symmetry_of_the_robinson_form.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/dihedral_symmetry_of_the_robinson_form.ipynb)
 # **Adapted from**: Example 5.4 of [GP04]
 #
 # [GP04] Gatermann, Karin and Parrilo, Pablo A.

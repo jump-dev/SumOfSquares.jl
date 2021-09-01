@@ -1,7 +1,7 @@
 # # Noncommutative variables
 
-#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
-#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Sum-of-Squares Matrices.ipynb)
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/noncommutative_variables.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/noncommutative_variables.ipynb)
 # **Adapted from**: Examples 2.11 and 2.2 of [BKP16]
 #
 # [BKP16] Sabine Burgdorf, Igor Klep, and Janez Povh.
