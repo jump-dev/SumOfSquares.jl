@@ -97,12 +97,17 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
     # That block is the matrix `S` computed below.
     # So an invariant solution `b'*Q*b` satisfies `Diagonal(S' for S in ...) * Q * Diagonal(S for S in ...) = Q`.
     # Or in equivalently: `Q * Diagonal(S for S in ...) = Diagonal(inv(S') for S in ...) * Q`.
+    form = if T <: Union{AbstractFloat, Complex{<:AbstractFloat}}
+        _OrthogonalMatrix()
+        else
+        _RowEchelonMatrix()
+    end
     return map(summands) do summand
         R = SymbolicWedderburn.basis(summand)
         m = SymbolicWedderburn.multiplicity(summand)
         N = size(R, 1)
         d = SymbolicWedderburn.degree(summand)
-        S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
+        S = matrix_reps(cert, R, basis, T, form)
         #S = matrix_reps(cert, R, basis, T, _RowEchelonMatrix())
         decomose_semisimple = d > 1
         if decomose_semisimple
