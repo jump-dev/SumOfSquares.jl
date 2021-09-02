@@ -109,7 +109,7 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
         d = SymbolicWedderburn.degree(summand)
         S = matrix_reps(cert, R, basis, T, form)
         #S = matrix_reps(cert, R, basis, T, _RowEchelonMatrix())
-        decomose_semisimple = d > 1
+        decomose_semisimple = !SymbolicWedderburn.issimple(summand)
         if decomose_semisimple
             # If it's not orthogonal, how can we conclude that we can still use the semisimple summands block-decomposition ?
             # In Example 1.7.2 of Sagan's book, he uses Corollary 1.6.6 which requires that `X` and `Y` are irreducible
