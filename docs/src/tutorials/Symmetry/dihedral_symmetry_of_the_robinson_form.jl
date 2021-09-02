@@ -105,7 +105,7 @@ using DynamicPolynomials
 @polyvar x y
 struct DihedralAction <: Symmetry.OnMonomials end
 import SymbolicWedderburn
-SymbolicWedderburn._coeff_type(::DihedralAction) = Float64
+SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
 function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::AbstractMonomial)
     if iseven(el.reflection + el.id)
         var_x, var_y = x, y
