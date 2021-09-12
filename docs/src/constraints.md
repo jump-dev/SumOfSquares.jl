@@ -324,7 +324,7 @@ SumOfSquares.LagrangianMultipliers
 lagrangian_multipliers
 SOSDecomposition
 SOSDecompositionWithDomain
-SOSDecompositionAttribute
+SumOfSquares.SOSDecompositionAttribute
 sos_decomposition
 ```
 
