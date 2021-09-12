@@ -39,14 +39,14 @@ gram_matrix(con_ref).Q
 # When asking for the SOS decomposition, the numerically small entries makes the solution less readable.
 
 @test length(sos_decomposition(con_ref).ps) == 2 #src
-sos_decomposition(con_ref) #!src
+sos_decomposition(con_ref)
 
 # They are however easily discarded by using a nonzero tolerance:
 
 dec = sos_decomposition(con_ref, 1e-6)                    #src
 @test length(dec.ps) == 1                                 #src
 @test sign(first(coefficients(dec.ps[1]))) * dec.ps[1] ≈ x * y + x^2 rtol=1e-5 atol=1e-5 #src
-sos_decomposition(con_ref, 1e-6)       #!src
+sos_decomposition(con_ref, 1e-6)
 
 # ## Example 2.2
 #
