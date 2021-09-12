@@ -53,10 +53,7 @@ function decompose(p::MP.AbstractPolynomial, tol=1e-6)
         root = F.values[i]
         q *= (x - root)
         if !isapprox(real(root), real(F.values[i+1]), rtol=tol, atol=tol)
-            # Cannot happen for complex conjugate root so it means that
-            # we have a root which does not have an even multiplicity
-            # This means that the polynomial is not nonnegative
-            return
+            return # Cannot happen for complex conjugate root so it means that we have a root which does not have an even multiplicity This means that the polynomial is not nonnegative
         end
         i += 2
     end
@@ -91,8 +88,7 @@ function MOI.add_constraint(optimizer::Optimizer, func::MOI.VectorAffineFunction
         error("Only supports constant polynomials")
     end
     optimizer.p = MP.polynomial(func.constants, set.monomials)
-    # There will be only ever one constraint so the index does not matter.
-    return MOI.ConstraintIndex{typeof(func),typeof(set)}(1)
+    return MOI.ConstraintIndex{typeof(func),typeof(set)}(1) # There will be only ever one constraint so the index does not matter.
 end
 
 function MOI.optimize!(optimizer::Optimizer)
