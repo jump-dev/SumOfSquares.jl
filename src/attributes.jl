@@ -47,16 +47,6 @@ function MOI.get_fallback(
     gram = MOI.get(model, attr.result_index, ci)
     return SOSDecomposition(gram, attr.ranktol, attr.dec)
 end
-# TODO bridges should redirect to `MOI.get_fallback` as well so that
-# we can just use `Union{MOI.ConstraintIndex,MOI.Bridges.AbstractBridge}` above:
-function MOI.get(
-    model::MOI.ModelLike,
-    attr::SOSDecompositionAttribute,
-    bridge::Union{Bridges.Constraint.SOSPolynomialBridge,Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge},
-)
-    gram = MOI.get(model, GramMatrixAttribute(attr.result_index), bridge)
-    return SOSDecomposition(gram, attr.ranktol, attr.dec)
-end
 
 """
     MomentMatrixAttribute(N)
