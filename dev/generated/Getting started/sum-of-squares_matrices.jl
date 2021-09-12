@@ -11,7 +11,7 @@ solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 model = SOSModel(solver)
 mat_cref = @constraint(model, P in PSDCone())
 optimize!(model)
-termination_status(model) #!src
+termination_status(model)
 
 @polyvar y[1:2]
 p = vec(y)' * P * vec(y)

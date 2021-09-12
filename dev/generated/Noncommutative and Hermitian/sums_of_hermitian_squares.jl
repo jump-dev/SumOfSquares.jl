@@ -16,7 +16,7 @@ cone = NonnegPolyInnerCone{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTri
 certificate = SumOfSquares.Certificate.MaxDegree(cone, MonomialBasis, 2)
 c = SumOfSquares.add_constraint(model, p, cone, ideal_certificate = certificate)
 optimize!(model)
-sos_decomposition(c, 1e-6) #!src
+sos_decomposition(c, 1e-6)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 

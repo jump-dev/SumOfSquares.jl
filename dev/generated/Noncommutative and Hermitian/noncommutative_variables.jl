@@ -14,9 +14,9 @@ certificate_basis(con_ref)
 
 gram_matrix(con_ref).Q
 
-sos_decomposition(con_ref) #!src
+sos_decomposition(con_ref)
 
-sos_decomposition(con_ref, 1e-6)       #!src
+sos_decomposition(con_ref, 1e-6)
 
 using DynamicPolynomials
 @ncpolyvar x y
