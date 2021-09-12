@@ -13,6 +13,7 @@ const _TUTORIAL_SUBDIR = [
     "Noncommutative and Hermitian",
     "Sparsity",
     "Symmetry",
+    "Extension",
 ]
 
 function literate_directory(dir)

@@ -227,6 +227,27 @@ function gram_matrix(cref::JuMP.ConstraintRef)
 end
 
 """
+    sos_decomposition(cref::JuMP.ConstraintRef)
+
+Return the [`SOSDecompositionAttribute`](@ref) of `cref`.
+"""
+function sos_decomposition(cref::JuMP.ConstraintRef, ranktol::Real=0.0,
+                           dec::MultivariateMoments.LowRankChol=SVDChol())
+    return MOI.get(cref.model, SOSDecompositionAttribute(ranktol, dec), cref)
+end
+
+"""
+    sos_decomposition(cref::JuMP.ConstraintRef, K<:AbstractBasicSemialgebraicSet)
+
+Return representation in the quadraic module associated with K.
+"""
+function sos_decomposition(cref::JuMP.ConstraintRef, K::AbstractBasicSemialgebraicSet, args...)
+    lm = SOSDecomposition.(lagrangian_multipliers(cref), args...)
+    gm = sos_decomposition(cref, args...)
+    return SOSDecompositionWithDomain(gm, lm, K)
+end
+
+"""
     moment_matrix(cref::JuMP.ConstraintRef)
 
 Return the [`MomentMatrixAttribute`](@ref) of `cref`.

@@ -17,6 +17,7 @@ Reexport.@reexport using SemialgebraicSets
 Reexport.@reexport using MultivariateMoments
 
 include("gram_matrix.jl")
+include("sosdec.jl")
 
 using PolyJuMP
 abstract type SOSLikeCone <: PolyJuMP.PolynomialSet end
@@ -53,7 +54,6 @@ include("Bridges/Bridges.jl")
 
 Reexport.@reexport using JuMP
 
-include("sosdec.jl")
 include("utilities.jl")
 include("variable.jl")
 include("constraint.jl")
