@@ -68,8 +68,12 @@ SemialgebraicSets.computegröbnerbasis!(ideal(ν5.support))
 ν5.support
 
 using HomotopyContinuation
-solver = SemialgebraicSetsHCSolver(; compile = false)
-atoms5 = extractatoms(ν5, 1e-3, solver)
+solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 2e-2, real_tol = 2e-2, compile = false)
+extractatoms(ν5, 1e-3, solver)
+
+F = HomotopyContinuation.System(ν5.support)
+res = HomotopyContinuation.solve(F, solver.options...)
+path_results(res)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 

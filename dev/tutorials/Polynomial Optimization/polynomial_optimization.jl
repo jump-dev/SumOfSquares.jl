@@ -186,5 +186,31 @@ SemialgebraicSets.computegröbnerbasis!(ideal(ν5.support))
 # The following uses homotopy continuation to solve the system of equations.
 
 using HomotopyContinuation
-solver = SemialgebraicSetsHCSolver(; compile = false)
-atoms5 = extractatoms(ν5, 1e-3, solver)
+solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 2e-2, real_tol = 2e-2, compile = false)
+atoms5 = extractatoms(ν5, 1e-3, solver) #src
+@test length(atoms5.atoms) == 2 #src
+@test atoms5.atoms[1].weight + atoms5.atoms[2].weight ≈ 1.0 rtol=1e-2 #src
+@test atoms5.atoms[1].center[2:-1:1] ≈ atoms5.atoms[2].center[1:2] rtol=1e-2 #src
+extractatoms(ν5, 1e-3, solver)
+
+# As the system has 3 equations for 2 variables and the coefficients of the equations
+# are to be treated with tolerance since they originate from the solution of an SDP,
+# we need to set `excess_residual_tol` and `real_tol` to a high tolerance otherwise,
+# HomotopyContinuation would consider that there is no solution.
+# Indeed, as the system is overdetermined (it has more equations than variables)
+# HomotopyContinuation expects to have excess solution hence it filters out
+# excess solution among the solution found. It determines which solution are in excess
+# by comparing the infinity norm of the residuals of the equations at the solution with `excess_residual_tol`.
+# It also filters out solution for which the absolute value of the imaginary part of one of the entry
+# is larger than `real_tol` and strips out the imaginary part.
+# The raw solutions obtained by HomotopyContinuation can be obtained as follows:
+
+F = HomotopyContinuation.System(ν5.support)
+res = HomotopyContinuation.solve(F, solver.options...)
+r = path_results(res) #src
+@test length(r) == 4 #src
+@test all(HomotopyContinuation.is_excess_solution, r) #src
+path_results(res)
+
+# The printed `residual` above shows why `2e-2` allows to filter how the 2 actual
+# solutions from the 2 excess solutions.
