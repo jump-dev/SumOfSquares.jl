@@ -207,9 +207,9 @@ extractatoms(ν5, 1e-3, solver)
 
 F = HomotopyContinuation.System(ν5.support)
 res = HomotopyContinuation.solve(F, solver.options...)
-r = path_results(res)
-@test length(r) == 4
-@test all(HomotopyContinuation.is_excess_solution, r)
+r = path_results(res) #src
+@test length(r) == 4 #src
+@test all(HomotopyContinuation.is_excess_solution, r) #src
 path_results(res)
 
 # The printed `residual` above shows why `2e-2` allows to filter how the 2 actual
