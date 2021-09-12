@@ -39,7 +39,7 @@ model = SOSModel(solver)
 mat_cref = @constraint(model, P in PSDCone())
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
-termination_status(model) #!src
+termination_status(model)
 
 # While the reformulation of sos matrix to sos polynomial is rather simple, as explained in the "Sum-of-Squares reformulation" section below, there is a technical subtelty about the Newton polytope that if not handled correctly may result in an SDP of large size with bad numerical behavior. For this reason, it is recommended to model sos *matrix* constraints as such as will be shown in this notebook and not do the formulation manually unless there is a specific reason to do so.
 #

@@ -27,4 +27,4 @@ optimize!(model)
 dec = sos_decomposition(c, 1e-6) #src
 @test length(dec.ps) == 1 #src
 @test sign(real(first(coefficients(dec.ps[1])))) * dec.ps[1] ≈ x - im * y atol=1e-6 rtol=1e-6 #src
-sos_decomposition(c, 1e-6) #!src
+sos_decomposition(c, 1e-6)
