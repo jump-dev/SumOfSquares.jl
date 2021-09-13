@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Dihedral symmetry of the Robinson form · SumOfSquares</title><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><form class="docs-search" action="../../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-5-1" type="checkbox"/><label class="tocitem" for="menuitem-5-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-2" type="checkbox"/><label class="tocitem" for="menuitem-5-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Polynomial Optimization/bound_on_global_extremum/">Bound on Global Extremum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/polynomial_optimization/">Polynomial Optimization</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-3" type="checkbox"/><label class="tocitem" for="menuitem-5-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../../Systems and Control/stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-4" type="checkbox"/><label class="tocitem" for="menuitem-5-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Other Applications/bounds_in_probability/">Bounds in Probability</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-5" type="checkbox"/><label class="tocitem" for="menuitem-5-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-6" type="checkbox"/><label class="tocitem" for="menuitem-5-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-7" type="checkbox" checked/><label class="tocitem" for="menuitem-5-7"><span class="docs-label">Symmetry</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Dihedral symmetry of the Robinson form</a></li><li><a class="tocitem" href="../even_reduction/">Even reduction</a></li><li><a class="tocitem" href="../permutation_symmetry/">Symmetry reduction</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-8" type="checkbox"/><label class="tocitem" for="menuitem-5-8"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Extension/certificate/">Certificate</a></li><li><a class="tocitem" href="../../Extension/hypercube/">Hypercube</a></li><li><a class="tocitem" href="../../Extension/univariate_solver/">Univariate Solver</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Symmetry</a></li><li class="is-active"><a href>Dihedral symmetry of the Robinson form</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Dihedral symmetry of the Robinson form</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/master/docs/src/tutorials/Symmetry/dihedral_symmetry_of_the_robinson_form.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Dihedral-symmetry-of-the-Robinson-form"><a class="docs-heading-anchor" href="#Dihedral-symmetry-of-the-Robinson-form">Dihedral symmetry of the Robinson form</a><a id="Dihedral-symmetry-of-the-Robinson-form-1"></a><a class="docs-heading-anchor-permalink" href="#Dihedral-symmetry-of-the-Robinson-form" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR215/generated/Symmetry/dihedral_symmetry_of_the_robinson_form.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR215/generated/Symmetry/dihedral_symmetry_of_the_robinson_form.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Adapted from</strong>: Example 5.4 of [GP04]</p><p>[GP04] Gatermann, Karin and Parrilo, Pablo A. <em>Symmetry groups, semidefinite programs, and sums of squares</em>. Journal of Pure and Applied Algebra 192.1-3 (2004): 95-128.</p><p>We start by defining the Dihedral group of order 8. This group is isomorphic to the following permutation group:</p><pre><code class="language-julia hljs">using PermutationGroups
+d = perm&quot;(1, 2, 3, 4)&quot;
+c = perm&quot;(1, 3)&quot;
+G = PermGroup([c, d])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Permutation group on 2 generators generated by
+ (1,3)
+ (1,2,3,4)</code></pre><p>We could rely on this isomorphism to define this group. However, in order to illustrate how to do symmetry reduction with a custom group, we show in this example what should be implemented to define a new group.</p><pre><code class="language-julia hljs">import GroupsCore
+struct DihedralElement &lt;: GroupsCore.GroupElement
+    n::Int
+    reflection::Bool
+    id::Int
+end
+function Base.:(==)(g::DihedralElement, h::DihedralElement)
+    return g.n == h.n &amp;&amp; g.reflection == h.reflection &amp;&amp; g.id == h.id
+end
+function PermutationGroups.order(el::DihedralElement)
+    if el.reflection
+        return 2
+    else
+        if iszero(el.id)
+            return 1
+        else
+            return div(el.n, gcd(el.n, el.id))
+        end
+    end
+end
+Base.one(el::DihedralElement) = DihedralElement(el.n, false, 0)
+function Base.inv(el::DihedralElement)
+    if el.reflection || iszero(el.id)
+        return el
+    else
+        return DihedralElement(el.n, false, el.n - el.id)
+    end
+end
+function Base.:*(a::DihedralElement, b::DihedralElement)
+    a.n == b.n || error(&quot;Cannot multiply elements from different Dihedral groups&quot;)
+    id = mod(a.reflection ? a.id - b.id : a.id + b.id, a.n)
+    return DihedralElement(a.n, a.reflection != b.reflection, id)
+end
+function Base.:^(el::DihedralElement, k::Integer)
+    if el.reflection
+        return iseven(k) ? one(el) : el
+    else
+        return DihedralElement(el.n, false, mod(el.id * k, el.n))
+    end
+end
+
+Base.conj(a::DihedralElement, b::DihedralElement) = inv(b) * a * b
+Base.:^(a::DihedralElement, b::DihedralElement) = conj(a, b)
+
+struct DihedralGroup &lt;: GroupsCore.Group
+    n::Int
+end
+Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
+PermutationGroups.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
+PermutationGroups.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
+function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
+    if prev.id + 1 &gt;= G.n
+        if prev.reflection
+            return nothing
+        else
+            next = DihedralElement(G.n, true, 0)
+        end
+    else
+        next = DihedralElement(G.n, prev.reflection, prev.id + 1)
+    end
+    return next, next
+end</code></pre><p>The Robinson form is invariant under the following action of the Dihedral group on monomials: The action of each element of the groups is to map the variables <code>x, y</code> to:</p><table><tr><th style="text-align: right">id</th><th style="text-align: right">rotation</th><th style="text-align: right">reflection</th></tr><tr><td style="text-align: right">0</td><td style="text-align: right">x, y</td><td style="text-align: right">y, x</td></tr><tr><td style="text-align: right">1</td><td style="text-align: right">-y, x</td><td style="text-align: right">-x, y</td></tr><tr><td style="text-align: right">2</td><td style="text-align: right">-x, -y</td><td style="text-align: right">-y, -x</td></tr><tr><td style="text-align: right">3</td><td style="text-align: right">y, -x</td><td style="text-align: right">x, -y</td></tr></table><pre><code class="language-julia hljs">using SumOfSquares
+using DynamicPolynomials
+@polyvar x y
+struct DihedralAction &lt;: Symmetry.OnMonomials end
+import SymbolicWedderburn
+SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
+function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::AbstractMonomial)
+    if iseven(el.reflection + el.id)
+        var_x, var_y = x, y
+    else
+        var_x, var_y = y, x
+    end
+    sign_x = 1 &lt;= el.id &lt;= 2 ? -1 : 1
+    sign_y = 2 &lt;= el.id ? -1 : 1
+    return mono([x, y] =&gt; [sign_x * var_x, sign_y * var_y])
+end
+
+poly = x^6 + y^6 - x^4 * y^2 - y^4 * x^2 - x^4 - y^4 - x^2 - y^2 + 3x^2 * y^2 + 1</code></pre><p class="math-container">\[ x^{6} - x^{4}y^{2} - x^{2}y^{4} + y^{6} - x^{4} + 3x^{2}y^{2} - y^{4} - x^{2} - y^{2} + 1 \]</p><p>We can verify that <code>poly</code> is indeed invariant under the action of each element of the group as follows.</p><pre><code class="language-julia hljs">G = DihedralGroup(4)
+for g in G
+    @show SymbolicWedderburn.action(DihedralAction(), g, poly)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1</code></pre><p>We can exploit this symmetry for reducing the problem using the <code>SymmetricIdeal</code> certificate as follows:</p><pre><code class="language-julia hljs">import CSDP
+function solve(G)
+    solver = CSDP.Optimizer
+    model = Model(solver)
+    @variable(model, t)
+    @objective(model, Max, t)
+    pattern = Symmetry.Pattern(G, DihedralAction())
+    con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
+    optimize!(model)
+    @show value(t)
+
+
+    for g in gram_matrix(con_ref).sub_gram_matrices
+        println(g.basis.polynomials)
+    end
+end
+solve(G)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[x³, x²y, xy², y³, x, y]
+m = 3
+d = 2
+R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[x² + y², ( 1.0*E(1)^0)]
+m = 2
+d = 1
+R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[xy]
+m = 1
+d = 1
+R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[x² + -y²]
+m = 1
+d = 1
+Iter: 17 Ap: 9.60e-01 Pobj: -3.5512010e-03 Ad: 9.60e-01 Dobj: -3.5513625e-03
+Success: SDP solved
+Primal objective value: -3.5512010e-03
+Dual objective value: -3.5513625e-03
+Relative primal infeasibility: 2.04e-13
+Relative dual infeasibility: 1.65e-09
+Real Relative Gap: -1.60e-07
+XZ Relative Gap: 2.91e-09
+DIMACS error measures: 2.20e-13 0.00e+00 4.44e-09 0.00e+00 -1.60e-07 2.91e-09
+CSDP 6.2.0
+Iter:  0 Ap: 0.00e+00 Pobj:  0.0000000e+00 Ad: 0.00e+00 Dobj:  0.0000000e+00
+Iter:  1 Ap: 7.62e-01 Pobj: -3.7013654e+00 Ad: 8.82e-01 Dobj:  1.4448006e+00
+Iter:  2 Ap: 7.89e-01 Pobj: -1.1744617e+01 Ad: 8.88e-01 Dobj:  7.0413775e+00
+Iter:  3 Ap: 8.77e-01 Pobj: -4.8887920e+00 Ad: 7.61e-01 Dobj:  3.4859272e+00
+Iter:  4 Ap: 8.51e-01 Pobj: -2.2777934e+00 Ad: 8.17e-01 Dobj:  4.6838521e-01
+Iter:  5 Ap: 8.00e-01 Pobj: -1.5195802e+00 Ad: 7.87e-01 Dobj: -4.3753951e-01
+Iter:  6 Ap: 7.55e-01 Pobj: -1.1158044e+00 Ad: 7.89e-01 Dobj: -7.3235718e-01
+Iter:  7 Ap: 8.79e-01 Pobj: -1.0106598e+00 Ad: 6.95e-01 Dobj: -8.4586595e-01
+Iter:  8 Ap: 7.30e-01 Pobj: -9.6602111e-01 Ad: 7.60e-01 Dobj: -8.9961893e-01
+Iter:  9 Ap: 8.15e-01 Pobj: -9.4899718e-01 Ad: 7.31e-01 Dobj: -9.2044796e-01
+Iter: 10 Ap: 1.00e+00 Pobj: -9.2802191e-01 Ad: 8.85e-01 Dobj: -9.2720519e-01
+Iter: 11 Ap: 8.20e-01 Pobj: -9.2925529e-01 Ad: 8.79e-01 Dobj: -9.3034978e-01
+Iter: 12 Ap: 1.00e+00 Pobj: -9.2917028e-01 Ad: 1.00e+00 Dobj: -9.3112341e-01
+Iter: 13 Ap: 8.43e-01 Pobj: -9.2957771e-01 Ad: 7.13e-01 Dobj: -9.3157125e-01
+Iter: 14 Ap: 9.37e-01 Pobj: -9.3027574e-01 Ad: 3.94e-01 Dobj: -9.3183176e-01
+Iter: 15 Ap: 3.57e-01 Pobj: -9.2930147e-01 Ad: 1.58e-01 Dobj: -9.3205346e-01
+Iter: 16 Ap: 1.60e-01 Pobj: -9.3185445e-01 Ad: 1.35e-01 Dobj: -9.3149076e-01
+Iter: 17 Ap: 1.00e+00 Pobj: -9.3027897e-01 Ad: 1.00e+00 Dobj: -9.3236821e-01
+Iter: 18 Ap: 9.54e-01 Pobj: -9.3146141e-01 Ad: 1.00e+00 Dobj: -9.3265544e-01
+Iter: 19 Ap: 8.28e-01 Pobj: -9.3178503e-01 Ad: 9.24e-01 Dobj: -9.3274240e-01
+Iter: 20 Ap: 4.17e-01 Pobj: -9.3143884e-01 Ad: 6.59e-01 Dobj: -9.3287605e-01
+Iter: 21 Ap: 2.41e-01 Pobj: -9.3236028e-01 Ad: 7.65e-01 Dobj: -9.3277868e-01
+Iter: 22 Ap: 1.00e+00 Pobj: -9.3206347e-01 Ad: 1.00e+00 Dobj: -9.3290633e-01
+Iter: 23 Ap: 8.01e-01 Pobj: -9.3217591e-01 Ad: 8.26e-01 Dobj: -9.3300322e-01
+Iter: 24 Ap: 7.56e-01 Pobj: -9.3228859e-01 Ad: 7.77e-01 Dobj: -9.3305802e-01
+Iter: 25 Ap: 1.00e+00 Pobj: -9.3229211e-01 Ad: 1.00e+00 Dobj: -9.3306421e-01
+Iter: 26 Ap: 1.00e+00 Pobj: -9.3230032e-01 Ad: 8.69e-01 Dobj: -9.3306895e-01
+Iter: 27 Ap: 1.00e+00 Pobj: -9.3230291e-01 Ad: 9.45e-01 Dobj: -9.3306911e-01
+value(t) = -0.932302276802929
+DynamicPolynomials.Polynomial{true, Float64}[xy², x, x³]
+DynamicPolynomials.Polynomial{true, Float64}[x²y, y, y³]
+DynamicPolynomials.Polynomial{true, Float64}[x² + y², 1.0]
+DynamicPolynomials.Polynomial{true, Float64}[xy]
+DynamicPolynomials.Polynomial{true, Float64}[x² - y²]</code></pre><p>We notice that we indeed find <code>-3825/4096</code> and that symmetry was exploited. In case the conjugacy classes are known, we can implement <code>SymbolicWedderburn.conjugacy_classes_orbit</code> instead of <code>order</code> and <code>iterate</code>. To show that these do not need to be implemented, we create a new dihedral group type that do not implement these methods but that instead implement <code>SymbolicWedderburn.conjugacy_classes_orbit</code>:</p><pre><code class="language-julia hljs">struct DihedralGroup2 &lt;: GroupsCore.Group
+    n::Int
+end
+PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
+_orbit(cc::Vector{&lt;:GroupsCore.GroupElement}) = PermutationGroups.Orbit(cc, Dict(a =&gt; nothing for a in cc))
+_orbit(el::GroupsCore.GroupElement) = _orbit([el])
+function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
+    orbits = [_orbit(DihedralElement(d.n, false, 0))]
+    for i in 1:div(d.n - 1, 2)
+        push!(orbits, _orbit([
+            DihedralElement(d.n, false, i),
+            DihedralElement(d.n, false, d.n - i),
+        ]))
+    end
+    if iseven(d.n)
+        push!(orbits, _orbit(DihedralElement(d.n, false, div(d.n, 2))))
+        push!(orbits, _orbit([
+            DihedralElement(d.n, true, i) for i in 0:2:(d.n - 2)
+        ]))
+        push!(orbits, _orbit([
+            DihedralElement(d.n, true, i) for i in 1:2:(d.n - 1)
+        ]))
+    else
+        push!(orbits, _orbit([
+            DihedralElement(d.n, true, i) for i in 0:(d.n - 1)
+        ]))
+    end
+end</code></pre><p>As we have not implemented the iterator over all the elements, we can iterate over all conjugacy classes instead to verify that the polynomial is invariant under the group action.</p><pre><code class="language-julia hljs">G = DihedralGroup2(4)
+for cc in SymbolicWedderburn.conjugacy_classes_orbit(G)
+    for g in cc
+        @show SymbolicWedderburn.action(DihedralAction(), g, poly)
+    end
+end
+
+solve(G)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+SymbolicWedderburn.action(DihedralAction(), g, poly) = x⁶ - x⁴y² - x²y⁴ + y⁶ - x⁴ + 3x²y² - y⁴ - x² - y² + 1
+R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[x³, x²y, xy², y³, x, y]
+m = 3
+d = 2
+R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[x² + y², ( 1.0*E(1)^0)]
+m = 2
+d = 1
+R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[xy]
+m = 1
+d = 1
+R * basis.monomials = DynamicPolynomials.Polynomial{true, Cyclotomics.Cyclotomic{Float64, SparseArrays.SparseVector{Float64, Int64}}}[x² + -y²]
+m = 1
+d = 1
+Stuck at edge of primal feasibility, giving up.
+Partial Success: SDP solved with reduced accuracy
+Primal objective value: -9.3230228e-01
+Dual objective value: -9.3306912e-01
+Relative primal infeasibility: 3.21e-08
+Relative dual infeasibility: 1.60e-10
+Real Relative Gap: -2.68e-04
+XZ Relative Gap: 1.50e-09
+DIMACS error measures: 4.20e-08 0.00e+00 4.21e-10 0.00e+00 -2.68e-04 1.50e-09
+CSDP 6.2.0
+Iter:  0 Ap: 0.00e+00 Pobj:  0.0000000e+00 Ad: 0.00e+00 Dobj:  0.0000000e+00
+Iter:  1 Ap: 7.62e-01 Pobj: -3.7013654e+00 Ad: 8.82e-01 Dobj:  1.4448006e+00
+Iter:  2 Ap: 7.89e-01 Pobj: -1.1744617e+01 Ad: 8.88e-01 Dobj:  7.0413775e+00
+Iter:  3 Ap: 8.77e-01 Pobj: -4.8887920e+00 Ad: 7.61e-01 Dobj:  3.4859272e+00
+Iter:  4 Ap: 8.51e-01 Pobj: -2.2777934e+00 Ad: 8.17e-01 Dobj:  4.6838521e-01
+Iter:  5 Ap: 8.00e-01 Pobj: -1.5195802e+00 Ad: 7.87e-01 Dobj: -4.3753951e-01
+Iter:  6 Ap: 7.55e-01 Pobj: -1.1158044e+00 Ad: 7.89e-01 Dobj: -7.3235718e-01
+Iter:  7 Ap: 8.79e-01 Pobj: -1.0106598e+00 Ad: 6.95e-01 Dobj: -8.4586595e-01
+Iter:  8 Ap: 7.30e-01 Pobj: -9.6602111e-01 Ad: 7.60e-01 Dobj: -8.9961893e-01
+Iter:  9 Ap: 8.15e-01 Pobj: -9.4899718e-01 Ad: 7.31e-01 Dobj: -9.2044796e-01
+Iter: 10 Ap: 1.00e+00 Pobj: -9.2802191e-01 Ad: 8.85e-01 Dobj: -9.2720519e-01
+Iter: 11 Ap: 8.20e-01 Pobj: -9.2925529e-01 Ad: 8.79e-01 Dobj: -9.3034978e-01
+Iter: 12 Ap: 1.00e+00 Pobj: -9.2917028e-01 Ad: 1.00e+00 Dobj: -9.3112341e-01
+Iter: 13 Ap: 8.43e-01 Pobj: -9.2957771e-01 Ad: 7.13e-01 Dobj: -9.3157125e-01
+Iter: 14 Ap: 9.37e-01 Pobj: -9.3027574e-01 Ad: 3.94e-01 Dobj: -9.3183176e-01
+Iter: 15 Ap: 3.57e-01 Pobj: -9.2930147e-01 Ad: 1.58e-01 Dobj: -9.3205346e-01
+Iter: 16 Ap: 1.60e-01 Pobj: -9.3185445e-01 Ad: 1.35e-01 Dobj: -9.3149076e-01
+Iter: 17 Ap: 1.00e+00 Pobj: -9.3027897e-01 Ad: 1.00e+00 Dobj: -9.3236821e-01
+Iter: 18 Ap: 9.54e-01 Pobj: -9.3146141e-01 Ad: 1.00e+00 Dobj: -9.3265544e-01
+Iter: 19 Ap: 8.28e-01 Pobj: -9.3178503e-01 Ad: 9.24e-01 Dobj: -9.3274240e-01
+Iter: 20 Ap: 4.17e-01 Pobj: -9.3143884e-01 Ad: 6.59e-01 Dobj: -9.3287605e-01
+Iter: 21 Ap: 2.41e-01 Pobj: -9.3236028e-01 Ad: 7.65e-01 Dobj: -9.3277868e-01
+Iter: 22 Ap: 1.00e+00 Pobj: -9.3206347e-01 Ad: 1.00e+00 Dobj: -9.3290633e-01
+Iter: 23 Ap: 8.01e-01 Pobj: -9.3217591e-01 Ad: 8.26e-01 Dobj: -9.3300322e-01
+Iter: 24 Ap: 7.56e-01 Pobj: -9.3228859e-01 Ad: 7.77e-01 Dobj: -9.3305802e-01
+Iter: 25 Ap: 1.00e+00 Pobj: -9.3229211e-01 Ad: 1.00e+00 Dobj: -9.3306421e-01
+Iter: 26 Ap: 1.00e+00 Pobj: -9.3230032e-01 Ad: 8.69e-01 Dobj: -9.3306895e-01
+Iter: 27 Ap: 1.00e+00 Pobj: -9.3230291e-01 Ad: 9.45e-01 Dobj: -9.3306911e-01
+value(t) = -0.932302276802929
+DynamicPolynomials.Polynomial{true, Float64}[xy², x, x³]
+DynamicPolynomials.Polynomial{true, Float64}[x²y, y, y³]
+DynamicPolynomials.Polynomial{true, Float64}[x² + y², 1.0]
+DynamicPolynomials.Polynomial{true, Float64}[xy]
+DynamicPolynomials.Polynomial{true, Float64}[x² - y²]</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../even_reduction/">Even reduction »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.6 on <span class="colophon-date" title="Monday 13 September 2021 10:12">Monday 13 September 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
