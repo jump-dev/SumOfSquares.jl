@@ -218,3 +218,64 @@ path_results(res)
 
 # The printed `residual` above shows why `2e-2` allows to filter how the 2 actual
 # solutions from the 2 excess solutions.
+
+# ## Truncated moment series
+#
+# A third alternative is implemented in https://github.com/bmourrain/MultivariateSeries.jl
+# As it is not released yet, we need to add the package as follows:
+
+using Pkg
+pkg"add https://github.com/blegat/MultivariateSeries.jl#ds18"
+
+# We will use `import`, not `using` to make it clear which function is in which
+# package:
+
+const MM = MultivariateMoments
+import MultivariateSeries
+const MS = MultivariateSeries
+
+function decompose_truncation(ν::MM.MomentMatrix)
+    μ = MM.measure(ν)
+    s = MultivariateSeries.series(
+        [monomial(moment) => moment_value(moment) for moment in MM.moments(μ)]
+    )
+    t = MultivariateSeries.truncate(s, maxdegree(s) - 1)
+    weights, sols = MultivariateSeries.decompose(t)
+    centers = [sols[:, i] for i in 1:size(sols, 2)]
+    return AtomicMeasure(
+        variables(ν),
+        WeightedDiracMeasure.(centers, weights),
+    )
+end
+
+# Let's try it first for `ν3`:
+
+η3 = series(ν3)
+
+# Note that the moments do not match (which is to be expected as the `(0.5, 0.5)` is not a minimizer).
+# We can verify this by comparing the moments in the moment matrix:
+
+μ3 = MM.measure(ν3)
+
+# with the corresponding moments of the atomic measure:
+
+MM.measure(η3, monomials(μ3))
+
+# We try it out for `ν5` now:
+
+η5 = series(ν5)
+
+# Note the accuracy of the solution. This is thanks to the truncation that
+# discards the highest degree moments which are less accurate.
+# We can verify that the moments indeed match this time:
+
+μ5 = MM.measure(ν5)
+
+# with the corresponding moments of the atomic measure:
+
+MM.measure(η5, monomials(μ5))
+
+# Note that while the accuracy isn't so good for the first 5 moment values,
+# it is quite accurate for the last ones.
+# This is to be expected as these first 5 moments corresponds to the degree 4
+# monomials which were truncated.
