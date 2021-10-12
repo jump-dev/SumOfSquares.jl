@@ -103,7 +103,7 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
         _RowEchelonMatrix()
     end
     return map(summands) do summand
-        R = SymbolicWedderburn.basis(summand)
+        R = SymbolicWedderburn.image_basis(summand)
         m = SymbolicWedderburn.multiplicity(summand)
         N = size(R, 1)
         d = SymbolicWedderburn.degree(summand)
