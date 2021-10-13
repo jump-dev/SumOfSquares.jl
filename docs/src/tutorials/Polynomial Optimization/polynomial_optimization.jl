@@ -108,6 +108,19 @@ extractatoms(ν3, 1e-3) # Returns nothing as the dual is not atomic
 # For this reason, the keywords `maxdegree = 4` and `maxdegree = 5` have the same effect in this example.
 # In general, if the polynomials in the domain are not all odd or all even, each value of `maxdegree` has a different effect in the choice of the maximum total degree of some $s_i$.
 
+function sos(deg)
+    model = SOSModel(solver)
+    @variable(model, α)
+    @objective(model, Max, α)
+    @constraint(model, c, p >= α, domain = S, ideal_certificate = Certificate.MaxDegree(SOSCone(), MonomialBasis, 4), maxdegree = deg)
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL #src
+    @show termination_status(model)
+    @test objective_value(model) ≈ 0.0 atol=1e-5 #src
+    @show objective_value(model)
+    display(lagrangian_multipliers(c))
+    return c
+end
 model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
