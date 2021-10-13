@@ -180,7 +180,7 @@ SemialgebraicSets.computegröbnerbasis!(ideal(ν5.support))
 
 # As discussed in the previous section, the atom extraction relies on the solution
 # of a system of algebraic equations. The `extractatoms` function takes an optional
-# `solver` argument that is used to solve this system of equation.
+# `algebraic_solver` argument that is used to solve this system of equation.
 # If no solver is provided, the default solver of SemialgebraicSets.jl is used which
 # currently computes the Gröbner basis, then the multiplication matrices and
 # then the Schur decomposition of a random combination of these matrices.
@@ -190,12 +190,12 @@ SemialgebraicSets.computegröbnerbasis!(ideal(ν5.support))
 # The following uses homotopy continuation to solve the system of equations.
 
 using HomotopyContinuation
-solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 2e-2, real_tol = 2e-2, compile = false)
-atoms5 = extractatoms(ν5, 1e-3, solver) #src
+algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 2e-2, real_tol = 2e-2, compile = false)
+atoms5 = extractatoms(ν5, 1e-3, algebraic_solver) #src
 @test length(atoms5.atoms) == 2 #src
 @test atoms5.atoms[1].weight + atoms5.atoms[2].weight ≈ 1.0 rtol=1e-2 #src
 @test atoms5.atoms[1].center[2:-1:1] ≈ atoms5.atoms[2].center[1:2] rtol=1e-2 #src
-extractatoms(ν5, 1e-3, solver)
+extractatoms(ν5, 1e-3, algebraic_solver)
 
 # As the system has 3 equations for 2 variables and the coefficients of the equations
 # are to be treated with tolerance since they originate from the solution of an SDP,
@@ -210,7 +210,7 @@ extractatoms(ν5, 1e-3, solver)
 # The raw solutions obtained by HomotopyContinuation can be obtained as follows:
 
 F = HomotopyContinuation.System(ν5.support)
-res = HomotopyContinuation.solve(F, solver.options...)
+res = HomotopyContinuation.solve(F, algebraic_solver.options...)
 r = path_results(res) #src
 @test length(r) == 4 #src
 @test all(HomotopyContinuation.is_excess_solution, r) #src
@@ -250,7 +250,7 @@ end
 
 # Let's try it first for `ν3`:
 
-η3 = series(ν3)
+η3 = decompose_truncation(ν3)
 
 # Note that the moments do not match (which is to be expected as the `(0.5, 0.5)` is not a minimizer).
 # We can verify this by comparing the moments in the moment matrix:
@@ -263,7 +263,7 @@ MM.measure(η3, monomials(μ3))
 
 # We try it out for `ν5` now:
 
-η5 = series(ν5)
+η5 = decompose_truncation(ν5)
 
 # Note the accuracy of the solution. This is thanks to the truncation that
 # discards the highest degree moments which are less accurate.
