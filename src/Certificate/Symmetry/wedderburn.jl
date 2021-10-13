@@ -88,7 +88,8 @@ end
 function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificate.GramBasis, poly)
     basis = SumOfSquares.Certificate.get(cert.certificate, attr, poly)
     T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
-    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, cert.pattern.action, basis)
+    # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
+    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, cert.pattern.action, basis, semisimple=true)
     # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
     # SymbolicWedderburn guarantees that the invariant subspace spanned by the
     # polynomials of the vector `R * basis.monomials` is invariant under the
@@ -109,7 +110,7 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
         d = SymbolicWedderburn.degree(summand)
         S = matrix_reps(cert, R, basis, T, form)
         #S = matrix_reps(cert, R, basis, T, _RowEchelonMatrix())
-        decomose_semisimple = !SymbolicWedderburn.issimple(summand)
+        decomose_semisimple = d > 1
         if decomose_semisimple
             # If it's not orthogonal, how can we conclude that we can still use the semisimple summands block-decomposition ?
             # In Example 1.7.2 of Sagan's book, he uses Corollary 1.6.6 which requires that `X` and `Y` are irreducible
@@ -134,7 +135,7 @@ function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificat
             end
         end
         F = convert(Matrix{T}, R)
-        if decomose_semisimple
+        if d > 1
             if m > 1
                 U = ordered_block_diag(S, d)
             else

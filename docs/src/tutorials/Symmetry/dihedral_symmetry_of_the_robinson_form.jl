@@ -37,7 +37,7 @@ end
 
 Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
 
-Base.eltype(::DihedralGroup) = DihedralElement
+Base.eltype(::Type{DihedralGroup}) = DihedralElement
 function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
     if prev.id + 1 >= G.n
         if prev.reflection
@@ -157,15 +157,18 @@ function solve(G)
         @test Q[2, 3] ≈  5/8  rtol=1e-3 #src
         @test Q[3, 3] ≈  1    rtol=1e-3 #src
     end #src
-    @test g[3].basis.polynomials == [x^2 + y^2, 1.0] #src
+    @test length(g[3].basis.polynomials) == 2 #src
+    @test g[3].basis.polynomials[1] ≈ (√2/2)x^2 + (√2/2)y^2 #src
+    @test g[3].basis.polynomials[2] == 1.0 #src
     @test size(g[3].Q) == (2, 2)             #src
     @test g[3].Q[2, 2] ≈ 7921/4096 rtol=1e-3 #src
-    @test g[3].Q[1, 2] ≈  -89/128 rtol=1e-3  #src
-    @test g[3].Q[1, 1] ≈ 1/4 rtol=1e-2 #src
-    @test g[4].basis.polynomials == [x * y] #src
+    @test g[3].Q[1, 2] ≈ -89/(64*√2) rtol=1e-3  #src
+    @test g[3].Q[1, 1] ≈ 1/2 rtol=1e-2 #src
+    @test g[4].basis.polynomials == [-x * y] #src
     @test size(g[4].Q) == (1, 1)       #src
     @test g[4].Q[1, 1] ≈ 0   atol=1e-3 #src
-    @test g[5].basis.polynomials == [x^2 - y^2] #src
+    @test length(g[5].basis.polynomials) == 1 #src
+    @test g[5].basis.polynomials[1] ≈ -(√2/2)x^2 + (√2/2)y^2 #src
     @test size(g[5].Q) == (1, 1)       #src
     @test g[5].Q[1, 1] ≈ 0   atol=1e-3 #src
     for g in gram_matrix(con_ref).sub_gram_matrices
@@ -176,18 +179,20 @@ solve(G)
 
 # We notice that we indeed find `-3825/4096` and that symmetry was exploited.
 # In case the conjugacy classes are known, we can implement
-# `SymbolicWedderburn.conjugacy_classes_orbit` instead of `order` and `iterate`.
+# `SymbolicWedderburn.Characters.conjugacy_classes_orbit` instead of `order` and `iterate`.
 # To show that these do not need to be implemented, we create a new dihedral group type
 # that do not implement these methods but that instead implement
-# `SymbolicWedderburn.conjugacy_classes_orbit`:
+# `SymbolicWedderburn.Characters.conjugacy_classes_orbit`:
 
 struct DihedralGroup2 <: GroupsCore.Group
     n::Int
 end
+Base.one(G::DihedralGroup2) = DihedralElement(G.n, false, 0)
+Base.eltype(::Type{DihedralGroup2}) = DihedralElement
 PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
 _orbit(cc::Vector{<:GroupsCore.GroupElement}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
 _orbit(el::GroupsCore.GroupElement) = _orbit([el])
-function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
+function SymbolicWedderburn.Characters.conjugacy_classes_orbit(d::DihedralGroup2)
     orbits = [_orbit(DihedralElement(d.n, false, 0))]
     for i in 1:div(d.n - 1, 2)
         push!(orbits, _orbit([
@@ -214,7 +219,7 @@ end
 # conjugacy classes instead to verify that the polynomial is invariant under the group action.
 
 G = DihedralGroup2(4)
-for cc in SymbolicWedderburn.conjugacy_classes_orbit(G)
+for cc in SymbolicWedderburn.Characters.conjugacy_classes_orbit(G)
     for g in cc
         @show SymbolicWedderburn.action(DihedralAction(), g, poly)
         @test SymbolicWedderburn.action(DihedralAction(), g, poly) == poly #src
