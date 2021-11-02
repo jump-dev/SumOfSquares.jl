@@ -230,4 +230,4 @@ for cc in SymbolicWedderburn.Characters.conjugacy_classes(G)
     end
 end
 
-solve(G)
+# solve(G)
