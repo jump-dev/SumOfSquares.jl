@@ -35,9 +35,13 @@ struct DihedralElement <: GroupsCore.GroupElement
     id::Int
 end
 
+# Implementing GroupsCore API:
+
 Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
 
 Base.eltype(::Type{DihedralGroup}) = DihedralElement
+Base.IteratorSize(::Type{DihedralGroup}) = Base.HasLength()
+
 function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
     if prev.id + 1 >= G.n
         if prev.reflection
@@ -50,7 +54,6 @@ function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.
     end
     return next, next
 end
-Base.IteratorSize(::Type{DihedralGroup}) = Base.HasLength()
 
 GroupsCore.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
 GroupsCore.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
