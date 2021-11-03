@@ -35,9 +35,13 @@ struct DihedralElement <: GroupsCore.GroupElement
     id::Int
 end
 
+# Implementing GroupsCore API:
+
 Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
 
 Base.eltype(::Type{DihedralGroup}) = DihedralElement
+Base.IteratorSize(::Type{DihedralGroup}) = Base.HasLength()
+
 function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
     if prev.id + 1 >= G.n
         if prev.reflection
@@ -50,7 +54,6 @@ function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.
     end
     return next, next
 end
-Base.IteratorSize(::Type{DihedralGroup}) = Base.HasLength()
 
 GroupsCore.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
 GroupsCore.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
@@ -178,52 +181,3 @@ end
 solve(G)
 
 # We notice that we indeed find `-3825/4096` and that symmetry was exploited.
-# In case the conjugacy classes are known, we can implement
-# `SymbolicWedderburn.Characters.conjugacy_classes_orbit` instead of `order` and `iterate`.
-# To show that these do not need to be implemented, we create a new dihedral group type
-# that do not implement these methods but that instead implement
-# `SymbolicWedderburn.Characters.conjugacy_classes_orbit`:
-
-struct DihedralGroup2 <: GroupsCore.Group
-    n::Int
-end
-Base.one(G::DihedralGroup2) = DihedralElement(G.n, false, 0)
-Base.eltype(::Type{DihedralGroup2}) = DihedralElement
-PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
-_orbit(cc::Vector{<:GroupsCore.GroupElement}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
-_orbit(el::GroupsCore.GroupElement) = _orbit([el])
-function SymbolicWedderburn.Characters.conjugacy_classes_orbit(d::DihedralGroup2)
-    orbits = [_orbit(DihedralElement(d.n, false, 0))]
-    for i in 1:div(d.n - 1, 2)
-        push!(orbits, _orbit([
-            DihedralElement(d.n, false, i),
-            DihedralElement(d.n, false, d.n - i),
-        ]))
-    end
-    if iseven(d.n)
-        push!(orbits, _orbit(DihedralElement(d.n, false, div(d.n, 2))))
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 0:2:(d.n - 2)
-        ]))
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 1:2:(d.n - 1)
-        ]))
-    else
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 0:(d.n - 1)
-        ]))
-    end
-end
-
-# As we have not implemented the iterator over all the elements, we can iterate over all
-# conjugacy classes instead to verify that the polynomial is invariant under the group action.
-
-G = DihedralGroup2(4)
-for cc in SymbolicWedderburn.Characters.conjugacy_classes_orbit(G)
-    for g in cc
-        @show SymbolicWedderburn.action(DihedralAction(), g, poly)
-        @test SymbolicWedderburn.action(DihedralAction(), g, poly) == poly #src
-    end
-end
-
-solve(G)
