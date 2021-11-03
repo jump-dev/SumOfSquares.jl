@@ -7,7 +7,7 @@ using Test #src
 using DynamicPolynomials
 @polyvar x
 
-# We would like to find the minimum value of the polynomial
+# We would like to find the minimum value of the following polynomial:
 
 poly = x^4 - 2x^2
 
