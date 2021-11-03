@@ -49,7 +49,6 @@ value(t)
 # We indeed find `-1`, let's verify that symmetry was exploited:
 
 g = gram_matrix(con_ref).sub_gram_matrices    #src
-display([g[i].basis.polynomials for i in eachindex(g)])
 @test length(g) == 4                          #src
 @test length(g[1].basis.polynomials) == 2     #src
 @test g[1].basis.polynomials[1] ≈ 0.5 * sum(x) #src
