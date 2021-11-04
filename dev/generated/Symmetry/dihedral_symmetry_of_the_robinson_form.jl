@@ -4,26 +4,43 @@ c = perm"(1, 3)"
 G = PermGroup([c, d])
 
 import GroupsCore
+
+struct DihedralGroup <: GroupsCore.Group
+    n::Int
+end
+
 struct DihedralElement <: GroupsCore.GroupElement
     n::Int
     reflection::Bool
     id::Int
 end
+
+Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
+
+Base.eltype(::Type{DihedralGroup}) = DihedralElement
+Base.IteratorSize(::Type{DihedralGroup}) = Base.HasLength()
+
+function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
+    if prev.id + 1 >= G.n
+        if prev.reflection
+            return nothing
+        else
+            next = DihedralElement(G.n, true, 0)
+        end
+    else
+        next = DihedralElement(G.n, prev.reflection, prev.id + 1)
+    end
+    return next, next
+end
+
+GroupsCore.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
+GroupsCore.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
+
+Base.parent(g::DihedralElement) = DihedralGroup(g.n)
 function Base.:(==)(g::DihedralElement, h::DihedralElement)
     return g.n == h.n && g.reflection == h.reflection && g.id == h.id
 end
-function PermutationGroups.order(el::DihedralElement)
-    if el.reflection
-        return 2
-    else
-        if iszero(el.id)
-            return 1
-        else
-            return div(el.n, gcd(el.n, el.id))
-        end
-    end
-end
-Base.one(el::DihedralElement) = DihedralElement(el.n, false, 0)
+
 function Base.inv(el::DihedralElement)
     if el.reflection || iszero(el.id)
         return el
@@ -36,34 +53,19 @@ function Base.:*(a::DihedralElement, b::DihedralElement)
     id = mod(a.reflection ? a.id - b.id : a.id + b.id, a.n)
     return DihedralElement(a.n, a.reflection != b.reflection, id)
 end
-function Base.:^(el::DihedralElement, k::Integer)
+
+Base.copy(a::DihedralElement) = DihedralElement(a.n, a.reflection, a.id)
+
+function GroupsCore.order(el::DihedralElement)
     if el.reflection
-        return iseven(k) ? one(el) : el
+        return 2
     else
-        return DihedralElement(el.n, false, mod(el.id * k, el.n))
-    end
-end
-
-Base.conj(a::DihedralElement, b::DihedralElement) = inv(b) * a * b
-Base.:^(a::DihedralElement, b::DihedralElement) = conj(a, b)
-
-struct DihedralGroup <: GroupsCore.Group
-    n::Int
-end
-Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
-PermutationGroups.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
-PermutationGroups.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
-function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
-    if prev.id + 1 >= G.n
-        if prev.reflection
-            return nothing
+        if iszero(el.id)
+            return 1
         else
-            next = DihedralElement(G.n, true, 0)
+            return div(el.n, gcd(el.n, el.id))
         end
-    else
-        next = DihedralElement(G.n, prev.reflection, prev.id + 1)
     end
-    return next, next
 end
 
 using SumOfSquares
@@ -106,44 +108,6 @@ function solve(G)
         println(g.basis.polynomials)
     end
 end
-solve(G)
-
-struct DihedralGroup2 <: GroupsCore.Group
-    n::Int
-end
-PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
-_orbit(cc::Vector{<:GroupsCore.GroupElement}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
-_orbit(el::GroupsCore.GroupElement) = _orbit([el])
-function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
-    orbits = [_orbit(DihedralElement(d.n, false, 0))]
-    for i in 1:div(d.n - 1, 2)
-        push!(orbits, _orbit([
-            DihedralElement(d.n, false, i),
-            DihedralElement(d.n, false, d.n - i),
-        ]))
-    end
-    if iseven(d.n)
-        push!(orbits, _orbit(DihedralElement(d.n, false, div(d.n, 2))))
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 0:2:(d.n - 2)
-        ]))
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 1:2:(d.n - 1)
-        ]))
-    else
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 0:(d.n - 1)
-        ]))
-    end
-end
-
-G = DihedralGroup2(4)
-for cc in SymbolicWedderburn.conjugacy_classes_orbit(G)
-    for g in cc
-        @show SymbolicWedderburn.action(DihedralAction(), g, poly)
-    end
-end
-
 solve(G)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl

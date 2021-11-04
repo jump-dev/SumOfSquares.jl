@@ -24,26 +24,47 @@ G = PermGroup([c, d])
 # we show in this example what should be implemented to define a new group.
 
 import GroupsCore
+
+struct DihedralGroup <: GroupsCore.Group
+    n::Int
+end
+
 struct DihedralElement <: GroupsCore.GroupElement
     n::Int
     reflection::Bool
     id::Int
 end
+
+# Implementing GroupsCore API:
+
+Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
+
+Base.eltype(::Type{DihedralGroup}) = DihedralElement
+Base.IteratorSize(::Type{DihedralGroup}) = Base.HasLength()
+
+function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
+    if prev.id + 1 >= G.n
+        if prev.reflection
+            return nothing
+        else
+            next = DihedralElement(G.n, true, 0)
+        end
+    else
+        next = DihedralElement(G.n, prev.reflection, prev.id + 1)
+    end
+    return next, next
+end
+
+GroupsCore.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
+GroupsCore.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
+
+# Base.rand not needed for our purposes here
+
+Base.parent(g::DihedralElement) = DihedralGroup(g.n)
 function Base.:(==)(g::DihedralElement, h::DihedralElement)
     return g.n == h.n && g.reflection == h.reflection && g.id == h.id
 end
-function PermutationGroups.order(el::DihedralElement)
-    if el.reflection
-        return 2
-    else
-        if iszero(el.id)
-            return 1
-        else
-            return div(el.n, gcd(el.n, el.id))
-        end
-    end
-end
-Base.one(el::DihedralElement) = DihedralElement(el.n, false, 0)
+
 function Base.inv(el::DihedralElement)
     if el.reflection || iszero(el.id)
         return el
@@ -56,34 +77,20 @@ function Base.:*(a::DihedralElement, b::DihedralElement)
     id = mod(a.reflection ? a.id - b.id : a.id + b.id, a.n)
     return DihedralElement(a.n, a.reflection != b.reflection, id)
 end
-function Base.:^(el::DihedralElement, k::Integer)
+
+Base.copy(a::DihedralElement) = DihedralElement(a.n, a.reflection, a.id)
+
+# optional functions:
+function GroupsCore.order(el::DihedralElement)
     if el.reflection
-        return iseven(k) ? one(el) : el
+        return 2
     else
-        return DihedralElement(el.n, false, mod(el.id * k, el.n))
-    end
-end
-
-Base.conj(a::DihedralElement, b::DihedralElement) = inv(b) * a * b
-Base.:^(a::DihedralElement, b::DihedralElement) = conj(a, b)
-
-struct DihedralGroup <: GroupsCore.Group
-    n::Int
-end
-Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
-PermutationGroups.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
-PermutationGroups.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
-function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
-    if prev.id + 1 >= G.n
-        if prev.reflection
-            return nothing
+        if iszero(el.id)
+            return 1
         else
-            next = DihedralElement(G.n, true, 0)
+            return div(el.n, gcd(el.n, el.id))
         end
-    else
-        next = DihedralElement(G.n, prev.reflection, prev.id + 1)
     end
-    return next, next
 end
 
 # The Robinson form is invariant under the following action of the Dihedral group on monomials:
@@ -153,15 +160,18 @@ function solve(G)
         @test Q[2, 3] ≈  5/8  rtol=1e-3 #src
         @test Q[3, 3] ≈  1    rtol=1e-3 #src
     end #src
-    @test g[3].basis.polynomials == [x^2 + y^2, 1.0] #src
+    @test length(g[3].basis.polynomials) == 2 #src
+    @test g[3].basis.polynomials[1] ≈ (√2/2)x^2 + (√2/2)y^2 #src
+    @test g[3].basis.polynomials[2] == 1.0 #src
     @test size(g[3].Q) == (2, 2)             #src
     @test g[3].Q[2, 2] ≈ 7921/4096 rtol=1e-3 #src
-    @test g[3].Q[1, 2] ≈  -89/128 rtol=1e-3  #src
-    @test g[3].Q[1, 1] ≈ 1/4 rtol=1e-2 #src
-    @test g[4].basis.polynomials == [x * y] #src
+    @test g[3].Q[1, 2] ≈ -89/(64*√2) rtol=1e-3  #src
+    @test g[3].Q[1, 1] ≈ 1/2 rtol=1e-2 #src
+    @test g[4].basis.polynomials == [-x * y] #src
     @test size(g[4].Q) == (1, 1)       #src
     @test g[4].Q[1, 1] ≈ 0   atol=1e-3 #src
-    @test g[5].basis.polynomials == [x^2 - y^2] #src
+    @test length(g[5].basis.polynomials) == 1 #src
+    @test g[5].basis.polynomials[1] ≈ -(√2/2)x^2 + (√2/2)y^2 #src
     @test size(g[5].Q) == (1, 1)       #src
     @test g[5].Q[1, 1] ≈ 0   atol=1e-3 #src
     for g in gram_matrix(con_ref).sub_gram_matrices
@@ -171,50 +181,3 @@ end
 solve(G)
 
 # We notice that we indeed find `-3825/4096` and that symmetry was exploited.
-# In case the conjugacy classes are known, we can implement
-# `SymbolicWedderburn.conjugacy_classes_orbit` instead of `order` and `iterate`.
-# To show that these do not need to be implemented, we create a new dihedral group type
-# that do not implement these methods but that instead implement
-# `SymbolicWedderburn.conjugacy_classes_orbit`:
-
-struct DihedralGroup2 <: GroupsCore.Group
-    n::Int
-end
-PermutationGroups.gens(G::DihedralGroup2) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]
-_orbit(cc::Vector{<:GroupsCore.GroupElement}) = PermutationGroups.Orbit(cc, Dict(a => nothing for a in cc))
-_orbit(el::GroupsCore.GroupElement) = _orbit([el])
-function SymbolicWedderburn.conjugacy_classes_orbit(d::DihedralGroup2)
-    orbits = [_orbit(DihedralElement(d.n, false, 0))]
-    for i in 1:div(d.n - 1, 2)
-        push!(orbits, _orbit([
-            DihedralElement(d.n, false, i),
-            DihedralElement(d.n, false, d.n - i),
-        ]))
-    end
-    if iseven(d.n)
-        push!(orbits, _orbit(DihedralElement(d.n, false, div(d.n, 2))))
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 0:2:(d.n - 2)
-        ]))
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 1:2:(d.n - 1)
-        ]))
-    else
-        push!(orbits, _orbit([
-            DihedralElement(d.n, true, i) for i in 0:(d.n - 1)
-        ]))
-    end
-end
-
-# As we have not implemented the iterator over all the elements, we can iterate over all
-# conjugacy classes instead to verify that the polynomial is invariant under the group action.
-
-G = DihedralGroup2(4)
-for cc in SymbolicWedderburn.conjugacy_classes_orbit(G)
-    for g in cc
-        @show SymbolicWedderburn.action(DihedralAction(), g, poly)
-        @test SymbolicWedderburn.action(DihedralAction(), g, poly) == poly #src
-    end
-end
-
-solve(G)

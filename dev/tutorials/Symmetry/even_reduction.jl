@@ -7,7 +7,7 @@ using Test #src
 using DynamicPolynomials
 @polyvar x
 
-# We would like to find the minimum value of the polynomial
+# We would like to find the minimum value of the following polynomial:
 
 poly = x^4 - 2x^2
 
@@ -46,5 +46,5 @@ value(t)
 
 @test length(gram_matrix(con_ref).sub_gram_matrices) == 2 #src
 @test gram_matrix(con_ref).sub_gram_matrices[1].basis.polynomials == [x^2, 1] #src
-@test gram_matrix(con_ref).sub_gram_matrices[2].basis.polynomials == [x] #src
+@test gram_matrix(con_ref).sub_gram_matrices[2].basis.polynomials == [-x] #src
 gram_matrix(con_ref)
