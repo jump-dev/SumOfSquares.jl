@@ -98,17 +98,17 @@ function gram_operate(::typeof(+), p::GramMatrix{S, B, US, SymMatrix{S}}, q::Gra
     U = MA.promote_operation(+, S, T)
     n = length(basis)
     Qvec = Vector{U}(undef, div(n * (n + 1), 2))
-    MA.mutable_operate!(zero, Qvec)
+    MA.operate!(zero, Qvec)
     Q = SymMatrix(Qvec, n)
     for j in 1:n
         for i in 1:j
             if !iszero(Ip[j]) && !iszero(Ip[i])
                 MultivariateMoments.symmetric_setindex!(
-                    Q, MA.add!(Q[i, j], p.Q[Ip[i], Ip[j]]), i, j)
+                    Q, MA.add!!(Q[i, j], p.Q[Ip[i], Ip[j]]), i, j)
             end
             if !iszero(Iq[j]) && !iszero(Iq[i])
                 MultivariateMoments.symmetric_setindex!(
-                    Q, MA.add!(Q[i, j], q.Q[Iq[i], Iq[j]]), i, j)
+                    Q, MA.add!!(Q[i, j], q.Q[Iq[i], Iq[j]]), i, j)
             end
         end
     end
@@ -140,5 +140,5 @@ end
 
 Base.zero(::Type{SparseGramMatrix{T, B, U, MT}}) where {T, B, U, MT} = SparseGramMatrix(GramMatrix{T, B, U, MT}[])
 function MP.polynomial(p::SparseGramMatrix)
-    return mapreduce(identity, MA.add!, p.sub_gram_matrices, init = zero(MP.polynomialtype(p)))
+    return mapreduce(identity, MA.add!!, p.sub_gram_matrices, init = zero(MP.polynomialtype(p)))
 end

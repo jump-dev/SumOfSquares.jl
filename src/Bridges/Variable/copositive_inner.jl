@@ -105,11 +105,11 @@ end
 function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
                                i::MOIB.Variable.IndexInVector) where T
     func = convert(MOI.ScalarAffineFunction{T},
-                   MOI.SingleVariable(bridge.matrix_variables[i.value]))
+                   bridge.matrix_variables[i.value])
     row, col = matrix_indices(i.value)
     if row != col
-        func = MOIU.operate!(+, T, func, MOI.SingleVariable(
-            bridge.nonneg_variables[vector_index(row, col - 1)]))
+        func = MOIU.operate!(+, T, func,
+            bridge.nonneg_variables[vector_index(row, col - 1)])
     end
     return func
 end
@@ -118,7 +118,7 @@ function MOIB.Variable.unbridged_map(
     vi::MOI.VariableIndex, i::MOIB.Variable.IndexInVector) where T
 
     F = MOI.ScalarAffineFunction{T}
-    func = convert(F, MOI.SingleVariable(vi))
+    func = convert(F, vi)
     map = bridge.matrix_variables[i.value] => func
     row, col = matrix_indices(i.value)
     if row == col

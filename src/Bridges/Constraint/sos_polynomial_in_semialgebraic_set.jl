@@ -46,7 +46,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
         g = Certificate.get(set.certificate, Certificate.Generator(), index, preprocessed)
         # TODO replace with `MA.sub_mul` when it works.
-        p = MA.operate!(MA.add_mul, p, -one(T), λ, MP.changecoefficienttype(g, T))
+        p = MA.operate!!(MA.add_mul, p, -one(T), λ, MP.changecoefficienttype(g, T))
     end
     new_set = SOS.SOSPolynomialSet(
         set.domain.V, MP.monomials(p),
