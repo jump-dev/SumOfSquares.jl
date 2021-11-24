@@ -14,14 +14,6 @@ function vectorized_matrix(Q, basis, ::Type{COI.HermitianPositiveSemidefiniteCon
 end
 
 # Need these two methods to avoid ambiguity
-function build_gram_matrix(q::Vector{MOI.VariableIndex},
-                           basis::AbstractPolynomialBasis, matrix_cone_type, T::Type)
-    return build_gram_matrix(q, basis, matrix_cone_type, T)
-end
-#function build_gram_matrix(q::Vector{MOI.VariableIndex},
-#                           basis::AbstractPolynomialBasis, T::Type, vectorization::HermitianVectorized)
-#    return build_gram_matrix(q, basis, T, vectorization)
-#end
 function build_gram_matrix(q::Vector,
                            basis::AbstractPolynomialBasis, matrix_cone_type, T::Type)
     n = length(basis)
