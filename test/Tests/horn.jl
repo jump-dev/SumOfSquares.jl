@@ -14,7 +14,7 @@ using SemialgebraicSets
 # Society for Industrial and Applied Mathematics, **2012**.
 
 function horn_test(optimizer,
-                   config::MOIT.TestConfig,
+                   config::MOIT.Config,
                    cone::SumOfSquares.PolyJuMP.PolynomialSet)
     atol = config.atol
     rtol = config.rtol

@@ -2,7 +2,7 @@ include("solver_preamble.jl")
 using COSMO
 # sosdemo9: 33000 < max_iter < 34000
 factory = with_optimizer(COSMO.Optimizer, verbose=false, max_iter = 34000)
-config = MOI.Test.TestConfig(atol=1e-3, rtol=1e-3)
+config = MOI.Test.Config(atol=1e-3, rtol=1e-3)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
         # See https://github.com/oxfordcontrol/COSMO.jl/issues/96

@@ -1,5 +1,5 @@
 # TODO `solve = true`.
-config = MOI.Test.TestConfig(solve = false)
+config = MOI.Test.Config(solve = false)
 _optimize!(mock) = MOIU.mock_optimize!(mock, zeros(MOI.get(mock, MOI.NumberOfVariables())))
 for mock in mocks(_optimize!)
     Tests.dsos_options_pricing_test(mock, config)

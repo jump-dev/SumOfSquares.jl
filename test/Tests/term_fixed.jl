@@ -4,7 +4,7 @@ using DynamicPolynomials
 
 # Like `term_test` but with a variable `y` fixed to 1.
 function term_fixed_test(
-    optimizer, config::MOIT.TestConfig, cone::SumOfSquares.PolyJuMP.PolynomialSet)
+    optimizer, config::MOIT.Config, cone::SumOfSquares.PolyJuMP.PolynomialSet)
     atol = config.atol
     rtol = config.rtol
 

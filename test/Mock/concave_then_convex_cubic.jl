@@ -1,4 +1,4 @@
-config = MOI.Test.TestConfig()
+config = MOI.Test.Config()
 optimize!(mock) = MOIU.mock_optimize!(mock, [1.0; zeros(5); 6.0; zeros(12); 6.0; zeros(10)],
     (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}) => zeros(26),
     (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64}) => zeros(4),

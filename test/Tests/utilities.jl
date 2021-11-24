@@ -38,7 +38,7 @@ macro test_suite(setname, subsets=false)
     end
     esc(:(
       function $testname(model, # could be ModelLike or an optimizer constructor
-                         config::$MOI.Test.TestConfig,
+                         config::$MOI.Test.Config,
                          exclude::Vector{String} = String[])
             for (name,f) in $testdict
                 if name in exclude

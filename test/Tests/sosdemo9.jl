@@ -2,7 +2,7 @@
 # SOSDEMO9 --- Matrix SOS decomposition
 # Section 3.9 of SOSTOOLS User's Manual
 
-function sosdemo9_test(optimizer, config::MOIT.TestConfig)
+function sosdemo9_test(optimizer, config::MOIT.Config)
     @polyvar x1 x2 x3
 
     P = [x1^4+x1^2*x2^2+x1^2*x3^2 x1*x2*x3^2-x1^3*x2-x1*x2*(x2^2+2*x3^2);

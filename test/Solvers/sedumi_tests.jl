@@ -1,7 +1,7 @@
 include("solver_preamble.jl")
 import SeDuMi
 factory = with_optimizer(SeDuMi.Optimizer, fid=0)
-config = MOI.Test.TestConfig(atol=1e-4, rtol=1e-4, query=false)
+config = MOI.Test.Config(atol=1e-4, rtol=1e-4)
 @testset "Linear" begin
     Tests.linear_test(factory, config)
 end

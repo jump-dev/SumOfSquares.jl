@@ -2,7 +2,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function quartic_ideal_test(optimizer, config::MOIT.TestConfig,
+function quartic_ideal_test(optimizer, config::MOIT.Config,
                             degree::Union{Nothing, Int}, remainder::Bool)
     atol = config.atol
     rtol = config.rtol

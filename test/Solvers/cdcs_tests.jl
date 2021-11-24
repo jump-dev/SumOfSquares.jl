@@ -5,7 +5,7 @@ import CDCS
 # chebyshev : > 12000, < 12500
 factory = optimizer_with_attributes(CDCS.Optimizer, "verbose" => 0, "maxIter" => 12500)
 # chebyshev : > 2e-3, < 3e-3
-config = MOI.Test.TestConfig(atol=3e-3, rtol=3e-3, query=false)
+config = MOI.Test.Config(atol=3e-3, rtol=3e-3)
 @testset "Linear" begin
     Tests.linear_test(factory, config)
 end

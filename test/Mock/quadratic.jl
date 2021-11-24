@@ -1,4 +1,4 @@
-config = MOI.Test.TestConfig()
+config = MOI.Test.Config()
 optimize!(mock) = MOIU.mock_optimize!(mock, [2.0, 1.0, 1.0, √2],
     (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) => [[1.0, 1.0, -√2]],
     (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1.0, -1.0, 1.0]])

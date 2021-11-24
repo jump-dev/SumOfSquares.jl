@@ -1,4 +1,4 @@
-config = MOI.Test.TestConfig()
+config = MOI.Test.Config()
 # The test does not check the solution except the first variable so we just set zeros.
 optimize!(mock) = MOIU.mock_optimize!(mock, [-0.184667; zeros(MOI.get(mock, MOI.NumberOfVariables()) - 1)])
 for mock in mocks(optimize!)

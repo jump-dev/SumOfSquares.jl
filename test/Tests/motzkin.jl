@@ -2,7 +2,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function motzkin_test(optimizer, config::MOIT.TestConfig)
+function motzkin_test(optimizer, config::MOIT.Config)
     @polyvar x y
     # Motzkin polynomial
     p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
