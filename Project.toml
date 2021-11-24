@@ -22,7 +22,7 @@ SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 
 [compat]
 Combinatorics = "1"
-ComplexOptInterface = "0.0.2"
+ComplexOptInterface = "0.0.2, 0.0.3"
 DataStructures = "0.18"
 DynamicPolynomials = "0.3.6"
 JuMP = "0.21.7"
