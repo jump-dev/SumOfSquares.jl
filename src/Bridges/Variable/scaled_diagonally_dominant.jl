@@ -95,7 +95,7 @@ end
 trimap(i, j) = div(j * (j - 1), 2) + i
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOIB.Variable.IndexInVector) where T
+                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOIB.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         value = zero(T)
@@ -115,7 +115,7 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
 end
 
 function MOIB.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
-                               i::MOIB.Variable.IndexInVector) where T
+                               i::MOIB.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         func = zero(MOI.ScalarAffineFunction{T})

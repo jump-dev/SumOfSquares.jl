@@ -71,7 +71,7 @@ function MOI.get(model::MOI.ModelLike,
     return [dual[1], dual[3] / √2, dual[2]]
 end
 
-function _variable_map(i::MOIB.Variable.IndexInVector)
+function _variable_map(i::MOIB.IndexInVector)
     if i.value == 1
         return 1
     elseif i.value == 2
@@ -82,12 +82,12 @@ function _variable_map(i::MOIB.Variable.IndexInVector)
     end
 end
 function _variable(bridge::PositiveSemidefinite2x2Bridge,
-                   i::MOIB.Variable.IndexInVector)
+                   i::MOIB.IndexInVector)
     return bridge.variables[_variable_map(i)]
 end
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::PositiveSemidefinite2x2Bridge, i::MOIB.Variable.IndexInVector)
+                 bridge::PositiveSemidefinite2x2Bridge, i::MOIB.IndexInVector)
     value = MOI.get(model, attr, _variable(bridge, i))
     if i.value == 2
         value /= √2
@@ -96,7 +96,7 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
 end
 
 function MOIB.bridged_function(bridge::PositiveSemidefinite2x2Bridge{T},
-                               i::MOIB.Variable.IndexInVector) where T
+                               i::MOIB.IndexInVector) where T
     func = _variable(bridge, i)
     if i.value == 2
         return MOIU.operate(/, T, func, convert(T, √2))
@@ -106,7 +106,7 @@ function MOIB.bridged_function(bridge::PositiveSemidefinite2x2Bridge{T},
 end
 function MOIB.Variable.unbridged_map(
     bridge::PositiveSemidefinite2x2Bridge{T},
-    vi::MOI.VariableIndex, i::MOIB.Variable.IndexInVector) where T
+    vi::MOI.VariableIndex, i::MOIB.IndexInVector) where T
 
     if i.value == 2
         func = MOIU.operate(*, T, convert(T, √2), vi)

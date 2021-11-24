@@ -93,7 +93,7 @@ function offdiag_vector_index(i, j)
 end
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::CopositiveInnerBridge, i::MOIB.Variable.IndexInVector)
+                 bridge::CopositiveInnerBridge, i::MOIB.IndexInVector)
     value = MOI.get(model, attr, bridge.matrix_variables[i.value])
     row, col = matrix_indices(i.value)
     if row != col
@@ -103,7 +103,7 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
 end
 
 function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
-                               i::MOIB.Variable.IndexInVector) where T
+                               i::MOIB.IndexInVector) where T
     func = convert(MOI.ScalarAffineFunction{T},
                    bridge.matrix_variables[i.value])
     row, col = matrix_indices(i.value)
@@ -115,7 +115,7 @@ function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
 end
 function MOIB.Variable.unbridged_map(
     bridge::CopositiveInnerBridge{T},
-    vi::MOI.VariableIndex, i::MOIB.Variable.IndexInVector) where T
+    vi::MOI.VariableIndex, i::MOIB.IndexInVector) where T
 
     F = MOI.ScalarAffineFunction{T}
     func = convert(F, vi)
