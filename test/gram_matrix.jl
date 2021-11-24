@@ -86,8 +86,8 @@ using LinearAlgebra, Test, SumOfSquares
                           7 0 0 9]
             @test r.basis.monomials == [x*y, x, y, 1]
         end
-        @testset "With SingleVariable" begin
-            a = MOI.SingleVariable(MOI.VariableIndex(1))
+        @testset "With VariableIndex" begin
+            a = MOI.VariableIndex(1)
             g = GramMatrix(SymMatrix([a, a, a], 2), [x, y])
             U = MOI.ScalarAffineFunction{Float64}
             @test coefficienttype(g) == U
@@ -118,8 +118,8 @@ using LinearAlgebra, Test, SumOfSquares
             @test isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x+y, x-y]))
             @test isapprox(SOSDecomposition([x+y, x-y]), SOSDecomposition([x-y, x+y+1e-8]), ztol=1e-7)
         end
-        @testset "With SingleVariable" begin
-            a = MOI.SingleVariable(MOI.VariableIndex(1))
+        @testset "With VariableIndex" begin
+            a = MOI.VariableIndex(1)
             p = polynomial([a], [x])
             q = polynomial([a], [y])
             s = SOSDecomposition([p, q])
@@ -163,16 +163,16 @@ using LinearAlgebra, Test, SumOfSquares
         @testset "$T" for T in [Float64, Int, BigFloat]
             #@test_throws DimensionMismatch SumOfSquares.build_gram_matrix(w, basis, T, MOI.PositiveSemidefiniteConeTriangle)
             g = SumOfSquares.build_gram_matrix(v, basis, MOI.PositiveSemidefiniteConeTriangle, T)
-            @test g isa GramMatrix{MOI.SingleVariable, typeof(basis), MOI.ScalarAffineFunction{T}}
-            @test g.Q[1, 2] == MOI.SingleVariable(v[2])
+            @test g isa GramMatrix{MOI.VariableIndex, typeof(basis), MOI.ScalarAffineFunction{T}}
+            @test g.Q[1, 2] == v[2]
             p = polynomial(g)
             @test p isa AbstractPolynomial{MOI.ScalarAffineFunction{T}}
             @test typeof(p) == polynomialtype(g)
             #@test_throws DimensionMismatch SumOfSquares.build_gram_matrix(v, basis, T, SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle)
             h = SumOfSquares.build_gram_matrix(w, basis, SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle, T)
             @test h isa GramMatrix{MOI.ScalarAffineFunction{Complex{T}}, typeof(basis), MOI.ScalarAffineFunction{Complex{T}},
-                                   SumOfSquares.MultivariateMoments.VectorizedHermitianMatrix{MOI.SingleVariable,T,MOI.ScalarAffineFunction{Complex{T}}}}
-            @test h.Q[1, 2] ≈ MOI.SingleVariable(w[2]) + im * MOI.SingleVariable(w[4])
+                                   SumOfSquares.MultivariateMoments.VectorizedHermitianMatrix{MOI.VariableIndex,T,MOI.ScalarAffineFunction{Complex{T}}}}
+            @test h.Q[1, 2] ≈ w[2] + im * w[4]
             q = polynomial(h)
             @test q isa AbstractPolynomial{MOI.ScalarAffineFunction{Complex{T}}}
             @test typeof(q) == polynomialtype(h)

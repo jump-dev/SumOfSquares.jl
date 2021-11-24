@@ -71,7 +71,7 @@ function MOIB.Constraint.concrete_bridge_type(
     ::Type{SOS.DiagonallyDominantConeTriangle}) where T
 
     S = MOIU.scalar_type(G)
-    F = MOIU.promote_operation(-, T, S, MOI.SingleVariable)
+    F = MOIU.promote_operation(-, T, S, MOI.VariableIndex)
     return DiagonallyDominantBridge{T, F, G}
 end
 
