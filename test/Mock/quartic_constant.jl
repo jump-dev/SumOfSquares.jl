@@ -1,6 +1,7 @@
 config = MOI.Test.Config()
-_optimize!(mock) = MOIU.mock_optimize!(mock, [4.0, 1.0])
-for mock in mocks(_optimize!)
+optimize_bridged!(mock) = MOIU.mock_optimize!(mock, [4.0, 1.0])
+optimize_cached!(mock) = MOIU.mock_optimize!(mock, [1.0, 4.0])
+for mock in [bridged_mock(optimize_bridged!), cached_mock(optimize_cached!)]
     Tests.dsos_quartic_constant_test(mock, config)
     Tests.sdsos_quartic_constant_test(mock, config)
     Tests.sos_quartic_constant_test(mock, config)

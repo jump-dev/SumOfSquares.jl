@@ -106,7 +106,7 @@ This approach adds the flexibility to choose the default cone for
 * constraints of the form
   `@constraint(mode, ..., some_matrix_of_polynomial in PSDCone(), ...)`
   or
-  `@SDconstraint(mode, ..., some_matrix_of_polynomial ⪰ other_matrix_of_polynomial, ...)`
+  `@constraint(mode, ..., some_matrix_of_polynomial >= other_matrix_of_polynomial, PSDCone(), ...)`
   which is the cone given as default to `PolyJuMP.NonNegPolyMatrix`.
 
 For instance, to use the diagonally-dominant-sum-of-squares cone (see

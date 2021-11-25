@@ -27,7 +27,7 @@ function choi_test(optimizer, config::MOIT.Config)
          -x*y         y^2 + 2z^2 -y*z
          -x*z        -y*z         z^2 + 2x^2]
 
-    @SDconstraint(model, C ⪰ 0)
+    @constraint(model, C in PSDCone())
 
     JuMP.optimize!(model)
     @test JuMP.termination_status(model) == MOI.INFEASIBLE

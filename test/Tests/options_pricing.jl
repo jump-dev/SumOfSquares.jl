@@ -26,7 +26,7 @@ function options_pricing_test(optimizer, config::MOIT.Config,
     @constraint(model, p - (y - K) in cocone)
     @constraint(model, p - (z - K) in cocone)
     @objective(model, Min, dot(μ, p))
-    if config.solve
+    if MOI.Test._supports(config, MOI.optimize!)
         JuMP.optimize!(model)
         @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
         @test JuMP.objective_value(model) ≈ expected atol=atol rtol=rtol

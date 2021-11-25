@@ -12,7 +12,7 @@ function sosdemo9_test(optimizer, config::MOIT.Config)
     model = _model(optimizer)
     PolyJuMP.setpolymodule!(model, SumOfSquares)
     # TODO return H so that P = H.'*H
-    @SDconstraint(model, P ⪰ 0)
+    @constraint(model, P in PSDCone())
 
     JuMP.optimize!(model)
     @test JuMP.termination_status(model) == MOI.OPTIMAL

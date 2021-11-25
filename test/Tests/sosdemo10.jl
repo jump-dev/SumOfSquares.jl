@@ -26,7 +26,8 @@ function sosdemo10_test(optimizer, config::MOIT.Config)
     Sc = [θ^2 - s * (γ - p) g0 + g1
           g0 + g1           1]
 
-    @SDconstraint(model, Matrix(ε * I, 2, 2) ⪯ Sc)
+    #@constraint(model, Matrix(ε * I, 2, 2) <= Sc, PSDCone()) # TODO Use that when PolyJuMP v0.5.1 is released
+    @constraint(model, (Sc - Matrix(ε * I, 2, 2)) in PSDCone())
 
     JuMP.optimize!(model)
 

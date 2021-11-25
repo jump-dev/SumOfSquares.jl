@@ -1,4 +1,4 @@
-optimize!(mock) = MOIU.mock_optimize!(mock, MOI.INFEASIBLE, tuple(), MOI.INFEASIBILITY_CERTIFICATE)
+optimize!(mock) = MOIU.mock_optimize!(mock, MOI.INFEASIBLE, MOI.NO_SOLUTION, MOI.INFEASIBILITY_CERTIFICATE)
 @testset "quartic_ideal_rem $(typeof(mock))" for mock in mocks(optimize!)
     Tests.quartic_ideal_rem_test(mock, config)
 end
