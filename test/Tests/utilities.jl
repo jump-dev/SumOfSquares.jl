@@ -55,7 +55,7 @@ end
 function test_noc(model, F, S, n)
     @test MOI.get(model, MOI.NumberOfConstraints{F, S}()) == n
     @test length(MOI.get(model, MOI.ListOfConstraintIndices{F, S}())) == n
-    @test ((F, S) in MOI.get(model, MOI.ListOfConstraints())) == !iszero(n)
+    @test ((F, S) in MOI.get(model, MOI.ListOfConstraintTypesPresent())) == !iszero(n)
 end
 
 # Test deletion of bridge
@@ -120,7 +120,7 @@ function inner_variable_value(model, atol=1e-4)
     end
     println(",")
     if JuMP.dual_status(model) != MOI.NO_SOLUTION
-        for (F, S) in MOI.get(inner, MOI.ListOfConstraints())
+        for (F, S) in MOI.get(inner, MOI.ListOfConstraintTypesPresent())
             print("($F, $S) => [")
             first = true
             for ci in MOI.get(inner, MOI.ListOfConstraintIndices{F, S}())
@@ -139,7 +139,7 @@ end
 function inner_inspect(model, atol=1e-4)
     inner = _inner(backend(model))
     @show MOI.get(inner, MOI.NumberOfVariables())
-    for (F, S) in MOI.get(inner, MOI.ListOfConstraints())
+    for (F, S) in MOI.get(inner, MOI.ListOfConstraintTypesPresent())
         @show F
         @show S
         @show MOI.get(inner, MOI.NumberOfConstraints{F, S}())
