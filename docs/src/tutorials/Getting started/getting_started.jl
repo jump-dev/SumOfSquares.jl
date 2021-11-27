@@ -56,7 +56,7 @@ optimize!(model)
 @test primal_status(model) == MOI.FEASIBLE_POINT #src
 primal_status(model)
 
-# We can query the SOS decomposition direction from the constraint reference
+# We can query the SOS decomposition directly from the constraint reference
 # as follows:
 
 sos_decomposition(con_ref)
