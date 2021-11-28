@@ -21,8 +21,8 @@ function chebyshev_test(optimizer, config::MOIT.Config)
     p = p1 + γ * x^ndeg # the leading coeff of p is γ
 
     dom = @set x >= -1 && x <= 1
-    @constraint(model, 1 - p in SOSCone(), domain = dom)
-    @constraint(model, p + 1 in SOSCone(), domain = dom)
+    @constraint(model, 1 - p in SOSCone(), domain = dom, maxdegree = 9)
+    @constraint(model, p + 1 in SOSCone(), domain = dom, maxdegree = 9)
 
     @objective(model, Max, γ)
 
