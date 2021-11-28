@@ -1,4 +1,4 @@
-config = MOI.Test.TestConfig()
+config = MOI.Test.Config()
 optimize!_inf(mock) = MOIU.mock_optimize!(mock, MOI.INFEASIBLE)
 optimize!(mock) = MOIU.mock_optimize!(mock,
     [1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0,

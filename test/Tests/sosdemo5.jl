@@ -4,7 +4,7 @@
 
 using SparseArrays
 
-function sosdemo5_test(optimizer, config::MOIT.TestConfig, feasible::Bool, γ)
+function sosdemo5_test(optimizer, config::MOIT.Config, feasible::Bool, γ)
     @polyvar x[1:8]
 
     # The matrix under consideration

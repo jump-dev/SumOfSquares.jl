@@ -95,7 +95,7 @@ end
 trimap(i, j) = div(j * (j - 1), 2) + i
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOIB.Variable.IndexInVector) where T
+                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOIB.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         value = zero(T)
@@ -115,22 +115,22 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
 end
 
 function MOIB.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
-                               i::MOIB.Variable.IndexInVector) where T
+                               i::MOIB.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         func = zero(MOI.ScalarAffineFunction{T})
         for k in 1:(i - 1)
             idx = offdiag_vector_index(k, i)
-            MOIU.operate!(+, T, func, MOI.SingleVariable(bridge.variables[idx][3]))
+            MOIU.operate!(+, T, func, bridge.variables[idx][3])
         end
         for k in (i + 1):bridge.side_dimension
             idx = offdiag_vector_index(i, k)
-            MOIU.operate!(+, T, func, MOI.SingleVariable(bridge.variables[idx][1]))
+            MOIU.operate!(+, T, func, bridge.variables[idx][1])
         end
         return func
     else
         idx = offdiag_vector_index(i, j)
-        return MOI.convert(MOI.ScalarAffineFunction{T}, MOI.SingleVariable(bridge.variables[idx][2]))
+        return MOI.convert(MOI.ScalarAffineFunction{T}, bridge.variables[idx][2])
     end
 end
 function MOIB.Variable.unbridged_map(
@@ -141,7 +141,7 @@ function MOIB.Variable.unbridged_map(
     umap = Pair{MOI.VariableIndex, SAF}[]
     k = 0
     z = zero(SAF)
-    saf(i) = convert(SAF, MOI.SingleVariable(vis[i]))
+    saf(i) = convert(SAF, vis[i])
     # vis[trimap(j, j)] is replaced by a sum of several variables.
     # The strategy is to replace all of them by zero except one.
     for j in 1:bridge.side_dimension

@@ -2,7 +2,7 @@
 # SOSDEMO10 --- Set containment
 # Section 3.10 of SOSTOOLS User's Manual
 
-function sosdemo10_test(optimizer, config::MOIT.TestConfig)
+function sosdemo10_test(optimizer, config::MOIT.Config)
     @polyvar x[1:2]
 
     ε = 1e-6
@@ -26,7 +26,7 @@ function sosdemo10_test(optimizer, config::MOIT.TestConfig)
     Sc = [θ^2 - s * (γ - p) g0 + g1
           g0 + g1           1]
 
-    @SDconstraint(model, Matrix(ε * I, 2, 2) ⪯ Sc)
+    @constraint(model, Matrix(ε * I, 2, 2) <= Sc, PSDCone())
 
     JuMP.optimize!(model)
 

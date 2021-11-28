@@ -14,14 +14,6 @@ function vectorized_matrix(Q, basis, ::Type{COI.HermitianPositiveSemidefiniteCon
 end
 
 # Need these two methods to avoid ambiguity
-function build_gram_matrix(q::Vector{MOI.VariableIndex},
-                           basis::AbstractPolynomialBasis, matrix_cone_type, T::Type)
-    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], basis, matrix_cone_type, T)
-end
-#function build_gram_matrix(q::Vector{MOI.VariableIndex},
-#                           basis::AbstractPolynomialBasis, T::Type, vectorization::HermitianVectorized)
-#    return build_gram_matrix([MOI.SingleVariable(vi) for vi in q], basis, T, vectorization)
-#end
 function build_gram_matrix(q::Vector,
                            basis::AbstractPolynomialBasis, matrix_cone_type, T::Type)
     n = length(basis)
@@ -50,10 +42,10 @@ end
 #    for j in 1:n
 #        for i in 1:j
 #            k_real += 1
-#            C[k_real] = MA.operate!(MA.add_mul, C[k_real], one(T), q[k_real])
+#            C[k_real] = MA.operate!!(MA.add_mul, C[k_real], one(T), q[k_real])
 #            if i != j
 #                k_imag += 1
-#                C[k_real] = MA.operate!(MA.add_mul, C[k_real], one(T) * im, q[N + k_imag])
+#                C[k_real] = MA.operate!!(MA.add_mul, C[k_real], one(T) * im, q[N + k_imag])
 #            end
 #        end
 #    end

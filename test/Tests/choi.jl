@@ -3,7 +3,7 @@ using SumOfSquares
 using DynamicPolynomials
 
 """
-    choi_test(optimizer, config::MOIT.TestConfig)
+    choi_test(optimizer, config::MOIT.Config)
 
 Test using the example of polynomial matrix that is not a Sum-of-Squares matrix
 given in [C75] as the following biquadratic form:
@@ -17,7 +17,7 @@ F(x; y) = (x_1^2 + 2 x_3^2) * y_1^2
 *Positive semidefinite biquadratic forms*.
 Linear Algebra and its Applications, **1975**, 12(2), 95-100.
 """
-function choi_test(optimizer, config::MOIT.TestConfig)
+function choi_test(optimizer, config::MOIT.Config)
     @polyvar x y z
 
     model = _model(optimizer)
@@ -27,7 +27,7 @@ function choi_test(optimizer, config::MOIT.TestConfig)
          -x*y         y^2 + 2z^2 -y*z
          -x*z        -y*z         z^2 + 2x^2]
 
-    @SDconstraint(model, C ⪰ 0)
+    @constraint(model, C in PSDCone())
 
     JuMP.optimize!(model)
     @test JuMP.termination_status(model) == MOI.INFEASIBLE

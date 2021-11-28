@@ -8,7 +8,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function BPT12e399_test(optimizer, config::MOIT.TestConfig, remainder::Bool)
+function BPT12e399_test(optimizer, config::MOIT.Config, remainder::Bool)
     atol = config.atol
     rtol = config.rtol
 

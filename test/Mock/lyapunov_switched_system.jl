@@ -1,4 +1,4 @@
-config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5)
+config = MOI.Test.Config(atol=1e-5, rtol=1e-5)
 α = 0.7291971148804172
 γ = √2 + 2e-1
 β = (γ^2 - 2) / γ^2 * (1 + α)

@@ -34,7 +34,7 @@ function MOIB.Constraint.bridge_constraint(
             koff += 1
             # abs ≥ |Qij|
             abs_vars[koff] = MOI.add_variable(model)
-            fabs = MOI.SingleVariable(abs_vars[koff])
+            fabs = abs_vars[koff]
             MOIU.operate!(-, T, g[j], fabs)
             MOIU.operate!(-, T, g[i], fabs)
             abs_plus[koff] = MOI.add_constraint(
@@ -71,7 +71,7 @@ function MOIB.Constraint.concrete_bridge_type(
     ::Type{SOS.DiagonallyDominantConeTriangle}) where T
 
     S = MOIU.scalar_type(G)
-    F = MOIU.promote_operation(-, T, S, MOI.SingleVariable)
+    F = MOIU.promote_operation(-, T, S, MOI.VariableIndex)
     return DiagonallyDominantBridge{T, F, G}
 end
 

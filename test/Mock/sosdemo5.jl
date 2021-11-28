@@ -1,5 +1,5 @@
-config = MOI.Test.TestConfig()
-optimize!(mock) = MOIU.mock_optimize!(mock, MOI.INFEASIBLE, tuple(), MOI.INFEASIBILITY_CERTIFICATE)
+config = MOI.Test.Config()
+optimize!(mock) = MOIU.mock_optimize!(mock, MOI.INFEASIBLE, MOI.NO_SOLUTION, MOI.INFEASIBILITY_CERTIFICATE)
 for mock in mocks(optimize!)
     Tests.sosdemo5_infeasible_test(mock, config)
 end

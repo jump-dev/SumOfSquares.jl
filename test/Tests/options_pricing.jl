@@ -5,7 +5,7 @@
 
 using MultivariateMoments
 
-function options_pricing_test(optimizer, config::MOIT.TestConfig,
+function options_pricing_test(optimizer, config::MOIT.Config,
                               cone::SumOfSquares.PolyJuMP.PolynomialSet,
                               K::Int, expected::Float64)
     VERSION < v"1.0.3" && return # see https://github.com/jump-dev/SumOfSquares.jl/issues/48
@@ -26,14 +26,14 @@ function options_pricing_test(optimizer, config::MOIT.TestConfig,
     @constraint(model, p - (y - K) in cocone)
     @constraint(model, p - (z - K) in cocone)
     @objective(model, Min, dot(μ, p))
-    if config.solve
+    if MOI.Test._supports(config, MOI.optimize!)
         JuMP.optimize!(model)
         @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
         @test JuMP.objective_value(model) ≈ expected atol=atol rtol=rtol
     end
 end
 
-function options_pricing_test(optimizer, config::MOIT.TestConfig,
+function options_pricing_test(optimizer, config::MOIT.Config,
                               cone::SumOfSquares.PolyJuMP.PolynomialSet,
                               Ks::Vector{Int},
                               expected::Vector{Float64})

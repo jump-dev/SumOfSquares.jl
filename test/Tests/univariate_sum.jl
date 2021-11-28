@@ -3,7 +3,7 @@ using SumOfSquares
 using DynamicPolynomials
 
 function univariate_sum_test(optimizer,
-                   config::MOIT.TestConfig,
+                   config::MOIT.Config,
                    cone::SumOfSquares.PolyJuMP.PolynomialSet)
     atol = config.atol
     rtol = config.rtol

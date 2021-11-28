@@ -1,4 +1,4 @@
-config = MOI.Test.TestConfig()
+config = MOI.Test.Config()
 
 @testset "Model" begin
     optimize!(mock) = MOIU.mock_optimize!(mock, [0.0, 0.0],

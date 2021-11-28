@@ -1,7 +1,7 @@
 include("solver_preamble.jl")
 import SDPA
 factory = with_optimizer(SDPA.Optimizer)
-config = MOI.Test.TestConfig(atol=1e-5, rtol=1e-5, query=false)
+config = MOI.Test.Config(atol=1e-5, rtol=1e-5)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
         # cholesky miss condition :: not positive definite :: info = 7 :: line 785 in sdpa_linear.cpp

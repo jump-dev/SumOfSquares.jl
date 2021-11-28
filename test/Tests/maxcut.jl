@@ -6,7 +6,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function maxcut_test(optimizer, config::MOIT.TestConfig)
+function maxcut_test(optimizer, config::MOIT.Config)
     atol = config.atol
     rtol = config.rtol
 

@@ -2,7 +2,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function rearrangement_test(optimizer, config::MOIT.TestConfig)
+function rearrangement_test(optimizer, config::MOIT.Config)
     atol = config.atol
     rtol = config.rtol
 
