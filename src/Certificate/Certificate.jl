@@ -244,11 +244,8 @@ SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT} = SumOfSquares
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
 
-include("Sparse/ChordalExtensionGraph.jl")
-using .ChordalExtensionGraph: ChordalCompletion, ClusterCompletion
-export ChordalCompletion, ClusterCompletion
-
-include("Sparse/sparse_putinar.jl")
+include("Sparse/Sparse.jl")
+export Sparse
 
 include("Symmetry/Symmetry.jl")
 export Symmetry

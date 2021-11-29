@@ -1,4 +1,4 @@
-const CEG = SumOfSquares.Certificate.ChordalExtensionGraph
+const CEG = ChordalExtensionGraph
 
 """
     struct MonomialSparsity{C<:CEG.AbstractCompletion} <: Sparsity
@@ -149,10 +149,10 @@ function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSpar
 end
 # This also checks that it is indeed a monomial basis
 _monos(basis::MB.MonomialBasis) = basis.monomials
-function _gram_monos(vars, certificate::MaxDegree{CT, MB.MonomialBasis}) where CT
-    return _monos(maxdegree_gram_basis(MB.MonomialBasis, vars, certificate.maxdegree))
+function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree{CT, MB.MonomialBasis}) where CT
+    return _monos(SumOfSquares.Certificate.maxdegree_gram_basis(MB.MonomialBasis, vars, certificate.maxdegree))
 end
-function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet, sp::MonomialSparsity, certificate::AbstractPreorderCertificate)
+function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet, sp::MonomialSparsity, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
     gram_monos = _gram_monos(
         reduce((v, q) -> unique!(sort!([v..., variables(q)...], rev=true)),
                   domain.p, init = variables(poly)),

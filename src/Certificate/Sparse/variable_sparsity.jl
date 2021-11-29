@@ -44,7 +44,7 @@ function chordal_csp_graph(poly::MP.APL, domain::AbstractBasicSemialgebraicSet)
 end
 
 function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet,
-                  sp::VariableSparsity, certificate::Putinar)
+                  sp::VariableSparsity, certificate::SumOfSquares.Certificate.Putinar)
     H, cliques = chordal_csp_graph(poly, domain)
     function bases(q)
         return [
