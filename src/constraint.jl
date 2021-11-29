@@ -129,13 +129,41 @@ function default_certificate(::BasicSemialgebraicSet, ::Certificate.NoSparsity,
     return Certificate.Putinar(
         ideal_certificate, cone, basis, maxdegree)
 end
+
+# Julia v1.0 does not support `init` keyword
+#_max_maxdegree(p) = maximum(MP.maxdegree, p, init=0)
+_max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init=0)
+
+_maxdegree(domain) = 0
+
+function _maxdegree(domain::AlgebraicSet)
+    return _max_maxdegree(domain.I.p)
+end
+
+function _maxdegree(domain::BasicSemialgebraicSet)
+    return max(_max_maxdegree(domain.p), _maxdegree(domain.V))
+end
+
+"""
+    default_maxdegree(monos, domain)
+
+Return the default `maxdegree` to use for certifying a polynomial with
+monomials `monos` to be Sum-of-Squares over the domain `domain`.
+By default, the maximum of the maxdegree of `monos` and of all multipliers
+of the domain are used so that at least constant multipliers can be used
+with a Putinar certificate.
+"""
+function default_maxdegree(monos, domain)
+    return max(MP.maxdegree(monos), _maxdegree(domain))
+end
+
 function JuMP.moi_set(
     cone::SOSLikeCone,
     monos::AbstractVector{<:MP.AbstractMonomial};
     domain::AbstractSemialgebraicSet=FullSpace(),
     basis=MonomialBasis,
     newton_polytope::Tuple=tuple(),
-    maxdegree::Union{Nothing, Int}=MP.maxdegree(monos),
+    maxdegree::Union{Nothing, Int}=default_maxdegree(monos, domain),
     sparsity::Certificate.Sparsity=Certificate.NoSparsity(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern}=nothing,
     newton_of_remainder::Bool=false,

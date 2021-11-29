@@ -248,6 +248,11 @@ ArXiv e-prints, **2017**.
 
 ## Reference
 
+Default choice for the `maxdegree` keyword:
+```@docs
+SumOfSquares.default_maxdegree
+```
+
 Special case that is second-order cone representable:
 ```@docs
 SumOfSquares.PositiveSemidefinite2x2ConeTriangle

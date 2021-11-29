@@ -97,12 +97,7 @@ end
 function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
     return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
 end
-function multiplier_maxdegree(maxdegree, q)
-    maxdegree_s2 = maxdegree - MP.maxdegree(q)
-    # If maxdegree_s2 is odd, `div(maxdegree_s2, 2)` would make s^2 have degree up to maxdegree_s2-1
-    # for this reason, we take `div(maxdegree_s2 + 1, 2)` so that s^2 have degree up to maxdegree_s2+1
-    return maxdegree_s2 + 1
-end
+multiplier_maxdegree(maxdegree, q) = maxdegree - MP.maxdegree(q)
 function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::DomainWithVariables)
     q = domain.domain.p[index.value]
     vars = sort!([domain.variables..., MP.variables(q)...], rev = true)

@@ -43,7 +43,7 @@ model = Model(solver)
 pattern = Symmetry.Pattern(G, Symmetry.VariablePermutation())
 con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
-@test value(t) ≈ -1 #src
+@test value(t) ≈ -1 rtol=1e-6 #src
 value(t)
 
 # We indeed find `-1`, let's verify that symmetry was exploited:
