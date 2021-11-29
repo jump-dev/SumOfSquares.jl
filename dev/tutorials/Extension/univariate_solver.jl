@@ -91,6 +91,10 @@ function MOI.add_constraint(optimizer::Optimizer, func::MOI.VectorAffineFunction
     return MOI.ConstraintIndex{typeof(func),typeof(set)}(1) # There will be only ever one constraint so the index does not matter.
 end
 
+MOI.supports_incremental_interface(::Optimizer) = true
+function MOI.copy_to(optimizer::Optimizer, model::MOI.ModelLike)
+    return MOI.Utilities.default_copy_to(optimizer, model)
+end
 function MOI.optimize!(optimizer::Optimizer)
     optimizer.decomposition = decompose(optimizer.p, optimizer.tol)
 end
