@@ -130,14 +130,18 @@ function default_certificate(::BasicSemialgebraicSet, ::Certificate.NoSparsity,
         ideal_certificate, cone, basis, maxdegree)
 end
 
+# Julia v1.0 does not support `init` keyword
+#_max_maxdegree(p) = maximum(MP.maxdegree, p, init=0)
+_max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init=0)
+
 _maxdegree(domain) = 0
 
 function _maxdegree(domain::AlgebraicSet)
-    return maximum(MP.maxdegree, domain.I.p, init=0)
+    return _max_maxdegree(domain.I.p)
 end
 
 function _maxdegree(domain::BasicSemialgebraicSet)
-    return max(maximum(MP.maxdegree, domain.p, init=0), _maxdegree(domain.V))
+    return max(_max_maxdegree(domain.p), _maxdegree(domain.V))
 end
 
 """
