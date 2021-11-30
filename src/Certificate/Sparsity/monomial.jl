@@ -156,13 +156,13 @@ function sparsity(poly::MP.AbstractPolynomial, domain::SemialgebraicSets.BasicSe
     gram_monos = _gram_monos(
         reduce((v, q) -> unique!(sort!([v..., MP.variables(q)...], rev=true)),
                   domain.p, init = MP.variables(poly)),
-        SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.IdealCertificate())
+        SumOfSquares.Certificate.ideal_certificate(certificate)
     )
-    processed = SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.PreprocessedDomain(), domain, poly)
+    processed = SumOfSquares.Certificate.preprocessed_domain(certificate, domain, poly)
     multiplier_generator_monos = [
-        (_monos(SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.MultiplierBasis(), index, processed)),
-         MP.monomials(SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.Generator(), index, processed)))
-        for index in SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.PreorderIndices(), processed)
+        (_monos(SumOfSquares.Certificate.multiplier_basis(certificate, index, processed)),
+         MP.monomials(SumOfSquares.Certificate.generator(certificate, index, processed)))
+        for index in SumOfSquares.Certificate.preorder_indices(certificate, processed)
     ]
     cliques, multiplier_cliques = sparsity(MP.monomials(poly), sp, gram_monos, multiplier_generator_monos)
     return MB.MonomialBasis.(cliques), [MB.MonomialBasis.(clique) for clique in multiplier_cliques]

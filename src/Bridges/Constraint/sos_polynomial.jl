@@ -39,8 +39,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
     # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
-    r = SOS.Certificate.get(s.certificate, SOS.Certificate.ReducedPolynomial(), p, MP.changecoefficienttype(s.domain, T))
-    gram_basis = SOS.Certificate.get(s.certificate, SOS.Certificate.GramBasis(), r)
+    r = SOS.Certificate.reduced_polynomial(s.certificate, p, MP.changecoefficienttype(s.domain, T))
+    gram_basis = SOS.Certificate.gram_basis(s.certificate, r)
     g, Q, cQ = SOS.add_gram_matrix(model, MCT, gram_basis, T)
     # MOI does not modify the coefficients of the functions so we can modify `r`.
     # without altering `f`.
@@ -73,7 +73,7 @@ function MOIB.Constraint.concrete_bridge_type(
     MCT = SOS.matrix_cone_type(CT)
     UMCT = union_constraint_types(MCT)
     UMST = union_set_types(MCT)
-    GB = SOS.Certificate.get(CT, SOS.Certificate.GramBasisType())
+    GB = SOS.Certificate.gram_basis_type(CT)
     ZB = SOS.Certificate.zero_basis_type(CT)
     return SOSPolynomialBridge{T, G, DT, UMCT, UMST, MCT, GB, ZB, CT, MT, MVT}
 end
@@ -150,8 +150,7 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintDual,
     function reduced(mono)
         p = MP.polynomial(mono, T)
         domain = MP.changecoefficienttype(bridge.domain, T)
-        return SOS.Certificate.get(
-            bridge.certificate, SOS.Certificate.ReducedPolynomial(), p, domain)
+        return SOS.Certificate.reduced_polynomial(bridge.certificate, p, domain)
     end
     return [dot(reduced(mono), μ) for mono in bridge.monomials]
 end

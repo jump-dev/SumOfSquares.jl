@@ -33,19 +33,19 @@ function sparsity(monos, sp::Union{SignSymmetry, Monomial}, gram_basis::MB.Monom
     return MB.MonomialBasis.(sparsity(monos, sp, gram_basis.monomials))
 end
 function sparsity(poly::MP.AbstractPolynomial, sp::Union{SignSymmetry, Monomial}, certificate::SumOfSquares.Certificate.AbstractIdealCertificate)
-    return sparsity(MP.monomials(poly), sp, SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.GramBasis(), poly))
+    return sparsity(MP.monomials(poly), sp, SumOfSquares.Certificate.gram_basis(certificate, poly))
 end
-function SumOfSquares.Certificate.get(certificate::Ideal, ::SumOfSquares.Certificate.GramBasis, poly)
+function SumOfSquares.Certificate.gram_basis(certificate::Ideal, poly)
     return sparsity(poly, certificate.sparsity, certificate.certificate)
 end
-function SumOfSquares.Certificate.get(::Type{Ideal{S, C}}, attr::SumOfSquares.Certificate.GramBasisType) where {S, C}
-    return Vector{<:SumOfSquares.Certificate.get(C, attr)}
+function SumOfSquares.Certificate.gram_basis_type(::Type{Ideal{S, C}}) where {S, C}
+    return Vector{<:SumOfSquares.Certificate.gram_basis_type(C)}
 end
-function SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Certificate.ReducedPolynomial, poly, domain)
-    return SumOfSquares.Certificate.get(certificate.certificate, attr, poly, domain)
+function SumOfSquares.Certificate.reduced_polynomial(certificate::Ideal, poly, domain)
+    return SumOfSquares.Certificate.reduced_polynomial(certificate.certificate, poly, domain)
 end
-function SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Certificate.Cone)
-    return SumOfSquares.Certificate.get(certificate.certificate, attr)
+function SumOfSquares.Certificate.cone(certificate::Ideal)
+    return SumOfSquares.Certificate.cone(certificate.certificate)
 end
 SumOfSquares.matrix_cone_type(::Type{Ideal{S, C}}) where {S, C} = SumOfSquares.matrix_cone_type(C)
 

@@ -57,7 +57,7 @@ function block_diag(As, d)
         blocks = Dict{Int,Vector{Int}}()
         for i in 1:n
             r = DataStructures.find_root!(union_find, i)
-            blocks[r] = push!(Base.get(blocks, r, Int[]), i)
+            blocks[r] = push!(get(blocks, r, Int[]), i)
         end
         if length(blocks) > 1
             U = similar(T)

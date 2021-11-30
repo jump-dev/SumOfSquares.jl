@@ -62,7 +62,7 @@ end
 end
 
 function _certificate_api(certificate::Certificate.AbstractCertificate)
-    @test Certificate.get(certificate, Certificate.Cone()) isa SumOfSquares.SOSLikeCone
+    @test Certificate.cone(certificate) isa SumOfSquares.SOSLikeCone
     @test SumOfSquares.matrix_cone_type(typeof(certificate)) <: MOI.AbstractVectorSet
 end
 function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
@@ -99,9 +99,9 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
     @polyvar x
     poly = x + 1
     domain = @set x == 1
-    @test Certificate.get(certificate, Certificate.ReducedPolynomial(), poly, domain) isa MP.AbstractPolynomial
-    _basis_check(Certificate.get(certificate, Certificate.GramBasis(), poly),
-                 Certificate.get(typeof(certificate), Certificate.GramBasisType()))
+    @test Certificate.reduced_polynomial(certificate, poly, domain) isa MP.AbstractPolynomial
+    _basis_check(Certificate.gram_basis(certificate, poly),
+                 Certificate.gram_basis_type(typeof(certificate)))
     zbasis = Certificate.zero_basis(certificate)
     @test zbasis <: MB.AbstractPolynomialBasis
     @test zbasis == Certificate.zero_basis_type(typeof(certificate))
@@ -112,15 +112,15 @@ function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
     @polyvar x
     poly = x + 1
     domain = @set x >= 1
-    processed = Certificate.get(certificate, Certificate.PreprocessedDomain(), domain, poly)
-    for idx in Certificate.get(certificate, Certificate.PreorderIndices(), processed)
-        _basis_check(Certificate.get(certificate, Certificate.MultiplierBasis(), idx, processed),
-                     Certificate.get(typeof(certificate), Certificate.MultiplierBasisType()))
-        @test Certificate.get(certificate, Certificate.Generator(), idx, processed) isa MP.AbstractPolynomial
+    processed = Certificate.preprocessed_domain(certificate, domain, poly)
+    for idx in Certificate.preorder_indices(certificate, processed)
+        _basis_check(Certificate.multiplier_basis(certificate, idx, processed),
+                     Certificate.multiplier_basis_type(typeof(certificate)))
+        @test Certificate.generator(certificate, idx, processed) isa MP.AbstractPolynomial
     end
-    icert = Certificate.get(certificate, Certificate.IdealCertificate())
+    icert = Certificate.ideal_certificate(certificate)
     @test icert isa Certificate.AbstractIdealCertificate
-    @test typeof(icert) == Certificate.get(typeof(certificate), Certificate.IdealCertificate())
+    @test typeof(icert) == Certificate.ideal_certificate(typeof(certificate))
 end
 
 

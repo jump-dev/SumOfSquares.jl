@@ -31,23 +31,19 @@ const Index = Union{PreorderIndex, IdealIndex}
 abstract type Attribute end
 
 # For get
-struct Cone <: Attribute end
-struct GramBasis <: Attribute end
+function cone end
+function gram_basis end
 # FIXME currently, this returns `MB.MonomialBasis` instead of `MB.MonomialBasis{MT, MVT}`
-struct GramBasisType <: Attribute end
-struct ReducedPolynomial <: Attribute end
-struct IdealCertificate <: Attribute end
-struct PreprocessedDomain <: Attribute end
+function gram_basis_type end
+function reduced_polynomial end
+function ideal_certificate end
+function preprocessed_domain end
 
 # Only for PreorderIndex
-struct PreorderIndices <: Attribute end
-struct Generator <: Attribute end
-struct MultiplierBasis <: Attribute end
-struct MultiplierBasisType <: Attribute end
-
-# For set
-#struct Monomials <: Attribute end
-
+function preorder_indices end
+function generator end
+function multiplier_basis end
+function multiplier_basis_type end
 
 # PreorderCertificate
 # IdealCertificate
@@ -80,17 +76,17 @@ struct Putinar{IC <: AbstractIdealCertificate, CT <: SumOfSquares.SOSLikeCone, B
     maxdegree::Int
 end
 
-get(certificate::Putinar, ::Cone) = certificate.cone
+cone(certificate::Putinar) = certificate.cone
 
 struct DomainWithVariables{S, V}
     domain::S
     variables::V
 end
-function get(::Putinar, ::PreprocessedDomain, domain::BasicSemialgebraicSet, p)
+function preprocessed_domain(::Putinar, domain::BasicSemialgebraicSet, p)
     return DomainWithVariables(domain, MP.variables(p))
 end
 
-function get(::Putinar, ::PreorderIndices, domain::DomainWithVariables)
+function preorder_indices(::Putinar, domain::DomainWithVariables)
     return map(PreorderIndex, eachindex(domain.domain.p))
 end
 
@@ -98,22 +94,22 @@ function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
     return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
 end
 multiplier_maxdegree(maxdegree, q) = maxdegree - MP.maxdegree(q)
-function get(certificate::Putinar, ::MultiplierBasis, index::PreorderIndex, domain::DomainWithVariables)
+function multiplier_basis(certificate::Putinar, index::PreorderIndex, domain::DomainWithVariables)
     q = domain.domain.p[index.value]
     vars = sort!([domain.variables..., MP.variables(q)...], rev = true)
     unique!(vars)
     return maxdegree_gram_basis(certificate.basis, vars, multiplier_maxdegree(certificate.maxdegree, q))
 end
-function get(::Type{Putinar{IC, CT, BT}}, ::MultiplierBasisType) where {IC, CT, BT}
+function multiplier_basis_type(::Type{Putinar{IC, CT, BT}}) where {IC, CT, BT}
     return BT
 end
 
-function get(::Putinar, ::Generator, index::PreorderIndex, domain::DomainWithVariables)
+function generator(::Putinar, index::PreorderIndex, domain::DomainWithVariables)
     return domain.domain.p[index.value]
 end
 
-get(certificate::Putinar, ::IdealCertificate) = certificate.ideal_certificate
-get(::Type{<:Putinar{IC}}, ::IdealCertificate) where {IC} = IC
+ideal_certificate(certificate::Putinar) = certificate.ideal_certificate
+ideal_certificate(::Type{<:Putinar{IC}}) where {IC} = IC
 
 SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC, CT}}) where {IC, CT} = SumOfSquares.matrix_cone_type(CT)
 
@@ -122,9 +118,9 @@ SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC, CT}}) where {IC, CT} = SumOfS
 ######################
 
 abstract type SimpleIdealCertificate{CT, BT} <: AbstractIdealCertificate end
-get(::SimpleIdealCertificate, ::ReducedPolynomial, poly, domain) = poly
+reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
 
-get(certificate::SimpleIdealCertificate, ::Cone) = certificate.cone
+cone(certificate::SimpleIdealCertificate) = certificate.cone
 SumOfSquares.matrix_cone_type(::Type{<:SimpleIdealCertificate{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
 
 # TODO return something else when `PolyJuMP` support other bases.
@@ -150,10 +146,10 @@ struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasi
     basis::Type{BT}
     maxdegree::Int
 end
-function get(certificate::MaxDegree, ::GramBasis, poly) where CT
+function gram_basis(certificate::MaxDegree, poly) where CT
     return maxdegree_gram_basis(certificate.basis, MP.variables(poly), certificate.maxdegree)
 end
-function get(::Type{MaxDegree{CT, BT}}, ::GramBasisType) where {CT, BT}
+function gram_basis_type(::Type{MaxDegree{CT, BT}}) where {CT, BT}
     return BT
 end
 
@@ -173,10 +169,10 @@ struct FixedBasis{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBas
     cone::CT
     basis::BT
 end
-function get(certificate::FixedBasis, ::GramBasis, poly) where CT
+function gram_basis(certificate::FixedBasis, poly) where CT
     return certificate.basis
 end
-function get(::Type{FixedBasis{CT, BT}}, ::GramBasisType) where {CT, BT}
+function gram_basis_type(::Type{FixedBasis{CT, BT}}) where {CT, BT}
     return BT
 end
 
@@ -201,10 +197,10 @@ struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, 
     basis::Type{BT}
     variable_groups::NPT
 end
-function get(certificate::Newton{CT, B}, ::GramBasis, poly) where {CT, B}
+function gram_basis(certificate::Newton{CT, B}, poly) where {CT, B}
     return MB.basis_covering_monomials(B, monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups))
 end
-function get(::Type{<:Newton{CT, BT}}, ::GramBasisType) where {CT, BT}
+function gram_basis_type(::Type{<:Newton{CT, BT}}) where {CT, BT}
     return BT
 end
 
@@ -228,18 +224,18 @@ struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
     gram_certificate::GCT
 end
 
-function get(::Remainder, ::ReducedPolynomial, poly, domain)
+function reduced_polynomial(::Remainder, poly, domain)
     return convert(typeof(poly), rem(poly, ideal(domain)))
 end
 
-function get(certificate::Remainder, attr::GramBasis, poly)
-    return get(certificate.gram_certificate, attr, poly)
+function gram_basis(certificate::Remainder, poly)
+    return gram_basis(certificate.gram_certificate, poly)
 end
-function get(::Type{Remainder{GCT}}, attr::GramBasisType) where GCT
-    return get(GCT, attr)
+function gram_basis_type(::Type{Remainder{GCT}}) where GCT
+    return gram_basis_type(GCT)
 end
 
-get(certificate::Remainder, attr::Cone) = get(certificate.gram_certificate, attr)
+cone(certificate::Remainder) = cone(certificate.gram_certificate)
 SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT} = SumOfSquares.matrix_cone_type(GCT)
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
