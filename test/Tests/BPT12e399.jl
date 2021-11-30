@@ -35,7 +35,8 @@ function BPT12e399_test(optimizer, config::MOIT.Config, remainder::Bool)
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
     @test JuMP.value(α) ≈ α_value atol=atol rtol=rtol
 
-    @test_throws SumOfSquares.ValueNotSupported value(cref)
+    test_constraint_primal(cref, 10 - (x^2 + α_value*y))
+
     p = gram_matrix(cref)
     if remainder
         @test getmat(p) ≈ [1 -3; -3 9] atol=atol rtol=rtol
@@ -89,7 +90,8 @@ function BPT12e399_test(optimizer, config::MOIT.Config, remainder::Bool)
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
     @test JuMP.value(α) ≈ -α_value atol=atol rtol=rtol
 
-    @test_throws SumOfSquares.ValueNotSupported value(cref)
+    test_constraint_primal(cref, 10 - (x^2 - α_value*y))
+
     p = gram_matrix(cref)
     if remainder
         @test getmat(p) ≈ [1 3; 3 9] atol=atol rtol=rtol

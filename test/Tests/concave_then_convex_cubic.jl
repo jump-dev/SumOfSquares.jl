@@ -26,8 +26,6 @@ function concave_then_convex_cubic_test(optimizer, config::MOIT.Config,
 
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(p) ≈ x^3 atol=atol rtol=rtol
-    @test_throws SumOfSquares.ValueNotSupported value(cref_convex)
-    @test_throws SumOfSquares.ValueNotSupported value(cref_concave)
 
     # The monomials contain the variables created for the Hessian so we cannot
     # check them easily
