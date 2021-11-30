@@ -133,12 +133,12 @@ end
         certificate_api(certificate)
         preorder = Certificate.Putinar(certificate, cone, BT, maxdegree)
         certificate_api(preorder)
-        sparsities = Sparsity[VariableSparsity()]
+        sparsities = Sparsity.Pattern[Sparsity.Variable()]
         if certificate isa Certificate.MaxDegree
-            push!(sparsities, MonomialSparsity(ChordalCompletion(), 1))
+            push!(sparsities, Sparsity.Monomial(ChordalCompletion(), 1))
         end
         @testset "$(typeof(sparsity))" for sparsity in sparsities
-            certificate_api(Certificate.SparsePreorder(sparsity, preorder))
+            certificate_api(Certificate.Sparsity.Preorder(sparsity, preorder))
         end
     end
     basis = BT(monovec([x^2, x]))
@@ -150,11 +150,11 @@ end
         _test(certificate)
         _test(Certificate.Remainder(certificate))
         if certificate isa Certificate.MaxDegree
-            _test(Certificate.SparseIdeal(VariableSparsity(), certificate))
+            _test(Certificate.Sparsity.Ideal(Sparsity.Variable(), certificate))
         end
-        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), MonomialSparsity(ChordalCompletion(), 1)]
-            _test(Certificate.SparseIdeal(sparsity, certificate))
-            _test(Certificate.SparseIdeal(sparsity, Certificate.Remainder(certificate)))
+        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), Sparsity.Monomial(ChordalCompletion(), 1)]
+            _test(Certificate.Sparsity.Ideal(sparsity, certificate))
+            _test(Certificate.Sparsity.Ideal(sparsity, Certificate.Remainder(certificate)))
         end
     end
 end

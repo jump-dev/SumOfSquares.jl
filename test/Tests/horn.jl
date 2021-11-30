@@ -51,7 +51,7 @@ function horn_test(optimizer,
         @test termination_status(model) == MOI.OPTIMAL
 
         @test primal_status(model) == MOI.FEASIBLE_POINT
-        @test_throws SumOfSquares.ValueNotSupported value(cref)
+        test_constraint_primal(cref, sum(x) * x' * H * x)
         # Currently the lagrangian multipliers have degree 0 to 1.
         # Once we can force them to have degree 1 only, reenable the following:
         #@test isempty(certificate_monomials(cref))

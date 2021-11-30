@@ -1,5 +1,5 @@
 """
-    struct SignSymmetry <: Sparsity end
+    struct SignSymmetry <: Sparsity.Pattern end
 
 Sign symmetry as developed in [Section III.C, L09].
 
@@ -7,7 +7,7 @@ Sign symmetry as developed in [Section III.C, L09].
 *Pre-and post-processing sum-of-squares programs in practice*.
 IEEE transactions on automatic control 54, no. 5 (2009): 1007-1011.
 """
-struct SignSymmetry <: Sparsity end
+struct SignSymmetry <: Pattern end
 
 function binary_exponent(exponents, ::Type{T}) where T
     cur = zero(T)

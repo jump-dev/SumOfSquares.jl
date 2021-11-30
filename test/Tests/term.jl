@@ -25,7 +25,8 @@ function term_test(optimizer,
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 0.0 atol=atol rtol=rtol
 
-    @test_throws SumOfSquares.ValueNotSupported value(cref)
+    test_constraint_primal(cref, 0.0)
+
     p = gram_matrix(cref)
     @test getmat(p) ≈ zeros(1, 1) atol=atol rtol=rtol
     @test p.basis.monomials == [x]

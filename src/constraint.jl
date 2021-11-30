@@ -81,16 +81,16 @@ function default_ideal_certificate(domain::FullSpace, basis, cone, maxdegree, ne
 end
 
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, sparsity::Certificate.NoSparsity, basis::AbstractPolynomialBasis, cone, args...)
+    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.NoPattern, basis::AbstractPolynomialBasis, cone, args...)
     return Certificate.FixedBasis(cone, basis)
 end
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, sparsity::Certificate.NoSparsity, args...)
+    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.NoPattern, args...)
     return default_ideal_certificate(domain, args...)
 end
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity, args...)
-    return Certificate.SparseIdeal(sparsity, args...)
+    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.Pattern, args...)
+    return Certificate.Sparsity.Ideal(sparsity, args...)
 end
 
 function default_ideal_certificate(
@@ -118,13 +118,13 @@ end
 function default_certificate(::AbstractAlgebraicSet, sparsity, ideal_certificate, cone, basis, maxdegree)
     return ideal_certificate
 end
-function default_certificate(::BasicSemialgebraicSet, sparsity::Certificate.Sparsity,
-                             ideal_certificate::Certificate.SparseIdeal, cone,
+function default_certificate(::BasicSemialgebraicSet, sparsity::Certificate.Sparsity.Pattern,
+                             ideal_certificate::Certificate.Sparsity.Ideal, cone,
                              basis, maxdegree)
-    return Certificate.SparsePreorder(
+    return Certificate.Sparsity.Preorder(
         sparsity, Certificate.Putinar(ideal_certificate.certificate, cone, basis, maxdegree))
 end
-function default_certificate(::BasicSemialgebraicSet, ::Certificate.NoSparsity,
+function default_certificate(::BasicSemialgebraicSet, ::Certificate.Sparsity.NoPattern,
                              ideal_certificate, cone, basis, maxdegree)
     return Certificate.Putinar(
         ideal_certificate, cone, basis, maxdegree)
@@ -164,7 +164,7 @@ function JuMP.moi_set(
     basis=MonomialBasis,
     newton_polytope::Tuple=tuple(),
     maxdegree::Union{Nothing, Int}=default_maxdegree(monos, domain),
-    sparsity::Certificate.Sparsity=Certificate.NoSparsity(),
+    sparsity::Certificate.Sparsity.Pattern=Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern}=nothing,
     newton_of_remainder::Bool=false,
     ideal_certificate=default_ideal_certificate(

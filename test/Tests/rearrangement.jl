@@ -18,7 +18,7 @@ function rearrangement_test(optimizer, config::MOIT.Config)
     S = @set y ≤ x && y ≤ z && x ≥ 0 && z ≥ 0
     # In fact, it is nonnegative everywhere so let's add terms `x + z`:
     cref = @constraint(model, x^2 + z^2 + 2y^2 - 2x * y - 2y * z + x + z in SOSCone(),
-                       domain = S, sparsity = VariableSparsity(), maxdegree = 3)
+                       domain = S, sparsity = Sparsity.Variable(), maxdegree = 3)
 
     optimize!(model)
 

@@ -41,7 +41,8 @@ function quadratic_test(
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 2.0 atol=atol rtol=rtol
 
-    @test_throws SumOfSquares.ValueNotSupported value(cref)
+    test_constraint_primal(cref, value(poly))
+
     p = gram_matrix(cref)
     @test getmat(p) ≈ ones(2, 2) atol=atol rtol=rtol
     if basis == ChebyshevBasis

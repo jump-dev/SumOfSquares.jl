@@ -1,7 +1,7 @@
-const CEG = SumOfSquares.Certificate.ChordalExtensionGraph
+const CEG = ChordalExtensionGraph
 
 """
-    struct MonomialSparsity{C<:CEG.AbstractCompletion} <: Sparsity
+    struct Sparsity.Monomial{C<:CEG.AbstractCompletion} <: Sparsity.Pattern
         completion::C
         k::Int
         use_all_monomials::Bool
@@ -23,11 +23,11 @@ arXiv preprint arXiv:1912.08899 (2020).
 *Chordal-TSSOS: a moment-SOS hierarchy that exploits term sparsity with chordal extension*.
 arXiv preprint arXiv:2003.03210 (2020).
 """
-struct MonomialSparsity{C<:CEG.AbstractCompletion} <: Sparsity
+struct Monomial{C<:CEG.AbstractCompletion} <: Pattern
     completion::C
     k::Int
     use_all_monomials::Bool
-    function MonomialSparsity(
+    function Monomial(
         completion::CEG.AbstractCompletion=CEG.ClusterCompletion(),
         k::Int=0,
         use_all_monomials::Bool=false,
@@ -122,7 +122,7 @@ function monomial_sparsity_iteration(P, completion, use_all_monomials::Bool, mon
 end
 _monovec(cliques::AbstractVector{<:MP.AbstractMonomial}) = MP.monovec(cliques)
 _monovec(cliques) = _monovec.(cliques)
-function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSparsity,
+function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::Monomial,
                   gram_monos::AbstractVector = SumOfSquares.Certificate.monomials_half_newton_polytope(monos, tuple()),
                   args...)
     P = Set(monos)
@@ -149,21 +149,21 @@ function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSpar
 end
 # This also checks that it is indeed a monomial basis
 _monos(basis::MB.MonomialBasis) = basis.monomials
-function _gram_monos(vars, certificate::MaxDegree{CT, MB.MonomialBasis}) where CT
-    return _monos(maxdegree_gram_basis(MB.MonomialBasis, vars, certificate.maxdegree))
+function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree{CT, MB.MonomialBasis}) where CT
+    return _monos(SumOfSquares.Certificate.maxdegree_gram_basis(MB.MonomialBasis, vars, certificate.maxdegree))
 end
-function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet, sp::MonomialSparsity, certificate::AbstractPreorderCertificate)
+function sparsity(poly::MP.AbstractPolynomial, domain::SemialgebraicSets.BasicSemialgebraicSet, sp::Monomial, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
     gram_monos = _gram_monos(
-        reduce((v, q) -> unique!(sort!([v..., variables(q)...], rev=true)),
-                  domain.p, init = variables(poly)),
-        get(certificate, IdealCertificate())
+        reduce((v, q) -> unique!(sort!([v..., MP.variables(q)...], rev=true)),
+                  domain.p, init = MP.variables(poly)),
+        SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.IdealCertificate())
     )
-    processed = get(certificate, PreprocessedDomain(), domain, poly)
+    processed = SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.PreprocessedDomain(), domain, poly)
     multiplier_generator_monos = [
-        (_monos(get(certificate, MultiplierBasis(), index, processed)),
-         monomials(get(certificate, Generator(), index, processed)))
-        for index in get(certificate, PreorderIndices(), processed)
+        (_monos(SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.MultiplierBasis(), index, processed)),
+         MP.monomials(SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.Generator(), index, processed)))
+        for index in SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.PreorderIndices(), processed)
     ]
-    cliques, multiplier_cliques = sparsity(monomials(poly), sp, gram_monos, multiplier_generator_monos)
+    cliques, multiplier_cliques = sparsity(MP.monomials(poly), sp, gram_monos, multiplier_generator_monos)
     return MB.MonomialBasis.(cliques), [MB.MonomialBasis.(clique) for clique in multiplier_cliques]
 end

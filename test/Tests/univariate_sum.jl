@@ -12,7 +12,7 @@ function univariate_sum_test(optimizer,
 
     @polyvar x y
     # (x - 1)^2 + (y + 1)^2
-    cref = @constraint(model, x^2 + y^2 + 2(y - x) + 2 in cone, sparsity=VariableSparsity())
+    cref = @constraint(model, x^2 + y^2 + 2(y - x) + 2 in cone, sparsity=Sparsity.Variable())
 
     optimize!(model)
 
@@ -29,7 +29,7 @@ function univariate_sum_test(optimizer,
     @test p.sub_gram_matrices[2].basis.monomials == [x, 1]
 
     S = SumOfSquares.SOSPolynomialSet{
-        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.SparseIdeal{VariableSparsity, SumOfSquares.Certificate.MaxDegree{typeof(cone), MonomialBasis}}
+        SumOfSquares.FullSpace, Monomial{true}, MonomialVector{true}, SumOfSquares.Certificate.Sparsity.Ideal{Sparsity.Variable, SumOfSquares.Certificate.MaxDegree{typeof(cone), MonomialBasis}}
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     test_delete_bridge(

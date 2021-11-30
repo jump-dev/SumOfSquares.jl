@@ -292,9 +292,9 @@ SumOfSquares.CopositiveInner
 
 Types of sparsity
 ```@docs
-SumOfSquares.Certificate.VariableSparsity
-SumOfSquares.Certificate.MonomialSparsity
-SumOfSquares.Certificate.SignSymmetry
+SumOfSquares.Certificate.Sparsity.Variable
+SumOfSquares.Certificate.Sparsity.Monomial
+SumOfSquares.Certificate.Sparsity.SignSymmetry
 ```
 
 Ideal certificates:
@@ -303,13 +303,14 @@ SumOfSquares.Certificate.MaxDegree
 SumOfSquares.Certificate.FixedBasis
 SumOfSquares.Certificate.Newton
 SumOfSquares.Certificate.Remainder
-SumOfSquares.Certificate.SparseIdeal
+SumOfSquares.Certificate.Sparsity.Ideal
+SumOfSquares.Certificate.Symmetry.Ideal
 ```
 
 Preorder certificates:
 ```@docs
 SumOfSquares.Certificate.Putinar
-SumOfSquares.Certificate.SparsePreorder
+SumOfSquares.Certificate.Sparsity.Preorder
 ```
 
 Attributes
@@ -341,12 +342,12 @@ SumOfSquares.PolyJuMP.bridges
 
 Chordal extension:
 ```@docs
-SumOfSquares.Certificate.ChordalExtensionGraph.neighbors
-SumOfSquares.Certificate.ChordalExtensionGraph.fill_in
-SumOfSquares.Certificate.ChordalExtensionGraph.is_clique
-SumOfSquares.Certificate.ChordalExtensionGraph.LabelledGraph
-SumOfSquares.Certificate.ChordalExtensionGraph.add_node!
-SumOfSquares.Certificate.ChordalExtensionGraph.add_edge!
-SumOfSquares.Certificate.ChordalExtensionGraph.add_clique!
-SumOfSquares.Certificate.ChordalExtensionGraph.completion
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.neighbors
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.fill_in
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.is_clique
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.LabelledGraph
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_node!
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_edge!
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_clique!
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.completion
 ```
