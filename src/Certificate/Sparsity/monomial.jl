@@ -152,18 +152,18 @@ _monos(basis::MB.MonomialBasis) = basis.monomials
 function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree{CT, MB.MonomialBasis}) where CT
     return _monos(SumOfSquares.Certificate.maxdegree_gram_basis(MB.MonomialBasis, vars, certificate.maxdegree))
 end
-function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet, sp::Monomial, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
+function sparsity(poly::MP.AbstractPolynomial, domain::SemialgebraicSets.BasicSemialgebraicSet, sp::Monomial, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
     gram_monos = _gram_monos(
-        reduce((v, q) -> unique!(sort!([v..., variables(q)...], rev=true)),
-                  domain.p, init = variables(poly)),
-        get(certificate, IdealCertificate())
+        reduce((v, q) -> unique!(sort!([v..., MP.variables(q)...], rev=true)),
+                  domain.p, init = MP.variables(poly)),
+        SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.IdealCertificate())
     )
-    processed = get(certificate, PreprocessedDomain(), domain, poly)
+    processed = SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.PreprocessedDomain(), domain, poly)
     multiplier_generator_monos = [
-        (_monos(get(certificate, MultiplierBasis(), index, processed)),
-         monomials(get(certificate, Generator(), index, processed)))
-        for index in get(certificate, PreorderIndices(), processed)
+        (_monos(SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.MultiplierBasis(), index, processed)),
+         MP.monomials(SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.Generator(), index, processed)))
+        for index in SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.PreorderIndices(), processed)
     ]
-    cliques, multiplier_cliques = sparsity(monomials(poly), sp, gram_monos, multiplier_generator_monos)
+    cliques, multiplier_cliques = sparsity(MP.monomials(poly), sp, gram_monos, multiplier_generator_monos)
     return MB.MonomialBasis.(cliques), [MB.MonomialBasis.(clique) for clique in multiplier_cliques]
 end

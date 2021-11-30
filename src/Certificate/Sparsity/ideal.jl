@@ -33,7 +33,7 @@ function sparsity(monos, sp::Union{SignSymmetry, Monomial}, gram_basis::MB.Monom
     return MB.MonomialBasis.(sparsity(monos, sp, gram_basis.monomials))
 end
 function sparsity(poly::MP.AbstractPolynomial, sp::Union{SignSymmetry, Monomial}, certificate::SumOfSquares.Certificate.AbstractIdealCertificate)
-    return sparsity(monomials(poly), sp, get(certificate, GramBasis(), poly))
+    return sparsity(MP.monomials(poly), sp, SumOfSquares.Certificate.get(certificate, SumOfSquares.Certificate.GramBasis(), poly))
 end
 function SumOfSquares.Certificate.get(certificate::Ideal, ::SumOfSquares.Certificate.GramBasis, poly)
     return sparsity(poly, certificate.sparsity, certificate.certificate)

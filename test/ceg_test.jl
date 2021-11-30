@@ -1,7 +1,7 @@
 using Test
 
 using SumOfSquares
-const CEG = SumOfSquares.Certificate.ChordalExtensionGraph
+const CEG = SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph
 
 function fill_in_3_nodes_test(G, x, y, z)
     @test CEG.fill_in(G, x) == 0

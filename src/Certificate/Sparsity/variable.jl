@@ -48,9 +48,9 @@ function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet,
     H, cliques = chordal_csp_graph(poly, domain)
     function bases(q)
         return [
-            maxdegree_gram_basis(certificate.basis, clique,
-                                 multiplier_maxdegree(certificate.maxdegree, q))
-            for clique in cliques if variables(q) ⊆ clique
+            SumOfSquares.Certificate.maxdegree_gram_basis(certificate.basis, clique,
+                                 SumOfSquares.Certificate.multiplier_maxdegree(certificate.maxdegree, q))
+            for clique in cliques if MP.variables(q) ⊆ clique
         ]
     end
     return bases(poly), map(bases, domain.p)

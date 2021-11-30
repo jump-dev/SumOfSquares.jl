@@ -152,7 +152,7 @@ end
         if certificate isa Certificate.MaxDegree
             _test(Certificate.Sparsity.Ideal(Sparsity.Variable(), certificate))
         end
-        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), Monomial.Sparsity(ChordalCompletion(), 1)]
+        @testset "$(typeof(sparsity))" for sparsity in [SignSymmetry(), Sparsity.Monomial(ChordalCompletion(), 1)]
             _test(Certificate.Sparsity.Ideal(sparsity, certificate))
             _test(Certificate.Sparsity.Ideal(sparsity, Certificate.Remainder(certificate)))
         end

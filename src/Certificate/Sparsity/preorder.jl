@@ -13,7 +13,7 @@ struct Preorder{S <: Pattern, C <: SumOfSquares.Certificate.AbstractPreorderCert
     certificate::C
 end
 
-SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.Cone) = get(certificate.certificate, attr)
+SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.Cone) = SumOfSquares.Certificate.get(certificate.certificate, attr)
 
 struct Domain{S, P, B}
     domain::S
@@ -23,7 +23,7 @@ end
 
 function SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.PreprocessedDomain, domain::SemialgebraicSets.BasicSemialgebraicSet, p)
     basis, Preorder_bases = sparsity(p, domain, certificate.sparsity, certificate.certificate)
-    return Domain(domain, get(certificate.certificate, attr, domain, p), Preorder_bases)
+    return Domain(domain, SumOfSquares.Certificate.get(certificate.certificate, attr, domain, p), Preorder_bases)
 end
 
 function SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.PreorderIndices, domain::Domain)
