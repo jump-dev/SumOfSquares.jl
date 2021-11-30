@@ -31,6 +31,12 @@ include("Certificate/Certificate.jl")
 using .Certificate: Sparsity, SignSymmetry, ChordalCompletion, ClusterCompletion, Symmetry
 export Sparsity, SignSymmetry, ChordalCompletion, ClusterCompletion
 export Symmetry
+
+# TODO remove in SumOfSquares v1.0
+@deprecate NoSparsity Sparsity.NoPattern
+@deprecate VariableSparsity Sparsity.Variable
+@deprecate MonomialSparsity Sparsity.Monomial
+
 include("rand.jl")
 
 # MOI extension
