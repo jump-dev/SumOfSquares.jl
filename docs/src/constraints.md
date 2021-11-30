@@ -292,9 +292,9 @@ SumOfSquares.CopositiveInner
 
 Types of sparsity
 ```@docs
-SumOfSquares.Certificate.VariableSparsity
-SumOfSquares.Certificate.MonomialSparsity
-SumOfSquares.Certificate.SignSymmetry
+SumOfSquares.Certificate.Sparsity.Variable
+SumOfSquares.Certificate.Sparsity.Monomial
+SumOfSquares.Certificate.Sparsity.SignSymmetry
 ```
 
 Ideal certificates:
@@ -303,13 +303,14 @@ SumOfSquares.Certificate.MaxDegree
 SumOfSquares.Certificate.FixedBasis
 SumOfSquares.Certificate.Newton
 SumOfSquares.Certificate.Remainder
-SumOfSquares.Certificate.SparseIdeal
+SumOfSquares.Certificate.Sparsity.Ideal
+SumOfSquares.Certificate.Symmetry.Ideal
 ```
 
 Preorder certificates:
 ```@docs
 SumOfSquares.Certificate.Putinar
-SumOfSquares.Certificate.SparsePreorder
+SumOfSquares.Certificate.Sparsity.Preorder
 ```
 
 Attributes

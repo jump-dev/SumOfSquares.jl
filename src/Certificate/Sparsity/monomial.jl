@@ -1,7 +1,7 @@
 const CEG = ChordalExtensionGraph
 
 """
-    struct Monomial{C<:CEG.AbstractCompletion} <: Sparsity
+    struct Monomial{C<:CEG.AbstractCompletion} <: Sparsity.Pattern
         completion::C
         k::Int
         use_all_monomials::Bool
@@ -23,7 +23,7 @@ arXiv preprint arXiv:1912.08899 (2020).
 *Chordal-TSSOS: a moment-SOS hierarchy that exploits term sparsity with chordal extension*.
 arXiv preprint arXiv:2003.03210 (2020).
 """
-struct Monomial{C<:CEG.AbstractCompletion} <: Sparsity
+struct Monomial{C<:CEG.AbstractCompletion} <: Pattern
     completion::C
     k::Int
     use_all_monomials::Bool

@@ -1,4 +1,4 @@
-module Sparse
+module Sparsity
 
 import MultivariatePolynomials
 const MP = MultivariatePolynomials

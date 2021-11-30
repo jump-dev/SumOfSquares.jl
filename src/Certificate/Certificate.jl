@@ -245,7 +245,8 @@ zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
 
 include("Sparsity/Sparsity.jl")
-export Sparsity
+using .Sparsity: SignSymmetry, ChordalCompletion, ClusterCompletion
+export Sparsity, SignSymmetry, ChordalCompletion, ClusterCompletion
 
 include("Symmetry/Symmetry.jl")
 export Symmetry
