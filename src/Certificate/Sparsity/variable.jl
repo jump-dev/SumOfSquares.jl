@@ -1,11 +1,11 @@
 """
-    struct VariableSparsity <: Sparsity end
+    struct Variable <: Sparsity end
 
 Variable or correlative sparsity as developed in [WSMM06].
 
 [WSMM06] Waki, Hayato, Sunyoung Kim, Masakazu Kojima, and Masakazu Muramatsu. "Sums of squares and semidefinite program relaxations for polynomial optimization problems with structured sparsity." SIAM Journal on Optimization 17, no. 1 (2006): 218-242.
 """
-struct VariableSparsity <: Sparsity end
+struct Variable <: Sparsity end
 
 const CEG = ChordalExtensionGraph
 
@@ -44,7 +44,7 @@ function chordal_csp_graph(poly::MP.APL, domain::AbstractBasicSemialgebraicSet)
 end
 
 function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet,
-                  sp::VariableSparsity, certificate::SumOfSquares.Certificate.Putinar)
+                  sp::Variable, certificate::SumOfSquares.Certificate.Putinar)
     H, cliques = chordal_csp_graph(poly, domain)
     function bases(q)
         return [

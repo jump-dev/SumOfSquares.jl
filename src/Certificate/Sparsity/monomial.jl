@@ -1,7 +1,7 @@
 const CEG = ChordalExtensionGraph
 
 """
-    struct MonomialSparsity{C<:CEG.AbstractCompletion} <: Sparsity
+    struct Monomial{C<:CEG.AbstractCompletion} <: Sparsity
         completion::C
         k::Int
         use_all_monomials::Bool
@@ -23,11 +23,11 @@ arXiv preprint arXiv:1912.08899 (2020).
 *Chordal-TSSOS: a moment-SOS hierarchy that exploits term sparsity with chordal extension*.
 arXiv preprint arXiv:2003.03210 (2020).
 """
-struct MonomialSparsity{C<:CEG.AbstractCompletion} <: Sparsity
+struct Monomial{C<:CEG.AbstractCompletion} <: Sparsity
     completion::C
     k::Int
     use_all_monomials::Bool
-    function MonomialSparsity(
+    function Monomial(
         completion::CEG.AbstractCompletion=CEG.ClusterCompletion(),
         k::Int=0,
         use_all_monomials::Bool=false,
@@ -122,7 +122,7 @@ function monomial_sparsity_iteration(P, completion, use_all_monomials::Bool, mon
 end
 _monovec(cliques::AbstractVector{<:MP.AbstractMonomial}) = MP.monovec(cliques)
 _monovec(cliques) = _monovec.(cliques)
-function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::MonomialSparsity,
+function sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, sp::Monomial,
                   gram_monos::AbstractVector = SumOfSquares.Certificate.monomials_half_newton_polytope(monos, tuple()),
                   args...)
     P = Set(monos)
@@ -152,7 +152,7 @@ _monos(basis::MB.MonomialBasis) = basis.monomials
 function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree{CT, MB.MonomialBasis}) where CT
     return _monos(SumOfSquares.Certificate.maxdegree_gram_basis(MB.MonomialBasis, vars, certificate.maxdegree))
 end
-function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet, sp::MonomialSparsity, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
+function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet, sp::Monomial, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
     gram_monos = _gram_monos(
         reduce((v, q) -> unique!(sort!([v..., variables(q)...], rev=true)),
                   domain.p, init = variables(poly)),
