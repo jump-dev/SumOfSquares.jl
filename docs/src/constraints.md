@@ -342,12 +342,12 @@ SumOfSquares.PolyJuMP.bridges
 
 Chordal extension:
 ```@docs
-SumOfSquares.Certificate.ChordalExtensionGraph.neighbors
-SumOfSquares.Certificate.ChordalExtensionGraph.fill_in
-SumOfSquares.Certificate.ChordalExtensionGraph.is_clique
-SumOfSquares.Certificate.ChordalExtensionGraph.LabelledGraph
-SumOfSquares.Certificate.ChordalExtensionGraph.add_node!
-SumOfSquares.Certificate.ChordalExtensionGraph.add_edge!
-SumOfSquares.Certificate.ChordalExtensionGraph.add_clique!
-SumOfSquares.Certificate.ChordalExtensionGraph.completion
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.neighbors
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.fill_in
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.is_clique
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.LabelledGraph
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_node!
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_edge!
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_clique!
+SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.completion
 ```
