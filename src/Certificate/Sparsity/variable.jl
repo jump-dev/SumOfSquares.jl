@@ -1,5 +1,5 @@
 """
-    struct Variable <: Sparsity.Pattern end
+    struct Sparsity.Variable <: Sparsity.Pattern end
 
 Variable or correlative sparsity as developed in [WSMM06].
 

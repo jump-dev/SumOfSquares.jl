@@ -56,6 +56,17 @@ function MP.polynomialtype(
     return MP.polynomialtype(PT, V)
 end
 
+"""
+    struct Symmetry.Ideal{C,GT,AT<:SymbolicWedderburn.Action} <: SumOfSquares.Certificate.AbstractIdealCertificate
+        pattern::Symmetry.Pattern{GT,AT}
+        certificate::C
+    end
+
+Same certificate as `certificate` except that the Sum-of-Squares polynomial `σ`
+is modelled as a sum of Sum-of-Squares polynomials with smaller bases
+using the Symbolic Wedderburn decomposition of the symmetry pattern specified
+by `pattern`.
+"""
 struct Ideal{C,GT,AT<:SymbolicWedderburn.Action} <: SumOfSquares.Certificate.AbstractIdealCertificate
     pattern::Pattern{GT,AT}
     certificate::C

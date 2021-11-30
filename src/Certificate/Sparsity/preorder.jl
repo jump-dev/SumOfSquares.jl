@@ -1,5 +1,5 @@
 """
-    struct Preorder{S <: Sparsity.Pattern, C <: AbstractPreorderCertificate} <: AbstractPreorderCertificate
+    struct Sparsity.Preorder{S <: Sparsity.Pattern, C <: SumOfSquares.Certificate.AbstractPreorderCertificate} <: SumOfSquares.Certificate.AbstractPreorderCertificate
         sparsity::S
         certificate::C
     end

@@ -1,11 +1,11 @@
 """
-    struct Ideal{S <: Sparsity.Pattern, C <: AbstractIdealCertificate} <: AbstractIdealCertificate
+    struct Sparsity.Ideal{S <: Sparsity.Pattern, C <: AbstractIdealCertificate} <: SumOfSquares.Certificate.AbstractIdealCertificate
         sparsity::S
         certificate::C
     end
 
-Same certificate as `C` except that the Sum-of-Squares polynomial `σ`
-is modelled as a sum of Sum-of-Squares polynomials with smaller basis
+Same certificate as `certificate` except that the Sum-of-Squares polynomial `σ`
+is modelled as a sum of Sum-of-Squares polynomials with smaller bases
 using the sparsity reduction `sparsity`.
 """
 struct Ideal{S <: Pattern, C <: SumOfSquares.Certificate.AbstractIdealCertificate} <: SumOfSquares.Certificate.AbstractIdealCertificate

@@ -1,7 +1,7 @@
 const CEG = ChordalExtensionGraph
 
 """
-    struct Monomial{C<:CEG.AbstractCompletion} <: Sparsity.Pattern
+    struct Sparsity.Monomial{C<:CEG.AbstractCompletion} <: Sparsity.Pattern
         completion::C
         k::Int
         use_all_monomials::Bool
