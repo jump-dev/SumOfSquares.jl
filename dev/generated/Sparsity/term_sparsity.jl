@@ -15,19 +15,19 @@ function sos_min(sparsity)
     return value(t), moment_matrix(con_ref)
 end
 
-bound, ν = sos_min(NoSparsity())
+bound, ν = sos_min(Sparsity.NoPattern())
 bound
 
 extractatoms(ν, 1e-6)
 
 ν.basis
 
-bound, ν = sos_min(MonomialSparsity())
+bound, ν = sos_min(Sparsity.Monomial())
 bound
 
 [sub.basis for sub in ν.sub_moment_matrices]
 
-bound, ν = sos_min(MonomialSparsity(ChordalCompletion()))
+bound, ν = sos_min(Sparsity.Monomial(ChordalCompletion()))
 bound
 
 [sub.basis for sub in ν.sub_moment_matrices]

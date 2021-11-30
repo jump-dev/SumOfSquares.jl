@@ -34,7 +34,7 @@ function sos_min(sparsity)
     return value(t), moment_matrix(con_ref)
 end
 
-bound, ν = sos_min(NoSparsity())
+bound, ν = sos_min(Sparsity.NoPattern())
 @test bound ≈ 0 atol=1e-6 #src
 bound
 
@@ -50,7 +50,7 @@ extractatoms(ν, 1e-6)
 
 # Using the monomial/term sparsity method of [WML20a] based on cluster completion, we find the same bound.
 
-bound, ν = sos_min(MonomialSparsity())
+bound, ν = sos_min(Sparsity.Monomial())
 @test bound ≈ 0 atol=1e-6 #src
 bound
 
@@ -62,7 +62,7 @@ bound
 
 # Using the monomial/term sparsity method of [WML20b] based on chordal completion, the lower bound is smaller than 0.
 
-bound, ν = sos_min(MonomialSparsity(ChordalCompletion()))
+bound, ν = sos_min(Sparsity.Monomial(ChordalCompletion()))
 @test bound ≈ -0.00355 rtol=1e-3 #src
 bound
 
