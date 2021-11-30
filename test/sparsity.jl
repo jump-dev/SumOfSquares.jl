@@ -18,7 +18,7 @@ end
 
 set_monos(bases::Vector{<:MB.MonomialBasis}) = Set([basis.monomials for basis in bases])
 
-function Certificate.sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, domain::SemialgebraicSets.BasicSemialgebraicSet, sp::MonomialSparsity, maxdegree, degs)
+function Certificate.sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, domain::SemialgebraicSets.BasicSemialgebraicSet, sp::Monomial.Sparsity, maxdegree, degs)
     half_monos = Certificate.maxdegree_gram_basis(MB.MonomialBasis, variables, div(maxdegree, 2))
     P = Set(monos)
 end
@@ -74,7 +74,7 @@ function wml19()
             else
                 expected = (k == 1 && !use_all_monomials) ? expected_1_false : expected_2
             end
-            @test set_monos(Certificate.sparsity(f, MonomialSparsity(completion, k, use_all_monomials), certificate)) == expected
+            @test set_monos(Certificate.sparsity(f, Monomial.Sparsity(completion, k, use_all_monomials), certificate)) == expected
         end
         expected = Set(monovec.([
             [x[1]^2, x[1] * x[3], x[2]^2, x[3]^2, x[2], 1],
@@ -88,7 +88,7 @@ function wml19()
         f = x[1]^4 + x[2]^4 + x[1] * x[2]
         K = @set 1 - 2x[1]^2 - x[2]^2 >= 0
         @testset "$completion $k $use_all_monomials" for completion in [ClusterCompletion(), ChordalCompletion()], k in 0:2, use_all_monomials in [false, true]
-            basis, preorder_bases = Certificate.sparsity(f, K, MonomialSparsity(completion, k, use_all_monomials), preorder_certificate)
+            basis, preorder_bases = Certificate.sparsity(f, K, Monomial.Sparsity(completion, k, use_all_monomials), preorder_certificate)
             if k == 1 && (!use_all_monomials || completion isa ChordalCompletion)
                 if use_all_monomials
                     @test set_monos(preorder_bases[1]) == Set(monovec.([[x[1], x[2]], [constantmonomial(x[1] * x[2])]]))
@@ -112,7 +112,7 @@ function wml19()
             else
                 Set(monovec.([[x[1] * x[2]^2, 1], [x[1]^2 * x[2]^2, 1], [x[1] * x[2]], [x[1]^2 * x[2]]]))
             end
-            @test set_monos(Certificate.sparsity(f, MonomialSparsity(completion, k, use_all_monomials), certificate)) == expected
+            @test set_monos(Certificate.sparsity(f, Monomial.Sparsity(completion, k, use_all_monomials), certificate)) == expected
         end
         @test set_monos(Certificate.sparsity(f, SignSymmetry(), certificate)) == Set(monovec.([
             [x[1]^2 * x[2]^2, x[1] * x[2]^2, 1], [x[1]^2 * x[2], x[1] * x[2]]
@@ -139,7 +139,7 @@ function l09()
             [x[1]^2 * x[2]], [x[1] * x[2]^2], [constantmonomial(x[1] * x[2])]
         ]))
         for i in 0:2
-            @test set_monos(Certificate.sparsity(f, MonomialSparsity(ChordalCompletion(), i), certificate)) == expected
+            @test set_monos(Certificate.sparsity(f, Monomial.Sparsity(ChordalCompletion(), i), certificate)) == expected
         end
         @test set_monos(Certificate.sparsity(f, SignSymmetry(), certificate)) == expected
     end
@@ -149,16 +149,16 @@ function l09()
         @testset "$k $use_all_monomials" for k in 0:2, use_all_monomials in [false, true]
             if k == 1
                 if use_all_monomials
-                    @test set_monos(Certificate.sparsity(f, MonomialSparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == Set(monovec.([
+                    @test set_monos(Certificate.sparsity(f, Monomial.Sparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == Set(monovec.([
                         [x[1]^2, x[2]^2, 1], [x[1], x[2]], [x[1] * x[2], 1], [x[3]]
                     ]))
                 else
-                    @test set_monos(Certificate.sparsity(f, MonomialSparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == Set(monovec.([
+                    @test set_monos(Certificate.sparsity(f, Monomial.Sparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == Set(monovec.([
                         [x[1]^2], [x[2]^2], [x[1], x[2]], [x[1] * x[2], 1], [x[3]]
                     ]))
                 end
             else
-                @test set_monos(Certificate.sparsity(f, MonomialSparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == Set(monovec.([
+                @test set_monos(Certificate.sparsity(f, Monomial.Sparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == Set(monovec.([
                     [x[1], x[2]], [x[3]], [x[1]^2, x[2]^2, 1], [x[1] * x[2], 1]
                 ]))
             end
@@ -175,7 +175,7 @@ function square_domain()
     f = x^2*y^4 + x^4*y^2 - 3*x^2*y*2 + 1
     K = @set(1 - x^2 >= 0 && 1 - y^2 >= 0)
     @testset "Square domain $k $use_all_monomials" for k in 0:4, use_all_monomials in [false, true]
-        basis, preorder_bases = Certificate.sparsity(f, K, MonomialSparsity(ChordalCompletion(), k, use_all_monomials), preorder_certificate)
+        basis, preorder_bases = Certificate.sparsity(f, K, Monomial.Sparsity(ChordalCompletion(), k, use_all_monomials), preorder_certificate)
         if k == 1
             if use_all_monomials
                 @test set_monos(basis) == Set(monovec.([[x^2 * y, y, 1], [x^3, x * y^2, x], [x^2, y, 1], [x^2, y^2, 1], [x^2 * y, y^3, y], [x * y, x]]))
@@ -219,7 +219,7 @@ function sum_square(n)
         certificate = Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple())
         f = sum((x[1:2:(2n-1)] .- x[2:2:(2n)]).^2)
         expected = Set(monovec.([monovec([x[(2i - 1)], x[2i], 1]) for i in 1:n]))
-        @test set_monos(Certificate.sparsity(f, VariableSparsity(), Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 2))) == expected
+        @test set_monos(Certificate.sparsity(f, Sparsity.Variable(), Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 2))) == expected
         expected = Set(monovec.([[x[(2i - 1)], x[2i]] for i in 1:n]))
         @test set_monos(Certificate.sparsity(f, SignSymmetry(), certificate)) == expected
     end
@@ -236,13 +236,13 @@ function drop_monomials()
             else
                 expected = Set([monovec([x])])
             end
-            @test set_monos(Certificate.sparsity(f, MonomialSparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == expected
+            @test set_monos(Certificate.sparsity(f, Monomial.Sparsity(ChordalCompletion(), k, use_all_monomials), certificate)) == expected
         end
         preorder_certificate = Certificate.Putinar(Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 4), SOSCone(), MB.MonomialBasis, 3)
         f = polynomial(x^3)
         K = @set x >= 0
         @testset "$k $use_all_monomials" for k in 0:3, use_all_monomials in [false, true]
-            basis, preorder_bases = Certificate.sparsity(f, K, MonomialSparsity(ChordalCompletion(), k, use_all_monomials), preorder_certificate)
+            basis, preorder_bases = Certificate.sparsity(f, K, Monomial.Sparsity(ChordalCompletion(), k, use_all_monomials), preorder_certificate)
             if k == 1 && !use_all_monomials
                 @test set_monos(basis) == Set(monovec.([[x^2, x]]))
             elseif (k == 2 && !use_all_monomials) || (k == 1 && use_all_monomials)

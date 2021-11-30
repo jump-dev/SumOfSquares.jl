@@ -22,7 +22,7 @@ end
     dref = @constraint(model, a * x^2 in DSOSCone())
     @test sprint(show, MIME"text/plain"(), dref) == "(a)x² is DSOS"
     @test sprint(show, MIME"text/latex"(), dref) == "\$\$ (a)x^{2} \\text{ is DSOS} \$\$"
-    for sparsity in [NoSparsity(), VariableSparsity()]
+    for sparsity in [Sparsity.NoPattern(), Sparsity.Variable()]
         cref_fix = @constraint(model, a * x^2 >= 1, domain = (@set x == 1), sparsity = sparsity)
         @test sprint(show, MIME"text/plain"(), cref_fix) == "(a)x² + (-1) is SOS"
         @test sprint(show, MIME"text/latex"(), cref_fix) == "\$\$ (a)x^{2} + (-1) \\text{ is SOS} \$\$"
