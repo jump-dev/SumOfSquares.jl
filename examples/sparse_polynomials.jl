@@ -44,7 +44,7 @@ function generalized_rosenbrock(n::Int)
     return p
 end
 
-function sos_lower_bound(p, factory, sparsity::Sparsity)
+function sos_lower_bound(p, factory, sparsity::Sparsity.Pattern)
     model = Model(factory)
     @variable(model, t)
     @objective(model, Max, t)
