@@ -71,15 +71,15 @@ struct Ideal{C,GT,AT<:SymbolicWedderburn.Action} <: SumOfSquares.Certificate.Abs
     pattern::Pattern{GT,AT}
     certificate::C
 end
-SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Certificate.Cone) = SumOfSquares.Certificate.get(certificate.certificate, attr)
+SumOfSquares.Certificate.cone(certificate::Ideal) = SumOfSquares.Certificate.cone(certificate.certificate)
 function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
-SumOfSquares.Certificate.get(::Type{<:Ideal}, ::SumOfSquares.Certificate.GramBasisType) = Vector{Vector{MB.FixedPolynomialBasis}}
+SumOfSquares.Certificate.gram_basis_type(::Type{<:Ideal}) = Vector{Vector{MB.FixedPolynomialBasis}}
 SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.MonomialBasis
 SumOfSquares.Certificate.zero_basis(::Ideal) = MB.MonomialBasis
-function SumOfSquares.Certificate.get(certificate::Ideal, attr::SumOfSquares.Certificate.ReducedPolynomial, poly, domain)
-    return SumOfSquares.Certificate.get(certificate.certificate, attr, poly, domain)
+function SumOfSquares.Certificate.reduced_polynomial(certificate::Ideal, poly, domain)
+    return SumOfSquares.Certificate.reduced_polynomial(certificate.certificate, poly, domain)
 end
 
 function matrix_reps(cert, R, basis, ::Type{T}, form) where {T}
@@ -96,8 +96,8 @@ function matrix_reps(cert, R, basis, ::Type{T}, form) where {T}
     end
 end
 
-function SumOfSquares.Certificate.get(cert::Ideal, attr::SumOfSquares.Certificate.GramBasis, poly)
-    basis = SumOfSquares.Certificate.get(cert.certificate, attr, poly)
+function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
+    basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
     T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
     # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
     summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, cert.pattern.action, basis, semisimple=true)

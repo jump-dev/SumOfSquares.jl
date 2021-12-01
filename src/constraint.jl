@@ -63,7 +63,7 @@ function JuMP.in_set_string(print_mode, ::DSOSCone)
 end
 
 function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
-    return Certificate.get(set.certificate, Certificate.Cone())
+    return Certificate.cone(set.certificate)
 end
 
 function default_ideal_certificate(domain, basis, cone, maxdegree, newton_polytope)

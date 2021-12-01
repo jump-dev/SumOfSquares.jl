@@ -1,5 +1,5 @@
 function lagrangian_multiplier(model::MOI.ModelLike, certificate, index, preprocessed, T::Type)
-    basis = Certificate.get(certificate, Certificate.MultiplierBasis(), index, preprocessed)
+    basis = Certificate.multiplier_basis(certificate, index, preprocessed)
     MCT = SOS.matrix_cone_type(typeof(certificate))
     return SOS.add_gram_matrix(model, MCT, basis, T)..., basis
 end
@@ -33,8 +33,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
     λ_bases     = B[]
     λ_variables = Union{Vector{MOI.VariableIndex}, Vector{Vector{MOI.VariableIndex}}}[]
     λ_constraints = UMCT[]
-    preprocessed = Certificate.get(set.certificate, Certificate.PreprocessedDomain(), set.domain, p)
-    for index in Certificate.get(set.certificate, Certificate.PreorderIndices(), preprocessed)
+    preprocessed = Certificate.preprocessed_domain(set.certificate, set.domain, p)
+    for index in Certificate.preorder_indices(set.certificate, preprocessed)
         λ, λ_variable, λ_constraint, λ_basis = lagrangian_multiplier(
             model, set.certificate, index, preprocessed, T)
         push!(λ_variables, λ_variable)
@@ -44,13 +44,13 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # need to call `changecoefficienttype`. This is critical since `T` is
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
-        g = Certificate.get(set.certificate, Certificate.Generator(), index, preprocessed)
+        g = Certificate.generator(set.certificate, index, preprocessed)
         # TODO replace with `MA.sub_mul` when it works.
         p = MA.operate!!(MA.add_mul, p, -one(T), λ, MP.changecoefficienttype(g, T))
     end
     new_set = SOS.SOSPolynomialSet(
         set.domain.V, MP.monomials(p),
-        Certificate.get(set.certificate, Certificate.IdealCertificate()))
+        Certificate.ideal_certificate(set.certificate))
     constraint = MOI.add_constraint(model, MOIU.vectorize(MP.coefficients(p)),
                                     new_set)
 
@@ -79,10 +79,10 @@ function MOIB.Constraint.concrete_bridge_type(
     # for most use cases
     G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
     MCT = SOS.matrix_cone_type(CT)
-    B = Certificate.get(CT, Certificate.MultiplierBasisType())
+    B = Certificate.multiplier_basis_type(CT)
     UMCT = union_constraint_types(MCT)
     UMST = union_set_types(MCT)
-    IC = Certificate.get(CT, Certificate.IdealCertificate())
+    IC = Certificate.ideal_certificate(CT)
     return SOSPolynomialInSemialgebraicSetBridge{T, G, AT, IC, B, UMCT, UMST, MCT, MT, MVT}
 end
 

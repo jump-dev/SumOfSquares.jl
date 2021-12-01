@@ -13,7 +13,7 @@ struct Preorder{S <: Pattern, C <: SumOfSquares.Certificate.AbstractPreorderCert
     certificate::C
 end
 
-SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.Cone) = SumOfSquares.Certificate.get(certificate.certificate, attr)
+SumOfSquares.Certificate.cone(certificate::Preorder) = SumOfSquares.Certificate.cone(certificate.certificate)
 
 struct Domain{S, P, B}
     domain::S
@@ -21,27 +21,27 @@ struct Domain{S, P, B}
     bases::Vector{Vector{B}}
 end
 
-function SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.PreprocessedDomain, domain::SemialgebraicSets.BasicSemialgebraicSet, p)
+function SumOfSquares.Certificate.preprocessed_domain(certificate::Preorder, domain::SemialgebraicSets.BasicSemialgebraicSet, p)
     basis, Preorder_bases = sparsity(p, domain, certificate.sparsity, certificate.certificate)
-    return Domain(domain, SumOfSquares.Certificate.get(certificate.certificate, attr, domain, p), Preorder_bases)
+    return Domain(domain, SumOfSquares.Certificate.preprocessed_domain(certificate.certificate, domain, p), Preorder_bases)
 end
 
-function SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.PreorderIndices, domain::Domain)
-    return SumOfSquares.Certificate.get(certificate.certificate, attr, domain.processed)
+function SumOfSquares.Certificate.preorder_indices(certificate::Preorder, domain::Domain)
+    return SumOfSquares.Certificate.preorder_indices(certificate.certificate, domain.processed)
 end
 
-function SumOfSquares.Certificate.get(::Preorder, ::SumOfSquares.Certificate.MultiplierBasis, index::SumOfSquares.Certificate.PreorderIndex, domain::Domain)
+function SumOfSquares.Certificate.multiplier_basis(::Preorder, index::SumOfSquares.Certificate.PreorderIndex, domain::Domain)
     return domain.bases[index.value]
 end
-function SumOfSquares.Certificate.get(::Type{Preorder{S, C}}, attr::SumOfSquares.Certificate.MultiplierBasisType) where {S, C}
-    return Vector{SumOfSquares.Certificate.get(C, attr)}
+function SumOfSquares.Certificate.multiplier_basis_type(::Type{Preorder{S, C}}) where {S, C}
+    return Vector{SumOfSquares.Certificate.multiplier_basis_type(C)}
 end
 
-function SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.Generator, index::SumOfSquares.Certificate.PreorderIndex, domain::Domain)
-    return SumOfSquares.Certificate.get(certificate.certificate, attr, index, domain.processed)
+function SumOfSquares.Certificate.generator(certificate::Preorder, index::SumOfSquares.Certificate.PreorderIndex, domain::Domain)
+    return SumOfSquares.Certificate.generator(certificate.certificate, index, domain.processed)
 end
 
-SumOfSquares.Certificate.get(certificate::Preorder, attr::SumOfSquares.Certificate.IdealCertificate) = Ideal(certificate.sparsity, SumOfSquares.Certificate.get(certificate.certificate, attr))
-SumOfSquares.Certificate.get(::Type{<:Preorder{S, C}}, attr::SumOfSquares.Certificate.IdealCertificate) where {S, C} = Ideal{S, SumOfSquares.Certificate.get(C, attr)}
+SumOfSquares.Certificate.ideal_certificate(certificate::Preorder) = Ideal(certificate.sparsity, SumOfSquares.Certificate.ideal_certificate(certificate.certificate))
+SumOfSquares.Certificate.ideal_certificate(::Type{<:Preorder{S, C}}) where {S, C} = Ideal{S, SumOfSquares.Certificate.ideal_certificate(C)}
 
 SumOfSquares.matrix_cone_type(::Type{Preorder{S, C}}) where {S, C} = SumOfSquares.matrix_cone_type(C)
