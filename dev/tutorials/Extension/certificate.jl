@@ -51,13 +51,13 @@ struct Schmüdgen{IC <: SOSC.AbstractIdealCertificate, CT <: SOS.SOSLikeCone, BT
     maxdegree::Int
 end
 
-SOSC.get(certificate::Schmüdgen, ::SOSC.Cone) = certificate.cone
+SOSC.cone(certificate::Schmüdgen) = certificate.cone
 
-function SOSC.get(::Schmüdgen, ::SOSC.PreprocessedDomain, domain::BasicSemialgebraicSet, p)
+function SOSC.preprocessed_domain(::Schmüdgen, domain::BasicSemialgebraicSet, p)
     return SOSC.DomainWithVariables(domain, variables(p))
 end
 
-function SOSC.get(::Schmüdgen, ::SOSC.PreorderIndices, domain::SOSC.DomainWithVariables)
+function SOSC.preorder_indices(::Schmüdgen, domain::SOSC.DomainWithVariables)
     n = length(domain.domain.p)
     if n >= Sys.WORD_SIZE
         error("There are $(2^n - 1) products in Schmüdgen's certificate, they cannot even be indexed with `$Int`.")
@@ -65,23 +65,23 @@ function SOSC.get(::Schmüdgen, ::SOSC.PreorderIndices, domain::SOSC.DomainWithV
     return map(SOSC.PreorderIndex, 1:(2^n-1))
 end
 
-function SOSC.get(certificate::Schmüdgen, ::SOSC.MultiplierBasis, index::SOSC.PreorderIndex, domain::SOSC.DomainWithVariables)
-    q = SOSC.get(certificate, SOSC.Generator(), index, domain)
+function SOSC.multiplier_basis(certificate::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.DomainWithVariables)
+    q = SOSC.generator(certificate, index, domain)
     vars = sort!([domain.variables..., variables(q)...], rev = true)
     unique!(vars)
     return SOSC.maxdegree_gram_basis(certificate.basis, vars, SOSC.multiplier_maxdegree(certificate.maxdegree, q))
 end
-function SOSC.get(::Type{Schmüdgen{IC, CT, BT}}, ::SOSC.MultiplierBasisType) where {IC, CT, BT}
+function SOSC.multiplier_basis_type(::Type{Schmüdgen{IC, CT, BT}}) where {IC, CT, BT}
     return BT
 end
 
-function SOSC.get(::Schmüdgen, ::SOSC.Generator, index::SOSC.PreorderIndex, domain::SOSC.DomainWithVariables)
+function SOSC.generator(::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.DomainWithVariables)
     I = [i for i in eachindex(domain.domain.p) if !iszero(index.value & (1 << (i - 1)))]
     return prod([domain.domain.p[i] for i in eachindex(domain.domain.p) if !iszero(index.value & (1 << (i - 1)))])
 end
 
-SOSC.get(certificate::Schmüdgen, ::SOSC.IdealCertificate) = certificate.ideal_certificate
-SOSC.get(::Type{<:Schmüdgen{IC}}, ::SOSC.IdealCertificate) where {IC} = IC
+SOSC.ideal_certificate(certificate::Schmüdgen) = certificate.ideal_certificate
+SOSC.ideal_certificate(::Type{<:Schmüdgen{IC}}) where {IC} = IC
 
 SOS.matrix_cone_type(::Type{<:Schmüdgen{IC, CT}}) where {IC, CT} = SOS.matrix_cone_type(CT)
 
