@@ -36,13 +36,13 @@ end
 struct _OrthogonalMatrix end
 struct _RowEchelonMatrix end
 
-function __linsolve(A::Matrix{T}, b::Vector{T}, ::_OrthogonalMatrix) where {T}
+function __linsolve(A::AbstractMatrix{T}, b::AbstractVector{T}, ::_OrthogonalMatrix) where {T}
     return map(1:size(A, 1)) do i
         return _projcoef(A, i, b)
     end
 end
 
-function __linsolve(A::Matrix{T}, b::Vector{T}, ::_RowEchelonMatrix) where {T}
+function __linsolve(A::AbstractMatrix{T}, b::AbstractVector{T}, ::_RowEchelonMatrix) where {T}
     j = 0
     return map(1:size(A, 1)) do i
         while j < size(A, 2)
@@ -55,7 +55,7 @@ function __linsolve(A::Matrix{T}, b::Vector{T}, ::_RowEchelonMatrix) where {T}
     end
 end
 
-function _linsolve(A::Matrix{T}, b::Vector{T}, form) where {T}
+function _linsolve(A::AbstractMatrix{T}, b::AbstractVector{T}, form) where {T}
     x = __linsolve(A, b, form)
     #@assert transpose(A) * x == b
     return x
