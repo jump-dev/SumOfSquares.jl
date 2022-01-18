@@ -161,13 +161,13 @@ function solve(G)
         @test Q[3, 3] ≈  1    rtol=1e-3 #src
     end #src
     @test length(g[3].basis.polynomials) == 2 #src
-    @test g[3].basis.polynomials[1] ≈ (√2/2)x^2 + (√2/2)y^2 #src
-    @test g[3].basis.polynomials[2] == 1.0 #src
+    @test g[3].basis.polynomials[1] == 1.0 #src
+    @test g[3].basis.polynomials[2] ≈ -((√2/2)x^2 + (√2/2)y^2) #src
     @test size(g[3].Q) == (2, 2)             #src
-    @test g[3].Q[2, 2] ≈ 7921/4096 rtol=1e-3 #src
-    @test g[3].Q[1, 2] ≈ -89/(64*√2) rtol=1e-3  #src
-    @test g[3].Q[1, 1] ≈ 1/2 rtol=1e-2 #src
-    @test g[4].basis.polynomials == [-x * y] #src
+    @test g[3].Q[1, 1] ≈ 7921/4096 rtol=1e-3 #src
+    @test g[3].Q[1, 2] ≈ 89/(64*√2) rtol=1e-3  #src
+    @test g[3].Q[2, 2] ≈ 1/2 rtol=1e-2 #src
+    @test g[4].basis.polynomials == [x * y] #src
     @test size(g[4].Q) == (1, 1)       #src
     @test g[4].Q[1, 1] ≈ 0   atol=1e-3 #src
     @test length(g[5].basis.polynomials) == 1 #src
