@@ -10,15 +10,6 @@ function SymbolicWedderburn.decompose(
     return indcs, coeffs
 end
 
-function SymbolicWedderburn.ExtensionHomomorphism(
-    action::SymbolicWedderburn.Action,
-    basis::MB.MonomialBasis,
-)
-    monos = collect(basis.monomials)
-    mono_to_index = Dict(monos[i] => i for i in eachindex(monos))
-    return SymbolicWedderburn.ExtensionHomomorphism(action, monos, mono_to_index)
-end
-
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
 _map_idx(f, v::AbstractVector) = map(f, eachindex(v))
 _tuple_map_idx(f, ::Tuple{}, i) = tuple()
@@ -100,7 +91,7 @@ function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
     basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
     T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
     # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
-    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, cert.pattern.action, basis, semisimple=true)
+    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, cert.pattern.action, collect(basis.monomials), semisimple=true)
     # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
     # SymbolicWedderburn guarantees that the invariant subspace spanned by the
     # polynomials of the vector `R * basis.monomials` is invariant under the
