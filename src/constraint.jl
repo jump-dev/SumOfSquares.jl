@@ -19,8 +19,8 @@ struct NonnegPolyInnerCone{MCT <: MOI.AbstractVectorSet} <: SOSLikeCone
 end
 matrix_cone_type(::Type{NonnegPolyInnerCone{MCT}}) where {MCT} = MCT
 
-_wrap(::Type{JuMP.REPLMode}, s) = s
-_wrap(::Type{JuMP.IJuliaMode}, s) = "\\text{ " * s * "}"
+_wrap(::MIME"text/plain", s) = s
+_wrap(::MIME"text/latex", s) = "\\text{ " * s * "}"
 
 """
     const SOSCone = NonnegPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
