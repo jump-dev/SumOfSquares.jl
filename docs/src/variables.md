@@ -42,7 +42,7 @@ CachingOptimizer state: NO_OPTIMIZER
 Solver name: No optimizer attached.
 
 julia> @variable(model, p, Poly(X))
-(noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
+(_[1])x² + (_[2])xy + (_[3])y² + (_[4])x + (_[5])y + (_[6])
 ```
 This creates a vector of decision variables `a` and sets `p` as the scalar
 product between `a` and `X`.
@@ -52,26 +52,26 @@ variables can be created as follows:
 ```jldoctest variables
 julia> @variable(model, [1:3, 1:4], Poly(X))       # Creates a Matrix
 3×4 Matrix{Polynomial{true, VariableRef}}:
- (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)  …  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
- (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)     (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
- (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)     (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
+ (_[7])x² + (_[8])xy + (_[9])y² + (_[10])x + (_[11])y + (_[12])     …  (_[61])x² + (_[62])xy + (_[63])y² + (_[64])x + (_[65])y + (_[66])
+ (_[13])x² + (_[14])xy + (_[15])y² + (_[16])x + (_[17])y + (_[18])     (_[67])x² + (_[68])xy + (_[69])y² + (_[70])x + (_[71])y + (_[72])
+ (_[19])x² + (_[20])xy + (_[21])y² + (_[22])x + (_[23])y + (_[24])     (_[73])x² + (_[74])xy + (_[75])y² + (_[76])x + (_[77])y + (_[78])
 
 julia> @variable(model, [[:a, :b], -2:2], Poly(X)) # Creates a DenseAxisArray
 2-dimensional DenseAxisArray{DynamicPolynomials.Polynomial{true, VariableRef},2,...} with index sets:
     Dimension 1, [:a, :b]
     Dimension 2, -2:2
 And data, a 2×5 Matrix{DynamicPolynomials.Polynomial{true, VariableRef}}:
- (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)  …  (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
- (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)     (noname)x² + (noname)xy + (noname)y² + (noname)x + (noname)y + (noname)
+ (_[79])x² + (_[80])xy + (_[81])y² + (_[82])x + (_[83])y + (_[84])  …  (_[127])x² + (_[128])xy + (_[129])y² + (_[130])x + (_[131])y + (_[132])
+ (_[85])x² + (_[86])xy + (_[87])y² + (_[88])x + (_[89])y + (_[90])     (_[133])x² + (_[134])xy + (_[135])y² + (_[136])x + (_[137])y + (_[138])
 
 julia> @variable(model, [i=1:3, j=i:3], Poly(X))   # Creates a SparseAxisArray
 JuMP.Containers.SparseAxisArray{Polynomial{true, VariableRef}, 2, Tuple{Int64, Int64}} with 6 entries:
-  [1, 1]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [1, 2]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [1, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [2, 2]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [2, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
-  [3, 3]  =  (noname)*x^2 + (noname)*x*y + (noname)*y^2 + (noname)*x + (noname)*y + (noname)
+  [1, 1]  =  (_[139])*x^2 + (_[140])*x*y + (_[141])*y^2 + (_[142])*x + (_[143])*y + (_[144])
+  [1, 2]  =  (_[145])*x^2 + (_[146])*x*y + (_[147])*y^2 + (_[148])*x + (_[149])*y + (_[150])
+  [1, 3]  =  (_[151])*x^2 + (_[152])*x*y + (_[153])*y^2 + (_[154])*x + (_[155])*y + (_[156])
+  [2, 2]  =  (_[157])*x^2 + (_[158])*x*y + (_[159])*y^2 + (_[160])*x + (_[161])*y + (_[162])
+  [2, 3]  =  (_[163])*x^2 + (_[164])*x*y + (_[165])*y^2 + (_[166])*x + (_[167])*y + (_[168])
+  [3, 3]  =  (_[169])*x^2 + (_[170])*x*y + (_[171])*y^2 + (_[172])*x + (_[173])*y + (_[174])
 ```
 
 For more flexibility, polynomials parametrized by decision variables can also
@@ -103,8 +103,8 @@ sum-of-squares polynomial variables:
 ```jldoctest variables
 julia> @variable(model, [1:2], SOSPoly(X))
 2-element Vector{GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}}:
- GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
- GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[noname noname … noname noname; noname noname … noname noname; … ; noname noname … noname noname; noname noname … noname noname], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
+ GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[177] _[178] … _[187] _[192]; _[178] _[179] … _[188] _[193]; … ; _[187] _[188] … _[191] _[196]; _[192] _[193] … _[196] _[197]], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
+ GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[198] _[199] … _[208] _[213]; _[199] _[200] … _[209] _[214]; … ; _[208] _[209] … _[212] _[217]; _[213] _[214] … _[217] _[218]], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
 ```
 There is however an *important* difference between the meaning of the
 vector of monomials `X` between `Poly` and `SOSPoly`. For `SOSPoly`, it
@@ -138,7 +138,7 @@ julia> cheby_basis = FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])
 FixedPolynomialBasis{Polynomial{true, Int64}, Vector{Polynomial{true, Int64}}}(DynamicPolynomials.Polynomial{true, Int64}[1, x, 2x² - 1, 4x³ - 3x])
 
 julia> @variable(model, variable_type=Poly(cheby_basis))
-(4 noname)x³ + (2 noname)x² + (noname - 3 noname)x + (noname - noname)
+(4 _[222])x³ + (2 _[221])x² + (_[220] - 3 _[222])x + (_[219] - _[221])
 ```
 and to create a quadratic form variable `q` using the *scaled monomial* basis
 (see [Section 3.1.5, BPT12]), use the following:
@@ -153,7 +153,7 @@ julia> scaled_basis = ScaledMonomialBasis(X)
 ScaledMonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
-(noname)x² + (1.4142135623730951 noname)xy + (noname)y²
+(_[223])x² + (1.4142135623730951 _[224])xy + (_[225])y²
 ```
 which is equivalent to
 ```jldoctest variables
@@ -161,7 +161,7 @@ julia> scaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])
 FixedPolynomialBasis{Term{true, Float64}, Vector{Term{true, Float64}}}(DynamicPolynomials.Term{true, Float64}[x², 1.4142135623730951xy, y²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
-(noname)x² + (1.4142135623730951 noname)xy + (noname)y²
+(_[226])x² + (1.4142135623730951 _[227])xy + (_[228])y²
 ```
 
 ### References

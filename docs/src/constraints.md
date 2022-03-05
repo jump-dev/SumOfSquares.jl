@@ -41,13 +41,13 @@ CachingOptimizer state: NO_OPTIMIZER
 Solver name: No optimizer attached.
 
 julia> @variable(model, p, Poly(X))
-(noname)x₁² + (noname)x₁x₂ + (noname)x₁x₃ + (noname)x₂² + (noname)x₂x₃ + (noname)x₃² + (noname)x₁ + (noname)x₂ + (noname)x₃ + (noname)
+(_[1])x₁² + (_[2])x₁x₂ + (_[3])x₁x₃ + (_[4])x₂² + (_[5])x₂x₃ + (_[6])x₃² + (_[7])x₁ + (_[8])x₂ + (_[9])x₃ + (_[10])
 
 julia> @variable(model, q, Poly(X))
-(noname)x₁² + (noname)x₁x₂ + (noname)x₁x₃ + (noname)x₂² + (noname)x₂x₃ + (noname)x₃² + (noname)x₁ + (noname)x₂ + (noname)x₃ + (noname)
+(_[11])x₁² + (_[12])x₁x₂ + (_[13])x₁x₃ + (_[14])x₂² + (_[15])x₂x₃ + (_[16])x₃² + (_[17])x₁ + (_[18])x₂ + (_[19])x₃ + (_[20])
 
 julia> @constraint(model, p + q == 1)
-(noname + noname)x₁² + (noname + noname)x₁x₂ + (noname + noname)x₁x₃ + (noname + noname)x₂² + (noname + noname)x₂x₃ + (noname + noname)x₃² + (noname + noname)x₁ + (noname + noname)x₂ + (noname + noname)x₃ + (noname + noname - 1) ∈ PolyJuMP.ZeroPoly()
+(_[1] + _[11])x₁² + (_[2] + _[12])x₁x₂ + (_[3] + _[13])x₁x₃ + (_[4] + _[14])x₂² + (_[5] + _[15])x₂x₃ + (_[6] + _[16])x₃² + (_[7] + _[17])x₁ + (_[8] + _[18])x₂ + (_[9] + _[19])x₃ + (_[10] + _[20] - 1) ∈ PolyJuMP.ZeroPoly()
 ```
 
 Vectorized constraints can also be used as well as vector of constraints,
@@ -66,7 +66,7 @@ Polynomials can be constrained to be sum-of-squares with the `in` syntax.
 For instance, to constrain a polynomial `p` to be sum-of-squares, do
 ```jldoctest constraint-pq
 julia> @constraint(model, p in SOSCone())
-(noname)x₁² + (noname)x₁x₂ + (noname)x₁x₃ + (noname)x₂² + (noname)x₂x₃ + (noname)x₃² + (noname)x₁ + (noname)x₂ + (noname)x₃ + (noname) is SOS
+(_[1])x₁² + (_[2])x₁x₂ + (_[3])x₁x₃ + (_[4])x₂² + (_[5])x₂x₃ + (_[6])x₃² + (_[7])x₁ + (_[8])x₂ + (_[9])x₃ + (_[10]) is SOS
 ```
 
 ### Automatically interpreting polynomial nonnegativity as a sum-of-squares constraint
