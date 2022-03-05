@@ -78,24 +78,47 @@ end
 
 cone(certificate::Putinar) = certificate.cone
 
-struct DomainWithVariables{S, V}
-    domain::S
+struct WithVariables{S, V}
+    inner::S
     variables::V
 end
-function preprocessed_domain(::Putinar, domain::BasicSemialgebraicSet, p)
-    return DomainWithVariables(domain, MP.variables(p))
+
+function MP.variables(v::WithVariables)
+    return v.variables
+end
+function MP.monomials(v::WithVariables)
+    return MP.monomials(v.inner)
 end
 
-function preorder_indices(::Putinar, domain::DomainWithVariables)
-    return map(PreorderIndex, eachindex(domain.domain.p))
+
+_cat(a::Vector, b::Vector) = vcat(a, b)
+_cat(a::Vector, ::Tuple{}) = a
+_cat(a::Tuple, b::Tuple) = [a..., b...]
+_cat(a::Tuple, ::Tuple{}) = a
+
+_vars(::SemialgebraicSets.FullSpace) = tuple()
+_vars(x) = MP.variables(x)
+
+function with_variables(inner, outer)
+    vars = sort!(_cat(_vars(inner), _vars(outer)), rev = true)
+    unique!(vars)
+    return WithVariables(inner, vars)
+end
+
+function preprocessed_domain(::Putinar, domain::BasicSemialgebraicSet, p)
+    return with_variables(domain, p)
+end
+
+function preorder_indices(::Putinar, domain::WithVariables)
+    return map(PreorderIndex, eachindex(domain.inner.p))
 end
 
 function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
     return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
 end
 multiplier_maxdegree(maxdegree, q) = maxdegree - MP.maxdegree(q)
-function multiplier_basis(certificate::Putinar, index::PreorderIndex, domain::DomainWithVariables)
-    q = domain.domain.p[index.value]
+function multiplier_basis(certificate::Putinar, index::PreorderIndex, domain::WithVariables)
+    q = domain.inner.p[index.value]
     vars = sort!([domain.variables..., MP.variables(q)...], rev = true)
     unique!(vars)
     return maxdegree_gram_basis(certificate.basis, vars, multiplier_maxdegree(certificate.maxdegree, q))
@@ -104,8 +127,8 @@ function multiplier_basis_type(::Type{Putinar{IC, CT, BT}}) where {IC, CT, BT}
     return BT
 end
 
-function generator(::Putinar, index::PreorderIndex, domain::DomainWithVariables)
-    return domain.domain.p[index.value]
+function generator(::Putinar, index::PreorderIndex, domain::WithVariables)
+    return domain.inner.p[index.value]
 end
 
 ideal_certificate(certificate::Putinar) = certificate.ideal_certificate
