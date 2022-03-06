@@ -30,6 +30,8 @@ end
 struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
     ideal::HypercubeIdeal{V}
 end
+MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
+MP.variables(ideal::HypercubeIdeal) = ideal.variables
 MP.changecoefficienttype(set::HypercubeSet, ::Type) = set
 SS.ideal(set::HypercubeSet) = set.ideal
 function Base.rem(p, set::HypercubeIdeal)
