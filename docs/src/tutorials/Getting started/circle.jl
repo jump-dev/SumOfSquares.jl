@@ -20,7 +20,7 @@ import CSDP
 model = SOSModel(CSDP.Optimizer)
 set_silent(model)
 con_ref = @constraint(model, 1 - y^2 >= 0, domain = S)
-JuMP.optimize!(model)
+optimize!(model)
 
 # We can see that the model was feasible:
 
@@ -30,6 +30,9 @@ solution_summary(model)
 
 # The certificate can be obtained as follows:
 
+dec = sos_decomposition(con_ref, 1e-6) #src
+@test length(dec) == 1 #src
+@test first(dec) ≈ x rtol = 1e-6 #src
 sos_decomposition(con_ref, 1e-6)
 
 # It returns ``x^2`` which is a valid certificate as:
