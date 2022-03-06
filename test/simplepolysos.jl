@@ -9,11 +9,3 @@
     @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
     # p(x) = (x^2+2x)^2 + 2(1+x)^2 + 3
 end
-@testset "Example 3.38 with $(factory.optimizer_constructor)" for factory in sdp_factories
-    @polyvar x y
-    m = SOSModel(factory)
-    @constraint m 2x^4 + 5y^4 - x^2*y^2 >= -2(x^3*y + x + 1)
-    JuMP.optimize!(m)
-    @test JuMP.primal_status(m) == MOI.FEASIBLE_POINT
-    # p(x) = (x^2+2x)^2 + 2(1+x)^2 + 3
-end
