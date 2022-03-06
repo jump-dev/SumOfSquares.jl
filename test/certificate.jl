@@ -4,6 +4,13 @@ const MP = MultivariatePolynomials
 import MultivariateBases
 const MB = MultivariateBases
 
+@testset "_merge_sorted" begin
+    @test SumOfSquares.Certificate._merge_sorted([4, 1], [3, 0]) == [4, 3, 1, 0]
+    @test SumOfSquares.Certificate._merge_sorted((4, 1), (3, 0)) == (4, 3, 1, 0)
+    @test SumOfSquares.Certificate._merge_sorted([4, 1], [3, 2]) == [4, 3, 2, 1]
+    @test SumOfSquares.Certificate._merge_sorted((4, 1), (3, 2)) == (4, 3, 2, 1)
+end
+
 @testset "with_variables" begin
     @polyvar x y z
     p = x + z
@@ -17,7 +24,7 @@ const MB = MultivariateBases
     v = SumOfSquares.Certificate.with_variables(q, FullSpace())
     @test v.inner === q
     @test MP.variables(v.inner) == [a, b, a]
-    @test MP.variables(v) == [a, b]
+    @test MP.variables(v) == [a, b, a]
 end
 
 @testset "Monomial selection for certificate" begin
