@@ -54,30 +54,28 @@ end
 SOSC.cone(certificate::Schmüdgen) = certificate.cone
 
 function SOSC.preprocessed_domain(::Schmüdgen, domain::BasicSemialgebraicSet, p)
-    return SOSC.DomainWithVariables(domain, variables(p))
+    return SOSC.with_variables(domain, p)
 end
 
-function SOSC.preorder_indices(::Schmüdgen, domain::SOSC.DomainWithVariables)
-    n = length(domain.domain.p)
+function SOSC.preorder_indices(::Schmüdgen, domain::SOSC.WithVariables)
+    n = length(domain.inner.p)
     if n >= Sys.WORD_SIZE
         error("There are $(2^n - 1) products in Schmüdgen's certificate, they cannot even be indexed with `$Int`.")
     end
     return map(SOSC.PreorderIndex, 1:(2^n-1))
 end
 
-function SOSC.multiplier_basis(certificate::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.DomainWithVariables)
+function SOSC.multiplier_basis(certificate::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.WithVariables)
     q = SOSC.generator(certificate, index, domain)
-    vars = sort!([domain.variables..., variables(q)...], rev = true)
-    unique!(vars)
-    return SOSC.maxdegree_gram_basis(certificate.basis, vars, SOSC.multiplier_maxdegree(certificate.maxdegree, q))
+    return SOSC.maxdegree_gram_basis(certificate.basis, variables(domain), SOSC.multiplier_maxdegree(certificate.maxdegree, q))
 end
 function SOSC.multiplier_basis_type(::Type{Schmüdgen{IC, CT, BT}}) where {IC, CT, BT}
     return BT
 end
 
-function SOSC.generator(::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.DomainWithVariables)
-    I = [i for i in eachindex(domain.domain.p) if !iszero(index.value & (1 << (i - 1)))]
-    return prod([domain.domain.p[i] for i in eachindex(domain.domain.p) if !iszero(index.value & (1 << (i - 1)))])
+function SOSC.generator(::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.WithVariables)
+    I = [i for i in eachindex(domain.inner.p) if !iszero(index.value & (1 << (i - 1)))]
+    return prod([domain.inner.p[i] for i in eachindex(domain.inner.p) if !iszero(index.value & (1 << (i - 1)))])
 end
 
 SOSC.ideal_certificate(certificate::Schmüdgen) = certificate.ideal_certificate
