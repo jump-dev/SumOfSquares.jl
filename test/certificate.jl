@@ -4,6 +4,22 @@ const MP = MultivariatePolynomials
 import MultivariateBases
 const MB = MultivariateBases
 
+@testset "with_variables" begin
+    @polyvar x y z
+    p = x + z
+    v = SumOfSquares.Certificate.with_variables(p, y)
+    @test v.inner === p
+    @test MP.variables(v.inner) == [x, z]
+    @test MP.variables(v) == [x, y, z]
+
+    @ncpolyvar a b
+    q = a * b + b * a
+    v = SumOfSquares.Certificate.with_variables(q, FullSpace())
+    @test v.inner === q
+    @test MP.variables(v.inner) == [a, b, a]
+    @test MP.variables(v) == [a, b]
+end
+
 @testset "Monomial selection for certificate" begin
     @polyvar x y z
     @ncpolyvar a b

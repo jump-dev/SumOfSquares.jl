@@ -92,9 +92,9 @@ end
 
 
 _cat(a::Vector, b::Vector) = vcat(a, b)
-_cat(a::Vector, ::Tuple{}) = a
+_cat(a::Vector, ::Tuple{}) = copy(a)
 _cat(a::Tuple, b::Tuple) = [a..., b...]
-_cat(a::Tuple, ::Tuple{}) = a
+_cat(a::Tuple, ::Tuple{}) = [a...]
 
 _vars(::SemialgebraicSets.FullSpace) = tuple()
 _vars(x) = MP.variables(x)
