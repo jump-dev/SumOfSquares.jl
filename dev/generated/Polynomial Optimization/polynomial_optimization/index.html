@@ -68,47 +68,47 @@ SumOfSquares.MultivariateMoments.computesupport!(ν5, 1e-3)</code></pre><pre cla
 </code></pre><p>The function <code>extractatoms</code> then reuses the matrix of moments to find the weights <span>$1/2$</span>, <span>$1/2$</span> corresponding to the diracs centered respectively at <span>$(0, 1)$</span> and <span>$(1, 0)$</span>. This details how the function obtained the result <span>$0.5 \delta(x-1, y) + 0.5 \delta(x, y-1)$</span> given in the previous section.</p><h2 id="HomotopyContinuation"><a class="docs-heading-anchor" href="#HomotopyContinuation">HomotopyContinuation</a><a id="HomotopyContinuation-1"></a><a class="docs-heading-anchor-permalink" href="#HomotopyContinuation" title="Permalink"></a></h2><p>As discussed in the previous section, the atom extraction relies on the solution of a system of algebraic equations. The <code>extractatoms</code> function takes an optional <code>solver</code> argument that is used to solve this system of equation. If no solver is provided, the default solver of SemialgebraicSets.jl is used which currently computes the Gröbner basis, then the multiplication matrices and then the Schur decomposition of a random combination of these matrices. As the system of equations is obtained from a numerical solution and is represented using floating point coefficients, homotopy continuation is recommended as it is more numerically robust than Gröbner basis computation. The following uses homotopy continuation to solve the system of equations.</p><pre><code class="language-julia hljs">using HomotopyContinuation
 solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 2e-2, real_tol = 2e-2, compile = false)
 extractatoms(ν5, 1e-3, solver)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x, y with 2 atoms:
- at [-0.0004944716906714365, 0.9984063375427602] with weight 0.5020152585769089
- at [1.0004834094252435, 9.015376336039672e-5] with weight 0.49958110019741225</code></pre><p>As the system has 3 equations for 2 variables and the coefficients of the equations are to be treated with tolerance since they originate from the solution of an SDP, we need to set <code>excess_residual_tol</code> and <code>real_tol</code> to a high tolerance otherwise, HomotopyContinuation would consider that there is no solution. Indeed, as the system is overdetermined (it has more equations than variables) HomotopyContinuation expects to have excess solution hence it filters out excess solution among the solution found. It determines which solution are in excess by comparing the infinity norm of the residuals of the equations at the solution with <code>excess_residual_tol</code>. It also filters out solution for which the absolute value of the imaginary part of one of the entry is larger than <code>real_tol</code> and strips out the imaginary part. The raw solutions obtained by HomotopyContinuation can be obtained as follows:</p><pre><code class="language-julia hljs">F = HomotopyContinuation.System(ν5.support)
+ at [1.0002952191423211, 0.0002286365312725449] with weight 0.5001081997632048
+ at [-0.0003052100480991004, 1.000439070162429] with weight 0.4998823116965396</code></pre><p>As the system has 3 equations for 2 variables and the coefficients of the equations are to be treated with tolerance since they originate from the solution of an SDP, we need to set <code>excess_residual_tol</code> and <code>real_tol</code> to a high tolerance otherwise, HomotopyContinuation would consider that there is no solution. Indeed, as the system is overdetermined (it has more equations than variables) HomotopyContinuation expects to have excess solution hence it filters out excess solution among the solution found. It determines which solution are in excess by comparing the infinity norm of the residuals of the equations at the solution with <code>excess_residual_tol</code>. It also filters out solution for which the absolute value of the imaginary part of one of the entry is larger than <code>real_tol</code> and strips out the imaginary part. The raw solutions obtained by HomotopyContinuation can be obtained as follows:</p><pre><code class="language-julia hljs">F = HomotopyContinuation.System(ν5.support)
 res = HomotopyContinuation.solve(F, solver.options...)
 path_results(res)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{HomotopyContinuation.PathResult}:
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[1.0010262107973051 - 0.0007445282351858613im, -0.00017911309971534325 + 0.0003144201024198913im]
- • accuracy → 0.00095003
- • residual → 0.00095594
- • condition_jacobian → 52.362
- • steps → 37 / 0
+ • solution → ComplexF64[0.9762067407846065 - 2.3992272077478347im, 2.532433031355455 - 2.725839727787276im]
+ • accuracy → 5.7061
+ • residual → 2.0381
+ • condition_jacobian → 24.152
+ • steps → 47 / 0
  • extended_precision → false
  • path_number → 1
 
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[-0.0006399039443958777 - 0.00018089086925942164im, 1.0016226004841877 + 0.0016094065045518552im]
- • accuracy → 0.0017339
- • residual → 0.0021
- • condition_jacobian → 11.884
- • steps → 46 / 0
+ • solution → ComplexF64[1.0001903779946992 + 0.0003473523059969551im, 0.0004174376476000911 - 0.00026935867275757337im]
+ • accuracy → 0.0006128
+ • residual → 0.00041987
+ • condition_jacobian → 21.388
+ • steps → 48 / 0
  • extended_precision → false
  • path_number → 2
 
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[0.018032725606715427 - 0.32337766701010795im, 0.5005707511848333 + 0.4269017888812313im]
- • accuracy → 0.4924
- • residual → 0.34937
- • condition_jacobian → 3.2614
- • steps → 21 / 0
+ • solution → ComplexF64[-0.6105577550271093 - 0.0025241436426503426im, 0.942751117127194 - 0.32740837892519037im]
+ • accuracy → 0.74486
+ • residual → 0.49344
+ • condition_jacobian → 3.6322
+ • steps → 28 / 0
  • extended_precision → false
  • path_number → 3
 
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[-3.537032180624084 + 0.7420514875728695im, -3.0535358425884476 + 1.4948370410765328im]
- • accuracy → 7.9133
- • residual → 2.4659
- • condition_jacobian → 21.02
- • steps → 31 / 0
+ • solution → ComplexF64[-0.0021386219517077697 + 0.0002813855499661986im, 1.0000112344929337 - 0.0015252778066622407im]
+ • accuracy → 0.0024644
+ • residual → 0.0018885
+ • condition_jacobian → 8.2912
+ • steps → 28 / 0
  • extended_precision → false
  • path_number → 4
-</code></pre><p>The printed <code>residual</code> above shows why <code>2e-2</code> allows to filter how the 2 actual solutions from the 2 excess solutions.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.14 on <span class="colophon-date" title="Sunday 6 March 2022 16:33">Sunday 6 March 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre><p>The printed <code>residual</code> above shows why <code>2e-2</code> allows to filter how the 2 actual solutions from the 2 excess solutions.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.14 on <span class="colophon-date" title="Monday 7 March 2022 02:11">Monday 7 March 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
