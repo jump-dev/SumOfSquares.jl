@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Univariate Solver · SumOfSquares</title><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><form class="docs-search" action="../../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-5-1" type="checkbox"/><label class="tocitem" for="menuitem-5-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/circle/">Nonnegative over a variety</a></li><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-2" type="checkbox"/><label class="tocitem" for="menuitem-5-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Polynomial Optimization/bound_on_global_extremum/">Bound on Global Extremum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/polynomial_optimization/">Polynomial Optimization</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-3" type="checkbox"/><label class="tocitem" for="menuitem-5-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../../Systems and Control/stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-4" type="checkbox"/><label class="tocitem" for="menuitem-5-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Other Applications/bounds_in_probability/">Bounds in Probability</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-5" type="checkbox"/><label class="tocitem" for="menuitem-5-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-6" type="checkbox"/><label class="tocitem" for="menuitem-5-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-7" type="checkbox"/><label class="tocitem" for="menuitem-5-7"><span class="docs-label">Symmetry</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Symmetry/dihedral_symmetry_of_the_robinson_form/">Dihedral symmetry of the Robinson form</a></li><li><a class="tocitem" href="../../Symmetry/even_reduction/">Even reduction</a></li><li><a class="tocitem" href="../../Symmetry/permutation_symmetry/">Symmetry reduction</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-8" type="checkbox" checked/><label class="tocitem" for="menuitem-5-8"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../certificate/">Certificate</a></li><li><a class="tocitem" href="../hypercube/">Hypercube</a></li><li class="is-active"><a class="tocitem" href>Univariate Solver</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Extension</a></li><li class="is-active"><a href>Univariate Solver</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Univariate Solver</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/master/docs/src/tutorials/Extension/univariate_solver.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Univariate-Solver"><a class="docs-heading-anchor" href="#Univariate-Solver">Univariate Solver</a><a id="Univariate-Solver-1"></a><a class="docs-heading-anchor-permalink" href="#Univariate-Solver" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR241/generated/Extension/univariate_solver.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR241/generated/Extension/univariate_solver.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Contributed by</strong>: Benoît Legat</p><p>When using an SDP solver, the Sum-of-Squares constraint is bridged into a semidefinite constraint. This reformulation is done only if the solver does not support the Sum-of-Squares constraint. We show in this tutorial how to define a solver that supports such constraint. The <em>same</em> model with be then solved with or without reformulation depending on the solver.</p><p>We consider a solver that would support finding the SOS decomposition of nonnegative univariate polynomials.</p><pre><code class="language-julia hljs">module MyUnivariateSolver
+
+import LinearAlgebra
+import MathOptInterface
+const MOI = MathOptInterface
+import MultivariatePolynomials
+const MP = MultivariatePolynomials
+import SumOfSquares
+const SOS = SumOfSquares
+
+function decompose(p::MP.AbstractPolynomial, tol=1e-6)
+    vars = MP.effective_variables(p)
+    if length(vars) != 1
+        error(&quot;$p is not univariate&quot;)
+    end
+    x = first(vars)
+    lead = MP.leadingcoefficient(p)
+    if !isone(lead)
+        p = p / lead
+    end
+    deg = MP.maxdegree(p)
+    if isodd(deg)
+        return
+    end
+    d = div(deg, 2)
+    companion = zeros(2d, 2d)
+    for i in 0:(2d-1)
+        if i &gt; 0
+            companion[i + 1, i] = 1.0
+        end
+        companion[i + 1, end] = -MP.coefficient(p, x^i)
+    end
+    F = LinearAlgebra.schur(complex(companion))
+    q = one(p)
+    i = 1
+    while i &lt;= length(F.values)
+        root = F.values[i]
+        q *= (x - root)
+        if !isapprox(real(root), real(F.values[i+1]), rtol=tol, atol=tol)
+            return # Cannot happen for complex conjugate root so it means that we have a root which does not have an even multiplicity This means that the polynomial is not nonnegative
+        end
+        i += 2
+    end
+    q1 = MP.mapcoefficientsnz(real, q)
+    q2 = MP.mapcoefficientsnz(imag, q)
+    return SOS.SOSDecomposition([q1, q2])
+end
+
+mutable struct Optimizer &lt;: MOI.AbstractOptimizer
+    p::Union{Nothing,MP.AbstractPolynomial}
+    decomposition::Union{Nothing,SOS.SOSDecomposition}
+    tol::Float64
+    function Optimizer()
+        return new(nothing, nothing, 1e-6)
+    end
+end
+
+MOI.is_empty(optimizer::Optimizer) = optimizer.p === nothing
+function MOI.empty!(optimizer::Optimizer)
+    optimizer.p = nothing
+    return
+end
+
+function MOI.supports_constraint(::Optimizer, ::Type{&lt;:MOI.VectorAffineFunction}, ::Type{&lt;:SOS.SOSPolynomialSet{SOS.FullSpace}})
+    return true
+end
+function MOI.add_constraint(optimizer::Optimizer, func::MOI.VectorAffineFunction, set::SOS.SOSPolynomialSet{SOS.FullSpace})
+    if optimizer.p !== nothing
+        error(&quot;Only one constraint is supported&quot;)
+    end
+    if !isempty(func.terms)
+        error(&quot;Only supports constant polynomials&quot;)
+    end
+    optimizer.p = MP.polynomial(func.constants, set.monomials)
+    return MOI.ConstraintIndex{typeof(func),typeof(set)}(1) # There will be only ever one constraint so the index does not matter.
+end
+
+MOI.supports_incremental_interface(::Optimizer) = true
+function MOI.copy_to(optimizer::Optimizer, model::MOI.ModelLike)
+    return MOI.Utilities.default_copy_to(optimizer, model)
+end
+function MOI.optimize!(optimizer::Optimizer)
+    optimizer.decomposition = decompose(optimizer.p, optimizer.tol)
+end
+
+function MOI.get(optimizer::Optimizer, ::MOI.TerminationStatus)
+    if optimizer.decomposition === nothing
+        return MOI.INFEASIBLE
+    else
+        return MOI.OPTIMAL
+    end
+end
+
+function MOI.get(optimizer::Optimizer, ::MOI.PrimalStatus)
+    if optimizer.decomposition === nothing
+        return MOI.NO_SOLUTION
+    else
+        return MOI.FEASIBLE_POINT
+    end
+end
+
+function MOI.get(optimizer::Optimizer, ::SOS.SOSDecompositionAttribute, ::MOI.ConstraintIndex)
+    return optimizer.decomposition
+end
+
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.MyUnivariateSolver</code></pre><p>We define the same function both for our new solver and SDP solvers.</p><pre><code class="language-julia hljs">using SumOfSquares
+function decompose(p, solver)
+    model = Model(solver)
+    con = @constraint(model, p in SOSCone())
+    optimize!(model)
+    @assert primal_status(model) == MOI.FEASIBLE_POINT
+    return sos_decomposition(con)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">decompose (generic function with 1 method)</code></pre><p>We consider the following univariate polynomial from Example 3.35 of [BPT12].</p><p>[BPT12] Blekherman, G.; Parrilo, P. A. &amp; Thomas, R. R. <em>Semidefinite Optimization and Convex Algebraic Geometry</em>. Society for Industrial and Applied Mathematics, <strong>2012</strong>.</p><p>Using our solver we find the following decomposition in two squares.</p><pre><code class="language-julia hljs">using DynamicPolynomials
+@polyvar x
+p = x^4 + 4x^3 + 6x^2 + 4x + 5
+dec = decompose(p, MyUnivariateSolver.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(x^2 + 2.0000000000000018*x - 0.9999999999999989)^2 + (-2.0*x - 2.000000000000003)^2</code></pre><p>We can verify as follows that it gives a correct decomposition:</p><pre><code class="language-julia hljs">polynomial(dec)</code></pre><p class="math-container">\[ x^{4} + 4.0000000000000036x^{3} + 6.000000000000009x^{2} + 4.000000000000013x + 5.000000000000011 \]</p><p>We can also use a semidefinite solver:</p><pre><code class="language-julia hljs">import CSDP
+dec = decompose(p, CSDP.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(-0.6086796827684927*x^2 - 2.4208468386942927*x - 1.4271293634654962)^2 + (0.6942919122813989*x^2 + 0.8390365176838658*x - 1.7193818199786142)^2 + (0.38401534386725444*x^2 - 0.14597477689220895*x + 0.08383279228081508)^2</code></pre><p>The decomposition is different, it is the sum of 3 squares. However, it is also valid:</p><pre><code class="language-julia hljs">polynomial(dec)</code></pre><p class="math-container">\[ 1.0000000000000002x^{4} + 4.0x^{3} + 5.999999999999998x^{2} + 3.999999999999997x + 5.000000000000003 \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../hypercube/">« Hypercube</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.14 on <span class="colophon-date" title="Monday 7 March 2022 00:11">Monday 7 March 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
