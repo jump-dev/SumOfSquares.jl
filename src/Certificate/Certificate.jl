@@ -90,19 +90,32 @@ function MP.monomials(v::WithVariables)
     return MP.monomials(v.inner)
 end
 
-
-_cat(a::Vector, b::Vector) = vcat(a, b)
-_cat(a::Vector, ::Tuple{}) = copy(a)
-_cat(a::Tuple, b::Tuple) = [a..., b...]
-_cat(a::Tuple, ::Tuple{}) = [a...]
+_merge_sorted(a::Vector, ::Tuple{}) = a
+function _merge_sorted(a::Vector, b::Vector)
+    vars = sort!(vcat(a, b), rev = true)
+    unique!(vars)
+    return vars
+end
+_merge_sorted(a::Tuple{}, ::Tuple{}) = a
+_merge_sorted(a::Tuple, ::Tuple{}) = a
+_merge_sorted(::Tuple{}, b::Tuple) = b
+function _merge_sorted(a::Tuple, b::Tuple)
+    v = first(a)
+    w = first(b)
+    if v == w
+        return (v, _merge_sorted(Base.tail(a), Base.tail(b))...)
+    elseif v > w
+        return (v, _merge_sorted(Base.tail(a), b)...)
+    else
+        return (w, _merge_sorted(a, Base.tail(b))...)
+    end
+end
 
 _vars(::SemialgebraicSets.FullSpace) = tuple()
 _vars(x) = MP.variables(x)
 
 function with_variables(inner, outer)
-    vars = sort!(_cat(_vars(inner), _vars(outer)), rev = true)
-    unique!(vars)
-    return WithVariables(inner, vars)
+    return WithVariables(inner, _merge_sorted(_vars(inner), _vars(outer)))
 end
 
 function preprocessed_domain(::Putinar, domain::BasicSemialgebraicSet, p)
