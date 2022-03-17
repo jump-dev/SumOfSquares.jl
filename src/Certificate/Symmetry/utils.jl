@@ -41,6 +41,6 @@ end
 
 function _linsolve(A::AbstractMatrix{T}, b::Vector{T}, form) where {T}
     x = __linsolve(A, b, form)
-    @assert transpose(A) * x == b
+    @assert transpose(A) * x ≈ b
     return x
 end
