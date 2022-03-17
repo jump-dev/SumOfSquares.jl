@@ -13,7 +13,7 @@ jobs:
         with:
           version: '1'
       - name: SymbolicWedderburn#master
-        shell: julia --project=@. {0}
+        shell: julia --project=docs/ {0}
         run: |
           using Pkg
           Pkg.add(PackageSpec(name="SymbolicWedderburn", rev="master"))
