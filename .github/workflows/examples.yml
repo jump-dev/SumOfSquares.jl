@@ -12,6 +12,11 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1'
+      - name: SymbolicWedderburn#master
+        shell: julia --project=@. {0}
+        run: |
+          using Pkg
+          Pkg.add(PackageSpec(name="SymbolicWedderburn", rev="master"))
       - name: Install dependencies
         run: julia --project=docs -e 'using Pkg; Pkg.instantiate(); Pkg.develop(PackageSpec(path=pwd()))'
       - name: Run examples
