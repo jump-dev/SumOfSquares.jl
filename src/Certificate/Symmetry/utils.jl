@@ -16,27 +16,11 @@ end
 function _projcoef(A, i, v, w = A[i, :])
     return LinearAlgebra.dot(v, w) / LinearAlgebra.dot(w, w)
 end
-function _proj(A, i, v)
-    w = A[i, :]
-    return w * _projcoef(A, i, v, w)
-end
-
-function orthogonalize(A)
-    display(A)
-    for i in 2:size(A, 1)
-        row = A[i, :]
-        for j in 1:(i - 1)
-            row = row - _proj(A, j, row)
-        end
-        A[i, :] = row
-    end
-    return A
-end
 
 struct _OrthogonalMatrix end
 struct _RowEchelonMatrix end
 
-function __linsolve(A::Matrix{T}, b::Vector{T}, ::_OrthogonalMatrix) where {T}
+function __linsolve(A::AbstractMatrix{T}, b::Vector{T}, ::_OrthogonalMatrix) where {T}
     return map(1:size(A, 1)) do i
         return _projcoef(A, i, b)
     end
@@ -55,8 +39,8 @@ function __linsolve(A::Matrix{T}, b::Vector{T}, ::_RowEchelonMatrix) where {T}
     end
 end
 
-function _linsolve(A::Matrix{T}, b::Vector{T}, form) where {T}
+function _linsolve(A::AbstractMatrix{T}, b::Vector{T}, form) where {T}
     x = __linsolve(A, b, form)
-    #@assert transpose(A) * x == b
+    @assert transpose(A) * x == b
     return x
 end
