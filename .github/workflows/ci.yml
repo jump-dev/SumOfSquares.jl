@@ -40,11 +40,6 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
-      - name: SymbolicWedderburn#master
-        shell: julia --project=@. {0}
-        run: |
-          using Pkg
-          Pkg.add(PackageSpec(name="SymbolicWedderburn", rev="master"))
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         with:
