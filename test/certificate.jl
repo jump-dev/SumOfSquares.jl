@@ -185,3 +185,4 @@ end
 include("ceg_test.jl")
 include("csp_test.jl")
 include("sparsity.jl")
+include("symmetry.jl")

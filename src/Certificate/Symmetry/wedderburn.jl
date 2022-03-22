@@ -15,8 +15,7 @@ function SymbolicWedderburn.ExtensionHomomorphism(
     basis::MB.MonomialBasis,
 )
     monos = collect(basis.monomials)
-    mono_to_index = Dict(monos[i] => i for i in eachindex(monos))
-    return SymbolicWedderburn.ExtensionHomomorphism(action, monos, mono_to_index)
+    return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
 end
 
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
