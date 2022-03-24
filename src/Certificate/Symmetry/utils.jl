@@ -14,7 +14,13 @@ function is_orthogonal(S, tol=1e-6)
 end
 
 function _projcoef(A, i, v, w = A[i, :])
-    return LinearAlgebra.dot(v, w) / LinearAlgebra.dot(w, w)
+    # `LinearAlgebra.dot(v, w)` would not work as it is computing the adjoint
+    # of `v`.
+    # If `v = α * w + ...` then
+    # `dot(w, v) = conj(w) (α * w + ...) = α`
+    # However,
+    # `dot(v, w) = conj(α * w + ...) w = conj(α)`
+    return LinearAlgebra.dot(w, v) / LinearAlgebra.dot(w, w)
 end
 
 struct _OrthogonalMatrix end
@@ -39,6 +45,7 @@ function __linsolve(A::Matrix{T}, b::Vector{T}, ::_RowEchelonMatrix) where {T}
     end
 end
 
+using SparseArrays
 function _linsolve(A::AbstractMatrix{T}, b::Vector{T}, form) where {T}
     x = __linsolve(A, b, form)
     @assert transpose(A) * x ≈ b

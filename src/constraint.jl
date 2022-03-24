@@ -216,6 +216,7 @@ function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
 end
 
 _non_constant(a::Vector{T}) where T = convert.(MOI.ScalarAffineFunction{T}, a)
+_non_constant(a::Vector{<:JuMP.AbstractJuMPScalar}) where T = moi_function.(a)
 _non_constant(a::Vector{<:MOI.AbstractFunction}) = a
 
 # Add constraint with `p` having coefficients being MOI functions.
