@@ -81,13 +81,13 @@ function SumOfSquares.Certificate.reduced_polynomial(certificate::Ideal, poly, d
     return SumOfSquares.Certificate.reduced_polynomial(certificate.certificate, poly, domain)
 end
 
-function matrix_reps(cert, R, basis, ::Type{T}, form) where {T}
+function matrix_reps(pattern, R, basis, ::Type{T}, form) where {T}
     polys = R * basis.monomials
-    return map(SymbolicWedderburn.gens(cert.pattern.group)) do g
+    return map(SymbolicWedderburn.gens(pattern.group)) do g
         S = Matrix{T}(undef, length(polys), length(polys))
         for i in eachindex(polys)
             p = polys[i]
-            q = SymbolicWedderburn.action(cert.pattern.action, g, p)
+            q = SymbolicWedderburn.action(pattern.action, g, p)
             coefs = MP.coefficients(q, basis.monomials)
             S[:, i] = _linsolve(R, coefs, form)
         end
@@ -98,8 +98,12 @@ end
 function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
     basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
     T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
+    return _gram_basis(cert.pattern, basis, T)
+end
+
+function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
     # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
-    summands = SymbolicWedderburn.symmetry_adapted_basis(T, cert.pattern.group, cert.pattern.action, basis, semisimple=true)
+    summands = SymbolicWedderburn.symmetry_adapted_basis(T, pattern.group, pattern.action, basis, semisimple=true)
     # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
     # SymbolicWedderburn guarantees that the invariant subspace spanned by the
     # polynomials of the vector `R * basis.monomials` is invariant under the
@@ -118,8 +122,8 @@ function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
         m = SymbolicWedderburn.multiplicity(summand)
         N = size(R, 1)
         d = SymbolicWedderburn.degree(summand)
-        S = matrix_reps(cert, R, basis, T, form)
-        #S = matrix_reps(cert, R, basis, T, _RowEchelonMatrix())
+        S = matrix_reps(pattern, R, basis, T, form)
+        #S = matrix_reps(pattern, R, basis, T, _RowEchelonMatrix())
         decomose_semisimple = d > 1
         if decomose_semisimple
             # If it's not orthogonal, how can we conclude that we can still use the semisimple summands block-decomposition ?
@@ -130,11 +134,11 @@ function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
             # `X` and `inv(Y')` are not equivalent (to exclude the case 1. of Corollary 1.6.6) ?
             if !all(is_orthogonal, S)
                 R = orthogonalize(R)
-                S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
+                S = matrix_reps(pattern, R, basis, T, _OrthogonalMatrix())
                 for i in 1:size(R, 1)
                     R[i, :] = LinearAlgebra.normalize(R[i, :])
                 end
-                S = matrix_reps(cert, R, basis, T, _OrthogonalMatrix())
+                S = matrix_reps(pattern, R, basis, T, _OrthogonalMatrix())
                 if !all(is_orthogonal, S)
                     error("The matrix representation induced from the action on the polynomial basis is not orthogonal.")
                     # We would like to just throw this warning and just not decompose the semisimple summand but
