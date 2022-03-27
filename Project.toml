@@ -1,7 +1,7 @@
 name = "SumOfSquares"
 uuid = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 repo = "https://github.com/jump-dev/SumOfSquares.jl.git"
-version = "0.6.1"
+version = "0.6.2"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
@@ -25,7 +25,7 @@ Combinatorics = "1"
 ComplexOptInterface = "0.1"
 DataStructures = "0.18"
 DynamicPolynomials = "0.4.1"
-JuMP = "0.23"
+JuMP = "0.23, 1"
 MathOptInterface = "1"
 MultivariateBases = "0.1.2"
 MultivariateMoments = "0.3"
