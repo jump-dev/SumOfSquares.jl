@@ -24,12 +24,43 @@ struct SOSPolynomialBridge{
     certificate::CT
 end
 
+# Could do `q = MA.operate!!(-, promote(r, g)...)` instead but it does not work, see https://github.com/jump-dev/MathOptInterface.jl/issues/1785
+_convert_coef(::Type, ::Type{MOI.VectorOfVariables}) = MOI.VectorOfVariables
+_convert_coef(::Type{T}, ::Type{<:MOI.VectorAffineFunction}) where {T} = MOI.VectorAffineFunction{T}
+function _convert_coef(::Type{T}, func::MOI.AbstractVectorFunction) where {T}
+    return convert(_convert_coef(T, typeof(func)), func)
+end
+function Base.convert(
+    ::Type{MOI.VectorAffineTerm{T}},
+    term::MOI.VectorAffineTerm,
+) where {T}
+    scalar = convert(MOI.ScalarAffineTerm{T}, term.scalar_term)
+    return MOI.VectorAffineTerm(term.output_index, scalar)
+end
+function Base.convert(
+    ::Type{MOI.VectorAffineFunction{T}},
+    func::MOI.VectorAffineFunction{T},
+) where {T}
+    return func
+end
+function Base.convert(
+    ::Type{MOI.VectorAffineFunction{T}},
+    func::MOI.VectorAffineFunction,
+) where {T}
+    return MOI.VectorAffineFunction{T}(
+        func.terms,
+        func.constants,
+    )
+end
+
 function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT, GB, ZB, CT, MT, MVT}},
-    model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
+    model::MOI.ModelLike, func::MOI.AbstractVectorFunction,
     s::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet}) where {T, F, DT, UMCT, UMST, MCT, GB, ZB, CT, MT, MVT}
 
-    @assert MOI.output_dimension(f) == length(s.monomials)
+    @assert MOI.output_dimension(func) == length(s.monomials)
+    # FIXME Remove when we have a promotion bridge
+    f = _convert_coef(T, func)
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
@@ -57,8 +88,10 @@ end
 
 function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
                                  F::Type{<:MOI.AbstractVectorFunction},
-                                 ::Type{<:SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet}}) where T
-    return MOIU.is_coefficient_type(F, T)
+                                 ::Type{<:SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet,MT,MVT,CT}}) where {T,MT,MVT,CT}
+    return SOS._supported_type(SOS.matrix_cone_type(CT), T)
+    # FIXME Add when we have a promotion bridge
+    #return MOIU.is_coefficient_type(F, T) && SOS._supported_type(SOS.matrix_cone_type(CT), T)
 end
 function MOIB.added_constrained_variable_types(::Type{<:SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT}}) where {T, F, DT, UMCT, UMST, MCT}
     return constrained_variable_types(MCT)
@@ -70,9 +103,11 @@ function MOIB.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:SOS.SOSPolynomialSet{DT, MT, MVT, CT}}) where {T, DT<:SemialgebraicSets.AbstractAlgebraicSet, MT, MVT, CT}
+    # FIXME Remove when we have a promotion bridge
+    FT = _convert_coef(T, F)
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
-    G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
+    G = MOIU.promote_operation(-, T, FT, MOI.VectorOfVariables)
     MCT = SOS.matrix_cone_type(CT)
     UMCT = union_constraint_types(MCT)
     UMST = union_set_types(MCT)

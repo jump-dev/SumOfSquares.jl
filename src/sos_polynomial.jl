@@ -5,7 +5,14 @@ function matrix_cone(::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, d)
     return COI.HermitianPositiveSemidefiniteConeTriangle(d)
 end
 
+function _supported_type(::Type{NonnegPolyInnerCone{MCT}}, ::Type{T}) where {MCT,T}
+    return _supported_type(MCT, T)
+end
+_supported_type(::Type{MOI.PositiveSemidefiniteConeTriangle}, ::Type{<:Real}) = true
+_supported_type(::Type{MOI.PositiveSemidefiniteConeTriangle}, ::Type{<:Complex}) = false
 vectorized_matrix(Q, basis, ::Type, ::Type) = MultivariateMoments.SymMatrix(Q, basis)
+_supported_type(::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, ::Type{<:Real}) = false
+_supported_type(::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, ::Type{<:Complex}) = true
 function vectorized_matrix(Q, basis, ::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, T::Type)
     return MultivariateMoments.VectorizedHermitianMatrix{eltype(Q), T}(Q, basis)
 end

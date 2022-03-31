@@ -149,8 +149,7 @@ MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
 cone = SumOfSquares.NonnegPolyInnerCone{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}()
-pp = (1.0 + 0.0im) * poly - (1.0 + 0.0im) * t
-con_ref = @constraint(model, pp in cone, symmetry = pattern)
+con_ref = @constraint(model, poly - t in cone, symmetry = pattern)
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
 @test objective_value(model) ≈ 0.0 atol=1e-4 #src
