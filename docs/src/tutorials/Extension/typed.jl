@@ -67,6 +67,7 @@ end
 
 # The time taken by DynamicPolynomials is as follows:
 
+import DynamicPolynomials
 @btime let
     DynamicPolynomials.@polyvar x y
     S = @set x^3 * y + x == 2x^2 * y^2 && 3x^4 == y
@@ -99,5 +100,5 @@ rem(dec - poly, S.I)
 # than between the full gram matrix because `dec` is obtained by dropping
 # the lowest eigenvalues with the threshold `1e-6`; see [`sos_decomposition`](@ref).
 
-@test isapproxzero(rem(gram_matrix(con_ref) - poly, S.I), ztol = 1e-6) #src
+@test SumOfSquares.MP.isapproxzero(rem(gram_matrix(con_ref) - poly, S.I), ztol = 1e-6) #src
 rem(gram_matrix(con_ref) - poly, S.I)
