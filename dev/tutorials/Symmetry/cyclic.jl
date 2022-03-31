@@ -141,8 +141,6 @@ b = -√3/2
 import CSDP
 solver = CSDP.Optimizer
 model = Model(solver)
-add_bridge(model, SumOfSquares.Bridges.Constraint.EmptyBridge)
-add_bridge(model, SumOfSquares.Bridges.Constraint.PositiveSemidefinite2x2Bridge)
 add_bridge(model, SumOfSquares.COI.Bridges.Variable.HermitianToSymmetricPSDBridge)
 add_bridge(model, SumOfSquares.COI.Bridges.Constraint.SplitZeroBridge)
 MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.ZeroPolynomialBridge{Complex{Float64}})
@@ -151,10 +149,8 @@ MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
 cone = SumOfSquares.NonnegPolyInnerCone{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}()
-certificate = SumOfSquares.Certificate.MaxDegree(cone, MonomialBasis, 2)
-sym_certificate = SumOfSquares.Certificate.Symmetry.Ideal(pattern, certificate)
 pp = (1.0 + 0.0im) * poly - (1.0 + 0.0im) * t
-con_ref = SumOfSquares.add_constraint(model, pp, cone, ideal_certificate = sym_certificate)
+con_ref = @constraint(model, pp in cone, symmetry = pattern)
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
 @test objective_value(model) ≈ 0.0 atol=1e-4 #src
