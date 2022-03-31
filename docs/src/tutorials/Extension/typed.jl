@@ -16,8 +16,11 @@
 # *Semidefinite Optimization and Convex Algebraic Geometry*.
 # Society for Industrial and Applied Mathematics, **2012**.
 
+using Test #src
 import TypedPolynomials
 TypedPolynomials.@polyvar x y
+using SumOfSquares
+import CSDP
 model = SOSModel(CSDP.Optimizer)
 con_ref = @constraint(model, 2x^4 + 5y^4 - x^2*y^2 >= -2(x^3*y + x + 1))
 optimize!(model)
@@ -84,10 +87,17 @@ solution_summary(model)
 
 # We obtain the following decomposition:
 
-dec = sos_decomposition(con_ref, 1e-3)
+dec = sos_decomposition(con_ref, 1e-6)
 
 # We can verify that it is correct as follows:
 
 # TODO remove `polynomial` #src
-@test isapproxzero(rem(polynomial(dec) - poly, S.I), ztol = 1e-5) #src
-rem(polynomial(dec) - poly, S.I)
+@test SumOfSquares.MP.isapproxzero(rem(dec - poly, S.I), ztol = 1e-4) #src
+rem(dec - poly, S.I)
+
+# Note that the difference between `dec` and `poly` is larger
+# than between the full gram matrix because `dec` is obtained by dropping
+# the lowest eigenvalues with the threshold `1e-6`; see [`sos_decomposition`](@ref).
+
+@test isapproxzero(rem(gram_matrix(con_ref) - poly, S.I), ztol = 1e-6) #src
+rem(gram_matrix(con_ref) - poly, S.I)
