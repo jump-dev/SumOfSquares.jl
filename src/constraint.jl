@@ -18,6 +18,9 @@ the cone `psd_inner`.
 struct NonnegPolyInnerCone{MCT <: MOI.AbstractVectorSet} <: SOSLikeCone
 end
 matrix_cone_type(::Type{NonnegPolyInnerCone{MCT}}) where {MCT} = MCT
+function _supported_type(::Type{NonnegPolyInnerCone{MCT}}, ::Type{T}) where {MCT,T}
+    return _supported_type(MCT, T)
+end
 
 _wrap(::MIME"text/plain", s) = s
 _wrap(::MIME"text/latex", s) = "\\text{ " * s * "}"
