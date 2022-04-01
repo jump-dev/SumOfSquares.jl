@@ -3,7 +3,16 @@ export GramMatrix, SparseGramMatrix
 import MultivariateMoments: trimat, SymMatrix, getmat
 export gram_operate, getmat
 
-abstract type AbstractGramMatrix{T, B, U} <: MP.AbstractPolynomialLike{U} end
+abstract type AbstractDecomposition{T} <: MP.AbstractPolynomialLike{T} end
+
+Base.:(+)(x::MP.APL, y::AbstractDecomposition) = x + MP.polynomial(y)
+Base.:(+)(x::AbstractDecomposition, y::MP.APL) = MP.polynomial(x) + y
+Base.:(+)(x::AbstractDecomposition, y::AbstractDecomposition) = MP.polynomial(x) + MP.polynomial(y)
+Base.:(-)(x::MP.APL, y::AbstractDecomposition) = x - MP.polynomial(y)
+Base.:(-)(x::AbstractDecomposition, y::MP.APL) = MP.polynomial(x) - y
+Base.:(-)(x::AbstractDecomposition, y::AbstractDecomposition) = MP.polynomial(x) - MP.polynomial(y)
+
+abstract type AbstractGramMatrix{T, B, U} <: AbstractDecomposition{U} end
 
 function MP.monomialtype(::Union{AbstractGramMatrix{T, B},
                                  Type{<:AbstractGramMatrix{T, B}}}) where {T, B}
@@ -11,12 +20,6 @@ function MP.monomialtype(::Union{AbstractGramMatrix{T, B},
 end
 MP.polynomialtype(::Union{AbstractGramMatrix{T, B, U}, Type{<:AbstractGramMatrix{T, B, U}}}) where {T, B, U} = MP.polynomialtype(B, U)
 
-Base.:(+)(x::MP.APL, y::AbstractGramMatrix) = x + MP.polynomial(y)
-Base.:(+)(x::AbstractGramMatrix, y::MP.APL) = MP.polynomial(x) + y
-Base.:(+)(x::AbstractGramMatrix, y::AbstractGramMatrix) = MP.polynomial(x) + MP.polynomial(y)
-Base.:(-)(x::MP.APL, y::AbstractGramMatrix) = x - MP.polynomial(y)
-Base.:(-)(x::AbstractGramMatrix, y::MP.APL) = MP.polynomial(x) - y
-Base.:(-)(x::AbstractGramMatrix, y::AbstractGramMatrix) = MP.polynomial(x) - MP.polynomial(y)
 Base.:(==)(p::MP.APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
 Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 
