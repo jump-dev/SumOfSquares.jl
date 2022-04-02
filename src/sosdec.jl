@@ -3,9 +3,9 @@ export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 """
     struct SOSDecomposition{T, PT}
 
-Represend SOSDecomposition without domain
+Represents a Sum-of-Squares decomposition without domain.
 """
-struct SOSDecomposition{T, PT <: MP.APL{T}, U} <: MP.AbstractPolynomialLike{U}
+struct SOSDecomposition{T, PT <: MP.APL{T}, U} <: AbstractDecomposition{U}
     ps::Vector{PT}
     function SOSDecomposition{T, PT, U}(ps::Vector{PT}) where {T, PT, U}
         new(ps)
@@ -96,7 +96,7 @@ end
 """
     struct SOSDecompositionWithDomain{T, PT, S}
 
-Represend SOSDecomposition on a basic semi-algebraic domain.
+Represents a Sum-of-Squares decomposition on a basic semi-algebraic domain.
 """
 struct SOSDecompositionWithDomain{T, PT <: MP.APL{T}, U, S <: AbstractSemialgebraicSet}
     sos::SOSDecomposition{T, PT, U}
