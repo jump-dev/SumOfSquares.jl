@@ -40,7 +40,7 @@ optimize!(model)
 @test objective_value(model) ≈ 0.25 rtol=1e-5 #src
 @show objective_value(model)
 
-# Note that the problem can be written equivalently as follows using [registered functions](https://jump.dev/JuMP.jl/v0.21/nlp/#User-defined-Functions-1).
+# Note that the problem can be written equivalently as follows using [registered functions](https://jump.dev/JuMP.jl/stable/manual/nlp/#Register-a-function).
 
 using Ipopt
 model = Model(optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
@@ -69,7 +69,7 @@ import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 
 # A Sum-of-Squares certificate that $p \ge \alpha$ over the domain `S`, ensures that $\alpha$ is a lower bound to the polynomial optimization problem.
-# The following program searches for the largest upper bound and finds zero.
+# The following program searches for the largest lower bound and finds zero.
 
 model = SOSModel(solver)
 @variable(model, α)
