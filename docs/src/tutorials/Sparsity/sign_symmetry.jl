@@ -31,7 +31,7 @@ function sos_check(sparsity)
 end
 
 g = sos_check(Sparsity.NoPattern())
-@test g.basis.monomials == [x[1]^2, x[1] * x[2], x[2]^2, x[1], x[2], x[3], 1]
+@test g.basis.monomials == [x[1]^2, x[1] * x[2], x[2]^2, x[1], x[2], x[3], 1] #src
 g.basis.monomials
 
 # As detailed in the Example 4 of [L09], we can exploit the *sign symmetry* of
@@ -39,7 +39,7 @@ g.basis.monomials
 
 g = sos_check(Sparsity.SignSymmetry())
 monos = [sub.basis.monomials for sub in g.sub_gram_matrices]
-@test length(monos) == 3
-@test [x[1], x[2]] in monos
-@test [x[3]] in monos
-@test [x[1]^2, x[1] * x[2], x[2]^2, 1] in monos
+@test length(monos) == 3 #src
+@test [x[1], x[2]] in monos #src
+@test [x[3]] in monos #src
+@test [x[1]^2, x[1] * x[2], x[2]^2, 1] in monos #src
