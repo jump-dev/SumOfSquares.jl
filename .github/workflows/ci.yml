@@ -45,6 +45,7 @@ jobs:
         run: |
           using Pkg
           Pkg.add(PackageSpec(name="SemialgebraicSets", rev="master"))
+          Pkg.add(PackageSpec(name="MultivariateMoments", rev="bl/SSv0.3"))
           Pkg.add(PackageSpec(name="PolyJuMP", rev="bl/SSv0.3"))
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
