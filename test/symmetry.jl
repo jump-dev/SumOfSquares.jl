@@ -14,7 +14,7 @@ function test_linsolve()
         b = A' * x
         @test Certificate.Symmetry._linsolve(A, b, Symmetry._RowEchelonMatrix()) ≈ x
         B = float.(A)
-        for i in 1:size(B, 1)
+        for i in axes(B, 1)
             B[i, :] = normalize(B[i, :])
         end
         b = B' * x

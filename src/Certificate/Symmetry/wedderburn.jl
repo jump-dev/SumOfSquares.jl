@@ -135,7 +135,7 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
             if !all(is_orthogonal, S)
                 R = orthogonalize(R)
                 S = matrix_reps(pattern, R, basis, T, _OrthogonalMatrix())
-                for i in 1:size(R, 1)
+                for i in axes(R, 1)
                     R[i, :] = LinearAlgebra.normalize(R[i, :])
                 end
                 S = matrix_reps(pattern, R, basis, T, _OrthogonalMatrix())
