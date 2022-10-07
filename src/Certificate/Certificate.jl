@@ -182,7 +182,7 @@ struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasi
     basis::Type{BT}
     maxdegree::Int
 end
-function gram_basis(certificate::MaxDegree, poly) where CT
+function gram_basis(certificate::MaxDegree, poly)
     return maxdegree_gram_basis(certificate.basis, MP.variables(poly), certificate.maxdegree)
 end
 function gram_basis_type(::Type{MaxDegree{CT, BT}}) where {CT, BT}
@@ -205,7 +205,7 @@ struct FixedBasis{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBas
     cone::CT
     basis::BT
 end
-function gram_basis(certificate::FixedBasis, poly) where CT
+function gram_basis(certificate::FixedBasis, poly)
     return certificate.basis
 end
 function gram_basis_type(::Type{FixedBasis{CT, BT}}) where {CT, BT}
