@@ -32,8 +32,13 @@ solution_summary(model)
 # We can look at the certificate that `σ = -6` is a lower bound:
 
 sos_dec = sos_decomposition(cref, 1e-4)
+expected = x^2 - 2x - 3 #src
+@test isapprox(sos_dec.ps, [expected], rtol=1e-4) || isapprox(sos_dec.ps, [-expected], rtol=1e-4) #src
 
 # Indeed, `p + 6 = (x^2 - 2x - 3)^2` so `p ≥ -6`.
+#
+# ## Extraction of minimizers
+#
 # We can now find the minimizers from the moment matrix:
 
 ν = moment_matrix(cref)
@@ -63,3 +68,34 @@ Q12 = η1.Q * η.atoms[1].weight + η2.Q * η.atoms[2].weight
 
 # Another way to see this (by linearity of the expectation) is that `ν` is the moment matrix
 # of the convex combination of the two atomic measures.
+
+# ## Changing the polynomial basis
+#
+# The monomial basis used by default can leave a problem quite ill-conditioned for the solver.
+# Let's try to use another basis instead:
+
+model = SOSModel(CSDP.Optimizer)
+@variable(model, σ)
+@constraint(model, cheby_cref, p >= σ, basis = ChebyshevBasisFirstKind)
+@objective(model, Max, σ)
+optimize!(model)
+solution_summary(model)
+
+# Although the gram matrix in the monomial basis:
+
+g = gram_matrix(cref)
+@show g.basis
+g.Q
+
+# looks different from the gram matrix in the Chebyshev basis:
+
+cheby_g = gram_matrix(cheby_cref)
+@show cheby_g.basis
+cheby_g.Q
+
+@test polynomial(g) ≈ polynomial(cheby_g) rtol=1e-4 #src
+
+# they both yields the same Sum-of-Squares decomposition:
+
+cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
+@test isapprox(cheby_sos_dec.ps, [expected], rtol=1e-4) || isapprox(cheby_sos_dec.ps, [-expected], rtol=1e-4) #src
