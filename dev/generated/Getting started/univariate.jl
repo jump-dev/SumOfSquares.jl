@@ -29,5 +29,22 @@ minimizers = [η.atoms[1].center; η.atoms[2].center]
 
 Q12 = η1.Q * η.atoms[1].weight + η2.Q * η.atoms[2].weight
 
+model = SOSModel(CSDP.Optimizer)
+@variable(model, σ)
+@constraint(model, cheby_cref, p >= σ, basis = ChebyshevBasisFirstKind)
+@objective(model, Max, σ)
+optimize!(model)
+solution_summary(model)
+
+g = gram_matrix(cref)
+@show g.basis
+g.Q
+
+cheby_g = gram_matrix(cheby_cref)
+@show cheby_g.basis
+cheby_g.Q
+
+cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
+
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 
