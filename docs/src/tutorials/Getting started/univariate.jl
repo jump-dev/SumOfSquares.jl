@@ -1,4 +1,4 @@
-# # Mminimization of a univariate polynomial
+# # Minimization of a univariate polynomial
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Getting started/univariate.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Getting started/univariate.ipynb)
@@ -99,3 +99,18 @@ cheby_g.Q
 
 cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
 @test isapprox(cheby_sos_dec.ps, [expected], rtol=1e-4) || isapprox(cheby_sos_dec.ps, [-expected], rtol=1e-4) #src
+
+# The gram matrix in the Chebyshev basis can be understood as follows.
+# To express the polynomial $-x^2 + 2x + 3$ in the Chebyshev basis, we start by
+#  substituting $x$ into $\cos(\theta)$ to obtain
+# $-\cos(\theta)^2 + 2\cos(\theta) + 3$.
+# We now express it as a combination of $\cos(n\theta)$ for $n = 0, 1, 2$:
+# $-(2\cos(\theta) - 1) /2 + 2 \cos(\theta) + 5/2.$
+# Therefore, the coefficients in the Chebyshev basis is:
+
+cheby_coefs = [-1/2, 2, 5/2]
+
+# We can indeed observe that we obtain the same matrix as `cheby_g.Q`
+
+@test cheby_g.Q ≈ cheby_coefs * cheby_coefs' rtol=1e-6 #src
+cheby_coefs * cheby_coefs'
