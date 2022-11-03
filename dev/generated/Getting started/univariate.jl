@@ -46,5 +46,9 @@ cheby_g.Q
 
 cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
 
+cheby_coefs = [-1/2, 2, 5/2]
+
+cheby_coefs * cheby_coefs'
+
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 
