@@ -15,8 +15,9 @@ Enabling the creation of sum of squares variables and constraints.
 - [**LATEST**][docs-latest-url] &mdash; *in-development version of the documentation.*
 
 Some presentations on, or using, SumOfSquares (see [here](https://github.com/blegat/SumOfSquaresSlides) for the source code of the presentations):
-  * [UPCOMING 13 September 2021 14:00-17:00 CEST] Benoît Legat at [POEMA Learning Week 2](http://poema-network.eu/index.php/news-and-events/project-workshops/13-poema-learning-week-2)
-  * [UPCOMING 28 July 2021 16:30-17:00 UTC] Benoît Legat, Marek Kaluba and Tillmann Weisser at [JuMP-dev 2021](https://pretalx.com/juliacon2021/talk/L8DTE3/) [[Slides](https://drive.google.com/file/d/1HtArDFNMQ6IYUqRjSWR3JviJp9xLtSlB/view?usp=sharing)]
+  * Benoît Legat, Marek Kaluba and Tillmann Weisser at INFORMS 2022 [[Slides](https://drive.google.com/file/d/1rlsIxgcnKWT436k4MNenjHfgH0UYRLAB/view?usp=share_link)]
+  * Benoît Legat at [POEMA Learning Week 2](http://poema-network.eu/index.php/news-and-events/project-workshops/13-poema-learning-week-2)
+  * Benoît Legat, Marek Kaluba and Tillmann Weisser at [JuMP-dev 2021](https://pretalx.com/juliacon2021/talk/L8DTE3/) [[Slides](https://drive.google.com/file/d/1HtArDFNMQ6IYUqRjSWR3JviJp9xLtSlB/view?usp=sharing)]
   * Benoît Legat at [INFORMS 2020](http://meetings2.informs.org/wordpress/annual2020/) [[Slides](https://drive.google.com/file/d/1lb8NtOWCikTYm6KRUZCSLYgaUjqIsSyV/view?usp=sharing)]
   * Tillmann Weisser, Benoît Legat, Chris Coey, Lea Kapelevich and Juan Pablo Vielma at [JuliaCon 2019](https://juliacon.org/2019/) [[Slides](https://drive.google.com/open?id=1HiA-praFyejE0Z3nVSpFEv938TAcPjA9)] [[Video](https://www.youtube.com/watch?v=cTmqmPcroFo)]
   * Benoît Legat at [CNLS 2019](https://cnls.lanl.gov/External/showtalksummary.php?selection=7768) [[Slides](https://drive.google.com/open?id=1kNF18C7RY2zi7jcZBMO1PRXtHuvVTFPn)]
