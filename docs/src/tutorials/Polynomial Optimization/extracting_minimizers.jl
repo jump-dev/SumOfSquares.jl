@@ -75,11 +75,11 @@ model7 = solve(7)
 ν7 = moment_matrix(model7[:c])
 @test extractatoms(ν3, 1e-3) === nothing #src
 η = extractatoms(ν7, 1e-3) # Returns nothing as the dual is not atomic
-@test length(η.atoms) == 1
-@test η.atoms[1].center ≈ [2.3295, 3.1785] rtol=1e-4
+@test length(η.atoms) == 1 #src
+@test η.atoms[1].center ≈ [2.3295, 3.1785] rtol=1e-4 #src
 
 # We can indeed verify that the objective value at `x_opt` is equal to the lower bound.
 
 x_opt = η.atoms[1].center
-@test x_opt ≈ [2.3295, 3.1785] rtol=1e-4
+@test x_opt ≈ [2.3295, 3.1785] rtol=1e-4 #src
 p(x_opt)
