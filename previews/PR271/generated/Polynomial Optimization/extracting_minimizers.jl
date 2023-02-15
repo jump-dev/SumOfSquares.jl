@@ -20,10 +20,6 @@ end
 model4 = solve(4)
 
 model5 = solve(5)
-ν5 = moment_matrix(model5[:c])
-extractatoms(ν5, 1e-2)
-SumOfSquares.MultivariateMoments.computesupport!(ν5, 1e-1)
-ν5.support
 
 model7 = solve(7)
 
