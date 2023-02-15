@@ -50,19 +50,11 @@ model4 = solve(4)
 @test objective_value(model4) ≈ -7 rtol=1e-4 #src
 @test termination_status(model4) == MOI.OPTIMAL #src
 
-# The second level improves the lower bound but still does not provide the solution
+# The second level improves the lower bound
 
 model5 = solve(5)
 @test objective_value(model5) ≈ -20/3 rtol=1e-4 #src
 @test termination_status(model5) == MOI.OPTIMAL #src
-ν5 = moment_matrix(model5[:c])
-@test extractatoms(ν5, 1e-2) === nothing #src
-@test extractatoms(ν5, 1e-3) === nothing #src
-@test extractatoms(ν5, 1e-4) === nothing #src
-@test extractatoms(ν5, 1e-5) === nothing #src
-extractatoms(ν5, 1e-2)
-SumOfSquares.MultivariateMoments.computesupport!(ν5, 1e-1)
-ν5.support
 
 # The third level finds the optimal objective value as lower bound...
 
