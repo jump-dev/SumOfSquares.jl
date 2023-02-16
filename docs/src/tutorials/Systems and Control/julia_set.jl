@@ -21,10 +21,30 @@ end
 
 escape_radius(c) = (1 + √(1 + 4 * abs(c))) / 2
 
+# To sort of minimize a level set of a polynomial we minimize integral of that polynomial.
+# We borrow the following from https://doi.org/10.1080/00029890.2001.11919774
+
+using SpecialFunctions
+using DynamicPolynomials
+β(α) = (α + 1) / 2
+function circle_integral(mono::AbstractMonomial)
+    if any(isodd, exponents(mono))
+        return 0.0
+    else
+        return 2 * prod(gamma ∘ β, exponents(mono)) / gamma(sum(β, exponents(mono)))
+    end
+end
+function disk_integral(mono::AbstractMonomial, r)
+    d = degree(mono) + nvariables(mono)
+    return circle_integral(mono) * r^d / d
+end
+function disk_integral(p::AbstractPolynomialLike, r)
+    return sum(MultivariatePolynomials.coefficient(t) * disk_integral(monomial(t), r) for t in terms(p))
+end
+
 # The following function implements [KHJ14, (8)].
 
 using SumOfSquares
-using DynamicPolynomials
 function outer_approximation(solver, d::Int; c = -0.7 + 0.2im, α = 1/2)
     @polyvar x[1:2]
     model = SOSModel(solver)
