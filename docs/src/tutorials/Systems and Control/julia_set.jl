@@ -39,12 +39,10 @@ function outer_approximation(solver, d::Int; c = -0.7 + 0.2im, α = 1/2)
     @objective(model, Min, disk_integral(w, r))
     optimize!(model)
     println(solution_summary(model))
-    term = termination_status(model)
-    prim = primal_status(model)
     if primal_status(model) == MOI.NO_SOLUTION
         return
     end
-    return value(v), value(w), term, prim
+    return value(v), value(w), model
 end
 
 # The following function plots the Julia set with the outer approximation.
@@ -75,18 +73,34 @@ end
 import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 
-# Let's start with degree 2.
+# Let's start with the value of `c` corresponding to the left image of [KHJ14, Figure 3] and with degree 2.
 
 c = -0.7 + 0.2im
-v, w, term, prim = outer_approximation(2; c)
+v, w, model = outer_approximation(solver, 2; c)
 julia_plot(v)
 
 # Let's now look at degree 4.
 
-v, w, term, prim = outer_approximation(4; c)
+v, w, model = outer_approximation(solver, 4; c)
 julia_plot(v)
 
 # Let's finish with degree 6.
 
-v, w, term, prim = outer_approximation(6; c)
+v, w, model = outer_approximation(solver, 6; c)
+julia_plot(v)
+
+# Let's now use the value of `c` corresponding to the right image of [KHJ14, Figure 3] and with degree 2.
+
+c = -0.9 + 0.2im
+v, w, model = outer_approximation(solver, 2; c)
+julia_plot(v)
+
+# Let's now look at degree 4.
+
+v, w, model = outer_approximation(solver, 4; c)
+julia_plot(v)
+
+# Let's finish with degree 6.
+
+v, w, model = outer_approximation(solver, 6; c)
 julia_plot(v)
