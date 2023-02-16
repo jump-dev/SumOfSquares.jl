@@ -18,7 +18,7 @@ using DynamicPolynomials
 @ncpolyvar x y
 p = (x * y + x^2)^2
 
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v0.21.6/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
 
 using SumOfSquares
 import CSDP
