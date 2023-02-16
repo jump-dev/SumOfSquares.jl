@@ -25,6 +25,7 @@ escape_radius(c) = (1 + √(1 + 4 * abs(c))) / 2
 # we consider that it is not in the Julia set, if it stays in the set, we consider that it is in the Julia set.
 # This gives an outer approximation that converges to the Julia set when `m` increases.
 
+using LinearAlgebra
 function in_set(x, c, m=2000)
     r = escape_radius(c)
     for i in 1:m
