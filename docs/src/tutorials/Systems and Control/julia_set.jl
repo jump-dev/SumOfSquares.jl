@@ -45,7 +45,7 @@ end
 # The following function implements [KHJ14, (8)].
 
 using SumOfSquares
-function outer_approximation(solver, d::Int; c = -0.7 + 0.2im, α = 1/2)
+function outer_approximation(solver, d::Int, c; α = 1/2)
     @polyvar x[1:2]
     model = SOSModel(solver)
     r = escape_radius(c)
@@ -69,7 +69,7 @@ end
 
 using ImplicitPlots
 using Plots
-function julia_plot(poly, n=400, m=1000; c = DEFAULT_C, tol=1e-6, res = 1000)
+function julia_plot(poly, c, n=400, m=1000; tol=1e-6, res = 1000)
     r = escape_radius(c)
     p = implicit_plot(poly; xlims=(-r, r) .* 1.1, ylims=(-r, r), resolution = res, label="")
     θ = range(0, stop=2π, length=100)
@@ -96,31 +96,31 @@ solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 # Let's start with the value of `c` corresponding to the left image of [KHJ14, Figure 3] and with degree 2.
 
 c = -0.7 + 0.2im
-v, w, model = outer_approximation(solver, 2; c)
-julia_plot(v)
+v, w, model = outer_approximation(solver, 2, c)
+julia_plot(v, c)
 
 # Let's now look at degree 4.
 
-v, w, model = outer_approximation(solver, 4; c)
-julia_plot(v)
+v, w, model = outer_approximation(solver, 4, c)
+julia_plot(v, c)
 
 # Let's finish with degree 6.
 
-v, w, model = outer_approximation(solver, 6; c)
-julia_plot(v)
+v, w, model = outer_approximation(solver, 6, c)
+julia_plot(v, c)
 
 # Let's now use the value of `c` corresponding to the right image of [KHJ14, Figure 3] and with degree 2.
 
 c = -0.9 + 0.2im
-v, w, model = outer_approximation(solver, 2; c)
-julia_plot(v)
+v, w, model = outer_approximation(solver, 2, c)
+julia_plot(v, c)
 
 # Let's now look at degree 4.
 
-v, w, model = outer_approximation(solver, 4; c)
-julia_plot(v)
+v, w, model = outer_approximation(solver, 4, c)
+julia_plot(v, c)
 
 # Let's finish with degree 6.
 
-v, w, model = outer_approximation(solver, 6; c)
-julia_plot(v)
+v, w, model = outer_approximation(solver, 6, c)
+julia_plot(v, c)
