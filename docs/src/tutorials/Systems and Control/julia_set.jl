@@ -21,6 +21,21 @@ end
 
 escape_radius(c) = (1 + √(1 + 4 * abs(c))) / 2
 
+# To check whether a point is in the Julia set, we can iterate and once the point leaves the circle of escape radius,
+# we consider that it is not in the Julia set, if it stays in the set, we consider that it is in the Julia set.
+# This gives an outer approximation that converges to the Julia set when `m` increases.
+
+function in_set(x, c, m=2000)
+    r = escape_radius(c)
+    for i in 1:m
+        if norm(x) > r
+            return false
+        end
+        x = julia_map(x, c)
+    end
+    return true
+end
+
 # To sort of minimize a level set of a polynomial we minimize integral of that polynomial.
 # We borrow the following from https://doi.org/10.1080/00029890.2001.11919774
 
