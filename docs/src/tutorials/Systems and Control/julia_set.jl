@@ -8,6 +8,14 @@
 # *Convex computation of the maximum controlled invariant set for polynomial control systems*.
 # SIAM Journal on Control and Optimization 52.5 (2014): 2944-2969.
 
+# The Julia map is defined as follows:
+
+function julia_map(point, c)
+    a, b = point
+    return [a^2 - b^2 + real(c), 2a * b + imag(c)]
+end
+
+
 # The *escape radius" is the radius `r` such that `r^2 ≥ r + abs(c)`.
 # Ouside of the circle of that radius, all points diverge so we know the Julia set belongs to that circle.
 
@@ -16,17 +24,17 @@ escape_radius(c) = (1 + √(1 + 4 * abs(c))) / 2
 # The following function implements [KHJ14, (8)].
 
 using SumOfSquares
+using DynamicPolynomials
 function outer_approximation(solver, d::Int; c = -0.7 + 0.2im, α = 1/2)
-    @polyvar x y
+    @polyvar x[1:2]
     model = SOSModel(solver)
-    vars = [x, y]
     r = escape_radius(c)
-    S = @set x^2 + y^2 <= r^2
-    @variable(model, v, Poly(monomials(vars, 0:2d)))
-    @variable(model, w0, SOSPoly(monomials(vars, 0:d)))
-    @variable(model, w1, SOSPoly(monomials(vars, 0:(d - 1))))
-    @constraint(model, α * v(vars => jmap(vars)) <= v, domain = S)
-    w = w0 + w1 * (r^2 - (x^2 + y^2))
+    S = @set sum(x.^2) <= r^2
+    @variable(model, v, Poly(monomials(x, 0:2d)))
+    @variable(model, w0, SOSPoly(monomials(x, 0:d)))
+    @variable(model, w1, SOSPoly(monomials(x, 0:(d - 1))))
+    @constraint(model, α * v(x => julia_map(x, c)) <= v, domain = S)
+    w = w0 + w1 * (r^2 - sum(x.^2))
     @constraint(model, w >= v + 1, domain = S)
     @objective(model, Min, disk_integral(w, r))
     optimize!(model)
