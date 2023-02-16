@@ -30,7 +30,7 @@ monos = [1, x, x^2]
 using SumOfSquares
 μ = measure([μ0, μ1, μ2], monos)
 
-# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v0.21.6/installation/#Supported-solvers) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
 using CSDP
