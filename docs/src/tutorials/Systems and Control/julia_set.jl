@@ -10,6 +10,7 @@
 
 # The Julia map is defined as follows:
 
+using Test #src
 function julia_map(point, c)
     a, b = point
     return [a^2 - b^2 + real(c), 2a * b + imag(c)]
@@ -74,11 +75,12 @@ function outer_approximation(solver, d::Int, c; α = 1/2)
     @constraint(model, w >= v + 1, domain = S)
     @objective(model, Min, disk_integral(w, r))
     optimize!(model)
-    println(solution_summary(model))
+    @test termination_status(model) == MOI.OPTIMAL #src
+    @test primal_status(model) == MOI.FEASIBLE_POINT #src
     if primal_status(model) == MOI.NO_SOLUTION
         return
     end
-    return value(v), value(w)
+    return model
 end
 
 # The following function plots the Julia set with the outer approximation.
@@ -100,7 +102,7 @@ function julia_plot(poly, c, n=200, m=1000; tol=1e-6, res = 1000)
     end
     xs = [point[1] for point in points]
     ys = [point[2] for point in points]
-    scatter!(p, xs, ys, label="", markerstrokewidth=0, markersize=1, m=:pixel)
+    scatter!(p, xs, ys, label="", markerstrokewidth=0, markersize=1.5, m=:pixel)
     return p
 end
 
@@ -112,33 +114,37 @@ solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 # Let's start with the value of `c` corresponding to the left image of [KHJ14, Figure 3] and with degree 2.
 
 c = -0.7 + 0.2im
-v, w = outer_approximation(solver, 2, c)
+model = outer_approximation(solver, 2, c)
+solution_summary(model)
 
 # We visualize below:
 
-julia_plot(v, c)
+julia_plot(value(model[:v]), c)
 
 # Let's now look at degree 4.
 
-v, w = outer_approximation(solver, 4, c)
+model = outer_approximation(solver, 4, c)
+solution_summary(model)
 
 # We visualize below:
 
-julia_plot(v, c)
+julia_plot(value(model[:v]), c)
 
 # Let's now use the value of `c` corresponding to the right image of [KHJ14, Figure 3] and with degree 2.
 
 c = -0.9 + 0.2im
-v, w = outer_approximation(solver, 2, c)
+model = outer_approximation(solver, 2, c)
+solution_summary(model)
 
 # We visualize below:
 
-julia_plot(v, c)
+julia_plot(value(model[:v]), c)
 
 # Let's now look at degree 4.
 
-v, w = outer_approximation(solver, 4, c)
+model = outer_approximation(solver, 4, c)
+solution_summary(model)
 
 # We visualize below:
 
-julia_plot(v, c)
+julia_plot(value(model[:v]), c)
