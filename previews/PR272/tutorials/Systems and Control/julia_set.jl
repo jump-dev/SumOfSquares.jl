@@ -78,14 +78,14 @@ function outer_approximation(solver, d::Int, c; α = 1/2)
     if primal_status(model) == MOI.NO_SOLUTION
         return
     end
-    return value(v), value(w), model
+    return value(v), value(w)
 end
 
 # The following function plots the Julia set with the outer approximation.
 
 using ImplicitPlots
 using Plots
-function julia_plot(poly, c, n=400, m=1000; tol=1e-6, res = 1000)
+function julia_plot(poly, c, n=200, m=1000; tol=1e-6, res = 1000)
     r = escape_radius(c)
     p = implicit_plot(poly; xlims=(-r, r) .* 1.1, ylims=(-r, r), resolution = res, label="")
     θ = range(0, stop=2π, length=100)
@@ -112,31 +112,33 @@ solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 # Let's start with the value of `c` corresponding to the left image of [KHJ14, Figure 3] and with degree 2.
 
 c = -0.7 + 0.2im
-v, w, model = outer_approximation(solver, 2, c)
+v, w = outer_approximation(solver, 2, c)
+
+# We visualize below:
+
 julia_plot(v, c)
 
 # Let's now look at degree 4.
 
-v, w, model = outer_approximation(solver, 4, c)
-julia_plot(v, c)
+v, w = outer_approximation(solver, 4, c)
 
-# Let's finish with degree 6.
+# We visualize below:
 
-v, w, model = outer_approximation(solver, 6, c)
 julia_plot(v, c)
 
 # Let's now use the value of `c` corresponding to the right image of [KHJ14, Figure 3] and with degree 2.
 
 c = -0.9 + 0.2im
-v, w, model = outer_approximation(solver, 2, c)
+v, w = outer_approximation(solver, 2, c)
+
+# We visualize below:
+
 julia_plot(v, c)
 
 # Let's now look at degree 4.
 
-v, w, model = outer_approximation(solver, 4, c)
-julia_plot(v, c)
+v, w = outer_approximation(solver, 4, c)
 
-# Let's finish with degree 6.
+# We visualize below:
 
-v, w, model = outer_approximation(solver, 6, c)
 julia_plot(v, c)

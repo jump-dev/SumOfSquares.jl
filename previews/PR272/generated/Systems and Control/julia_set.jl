@@ -53,12 +53,12 @@ function outer_approximation(solver, d::Int, c; α = 1/2)
     if primal_status(model) == MOI.NO_SOLUTION
         return
     end
-    return value(v), value(w), model
+    return value(v), value(w)
 end
 
 using ImplicitPlots
 using Plots
-function julia_plot(poly, c, n=400, m=1000; tol=1e-6, res = 1000)
+function julia_plot(poly, c, n=200, m=1000; tol=1e-6, res = 1000)
     r = escape_radius(c)
     p = implicit_plot(poly; xlims=(-r, r) .* 1.1, ylims=(-r, r), resolution = res, label="")
     θ = range(0, stop=2π, length=100)
@@ -81,23 +81,21 @@ import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 
 c = -0.7 + 0.2im
-v, w, model = outer_approximation(solver, 2, c)
+v, w = outer_approximation(solver, 2, c)
+
 julia_plot(v, c)
 
-v, w, model = outer_approximation(solver, 4, c)
-julia_plot(v, c)
+v, w = outer_approximation(solver, 4, c)
 
-v, w, model = outer_approximation(solver, 6, c)
 julia_plot(v, c)
 
 c = -0.9 + 0.2im
-v, w, model = outer_approximation(solver, 2, c)
+v, w = outer_approximation(solver, 2, c)
+
 julia_plot(v, c)
 
-v, w, model = outer_approximation(solver, 4, c)
-julia_plot(v, c)
+v, w = outer_approximation(solver, 4, c)
 
-v, w, model = outer_approximation(solver, 6, c)
 julia_plot(v, c)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
