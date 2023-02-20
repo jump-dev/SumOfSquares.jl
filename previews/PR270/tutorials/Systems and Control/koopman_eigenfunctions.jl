@@ -52,7 +52,11 @@ model = SOSModel(CSDP.Optimizer)
 optimize!(model)
 solution_summary(model)
 
+# The optimal value of `ϕ` is obtained as follows:
+
 ϕ_opt = value(ϕ)
+
+# Its plot is given below:
 
 using Plots
 x1s = x2s = range(-0.3, stop = 0.3, length = 40)
