@@ -22,16 +22,21 @@ using SumOfSquares
 r = 0.3
 X = @set x[1]^2 + x[2]^2 ≤ r^2
 
+function fitzhugh_nagumo(solver, N, M)
+    model = SOSModel(solver)
+    @variable(model, γ)
+    @objective(model, Min, γ)
+    @variable(model, ϕN, Poly(monomials(x, 2:N)))
+    ϕ = w ⋅ x + ϕN
+    ∇ϕ = differentiate(ϕ, x)
+    @constraint(model, -γ ≤ F ⋅ ∇ϕ - λ * ϕ, domain = X, maxdegree = M + 2)
+    @constraint(model, F ⋅ ∇ϕ - λ * ϕ ≤ γ, domain = X, maxdegree = M + 2)
+    optimize!(model)
+    return ϕ, model
+end
+
 import CSDP
-model = SOSModel(CSDP.Optimizer)
-@variable(model, γ)
-@objective(model, Min, γ)
-@variable(model, ϕN, Poly(monomials(x, 2:10)))
-ϕ = w ⋅ x + ϕN
-∇ϕ = differentiate(ϕ, x)
-@constraint(model, -γ ≤ F ⋅ ∇ϕ - λ * ϕ, domain = X)
-@constraint(model, F ⋅ ∇ϕ - λ * ϕ ≤ γ, domain = X)
-optimize!(model)
+ϕ, model = fitzhugh_nagumo(CSDP.Optimizer, 10, 20)
 solution_summary(model)
 
 ϕ_opt = value(ϕ)
