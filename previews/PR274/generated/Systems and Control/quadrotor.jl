@@ -40,21 +40,23 @@ using SparseArrays
 x0 = zeros(n_x)
 u0 = [gn/K, 0.0]
 
-A = map(differentiate(f, x)) do f
-    f(x => x0)
+x_dot = f + g * u
+A = map(differentiate(x_dot, x)) do a
+    a(x => x0, u => u0)
 end
 
-B = map(g) do g
-    g(x => x0)
+B = map(differentiate(x_dot, u)) do b
+    b(x => x0, u => u0)
 end
 
-J = setdiff(1:n_x, [1, 3])
-nJ = length(J)
-nD = nJ + n_u
-E = sparse(1:nJ, 1:nJ, ones(nJ), nJ, nD)
-AJ = A[J, J]
-BJ = B[J, :]
-C = [AJ BJ]
+import MatrixEquations
+S, v, K = MatrixEquations.arec(A, B, 10, 100)
+
+P, _, _ = MatrixEquations.arec(A - B * K, 0.0, 10.0)
+
+nD = n_x + n_u
+E = sparse(1:n_x, 1:n_x, ones(n_x), n_x, nD)
+C = [A B]
 
 using LinearAlgebra
 import SCS
@@ -62,7 +64,6 @@ solver = optimizer_with_attributes(SCS.Optimizer, MOI.Silent() => true)
 model = Model(solver)
 @variable(model, Q[1:nD, 1:nD] in PSDCone())
 cref = @constraint(model, Symmetric(-C * Q * E' - E * Q * C') in PSDCone())
-rectangle_J = rectangle[[J; nJ .+ (1:n_u)]]
 @constraint(model, rect_ref[i in 1:nD], Q[i, i] <= rectangle[i])
 @variable(model, volume)
 q = [Q[i, j] for j in 1:nD for i in 1:j]
@@ -74,20 +75,19 @@ solution_summary(model)
 P = inv(Symmetric(value.(Q)))
 using LinearAlgebra
 F = cholesky(P)
-K = -F.U[:, (nJ + 1):(nD)] \ F.U[:, 1:nJ] # That gives the following state feedback in polynomial form:
+K = -F.U[:, (n_x + 1):(nD)] \ F.U[:, 1:n_x] # That gives the following state feedback in polynomial form:
 
-k = K * x[J]
+k = K * x
 
-Px = inv(Symmetric(value.(Q[1:nJ, 1:nJ])))
+Px = inv(Symmetric(value.(Q[1:n_x, 1:n_x])))
 
 Px = [I; K]' * P * [I; K]
 
-eigen(Symmetric(Px * (AJ + BJ * K) + (AJ + BJ * K)' * Px)).values
+eigen(Symmetric(Px * (A + B * K) + (A + B * K)' * Px)).values
 
 function _create(model, d, P)
     if d isa Int
         return @variable(model, variable_type = P(monomials(x, 0:d)))
-        #return @variable(model, variable_type = P(monomials([t; x], 0:d)))
     else
         return d
     end

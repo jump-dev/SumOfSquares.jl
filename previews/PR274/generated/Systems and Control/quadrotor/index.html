@@ -47,43 +47,42 @@ X</code></pre><pre class="documenter-example-output"><code class="nohighlight hl
  -x[5] + 0.2617993877991494 ≥ 0
  x[6] + 1.5707963267948966 ≥ 0
  -x[6] + 1.5707963267948966 ≥ 0
-</code></pre><p>The starting value for <code>k</code> is the following linear state-feedback that maintains the quadrotor at the origin [YAP21, Remark 3].</p><p>For this, we compute an ellipsoidal control invariant set using [LJ21, Corollary 9] For this, we first compute the descriptor system described in [LJ21, Proposition 5].</p><p>[LJ21] Legat, Benoît, and Jungers, Raphaël M. <em>Geometric control of algebraic systems.</em> IFAC-PapersOnLine 54.5 (2021): 79-84.</p><pre><code class="language-julia hljs">using SparseArrays
+</code></pre><p>The starting value for <code>k</code> is the following linear state-feedback that maintains the quadrotor at the origin [YAP21, Remark 3].</p><pre><code class="language-julia hljs">using SparseArrays
 x0 = zeros(n_x)
 u0 = [gn/K, 0.0]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
  15.415730337078651
-  0.0</code></pre><p>The linearization of <code>f</code> is given by</p><pre><code class="language-julia hljs">A = map(differentiate(f, x)) do f
-    f(x =&gt; x0)
+  0.0</code></pre><p>The linearization of <code>f</code> is given by</p><pre><code class="language-julia hljs">x_dot = f + g * u
+A = map(differentiate(x_dot, x)) do a
+    a(x =&gt; x0, u =&gt; u0)
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6×6 Matrix{Float64}:
  0.0  0.0  1.0  0.0    0.0    0.0
  0.0  0.0  0.0  1.0    0.0    0.0
- 0.0  0.0  0.0  0.0    0.0    0.0
- 0.0  0.0  0.0  0.0    0.0    0.0
+ 0.0  0.0  0.0  0.0    9.8    0.0
+ 0.0  0.0  0.0  0.0   -0.0    0.0
  0.0  0.0  0.0  0.0    0.0    1.0
- 0.0  0.0  0.0  0.0  -70.0  -17.0</code></pre><p>The linearization of <code>g</code> is given by:</p><pre><code class="language-julia hljs">B = map(g) do g
-    g(x =&gt; x0)
+ 0.0  0.0  0.0  0.0  -70.0  -17.0</code></pre><p>The linearization of <code>g</code> is given by:</p><pre><code class="language-julia hljs">B = map(differentiate(x_dot, u)) do b
+    b(x =&gt; x0, u =&gt; u0)
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6×2 Matrix{Float64}:
  0.0        0.0
  0.0        0.0
  0.0        0.0
  0.635714   0.0
  0.0        0.0
- 0.0       55.0</code></pre><p>We can see that the equilibrium is not stabilizable. Indeed, if <code>x3</code> is nonzero then <code>x1</code> will grow indefinitely while we have no control over either <code>x1</code> nor <code>x3</code>. Let&#39;s find a Lyapunov function for the rest of the states and compute a linear state feedback for these.</p><pre><code class="language-julia hljs">J = setdiff(1:n_x, [1, 3])
-nJ = length(J)
-nD = nJ + n_u
-E = sparse(1:nJ, 1:nJ, ones(nJ), nJ, nD)
-AJ = A[J, J]
-BJ = B[J, :]
-C = [AJ BJ]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×6 Matrix{Float64}:
- 0.0  1.0    0.0    0.0  0.0        0.0
- 0.0  0.0    0.0    0.0  0.635714   0.0
- 0.0  0.0    0.0    1.0  0.0        0.0
- 0.0  0.0  -70.0  -17.0  0.0       55.0</code></pre><p>We know solve [LJ21, (13)]</p><pre><code class="language-julia hljs">using LinearAlgebra
+ 0.0       55.0</code></pre><p>We can compute the Linear-Quadratic Regulator using the same weight matrices as <a href="https://github.com/heyinUCB/Backward-Reachability-Analysis-and-Control-Synthesis">YAP21</a></p><pre><code class="language-julia hljs">import MatrixEquations
+S, v, K = MatrixEquations.arec(A, B, 10, 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">([145.91648724513337 0.0 … 103.37066470647957 0.5749595745760094; 0.0 141.24000391586395 … -0.0 0.0; … ; 103.37066470647957 -0.0 … 559.7832728912887 2.949785658896485; 0.5749595745760094 0.0 … 2.949785658896485 0.5381411869254619], ComplexF64[-174.34978294240278 + 0.0im, -2.2185572278601233 + 2.2014118608231428im, -2.2185572278601233 - 2.2014118608231428im, -1.0008116468297334 + 0.0im, -1.4916433890176233 + 0.0im, -1.3477115902937555 + 0.0im], [0.0 3.1622776601686358 … 0.0 0.0; 3.162277660168052 0.0 … 16.223821123930666 2.9597765280900403], [1.611144845196192e-6 -0.008771626450488266 … 0.0 0.0; -0.0 0.0 … 0.011524906469290956 -0.0008272341629524921; … ; 0.0 0.0 … -0.04033717264252285 -0.04911829197708385; -2.499095953227872 -0.09890033030678862 … 0.0 0.0])</code></pre><p>The corresponding quadratic regulator is:</p><pre><code class="language-julia hljs">P, _, _ = MatrixEquations.arec(A - B * K, 0.0, 10.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">([14.546414232392811 -4.1519546509066404e-13 … 10.155770619177467 0.02874797872881651; -4.1519546509066404e-13 12.36303706137998 … -5.77308345064067e-13 -3.2019987351797165e-15; … ; 10.155770619177467 -5.77308345064067e-13 … 55.113616622956386 0.15534043417691945; 0.02874797872881651 -3.2019987351797165e-15 … 0.15534043417691945 0.028674598845285566], ComplexF64[-174.3497829424029 + 0.0im, -2.218557227859746 + 2.201411860823505im, -2.218557227859746 - 2.201411860823505im, -1.0008116468296286 + 0.0im, -1.4916433890159477 + 0.0im, -1.347711590295426 + 0.0im], [-1.8241315067739179e-6 0.02377516304458807 … 5.23307891122959e-13 9.079337655017754e-14; 2.0565674097552837e-17 -1.9400815594378327e-15 … 0.11166975002343552 -0.06136401345843784; … ; -0.15392719914799866 -0.959743422396598 … 5.337240729396093e-13 9.687042596588282e-14; 0.027421579759805473 -0.00707662916934221 … 8.557002917606841e-15 1.5699585489046389e-15])</code></pre><p>This does not however take the constraints <code>X</code> into account. To take the constraint into account, we compute an ellipsoidal control invariant set using [LJ21, Corollary 9] For this, we first compute the descriptor system described in [LJ21, Proposition 5].</p><p>[LJ21] Legat, Benoît, and Jungers, Raphaël M. <em>Geometric control of algebraic systems.</em> IFAC-PapersOnLine 54.5 (2021): 79-84.</p><pre><code class="language-julia hljs">nD = n_x + n_u
+E = sparse(1:n_x, 1:n_x, ones(n_x), n_x, nD)
+C = [A B]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6×8 Matrix{Float64}:
+ 0.0  0.0  1.0  0.0    0.0    0.0  0.0        0.0
+ 0.0  0.0  0.0  1.0    0.0    0.0  0.0        0.0
+ 0.0  0.0  0.0  0.0    9.8    0.0  0.0        0.0
+ 0.0  0.0  0.0  0.0   -0.0    0.0  0.635714   0.0
+ 0.0  0.0  0.0  0.0    0.0    1.0  0.0        0.0
+ 0.0  0.0  0.0  0.0  -70.0  -17.0  0.0       55.0</code></pre><p>We know solve [LJ21, (13)]</p><pre><code class="language-julia hljs">using LinearAlgebra
 import SCS
 solver = optimizer_with_attributes(SCS.Optimizer, MOI.Silent() =&gt; true)
 model = Model(solver)
 @variable(model, Q[1:nD, 1:nD] in PSDCone())
 cref = @constraint(model, Symmetric(-C * Q * E&#39; - E * Q * C&#39;) in PSDCone())
-rectangle_J = rectangle[[J; nJ .+ (1:n_u)]]
 @constraint(model, rect_ref[i in 1:nD], Q[i, i] &lt;= rectangle[i])
 @variable(model, volume)
 q = [Q[i, j] for j in 1:nD for i in 1:j]
@@ -101,34 +100,39 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
 * Candidate solution (result #1)
   Primal status      : FEASIBLE_POINT
   Dual status        : FEASIBLE_POINT
-  Objective value    : 6.24704e-01
-  Dual objective value : 6.24693e-01
+  Objective value    : 6.10540e-01
+  Dual objective value : 6.10520e-01
 
 * Work counters
-  Solve time (sec)   : 6.12214e-02
+  Solve time (sec)   : 4.44681e-02
 </code></pre><p>We now have the control-Lyapunov function <code>V(x, u) = [x, u]&#39; inv(Q) [x, u]</code>. In other words, The 1-sublevel set of <code>V(x, u)</code> is an invariant subset of <code>rectangle</code> with any state-feedback <code>κ(x)</code> such that <code>V(x, κ(x)) ≤ 1</code> for any <code>x</code> such that <code>min_u V(x, u) ≤ 1</code>. Such candidate <code>κ(x)</code> can therefore be chosen as <code>argmin_u V(x, u)</code>. Let <code>inv(Q) = U&#39; * U</code> where <code>U = [Ux Uu]</code>. We have <code>V(x, u) = ||Ux * x + Uu * u||_2</code>. <code>κ(x)</code> is therefore the least-square solution of <code>Uu * κ(x) = -Ux * x</code>. This we find the linear state-feedback <code>κ(x) = K * x</code> where <code>K = -Uu \ Ux</code>.</p><pre><code class="language-julia hljs">P = inv(Symmetric(value.(Q)))
 using LinearAlgebra
 F = cholesky(P)
-K = -F.U[:, (nJ + 1):(nD)] \ F.U[:, 1:nJ] # That gives the following state feedback in polynomial form:
-
-k = K * x[J]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{DynamicPolynomials.Polynomial{true, Float64}}:
- -0.19622653627237438x₂ - 0.39287266922367087x₄ - 3.930388471170766e-16x₅ - 2.5763934158713317e-16x₆
- 2.6828640723569464e-15x₂ - 6.523042058279634e-15x₄ + 0.9534429382637486x₅ - 0.11396000421436397x₆</code></pre><p>We now have two equivalent ways to obtain the Lyapunov function. Because <code>{V(x) ≤ 1} = {min_u V(x, u) ≤ 1}</code>, see the left-hand side as the projection of the ellipsoid on <code>x, u</code>. As the projection on the polar becomes simply cutting with the hyperplane <code>u = 0</code>, the polar of the projection is simply <code>Q[1:6, 1:6]</code> ! So</p><pre><code class="language-julia hljs">Px = inv(Symmetric(value.(Q[1:nJ, 1:nJ])))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×4 LinearAlgebra.Symmetric{Float64, Matrix{Float64}}:
- 0.661753      0.441601      2.86668e-15   2.29212e-15
- 0.441601      2.65257      -5.85708e-15  -1.691e-15
- 2.86668e-15  -5.85708e-15   1.69023       0.449148
- 2.29212e-15  -1.691e-15     0.449148      1.11935</code></pre><p>An alternative way is to use our linear state feedback. We know that <code>min_u V(x, u) = V(x, Kx)</code> so</p><pre><code class="language-julia hljs">Px = [I; K]&#39; * P * [I; K]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×4 Matrix{Float64}:
- 0.661753      0.441601      2.86668e-15   2.29212e-15
- 0.441601      2.65257      -5.85708e-15  -1.691e-15
- 2.86668e-15  -5.85708e-15   1.69023       0.449148
- 2.29212e-15  -1.691e-15     0.449148      1.11935</code></pre><p>We can double check that this matrix is negative definite:</p><pre><code class="language-julia hljs">eigen(Symmetric(Px * (AJ + BJ * K) + (AJ + BJ * K)&#39; * Px)).values</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Float64}:
- -66.96611787243293
-  -0.5519161080356569
-  -4.058120947211065e-5
-  -1.1635183326520363e-5</code></pre><p>Let&#39;s now find a valid Lyapunov function for the nonlinear system using that linear state feedback. That corresponds to the V-step of [YAP21, Algorithm 1]:</p><pre><code class="language-julia hljs">function _create(model, d, P)
+K = -F.U[:, (n_x + 1):(nD)] \ F.U[:, 1:n_x] # That gives the following state feedback in polynomial form:</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×6 Matrix{Float64}:
+  1.80448e-15  -0.664213      8.67445e-16  …   5.77456e-15  -8.66686e-16
+ -0.0475248    -1.29313e-15  -0.080485        -0.0090073    -0.0181524</code></pre><p>The corresponding polynomial form is given by:</p><pre><code class="language-julia hljs">k = K * x</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{DynamicPolynomials.Polynomial{true, Float64}}:
+ 1.8044831922515837e-15x₁ - 0.6642133496066044x₂ + 8.674450511927789e-16x₃ - 0.7227866208948744x₄ + 5.77456371634203e-15x₅ - 8.666856822362621e-16x₆
+ -0.047524750631232654x₁ - 1.2931340320941731e-15x₂ - 0.08048496745811395x₃ + 2.2751844292478188e-15x₄ - 0.009007296539577787x₅ - 0.01815235310760693x₆</code></pre><p>We now have two equivalent ways to obtain the Lyapunov function. Because <code>{V(x) ≤ 1} = {min_u V(x, u) ≤ 1}</code>, see the left-hand side as the projection of the ellipsoid on <code>x, u</code>. As the projection on the polar becomes simply cutting with the hyperplane <code>u = 0</code>, the polar of the projection is simply <code>Q[1:6, 1:6]</code> ! So</p><pre><code class="language-julia hljs">Px = inv(Symmetric(value.(Q[1:n_x, 1:n_x])))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6×6 LinearAlgebra.Symmetric{Float64, Matrix{Float64}}:
+  0.60379       4.58007e-15   0.0985877    …   0.465159      0.0588733
+  4.58007e-15   1.32353       5.85663e-15      1.92455e-15  -3.30081e-15
+  0.0985877     5.85663e-15   1.85572          2.64415       0.619223
+ -1.63448e-16   0.480075     -5.95808e-15      7.21166e-16  -5.3412e-16
+  0.465159      1.92455e-15   2.64415         14.0161        1.84333
+  0.0588733    -3.30081e-15   0.619223     …   1.84333       0.933395</code></pre><p>An alternative way is to use our linear state feedback. We know that <code>min_u V(x, u) = V(x, Kx)</code> so</p><pre><code class="language-julia hljs">Px = [I; K]&#39; * P * [I; K]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6×6 Matrix{Float64}:
+  0.60379       4.58007e-15   0.0985877    …   0.465159      0.0588733
+  4.58007e-15   1.32353       5.85663e-15      1.92455e-15  -3.30081e-15
+  0.0985877     5.85663e-15   1.85572          2.64415       0.619223
+ -1.63448e-16   0.480075     -5.95808e-15      7.21166e-16  -5.3412e-16
+  0.465159      1.92455e-15   2.64415         14.0161        1.84333
+  0.0588733    -3.30081e-15   0.619223     …   1.84333       0.933395</code></pre><p>We can double check that this matrix is negative definite:</p><pre><code class="language-julia hljs">eigen(Symmetric(Px * (A + B * K) + (A + B * K)&#39; * Px)).values</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element Vector{Float64}:
+ -243.57396135575334
+   -0.88551014883334
+   -2.072629222450229e-5
+   -7.2574026264248e-8
+    2.816678689171484e-7
+    0.0009642423807258547</code></pre><p>Let&#39;s now find a valid Lyapunov function for the nonlinear system using that linear state feedback. That corresponds to the V-step of [YAP21, Algorithm 1]:</p><pre><code class="language-julia hljs">function _create(model, d, P)
     if d isa Int
         return @variable(model, variable_type = P(monomials(x, 0:d)))
-        #return @variable(model, variable_type = P(monomials([t; x], 0:d)))
     else
         return d
     end
@@ -173,11 +177,11 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Primal status      : FEASIBLE_POINT
   Dual status        : FEASIBLE_POINT
   Objective value    : 0.00000e+00
-  Dual objective value : -7.48602e-12
+  Dual objective value : -7.48410e-12
 
 * Work counters
-  Solve time (sec)   : 6.67364e-03
-</code></pre><p>The Lyapunov obtained is as follows</p><pre><code class="language-julia hljs">V</code></pre><p class="math-container">\[ 3.270918395732398e-8x_{1}^{2} + 3.167809298034239e-23x_{1}x_{2} - 2.530765421021385e-12x_{1}x_{3} - 1.6957568763743917e-24x_{1}x_{4} - 4.046968102637713e-12x_{1}x_{5} + 7.155764089773019e-13x_{1}x_{6} + 1.3704656436223044e-7x_{2}^{2} - 1.700600017936993e-23x_{2}x_{3} - 1.745266763178922e-7x_{2}x_{4} - 6.349598762228351e-22x_{2}x_{5} + 3.751457724049311e-22x_{2}x_{6} + 6.917050716923042e-12x_{3}^{2} + 9.069404342588527e-25x_{3}x_{4} + 1.4704199201121313e-13x_{3}x_{5} - 2.3070604887078734e-15x_{3}x_{6} + 1.5612394153649966e-7x_{4}^{2} + 3.8838925942527625e-21x_{4}x_{5} + 2.0809806260551552e-22x_{4}x_{6} + 3.631738895961291e-7x_{5}^{2} - 1.2963928636526255e-9x_{5}x_{6} + 7.072583336286186e-8x_{6}^{2} - 2.906254993885284e-21x_{1} + 5.081950998123909e-7x_{2} - 8.725723805070821e-22x_{3} - 4.1379474225663187e-7x_{4} - 1.2636023067916625e-20x_{5} - 1.9387032398637226e-21x_{6} + 1.0000068335029546 \]</p><p>We now try to find a state feedback that would improve γ</p><pre><code class="language-julia hljs">using MutableArithmetics
+  Solve time (sec)   : 7.20844e-03
+</code></pre><p>The Lyapunov obtained is as follows</p><pre><code class="language-julia hljs">V</code></pre><p class="math-container">\[ 4.8877630431071766e-8x_{1}^{2} + 2.758644385189247e-25x_{1}x_{2} - 2.5017256249934794e-11x_{1}x_{3} - 1.6560856778462455e-22x_{1}x_{4} + 7.2054429011152e-8x_{1}x_{5} + 8.57308533581914e-9x_{1}x_{6} + 1.6477243793941312e-7x_{2}^{2} - 1.356277820272328e-23x_{2}x_{3} - 9.405327948946013e-8x_{2}x_{4} - 1.5496090022096714e-21x_{2}x_{5} + 4.1228958368328845e-24x_{2}x_{6} + 1.3474255785621875e-11x_{3}^{2} + 2.1826135093406784e-24x_{3}x_{4} + 7.903343565693963e-12x_{3}x_{5} + 1.1325867942533704e-12x_{3}x_{6} + 1.1845327918988095e-7x_{4}^{2} + 2.325800791173985e-21x_{4}x_{5} - 7.317927329413892e-23x_{4}x_{6} + 3.6918652669160694e-7x_{5}^{2} + 9.216771989621136e-9x_{5}x_{6} + 1.1271560584848727e-8x_{6}^{2} + 2.522857862159588e-21x_{1} + 4.0111752884416337e-7x_{2} - 2.4611045730186663e-21x_{3} - 4.106687671295625e-7x_{4} - 2.4896278530919443e-22x_{5} - 3.134514575443906e-22x_{6} + 1.0000068640913347 \]</p><p>We now try to find a state feedback that would improve γ</p><pre><code class="language-julia hljs">using MutableArithmetics
 function γ_step(solver, V, γ_min, k_best, s3_best, degree_k, degree_s3, γ_tol, max_iters)
     γ0_min = γ_min
     γ_max = Inf
@@ -210,7 +214,7 @@ function γ_step(solver, V, γ_min, k_best, s3_best, degree_k, degree_s3, γ_tol
     return γ_min, k_best, s3_best
 end
 
-γ, k, s3 = γ_step(solver, V, γ, k, s3, [2, 2], 2, 1e-3, 10)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(1.0, DynamicPolynomials.Polynomial{true, Float64}[-0.19622653627237438x₂ - 0.39287266922367087x₄ - 3.930388471170766e-16x₅ - 2.5763934158713317e-16x₆, 2.6828640723569464e-15x₂ - 6.523042058279634e-15x₄ + 0.9534429382637486x₅ - 0.11396000421436397x₆], 1.0)</code></pre><p>We now try to find a new Lyapunov V:</p><pre><code class="language-julia hljs">model, V = V_step(solver, V, γ, k, s3)
+γ, k, s3 = γ_step(solver, V, γ, k, s3, [2, 2], 2, 1e-3, 10)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(1.0, DynamicPolynomials.Polynomial{true, Float64}[1.8044831922515837e-15x₁ - 0.6642133496066044x₂ + 8.674450511927789e-16x₃ - 0.7227866208948744x₄ + 5.77456371634203e-15x₅ - 8.666856822362621e-16x₆, -0.047524750631232654x₁ - 1.2931340320941731e-15x₂ - 0.08048496745811395x₃ + 2.2751844292478188e-15x₄ - 0.009007296539577787x₅ - 0.01815235310760693x₆], 1.0)</code></pre><p>We now try to find a new Lyapunov V:</p><pre><code class="language-julia hljs">model, V = V_step(solver, V, γ, k, s3)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : SCS
 
 * Status
@@ -223,11 +227,11 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Primal status      : FEASIBLE_POINT
   Dual status        : FEASIBLE_POINT
   Objective value    : 0.00000e+00
-  Dual objective value : -7.83079e-12
+  Dual objective value : -7.83208e-12
 
 * Work counters
-  Solve time (sec)   : 7.27932e-03
-</code></pre><p>The Lyapunov obtained is as follows</p><pre><code class="language-julia hljs">V</code></pre><p class="math-container">\[ 2.6887299233504928e-8x_{1}^{2} + 2.9872456866778983e-22x_{1}x_{2} - 2.1001715283002107e-12x_{1}x_{3} - 1.0564783856845026e-23x_{1}x_{4} - 4.1701741482069905e-12x_{1}x_{5} + 6.081130476278392e-13x_{1}x_{6} + 1.3292427676820004e-7x_{2}^{2} - 1.2455396604481166e-24x_{2}x_{3} - 1.652986627998994e-7x_{2}x_{4} + 9.704285178591127e-22x_{2}x_{5} + 3.110818506251064e-22x_{2}x_{6} + 5.689477455633206e-12x_{3}^{2} + 4.0087452607583566e-24x_{3}x_{4} - 3.7082957182125265e-13x_{3}x_{5} + 1.936766477769727e-15x_{3}x_{6} + 1.474520495638035e-7x_{4}^{2} + 2.105424731073417e-21x_{4}x_{5} + 3.309792931490456e-22x_{4}x_{6} + 3.252095639402081e-7x_{5}^{2} - 8.895436954412837e-10x_{5}x_{6} + 6.573719564305073e-8x_{6}^{2} - 1.9316086180918378e-21x_{1} + 4.7073526459043376e-7x_{2} - 3.422343936884572e-21x_{3} - 3.924799482096176e-7x_{4} - 5.7908724195359595e-21x_{5} - 1.6851565478676564e-21x_{6} + 1.000006466375888 \]</p><p>We now try to improve γ again</p><pre><code class="language-julia hljs">γ, k, s3 = γ_step(solver, V, γ, k, s3, [2, 2], 2, 1e-3, 10)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(1.0, DynamicPolynomials.Polynomial{true, Float64}[-0.19622653627237438x₂ - 0.39287266922367087x₄ - 3.930388471170766e-16x₅ - 2.5763934158713317e-16x₆, 2.6828640723569464e-15x₂ - 6.523042058279634e-15x₄ + 0.9534429382637486x₅ - 0.11396000421436397x₆], 1.0)</code></pre><p>We now try to find a new Lyapunov V:</p><pre><code class="language-julia hljs">model, V = V_step(solver, V, γ, k, s3)
+  Solve time (sec)   : 7.55165e-03
+</code></pre><p>The Lyapunov obtained is as follows</p><pre><code class="language-julia hljs">V</code></pre><p class="math-container">\[ 4.376042942500143e-8x_{1}^{2} + 3.0854962061294627e-23x_{1}x_{2} - 1.7601002249639244e-11x_{1}x_{3} - 2.765030844114297e-22x_{1}x_{4} + 6.256328709552058e-8x_{1}x_{5} + 8.163335173800878e-9x_{1}x_{6} + 1.5675824258621558e-7x_{2}^{2} - 6.181375313200897e-24x_{2}x_{3} - 8.953282509687231e-8x_{2}x_{4} - 1.4165786657923989e-21x_{2}x_{5} - 7.175905734768593e-24x_{2}x_{6} + 1.0291543148057179e-11x_{3}^{2} + 2.305093354599287e-24x_{3}x_{4} + 3.5279734729918183e-12x_{3}x_{5} + 4.047069941707634e-13x_{3}x_{6} + 1.1177983874209226e-7x_{4}^{2} + 1.8997021610332166e-21x_{4}x_{5} - 6.609225591329223e-23x_{4}x_{6} + 3.283751981760004e-7x_{5}^{2} + 8.9573678236505e-9x_{5}x_{6} + 1.0119892160453752e-8x_{6}^{2} + 6.992970497821096e-22x_{1} + 3.742741602444346e-7x_{2} + 2.1833265337731446e-21x_{3} - 3.8905178334301527e-7x_{4} - 5.73704135856962e-22x_{5} - 2.3086032179199843e-22x_{6} + 1.000006491976757 \]</p><p>We now try to improve γ again</p><pre><code class="language-julia hljs">γ, k, s3 = γ_step(solver, V, γ, k, s3, [2, 2], 2, 1e-3, 10)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(1.0, DynamicPolynomials.Polynomial{true, Float64}[1.8044831922515837e-15x₁ - 0.6642133496066044x₂ + 8.674450511927789e-16x₃ - 0.7227866208948744x₄ + 5.77456371634203e-15x₅ - 8.666856822362621e-16x₆, -0.047524750631232654x₁ - 1.2931340320941731e-15x₂ - 0.08048496745811395x₃ + 2.2751844292478188e-15x₄ - 0.009007296539577787x₅ - 0.01815235310760693x₆], 1.0)</code></pre><p>We now try to find a new Lyapunov V:</p><pre><code class="language-julia hljs">model, V = V_step(solver, V, γ, k, s3)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : SCS
 
 * Status
@@ -240,8 +244,8 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Primal status      : FEASIBLE_POINT
   Dual status        : FEASIBLE_POINT
   Objective value    : 0.00000e+00
-  Dual objective value : -7.83083e-12
+  Dual objective value : -7.83164e-12
 
 * Work counters
-  Solve time (sec)   : 7.22054e-03
-</code></pre><p>The Lyapunov obtained is as follows</p><pre><code class="language-julia hljs">V</code></pre><p class="math-container">\[ 2.6887299283227056e-8x_{1}^{2} + 2.8762797147229776e-22x_{1}x_{2} - 2.100171534793294e-12x_{1}x_{3} + 7.476442203909692e-25x_{1}x_{4} - 4.170174149078067e-12x_{1}x_{5} + 6.081130486979986e-13x_{1}x_{6} + 1.3292427680563458e-7x_{2}^{2} + 1.9358083615283524e-23x_{2}x_{3} - 1.652986627604508e-7x_{2}x_{4} + 7.647947358637265e-22x_{2}x_{5} + 3.873503353002841e-22x_{2}x_{6} + 5.689477467238331e-12x_{3}^{2} - 9.861014506118508e-25x_{3}x_{4} - 3.7082956913559794e-13x_{3}x_{5} + 1.9367664554255644e-15x_{3}x_{6} + 1.474520495340144e-7x_{4}^{2} + 2.7897772730640074e-21x_{4}x_{5} + 2.1266127707066577e-22x_{4}x_{6} + 3.252095640491712e-7x_{5}^{2} - 8.895436795628335e-10x_{5}x_{6} + 6.573719564113916e-8x_{6}^{2} + 6.0072488023391475e-22x_{1} + 4.7073526494024047e-7x_{2} + 1.0450303630378034e-21x_{3} - 3.9247994881491304e-7x_{4} - 8.33211884396278e-21x_{5} - 1.834370496240584e-21x_{6} + 1.0000064663758899 \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lyapunov_function_search/">« Lyapunov Function Search</a><a class="docs-footer-nextpage" href="../stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 22 February 2023 13:55">Wednesday 22 February 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 7.46623e-03
+</code></pre><p>The Lyapunov obtained is as follows</p><pre><code class="language-julia hljs">V</code></pre><p class="math-container">\[ 4.37604291697808e-8x_{1}^{2} - 2.5010386698695297e-22x_{1}x_{2} - 1.760100189200634e-11x_{1}x_{3} + 2.4002793516793827e-22x_{1}x_{4} + 6.256328698140404e-8x_{1}x_{5} + 8.163335155209215e-9x_{1}x_{6} + 1.5675824207942018e-7x_{2}^{2} + 1.2680737524663406e-23x_{2}x_{3} - 8.953282489562196e-8x_{2}x_{4} - 1.2248358346399777e-21x_{2}x_{5} + 3.649234736682948e-23x_{2}x_{6} + 1.0291543003783761e-11x_{3}^{2} + 1.2485592561346202e-24x_{3}x_{4} + 3.5279734615338094e-12x_{3}x_{5} + 4.0470698639118724e-13x_{3}x_{6} + 1.1177983853360767e-7x_{4}^{2} + 2.5700330230270258e-21x_{4}x_{5} - 6.889623187187117e-23x_{4}x_{6} + 3.283751980548072e-7x_{5}^{2} + 8.957367813629968e-9x_{5}x_{6} + 1.0119892155969199e-8x_{6}^{2} + 2.6130508726689894e-22x_{1} + 3.7427416037934315e-7x_{2} - 2.634580144814241e-21x_{3} - 3.8905178257878557e-7x_{4} - 1.877416351720248e-21x_{5} - 2.821008879571607e-22x_{6} + 1.0000064919767413 \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lyapunov_function_search/">« Lyapunov Function Search</a><a class="docs-footer-nextpage" href="../stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 22 February 2023 16:47">Wednesday 22 February 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
