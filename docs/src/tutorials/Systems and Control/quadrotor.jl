@@ -66,13 +66,6 @@ X
 
 # The starting value for `k` is the following linear state-feedback
 # that maintains the quadrotor at the origin [YAP21, Remark 3].
-#
-# For this, we compute an ellipsoidal control invariant set using [LJ21, Corollary 9]
-# For this, we first compute the descriptor system described in [LJ21, Proposition 5].
-#
-# [LJ21] Legat, Benoît, and Jungers, Raphaël M.
-# *Geometric control of algebraic systems.*
-# IFAC-PapersOnLine 54.5 (2021): 79-84.
 
 using SparseArrays
 x0 = zeros(n_x)
@@ -80,29 +73,40 @@ u0 = [gn/K, 0.0]
 
 # The linearization of `f` is given by
 
-A = map(differentiate(f, x)) do f
-    f(x => x0)
+x_dot = f + g * u
+A = map(differentiate(x_dot, x)) do a
+    a(x => x0, u => u0)
 end
 
 # The linearization of `g` is given by:
 
-B = map(g) do g
-    g(x => x0)
+B = map(differentiate(x_dot, u)) do b
+    b(x => x0, u => u0)
 end
 
-# We can see that the equilibrium is not stabilizable.
-# Indeed, if `x3` is nonzero then `x1` will grow indefinitely
-# while we have no control over either `x1` nor `x3`.
-# Let's find a Lyapunov function for the rest of the states
-# and compute a linear state feedback for these.
+# We can compute the Linear-Quadratic Regulator using the same weight matrices
+# as [YAP21](https://github.com/heyinUCB/Backward-Reachability-Analysis-and-Control-Synthesis)
 
-J = setdiff(1:n_x, [1, 3])
-nJ = length(J)
-nD = nJ + n_u
-E = sparse(1:nJ, 1:nJ, ones(nJ), nJ, nD)
-AJ = A[J, J]
-BJ = B[J, :]
-C = [AJ BJ]
+import MatrixEquations
+S, v, K = MatrixEquations.arec(A, B, 10, 100)
+
+# The corresponding quadratic regulator is:
+
+P, _, _ = MatrixEquations.arec(A - B * K, 0.0, 10.0)
+
+# This does not however take the constraints `X` into account.
+# To take the constraint into account,
+# we compute an ellipsoidal control invariant set using [LJ21, Corollary 9]
+# For this, we first compute the descriptor system described in [LJ21, Proposition 5].
+#
+# [LJ21] Legat, Benoît, and Jungers, Raphaël M.
+# *Geometric control of algebraic systems.*
+# IFAC-PapersOnLine 54.5 (2021): 79-84.
+
+
+nD = n_x + n_u
+E = sparse(1:n_x, 1:n_x, ones(n_x), n_x, nD)
+C = [A B]
 
 # We know solve [LJ21, (13)]
 
@@ -112,7 +116,6 @@ solver = optimizer_with_attributes(SCS.Optimizer, MOI.Silent() => true)
 model = Model(solver)
 @variable(model, Q[1:nD, 1:nD] in PSDCone())
 cref = @constraint(model, Symmetric(-C * Q * E' - E * Q * C') in PSDCone())
-rectangle_J = rectangle[[J; nJ .+ (1:n_u)]]
 @constraint(model, rect_ref[i in 1:nD], Q[i, i] <= rectangle[i])
 @variable(model, volume)
 q = [Q[i, j] for j in 1:nD for i in 1:j]
@@ -133,9 +136,11 @@ solution_summary(model)
 P = inv(Symmetric(value.(Q)))
 using LinearAlgebra
 F = cholesky(P)
-K = -F.U[:, (nJ + 1):(nD)] \ F.U[:, 1:nJ] # That gives the following state feedback in polynomial form:
+K = -F.U[:, (n_x + 1):(nD)] \ F.U[:, 1:n_x] # That gives the following state feedback in polynomial form:
 
-k = K * x[J]
+# The corresponding polynomial form is given by:
+
+k = K * x
 
 # We now have two equivalent ways to obtain the Lyapunov function.
 # Because `{V(x) ≤ 1} = {min_u V(x, u) ≤ 1}`,
@@ -143,7 +148,7 @@ k = K * x[J]
 # As the projection on the polar becomes simply cutting with the hyperplane `u = 0`,
 # the polar of the projection is simply `Q[1:6, 1:6]` ! So
 
-Px = inv(Symmetric(value.(Q[1:nJ, 1:nJ])))
+Px = inv(Symmetric(value.(Q[1:n_x, 1:n_x])))
 
 # An alternative way is to use our linear state feedback.
 # We know that `min_u V(x, u) = V(x, Kx)` so
@@ -151,7 +156,7 @@ Px = [I; K]' * P * [I; K]
 
 # We can double check that this matrix is negative definite:
 
-eigen(Symmetric(Px * (AJ + BJ * K) + (AJ + BJ * K)' * Px)).values
+eigen(Symmetric(Px * (A + B * K) + (A + B * K)' * Px)).values
 
 # Let's now find a valid Lyapunov function for the nonlinear system
 # using that linear state feedback.
@@ -160,7 +165,6 @@ eigen(Symmetric(Px * (AJ + BJ * K) + (AJ + BJ * K)' * Px)).values
 function _create(model, d, P)
     if d isa Int
         return @variable(model, variable_type = P(monomials(x, 0:d)))
-        #return @variable(model, variable_type = P(monomials([t; x], 0:d)))
     else
         return d
     end
