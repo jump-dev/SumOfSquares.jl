@@ -27,8 +27,8 @@ using DynamicPolynomials
 @polyvar t
 sinx5 = -0.166 * x[5]^3 + x[5]
 cosx5 = -0.498 * x[5]^2 + 1
-gn = 9.81
-K = 0.89 / 1.4
+gravity = 9.81
+K_const = 0.89 / 1.4
 d0 = 70
 d1 = 17
 n0 = 55
@@ -36,18 +36,18 @@ f = [
     x[3],
     x[4],
     0,
-    -gn,
+    -gravity,
     x[6],
     -d0 * x[5] - d1 * x[6],
 ]
 n_x = length(f)
 g = [
-    0         0
-    0         0
-    K * sinx5 0
-    K * cosx5 0
-    0         0
-    0         n0
+    0               0
+    0               0
+    K_const * sinx5 0
+    K_const * cosx5 0
+    0               0
+    0               n0
 ]
 n_u = size(g, 2)
 
@@ -97,6 +97,119 @@ P, _, _ = MatrixEquations.arec(A - B * K, 0.0, 10.0)
 
 V = x' * P * x
 
+function _create(model, d, P)
+    if d isa Int
+        return @variable(model, variable_type = P(monomials(x, 0:d)))
+    else
+        return d
+    end
+end
+
+using LinearAlgebra
+function base_model(solver, V, k, s3, γ)
+    T = 2;
+    w = t*(T-t);
+    model = SOSModel(solver)
+    xt = [x; t]
+    sos() = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
+    function soseps()
+        s = @variable(model, variable_type = Poly(monomials(xt, 0:2)))
+        @constraint(model, s - 1e-4 in SOSCone())
+        return s
+    end
+    s1 = @variable(model, variable_type = Poly(monomials(x, 0:2)))
+    s2 = sos()
+    s3 = sos()
+    s4a = soseps()
+    s4b = soseps()
+    s4c = soseps()
+    s4d = soseps()
+    s4e = soseps()
+    @variable(model, s4f, Poly(monomials(xt, 0:2))) # ?????
+    s5a = sos()
+    s5b = sos()
+    s6a = sos()
+    s6b = sos()
+    s7a = sos()
+    s7b = sos()
+    s8a = sos()
+    s8b = sos()
+    s9a = sos()
+    s9b = sos()
+    s9c = sos()
+    s9d = sos()
+    s9e = sos()
+    s9f = sos()
+    @variable(model, k[1:2], Poly(monomials(xt, 0:2)))
+
+    # dV/dt <= 0
+    ∂ = differentiate # Let's use a fancy shortcut
+    @constraint(model, ∂(V, x) ⋅ (f + g * k) + s2 * w <= s3 * (V - γ)) # [YAP21, (E.2)]
+    # V(t,x)<=gamma implies rt<=0
+    rt1 = (1.7 - x[1])*(x[1] + 1.7);
+    rt2 = (0.85 - x[2])*(x[2] + 0.85);
+    rt3 = (0.8 - x[3])*(x[3] + 0.8);
+    rt4 = (1 - x[4])*(x[4] + 1);
+    rt5 = (pi/12 - x[5])*(x[5] + pi/12);
+    rt6 = (pi/2 - x[6])*(x[6] + pi/2);
+    @constraint(model, s4a*rt1 + (V - γ) - s9a*w in SOSCone())
+    @constraint(model, s4b*rt2 + (V - γ) - s9b*w in SOSCone())
+    @constraint(model, s4c*rt3 + (V - γ) - s9c*w in SOSCone())
+    @constraint(model, s4d*rt4 + (V - γ) - s9d*w in SOSCone())
+    @constraint(model, s4e*rt5 + (V - γ) - s9e*w in SOSCone())
+    @constraint(model, s4f*rt6 + (V - γ) - s9f*w in SOSCone())
+    # V(t,x) <= gamma implies u <= uM
+    uM = [1.5 + gravity/K_const; π/12];
+    um = [-1.5 + gravity/K_const; -π/12];
+    @constraint(model, uM[1] - k[1] + s5a*(V - γ) - s6a*w in SOSCone())
+    @constraint(model, uM[2] - k[2] + s5b*(V - γ) - s6b*w in SOSCone())
+    # V(t,x) <= gamma implies u >= um
+    @constraint(model, k[1] - um[1] + s7a*(V - γ) - s8a*w in SOSCone())
+    @constraint(model, k[2] - um[2] + s7b*(V - γ) - s8b*w in SOSCone())
+    return model, V, k, s3
+end
+
+using MutableArithmetics
+function γ_step(solver, V, γ_min, k_best, s3_best, degree_k, degree_s3, γ_tol, max_iters)
+    γ0_min = γ_min
+    γ_max = Inf
+    num_iters = 0
+    while γ_max - γ_min > γ_tol && num_iters < max_iters
+        if isfinite(γ_max)
+            γ = (γ_min + γ_max) / 2
+        else
+            γ = γ0_min + (γ_min - γ0_min + 1) * 2
+        end
+        model, V, k, s3 = base_model(solver, V, degree_k, degree_s3, γ)
+        num_iters += 1
+        @info("Iteration $num_iters/$max_iters : solving...")
+        optimize!(model)
+        if primal_status(model) == MOI.FEASIBLE_POINT
+            γ_min = γ
+            k_best = value.(k)
+            s3_best = value(s3)
+        elseif dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
+            γ_max = γ
+        else
+            @warn("Giving up $(raw_status(model)), $(termination_status(model)), $(primal_status(model)), $(dual_status(model))")
+            break
+        end
+        @info("Solved in $(solve_time(model)) : γ ∈ [$γ_min, $γ_max[")
+    end
+    if !isfinite(γ_max)
+        error("Cannot find any infeasible γ")
+    end
+    return γ_min, k_best, s3_best
+end
+
+
+using MosekTools
+solver = optimizer_with_attributes(Mosek.Optimizer, MOI.Silent() => true)
+γ = 0.0
+k = nothing
+s3 = nothing
+γ, k, s3 = γ_step(solver, V, γ, k, s3, [2, 2], 2, 1e-3, 10)
+
 # This does not however take the constraints `X` into account.
 # To take the constraint into account,
 # we compute an ellipsoidal control invariant set using [LJ21, Corollary 9]
@@ -113,9 +226,6 @@ C = [A B]
 
 # We know solve [LJ21, (13)]
 
-using LinearAlgebra
-using MosekTools
-solver = optimizer_with_attributes(Mosek.Optimizer, MOI.Silent() => true)
 model = Model(solver)
 @variable(model, Q[1:nD, 1:nD] in PSDCone())
 cref = @constraint(model, Symmetric(-C * Q * E' - E * Q * C') in PSDCone())
@@ -165,13 +275,6 @@ eigen(Symmetric(Px * (A + B * K) + (A + B * K)' * Px)).values
 # using that linear state feedback.
 # That corresponds to the V-step of [YAP21, Algorithm 1]:
 
-function _create(model, d, P)
-    if d isa Int
-        return @variable(model, variable_type = P(monomials(x, 0:d)))
-    else
-        return d
-    end
-end
 function base_model(solver, V, k, s3, γ)
     model = SOSModel(solver)
     V = _create(model, V, Poly)
@@ -184,59 +287,6 @@ function base_model(solver, V, k, s3, γ)
     end
     return model, V, k, s3
 end
-function base_model(solver, V, k, s3, γ)
-    model = SOSModel(solver)
-    sosx = monomials(x, 0:1)
-    xt = [x; t]
-    sos() = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
-    function soseps()
-        s = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
-        @constraint(model, s - 1e-4 in SOSCone())
-    end
-    polxt = monomials(x, 0:2)
-    s1 = @variable(model, variable_type = Poly(monomials(x, 0:1)))
-    s2 = sos()
-    s3 = sos()
-    s4a = soseps()
-    s4b = soseps()
-    s4c = soseps()
-    s4d = soseps()
-    s4e = soseps()
-    @variable(model, s4f, Poly(polxt)) # ?????
-    s5a = sos()
-    s5b = sos()
-    s6a = sos()
-    s6b = sos()
-    s7a = sos()
-    s7b = sos()
-    s8a = sos()
-    s8b = sos()
-    s9a = sos()
-    s9b = sos()
-    s9c = sos()
-    s9d = sos()
-    s9e = sos()
-    s9f = sos()
-    @variable(model, k[1:2], Poly(monomials(xt, 0:1)))
-
-    # dV/dt <= 0
-    @constraint(model, ∂(V, x) ⋅ (f + g * k) + s2 * w <= s3 * (V - γ)) # [YAP21, (E.2)]
-    # V(t,x)<=gamma implies rt<=0
-    @constraint(model, s4a*rt1 + (Vval - gamma_try) - s9a*w in SOSCone())
-    @constraint(model, s4b*rt2 + (Vval - gamma_try) - s9b*w in SOSCone())
-    @constraint(model, s4c*rt3 + (Vval - gamma_try) - s9c*w in SOSCone())
-    @constraint(model, s4d*rt4 + (Vval - gamma_try) - s9d*w in SOSCone())
-    @constraint(model, s4e*rt5 + (Vval - gamma_try) - s9e*w in SOSCone())
-    @constraint(model, s4f*rt6 + (Vval - gamma_try) - s9f*w in SOSCone())
-    # V(t,x) <= gamma implies u <= uM
-    @constraint(model, uM1 - u1 + s5a*(Vval - gamma_try) - s6a*w in SOSCone())
-    @constraint(model, uM2 - u2 + s5b*(Vval - gamma_try) - s6b*w in SOSCone())
-    # V(t,x) <= gamma implies u >= um
-    @constraint(model, u1 - um1 + s7a*(Vval - gamma_try) - s8a*w in SOSCone())
-    @constraint(model, u2 - um2 + s7b*(Vval - gamma_try) - s8b*w in SOSCone())
-    return model, V, k, s3
-end
-
 
 _degree(d::Int) = d
 _degree(V) = maxdegree(V)
@@ -261,38 +311,6 @@ V
 
 # We now try to find a state feedback that would improve γ
 
-using MutableArithmetics
-function γ_step(solver, V, γ_min, k_best, s3_best, degree_k, degree_s3, γ_tol, max_iters)
-    γ0_min = γ_min
-    γ_max = Inf
-    num_iters = 0
-    while γ_max - γ_min > γ_tol && num_iters < max_iters
-        if isfinite(γ_max)
-            γ = (γ_min + γ_max) / 2
-        else
-            γ = γ0_min + (γ_min - γ0_min + 1) * 2
-        end
-        model, V, k, s3 = base_model(solver, V, degree_k, degree_s3, γ)
-        num_iters += 1
-        @info("Iteration $num_iters/$max_iters : solving...")
-        optimize!(model)
-        if primal_status(model) == MOI.FEASIBLE_POINT
-            γ_min = γ
-            k_best = value.(k)
-            s3_best = value(s3)
-        elseif dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
-            γ_max = γ
-        else
-            @warn("Giving up $(raw_status(model)), $(termination_status(model)), $(primal_status(model)), $(dual_status(model))")
-            break
-        end
-        @info("Solved in $(solve_time(model)) : γ ∈ [$γ_min, $γ_max[")
-    end
-    if !isfinite(γ_max)
-        error("Cannot find any infeasible γ")
-    end
-    return γ_min, k_best, s3_best
-end
 
 γ = 0.0
 k = nothing
