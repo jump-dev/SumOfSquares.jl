@@ -24,6 +24,7 @@ using Test #src
 using DynamicPolynomials
 @polyvar x[1:6]
 @polyvar u[1:2]
+@polyvar t
 sinx5 = -0.166 * x[5]^3 + x[5]
 cosx5 = -0.498 * x[5]^2 + 1
 gn = 9.81
@@ -94,6 +95,8 @@ S, v, K = MatrixEquations.arec(A, B, 100, 10)
 
 P, _, _ = MatrixEquations.arec(A - B * K, 0.0, 10.0)
 
+V = x' * P * x
+
 # This does not however take the constraints `X` into account.
 # To take the constraint into account,
 # we compute an ellipsoidal control invariant set using [LJ21, Corollary 9]
@@ -111,8 +114,8 @@ C = [A B]
 # We know solve [LJ21, (13)]
 
 using LinearAlgebra
-import SCS
-solver = optimizer_with_attributes(SCS.Optimizer, MOI.Silent() => true)
+using MosekTools
+solver = optimizer_with_attributes(Mosek.Optimizer, MOI.Silent() => true)
 model = Model(solver)
 @variable(model, Q[1:nD, 1:nD] in PSDCone())
 cref = @constraint(model, Symmetric(-C * Q * E' - E * Q * C') in PSDCone())
@@ -181,6 +184,59 @@ function base_model(solver, V, k, s3, γ)
     end
     return model, V, k, s3
 end
+function base_model(solver, V, k, s3, γ)
+    model = SOSModel(solver)
+    sosx = monomials(x, 0:1)
+    xt = [x; t]
+    sos() = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
+    function soseps()
+        s = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
+        @constraint(model, s - 1e-4 in SOSCone())
+    end
+    polxt = monomials(x, 0:2)
+    s1 = @variable(model, variable_type = Poly(monomials(x, 0:1)))
+    s2 = sos()
+    s3 = sos()
+    s4a = soseps()
+    s4b = soseps()
+    s4c = soseps()
+    s4d = soseps()
+    s4e = soseps()
+    @variable(model, s4f, Poly(polxt)) # ?????
+    s5a = sos()
+    s5b = sos()
+    s6a = sos()
+    s6b = sos()
+    s7a = sos()
+    s7b = sos()
+    s8a = sos()
+    s8b = sos()
+    s9a = sos()
+    s9b = sos()
+    s9c = sos()
+    s9d = sos()
+    s9e = sos()
+    s9f = sos()
+    @variable(model, k[1:2], Poly(monomials(xt, 0:1)))
+
+    # dV/dt <= 0
+    @constraint(model, ∂(V, x) ⋅ (f + g * k) + s2 * w <= s3 * (V - γ)) # [YAP21, (E.2)]
+    # V(t,x)<=gamma implies rt<=0
+    @constraint(model, s4a*rt1 + (Vval - gamma_try) - s9a*w in SOSCone())
+    @constraint(model, s4b*rt2 + (Vval - gamma_try) - s9b*w in SOSCone())
+    @constraint(model, s4c*rt3 + (Vval - gamma_try) - s9c*w in SOSCone())
+    @constraint(model, s4d*rt4 + (Vval - gamma_try) - s9d*w in SOSCone())
+    @constraint(model, s4e*rt5 + (Vval - gamma_try) - s9e*w in SOSCone())
+    @constraint(model, s4f*rt6 + (Vval - gamma_try) - s9f*w in SOSCone())
+    # V(t,x) <= gamma implies u <= uM
+    @constraint(model, uM1 - u1 + s5a*(Vval - gamma_try) - s6a*w in SOSCone())
+    @constraint(model, uM2 - u2 + s5b*(Vval - gamma_try) - s6b*w in SOSCone())
+    # V(t,x) <= gamma implies u >= um
+    @constraint(model, u1 - um1 + s7a*(Vval - gamma_try) - s8a*w in SOSCone())
+    @constraint(model, u2 - um2 + s7b*(Vval - gamma_try) - s8b*w in SOSCone())
+    return model, V, k, s3
+end
+
 
 _degree(d::Int) = d
 _degree(V) = maxdegree(V)
@@ -230,7 +286,7 @@ function γ_step(solver, V, γ_min, k_best, s3_best, degree_k, degree_s3, γ_tol
             @warn("Giving up $(raw_status(model)), $(termination_status(model)), $(primal_status(model)), $(dual_status(model))")
             break
         end
-        @info("Solved in $(solve_time(model)) : γ ∈ ]$γ_min, $γ_max]")
+        @info("Solved in $(solve_time(model)) : γ ∈ [$γ_min, $γ_max[")
     end
     if !isfinite(γ_max)
         error("Cannot find any infeasible γ")
@@ -238,6 +294,9 @@ function γ_step(solver, V, γ_min, k_best, s3_best, degree_k, degree_s3, γ_tol
     return γ_min, k_best, s3_best
 end
 
+γ = 0.0
+k = nothing
+s3 = nothing
 γ, k, s3 = γ_step(solver, V, γ, k, s3, [2, 2], 2, 1e-3, 10)
 
 # We now try to find a new Lyapunov V:
