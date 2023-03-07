@@ -108,24 +108,19 @@ end
 using LinearAlgebra
 function base_model(solver, V, k, s3, γ)
     T = 2;
-    w = t*(T-t);
+    #w = t*(T-t);
+    w = 0.0
     model = SOSModel(solver)
-    xt = [x; t]
+    #xt = [x; t]
+    xt = x
     sos() = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
     function soseps()
         s = @variable(model, variable_type = Poly(monomials(xt, 0:2)))
         @constraint(model, s - 1e-4 in SOSCone())
         return s
     end
-    s1 = @variable(model, variable_type = Poly(monomials(x, 0:2)))
     s2 = sos()
     s3 = sos()
-    s4a = soseps()
-    s4b = soseps()
-    s4c = soseps()
-    s4d = soseps()
-    s4e = soseps()
-    @variable(model, s4f, Poly(monomials(xt, 0:2))) # ?????
     s5a = sos()
     s5b = sos()
     s6a = sos()
@@ -134,30 +129,15 @@ function base_model(solver, V, k, s3, γ)
     s7b = sos()
     s8a = sos()
     s8b = sos()
-    s9a = sos()
-    s9b = sos()
-    s9c = sos()
-    s9d = sos()
-    s9e = sos()
-    s9f = sos()
     @variable(model, k[1:2], Poly(monomials(xt, 0:2)))
 
     # dV/dt <= 0
     ∂ = differentiate # Let's use a fancy shortcut
     @constraint(model, ∂(V, x) ⋅ (f + g * k) + s2 * w <= s3 * (V - γ)) # [YAP21, (E.2)]
     # V(t,x)<=gamma implies rt<=0
-    rt1 = (1.7 - x[1])*(x[1] + 1.7);
-    rt2 = (0.85 - x[2])*(x[2] + 0.85);
-    rt3 = (0.8 - x[3])*(x[3] + 0.8);
-    rt4 = (1 - x[4])*(x[4] + 1);
-    rt5 = (pi/12 - x[5])*(x[5] + pi/12);
-    rt6 = (pi/2 - x[6])*(x[6] + pi/2);
-    @constraint(model, s4a*rt1 + (V - γ) - s9a*w in SOSCone())
-    @constraint(model, s4b*rt2 + (V - γ) - s9b*w in SOSCone())
-    @constraint(model, s4c*rt3 + (V - γ) - s9c*w in SOSCone())
-    @constraint(model, s4d*rt4 + (V - γ) - s9d*w in SOSCone())
-    @constraint(model, s4e*rt5 + (V - γ) - s9e*w in SOSCone())
-    @constraint(model, s4f*rt6 + (V - γ) - s9f*w in SOSCone())
+    for r in inequalities(X)
+        @constraint(model, V >= γ, domain = @set(r >= 0)) # [YAP21, (E.3)]
+    end
     # V(t,x) <= gamma implies u <= uM
     uM = [1.5 + gravity/K_const; π/12];
     um = [-1.5 + gravity/K_const; -π/12];
