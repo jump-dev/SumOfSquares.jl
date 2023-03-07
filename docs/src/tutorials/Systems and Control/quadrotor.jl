@@ -26,7 +26,7 @@ using DynamicPolynomials
 @polyvar u[1:2]
 sinx5 = -0.166 * x[5]^3 + x[5]
 cosx5 = -0.498 * x[5]^2 + 1
-gn = 9.8
+gn = 9.81
 K = 0.89 / 1.4
 d0 = 70
 d1 = 17
@@ -88,7 +88,7 @@ end
 # as [YAP21](https://github.com/heyinUCB/Backward-Reachability-Analysis-and-Control-Synthesis)
 
 import MatrixEquations
-S, v, K = MatrixEquations.arec(A, B, 10, 100)
+S, v, K = MatrixEquations.arec(A, B, 100, 10)
 
 # The corresponding quadratic regulator is:
 
