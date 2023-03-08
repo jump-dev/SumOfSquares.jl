@@ -182,14 +182,13 @@ function γ_step(solver, V, γ_min, degree_k, degree_s3; γ_tol = 1e-1, max_iter
     return γ_min, k_best, s3_best
 end
 
-using MosekTools
-solver = optimizer_with_attributes(Mosek.Optimizer, MOI.Silent() => true)
+import CSDP
+solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 γ1, κ1, s3_1 = γ_step(solver, V0, 0.0, [2, 2], 2)
 @test γ1 ≈ 0.5 atol = 1.e-1 #src
 
 # Let's visualize now the controlled invariant set we have found:
 
-Vs = [V0 - γ1]
 using ImplicitPlots
 using Plots
 import ColorSchemes
@@ -210,7 +209,8 @@ function plot_lyapunovs(Vs, J; resolution = 1000, scheme = ColorSchemes.rainbow)
     plot!(p, xlims=(-xlim, xlim), ylims=(-ylim, ylim), aspect_ratio = xmax / ymax)
     return p
 end
-plot_lyapunovs(Vs, [5, 6])
+Vs = [V0 - γ1]
+plot_lyapunovs(Vs, [1, 2])
 
 # ## V-step
 
@@ -237,7 +237,7 @@ solution_summary(model)
 # Let's compare it:
 
 push!(Vs, V1 - γ1)
-plot_lyapunovs(Vs, [5, 6])
+plot_lyapunovs(Vs, [1, 2])
 
 # ## Continue iterating
 
@@ -255,4 +255,4 @@ solution_summary(model)
 # It does not seem that we gained any improvement so let's stop:
 
 push!(Vs, V2 - γ2)
-plot_lyapunovs(Vs, [5, 6])
+plot_lyapunovs(Vs, [1, 2])
