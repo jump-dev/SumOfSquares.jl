@@ -91,7 +91,7 @@ end
 
 import MatrixEquations
 S, v, K = MatrixEquations.arec(A, B, 100, 10)
-@test all(c -> real(c) < 0, v)
+@test all(c -> real(c) < 0, v) #src
 
 # The corresponding quadratic regulator is:
 
