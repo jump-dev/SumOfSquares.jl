@@ -59,8 +59,9 @@ using SumOfSquares
 rectangle = [1.7, 0.85, 0.8, 1, π/12, π/2, 1.5, π/12]
 X = BasicSemialgebraicSet(FullSpace(), typeof(x[1] + 1.0)[])
 for i in eachindex(x)
-    addinequality!(X, x[i] + rectangle[i]) # x[i] >= -rectangle[i]
-    addinequality!(X, rectangle[i] - x[i]) # x[i] <= rectangle[i]
+    #addinequality!(X, x[i] + rectangle[i]) # -rectangle[i] <= x[i]
+    #addinequality!(X, rectangle[i] - x[i]) # x[i] <= rectangle[i]
+    addinequality!(X, (x[i] + rectangle[i]) * (rectangle[i] - x[i])) # -rectangle[i] <= x[i] <= rectangle[i]
 end
 X
 
@@ -99,6 +100,9 @@ V = x' * P * x
 
 function _create(model, d, P)
     if d isa Int
+        if P == SOSPoly
+            d = div(d, 2)
+        end
         return @variable(model, variable_type = P(monomials(x, 0:d)))
     else
         return d
@@ -107,47 +111,26 @@ end
 
 using LinearAlgebra
 function base_model(solver, V, k, s3, γ)
-    T = 2;
+    #T = 2;
     #w = t*(T-t);
     w = 0.0
     model = SOSModel(solver)
     #xt = [x; t]
     xt = x
-    sos() = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
-    function soseps()
-        s = @variable(model, variable_type = Poly(monomials(xt, 0:2)))
-        @constraint(model, s - 1e-4 in SOSCone())
-        return s
-    end
-    s2 = sos()
-    s3 = sos()
-    s5a = sos()
-    s5b = sos()
-    s6a = sos()
-    s6b = sos()
-    s7a = sos()
-    s7b = sos()
-    s8a = sos()
-    s8b = sos()
+    s3 = @variable(model, variable_type = SOSPoly(monomials(xt, 0:1)))
+    #@variable(model, s4f, Poly(monomials(xt, 0:2))) # ?????
     @variable(model, k[1:2], Poly(monomials(xt, 0:2)))
 
     # dV/dt <= 0
     ∂ = differentiate # Let's use a fancy shortcut
-    @constraint(model, ∂(V, x) ⋅ (f + g * k) + s2 * w <= s3 * (V - γ)) # [YAP21, (E.2)]
+    @constraint(model, ∂(V, x) ⋅ (f + g * k) <= s3 * (V - γ)) # [YAP21, (E.2)]
     # V(t,x)<=gamma implies rt<=0
     for r in inequalities(X)
-        @constraint(model, V >= γ, domain = @set(r >= 0)) # [YAP21, (E.3)]
+        @constraint(model, V >= γ, domain = @set(r <= 0)) # [YAP21, (E.3)]
     end
-    # V(t,x) <= gamma implies u <= uM
-    uM = [1.5 + gravity/K_const; π/12];
-    um = [-1.5 + gravity/K_const; -π/12];
-    @constraint(model, uM[1] - k[1] + s5a*(V - γ) - s6a*w in SOSCone())
-    @constraint(model, uM[2] - k[2] + s5b*(V - γ) - s6b*w in SOSCone())
-    # V(t,x) <= gamma implies u >= um
-    @constraint(model, k[1] - um[1] + s7a*(V - γ) - s8a*w in SOSCone())
-    @constraint(model, k[2] - um[2] + s7b*(V - γ) - s8b*w in SOSCone())
     return model, V, k, s3
 end
+γ, k, s3 = γ_step(solver, V, 0.0, k, s3, [2, 2], 2, 1e-3, 3)
 
 using MutableArithmetics
 function γ_step(solver, V, γ_min, k_best, s3_best, degree_k, degree_s3, γ_tol, max_iters)
@@ -188,7 +171,7 @@ solver = optimizer_with_attributes(Mosek.Optimizer, MOI.Silent() => true)
 γ = 0.0
 k = nothing
 s3 = nothing
-γ, k, s3 = γ_step(solver, V, γ, k, s3, [2, 2], 2, 1e-3, 10)
+γ, k, s3 = γ_step(solver, V, 0.0, k, s3, [2, 2], 2, 1e-3, 3)
 
 # This does not however take the constraints `X` into account.
 # To take the constraint into account,
@@ -263,7 +246,7 @@ function base_model(solver, V, k, s3, γ)
     ∂ = differentiate # Let's use a fancy shortcut
     @constraint(model, ∂(V, x) ⋅ (f + g * k) <= s3 * (V - γ)) # [YAP21, (E.2)]
     for r in inequalities(X)
-        @constraint(model, V >= γ, domain = @set(r >= 0)) # [YAP21, (E.3)]
+        @constraint(model, V >= γ, domain = @set(r <= 0)) # [YAP21, (E.3)]
     end
     return model, V, k, s3
 end
