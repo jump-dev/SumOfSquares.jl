@@ -157,13 +157,13 @@ function γ_step(solver, V, γ_min, degree_k, degree_s3; γ_tol = 1e-1, max_iter
         @info("Iteration $num_iters/$max_iters : Solving with $(solver_name(model)) for `γ = $γ`")
         optimize!(model)
         @info("After $(solve_time(model)) seconds, terminated with $(termination_status(model)) ($(raw_status(model)))")
-        if primal_status(model) == MOI.FEASIBLE_POINT
-            @info("Feasible solution found")
+        if primal_status(model) == MOI.FEASIBLE_POINT || primal_status(model) == MOI.NEARLY_FEASIBLE_POINT
+            @info("Feasible solution found : primal is $(primal_status(model))")
             γ_min = γ
             k_best = value.(k)
             s3_best = value(s3)
         elseif dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
-            @info("Infeasibility certificate found")
+            @info("Infeasibility certificate found : dual is $(dual_status(model))")
             if γ == γ0_min # This corresponds to the case above where we reached the tol or max iteration and we just did a last run at the value of `γ_min` provided by the user
                 error("The value `$γ0_min` of `γ_min` provided is not feasible")
             end
@@ -256,3 +256,89 @@ solution_summary(model)
 
 push!(Vs, V2 - γ2)
 plot_lyapunovs(Vs, [1, 2])
+
+# ## Different starting point
+
+# The LQR regulator we computed as starting point does not take the
+# the constraints `X` into account.
+# To take the constraint into account,
+# we compute an ellipsoidal control invariant set using [LJ21, Corollary 9]
+# For this, we first compute the descriptor system described in [LJ21, Proposition 5].
+#
+# [LJ21] Legat, Benoît, and Jungers, Raphaël M.
+# *Geometric control of algebraic systems.*
+# IFAC-PapersOnLine 54.5 (2021): 79-84.
+
+nD = n_x + n_u
+E = sparse(1:n_x, 1:n_x, ones(n_x), n_x, nD)
+C = [A B]
+
+# We know solve [LJ21, (13)]
+
+using LinearAlgebra
+model = Model(solver)
+@variable(model, Q[1:nD, 1:nD] in PSDCone())
+cref = @constraint(model, Symmetric(-C * Q * E' - E * Q * C') in PSDCone())
+@constraint(model, rect_ref[i in 1:nD], Q[i, i] <= rectangle[i]^2)
+@variable(model, volume)
+q = [Q[i, j] for j in 1:nD for i in 1:j]
+@constraint(model, [volume; q] in MOI.RootDetConeTriangle(nD))
+@objective(model, Max, volume)
+optimize!(model)
+solution_summary(model)
+
+# We now have the control-Lyapunov function `V(x, u) = [x, u]' inv(Q) [x, u]`.
+# In other words, The 1-sublevel set of `V(x, u)` is an invariant subset of `rectangle`
+# with any state-feedback `κ(x)` such that `V(x, κ(x)) ≤ 1` for any `x` such that
+# `min_u V(x, u) ≤ 1`.
+# Such candidate `κ(x)` can therefore be chosen as `argmin_u V(x, u)`.
+# Let `inv(Q) = U' * U` where `U = [Ux Uu]`. We have `V(x, u) = ||Ux * x + Uu * u||_2`.
+# `κ(x)` is therefore the least-square solution of `Uu * κ(x) = -Ux * x`.
+# This we find the linear state-feedback `κ(x) = K * x` where `K = -Uu \ Ux`.
+
+P = inv(Symmetric(value.(Q)))
+using LinearAlgebra
+F = cholesky(P)
+K = -F.U[:, (n_x + 1):(nD)] \ F.U[:, 1:n_x] # That gives the following state feedback in polynomial form:
+
+# The corresponding polynomial form is given by:
+
+κ0 = K * x
+
+# We now have two equivalent ways to obtain the Lyapunov function.
+# Because `{V(x) ≤ 1} = {min_u V(x, u) ≤ 1}`,
+# see the left-hand side as the projection of the ellipsoid on `x, u`.
+# As the projection on the polar becomes simply cutting with the hyperplane `u = 0`,
+# the polar of the projection is simply `Q[1:6, 1:6]` ! So
+
+Px = inv(Symmetric(value.(Q[1:n_x, 1:n_x])))
+Px_inv = Px #src
+
+# An alternative way is to use our linear state feedback.
+# We know that `min_u V(x, u) = V(x, Kx)` so
+Px = [I; K]' * P * [I; K]
+@test Px ≈ Px_inv #src
+
+# We can double check that this matrix is negative definite:
+
+eigen(Symmetric(Px * (A + B * K) + (A + B * K)' * Px)).values
+@test all(v -> v < 0, eigen(Symmetric(Px * (A + B * K) + (A + B * K)' * Px)).values) #src
+
+# Let's use the `support_` prefix to differentiate since we obtained it
+# with the support function.
+# The corresponding Lyapunov is:
+
+support_V0 = x' * Px * x
+
+# `support_V0 - 1` is a controlled invariant set for the linearized system
+# but not for the nonlinear one. We can plot it to visualize but
+# it is not comparable to the ones found before which were
+# controlled invariant to the nonlinear system.
+
+support_Vs = [support_V0 - 1]
+plot_lyapunovs(support_Vs, [1, 2])
+
+support_γ1, support_κ1, support_s3_1 = γ_step(solver, support_V0, 0.0, [2, 2], 2)
+@test support_γ1 ≈ 0.0 atol = 1.e-1 #src
+
+# We do not find it for any positive `γ` so the controlled invariant set is an empty set.
