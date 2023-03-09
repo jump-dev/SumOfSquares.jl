@@ -108,13 +108,13 @@ function γ_step(solver, V, γ_min, degree_k, degree_s3; γ_tol = 1e-1, max_iter
         @info("Iteration $num_iters/$max_iters : Solving with $(solver_name(model)) for `γ = $γ`")
         optimize!(model)
         @info("After $(solve_time(model)) seconds, terminated with $(termination_status(model)) ($(raw_status(model)))")
-        if primal_status(model) == MOI.FEASIBLE_POINT
-            @info("Feasible solution found")
+        if primal_status(model) == MOI.FEASIBLE_POINT || primal_status(model) == MOI.NEARLY_FEASIBLE_POINT
+            @info("Feasible solution found : primal is $(primal_status(model))")
             γ_min = γ
             k_best = value.(k)
             s3_best = value(s3)
         elseif dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
-            @info("Infeasibility certificate found")
+            @info("Infeasibility certificate found : dual is $(dual_status(model))")
             if γ == γ0_min # This corresponds to the case above where we reached the tol or max iteration and we just did a last run at the value of `γ_min` provided by the user
                 error("The value `$γ0_min` of `γ_min` provided is not feasible")
             end
@@ -185,6 +185,42 @@ solution_summary(model)
 
 push!(Vs, V2 - γ2)
 plot_lyapunovs(Vs, [1, 2])
+
+nD = n_x + n_u
+E = sparse(1:n_x, 1:n_x, ones(n_x), n_x, nD)
+C = [A B]
+
+using LinearAlgebra
+model = Model(solver)
+@variable(model, Q[1:nD, 1:nD] in PSDCone())
+cref = @constraint(model, Symmetric(-C * Q * E' - E * Q * C') in PSDCone())
+@constraint(model, rect_ref[i in 1:nD], Q[i, i] <= rectangle[i]^2)
+@variable(model, volume)
+q = [Q[i, j] for j in 1:nD for i in 1:j]
+@constraint(model, [volume; q] in MOI.RootDetConeTriangle(nD))
+@objective(model, Max, volume)
+optimize!(model)
+solution_summary(model)
+
+P = inv(Symmetric(value.(Q)))
+using LinearAlgebra
+F = cholesky(P)
+K = -F.U[:, (n_x + 1):(nD)] \ F.U[:, 1:n_x] # That gives the following state feedback in polynomial form:
+
+κ0 = K * x
+
+Px = inv(Symmetric(value.(Q[1:n_x, 1:n_x])))
+
+Px = [I; K]' * P * [I; K]
+
+eigen(Symmetric(Px * (A + B * K) + (A + B * K)' * Px)).values
+
+support_V0 = x' * Px * x
+
+support_Vs = [support_V0 - 1]
+plot_lyapunovs(support_Vs, [1, 2])
+
+support_γ1, support_κ1, support_s3_1 = γ_step(solver, support_V0, 0.0, [2, 2], 2)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 
