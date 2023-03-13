@@ -28,7 +28,7 @@ _wrap(::MIME"text/latex", s) = "\\text{ " * s * "}"
 Sum-of-squares cone; see [`NonnegPolyInnerCone`](@ref).
 """
 const SOSCone = NonnegPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
-function JuMP.in_set_string(print_mode, ::SOSCone)
+function JuMP.in_set_string(print_mode::MIME, ::SOSCone)
     return _wrap(print_mode, "is SOS")
 end
 
@@ -43,7 +43,7 @@ Scaled-diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
 ArXiv e-prints, **2017**.
 """
 const SDSOSCone = NonnegPolyInnerCone{ScaledDiagonallyDominantConeTriangle}
-function JuMP.in_set_string(print_mode, ::SDSOSCone)
+function JuMP.in_set_string(print_mode::MIME, ::SDSOSCone)
     return _wrap(print_mode, "is SDSOS")
 end
 
@@ -58,7 +58,7 @@ Diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
 ArXiv e-prints, **2017**.
 """
 const DSOSCone = NonnegPolyInnerCone{DiagonallyDominantConeTriangle}
-function JuMP.in_set_string(print_mode, ::DSOSCone)
+function JuMP.in_set_string(print_mode::MIME, ::DSOSCone)
     return _wrap(print_mode, "is DSOS")
 end
 
