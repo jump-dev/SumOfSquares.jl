@@ -36,18 +36,3 @@ Reexport = "0.2, 1.0"
 SemialgebraicSets = "0.2"
 SymbolicWedderburn = "0.3"
 julia = "1.6"
-
-[extras]
-CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
-Cyclotomics = "da8f5974-afbb-4dc8-91d8-516d5257c83b"
-DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-PermutationGroups = "8bc5a954-2dfc-11e9-10e6-cd969bffa420"
-Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-PolyJuMP = "ddf597a6-d67e-5340-b84c-e37d84115374"
-SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
-SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Pkg", "SCS", "LinearAlgebra", "DynamicPolynomials", "SparseArrays", "PolyJuMP", "Test", "CSDP"]
