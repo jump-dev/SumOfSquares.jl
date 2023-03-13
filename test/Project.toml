@@ -9,3 +9,6 @@ PolyJuMP = "ddf597a6-d67e-5340-b84c-e37d84115374"
 SemialgebraicSets = "8e049039-38e8-557d-ae3a-bc521ccf6204"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+DynamicPolynomials = "0.4.1"
