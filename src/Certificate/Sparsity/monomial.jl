@@ -152,18 +152,38 @@ _monos(basis::MB.MonomialBasis) = basis.monomials
 function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree{CT, MB.MonomialBasis}) where CT
     return _monos(SumOfSquares.Certificate.maxdegree_gram_basis(MB.MonomialBasis, vars, certificate.maxdegree))
 end
+# poly = s0 + sum si gi
+# where `s1` are the multipliers with basis `multiplier_generator_monos`
+# we want to get the gram basis of `s0`
+function _ideal_monos(poly_monos, multiplier_gram_monos)
+    monos_set = Set(poly_monos)
+    for (gram_monos, gen_monos) in multiplier_gram_monos
+        for a in gram_monos
+            for b in gram_monos
+                for m in gen_monos
+                    push!(monos_set, a * b * m)
+                end
+            end
+        end
+    end
+    return MP.monovec(collect(monos_set))
+end
+# The ideal certificate should only ask for `MP.monomial`
+struct DummyPolynomial{M}
+    monomials::M
+end
+MP.monomials(p::DummyPolynomial) = p.monomials
 function sparsity(poly::MP.AbstractPolynomial, domain::SemialgebraicSets.BasicSemialgebraicSet, sp::Monomial, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
-    gram_monos = _gram_monos(
-        reduce((v, q) -> unique!(sort!([v..., MP.variables(q)...], rev=true)),
-                  domain.p, init = MP.variables(poly)),
-        SumOfSquares.Certificate.ideal_certificate(certificate)
-    )
     processed = SumOfSquares.Certificate.preprocessed_domain(certificate, domain, poly)
     multiplier_generator_monos = [
         (_monos(SumOfSquares.Certificate.multiplier_basis(certificate, index, processed)),
          MP.monomials(SumOfSquares.Certificate.generator(certificate, index, processed)))
         for index in SumOfSquares.Certificate.preorder_indices(certificate, processed)
     ]
+    gram_monos = _monos(SumOfSquares.Certificate.gram_basis(
+        SumOfSquares.Certificate.ideal_certificate(certificate),
+        DummyPolynomial(_ideal_monos(MP.monomials(poly), multiplier_generator_monos)),
+    ))
     cliques, multiplier_cliques = sparsity(MP.monomials(poly), sp, gram_monos, multiplier_generator_monos)
     return MB.MonomialBasis.(cliques), [MB.MonomialBasis.(clique) for clique in multiplier_cliques]
 end

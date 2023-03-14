@@ -18,11 +18,6 @@ end
 
 set_monos(bases::Vector{<:MB.MonomialBasis}) = Set([basis.monomials for basis in bases])
 
-function Certificate.Sparsity.sparsity(monos::AbstractVector{<:MP.AbstractMonomial}, domain::SemialgebraicSets.BasicSemialgebraicSet, sp::Sparsity.Monomial, maxdegree, degs)
-    half_monos = Certificate.maxdegree_gram_basis(MB.MonomialBasis, variables, div(maxdegree, 2))
-    P = Set(monos)
-end
-
 """
     wml19()
 
@@ -82,8 +77,11 @@ function wml19()
         ]))
         @test set_monos(Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate)) == expected
     end
-    @testset "Example 5.4" begin
-        preorder_certificate = Certificate.Putinar(Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 4), SOSCone(), MB.MonomialBasis, 4)
+    @testset "Example 5.4 $(typeof(ideal_certificate))" for ideal_certificate in [
+        Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 4),
+        Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple()),
+    ]
+        preorder_certificate = Certificate.Putinar(ideal_certificate, SOSCone(), MB.MonomialBasis, 4)
         @polyvar x[1:2]
         f = x[1]^4 + x[2]^4 + x[1] * x[2]
         K = @set 1 - 2x[1]^2 - x[2]^2 >= 0
@@ -168,9 +166,8 @@ function l09()
         ]))
     end
 end
-function square_domain()
-    d = 6
-    preorder_certificate = Certificate.Putinar(Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 6), SOSCone(), MB.MonomialBasis, 6)
+function square_domain(ideal_certificate, d)
+    preorder_certificate = Certificate.Putinar(ideal_certificate, SOSCone(), MB.MonomialBasis, d)
     @polyvar x y
     f = x^2*y^4 + x^4*y^2 - 3*x^2*y*2 + 1
     K = @set(1 - x^2 >= 0 && 1 - y^2 >= 0)
@@ -238,22 +235,27 @@ function drop_monomials()
             end
             @test set_monos(Certificate.Sparsity.sparsity(f, Sparsity.Monomial(ChordalCompletion(), k, use_all_monomials), certificate)) == expected
         end
-        preorder_certificate = Certificate.Putinar(Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 4), SOSCone(), MB.MonomialBasis, 3)
-        f = polynomial(x^3)
-        K = @set x >= 0
-        @testset "$k $use_all_monomials" for k in 0:3, use_all_monomials in [false, true]
-            basis, preorder_bases = Certificate.Sparsity.sparsity(f, K, Sparsity.Monomial(ChordalCompletion(), k, use_all_monomials), preorder_certificate)
-            if k == 1 && !use_all_monomials
-                @test set_monos(basis) == Set(monovec.([[x^2, x]]))
-            elseif (k == 2 && !use_all_monomials) || (k == 1 && use_all_monomials)
-                @test set_monos(basis) == Set(monovec.([[x^2, 1], [x^2, x]]))
-            else
-                @test set_monos(basis) == Set(monovec.([[x^2, x, 1]]))
-            end
-            if k == 1 && !use_all_monomials
-                @test set_monos(preorder_bases[1]) == Set(monovec.([[x]]))
-            else
-                @test set_monos(preorder_bases[1]) == Set(monovec.([[x, 1]]))
+        @testset "$(typeof(ideal_certificate))" for ideal_certificate in [
+            Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 4),
+            Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple()),
+        ]
+            preorder_certificate = Certificate.Putinar(ideal_certificate, SOSCone(), MB.MonomialBasis, 3)
+            f = polynomial(x^3)
+            K = @set x >= 0
+            @testset "$k $use_all_monomials" for k in 0:3, use_all_monomials in [false, true]
+                basis, preorder_bases = Certificate.Sparsity.sparsity(f, K, Sparsity.Monomial(ChordalCompletion(), k, use_all_monomials), preorder_certificate)
+                if k == 1 && !use_all_monomials
+                    @test set_monos(basis) == Set(monovec.([[x^2, x]]))
+                elseif (k == 2 && !use_all_monomials) || (k == 1 && use_all_monomials)
+                    @test set_monos(basis) == Set(monovec.([[x^2, 1], [x^2, x]]))
+                else
+                    @test set_monos(basis) == Set(monovec.([[x^2, x, 1]]))
+                end
+                if k == 1 && !use_all_monomials
+                    @test set_monos(preorder_bases[1]) == Set(monovec.([[x]]))
+                else
+                    @test set_monos(preorder_bases[1]) == Set(monovec.([[x, 1]]))
+                end
             end
         end
     end
@@ -262,7 +264,8 @@ end
     xor_complement_test()
     wml19()
     l09()
-    square_domain()
+    square_domain(Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 6), 6)
+    square_domain(Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple()), 6)
     sum_square(8)
     @test Certificate.Sparsity.appropriate_type(32) == Int64
     sum_square(32)
