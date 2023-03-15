@@ -81,15 +81,15 @@ function default_ideal_certificate(domain::FullSpace, basis, cone, maxdegree, ne
 end
 
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.NoPattern, basis::AbstractPolynomialBasis, cone, args...)
+    ::AbstractAlgebraicSet, ::Certificate.Sparsity.NoPattern, basis::AbstractPolynomialBasis, cone, args...)
     return Certificate.FixedBasis(cone, basis)
 end
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.NoPattern, args...)
+    domain::AbstractAlgebraicSet, ::Certificate.Sparsity.NoPattern, args...)
     return default_ideal_certificate(domain, args...)
 end
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.Pattern, args...)
+    ::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.Pattern, args...)
     return Certificate.Sparsity.Ideal(sparsity, args...)
 end
 
