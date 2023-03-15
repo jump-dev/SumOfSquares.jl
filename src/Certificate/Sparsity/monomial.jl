@@ -173,6 +173,7 @@ struct DummyPolynomial{M}
     monomials::M
 end
 MP.monomials(p::DummyPolynomial) = p.monomials
+MP.variables(p::DummyPolynomial) = MP.variables(p.monomials)
 function sparsity(poly::MP.AbstractPolynomial, domain::SemialgebraicSets.BasicSemialgebraicSet, sp::Monomial, certificate::SumOfSquares.Certificate.AbstractPreorderCertificate)
     processed = SumOfSquares.Certificate.preprocessed_domain(certificate, domain, poly)
     multiplier_generator_monos = [

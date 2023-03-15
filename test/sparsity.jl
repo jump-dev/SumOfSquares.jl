@@ -244,17 +244,27 @@ function drop_monomials()
             K = @set x >= 0
             @testset "$k $use_all_monomials" for k in 0:3, use_all_monomials in [false, true]
                 basis, preorder_bases = Certificate.Sparsity.sparsity(f, K, Sparsity.Monomial(ChordalCompletion(), k, use_all_monomials), preorder_certificate)
-                if k == 1 && !use_all_monomials
-                    @test set_monos(basis) == Set(monovec.([[x^2, x]]))
-                elseif (k == 2 && !use_all_monomials) || (k == 1 && use_all_monomials)
-                    @test set_monos(basis) == Set(monovec.([[x^2, 1], [x^2, x]]))
+                if ideal_certificate isa Certificate.Newton
+                    if use_all_monomials
+                        @test set_monos(basis) == Set(monovec.([[x]]))
+                        @test set_monos(preorder_bases[1]) == Set(monovec.([[x, 1]]))
+                    else
+                        @test isempty(basis)
+                        @test set_monos(preorder_bases[1]) == Set(monovec.([[x]]))
+                    end
                 else
-                    @test set_monos(basis) == Set(monovec.([[x^2, x, 1]]))
-                end
-                if k == 1 && !use_all_monomials
-                    @test set_monos(preorder_bases[1]) == Set(monovec.([[x]]))
-                else
-                    @test set_monos(preorder_bases[1]) == Set(monovec.([[x, 1]]))
+                    if k == 1 && !use_all_monomials
+                        @test set_monos(basis) == Set(monovec.([[x^2, x]]))
+                    elseif (k == 2 && !use_all_monomials) || (k == 1 && use_all_monomials)
+                        @test set_monos(basis) == Set(monovec.([[x^2, 1], [x^2, x]]))
+                    else
+                        @test set_monos(basis) == Set(monovec.([[x^2, x, 1]]))
+                    end
+                    if (k == 1 && !use_all_monomials)
+                        @test set_monos(preorder_bases[1]) == Set(monovec.([[x]]))
+                    else
+                        @test set_monos(preorder_bases[1]) == Set(monovec.([[x, 1]]))
+                    end
                 end
             end
         end
