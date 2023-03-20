@@ -12,7 +12,7 @@ struct SOSPolynomialBridge{
     ZB <: MultivariateBases.AbstractPolynomialBasis,
     CT <: SOS.Certificate.AbstractIdealCertificate,
     MT <: MP.AbstractMonomial,
-    MVT <: AbstractVector{MT}} <: MOIB.Constraint.AbstractBridge
+    MVT <: AbstractVector{MT}} <: MOI.Bridges.Constraint.AbstractBridge
 
     Q::Union{Vector{Vector{MOI.VariableIndex}},
              Vector{MOI.VariableIndex}} # Vector{Vector{MOI.VariableIndex}} for sparse SOS
@@ -60,13 +60,13 @@ function MOI.supports_constraint(::Type{SOSPolynomialBridge{T}},
                                  ::Type{<:SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet}}) where T
     return MOIU.is_coefficient_type(F, T)
 end
-function MOIB.added_constrained_variable_types(::Type{<:SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT}}) where {T, F, DT, UMCT, UMST, MCT}
+function MOI.Bridges.added_constrained_variable_types(::Type{<:SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT}}) where {T, F, DT, UMCT, UMST, MCT}
     return constrained_variable_types(MCT)
 end
-function MOIB.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT, GB, ZB, CT, MT, MVT}}) where {T, F, DT, UMCT, UMST, MCT, GB, ZB, CT, MT, MVT}
+function MOI.Bridges.added_constraint_types(::Type{SOSPolynomialBridge{T, F, DT, UMCT, UMST, MCT, GB, ZB, CT, MT, MVT}}) where {T, F, DT, UMCT, UMST, MCT, GB, ZB, CT, MT, MVT}
     return [(F, PolyJuMP.ZeroPolynomialSet{DT, ZB, MT, MVT})]
 end
-function MOIB.Constraint.concrete_bridge_type(
+function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:SOS.SOSPolynomialSet{DT, MT, MVT, CT}}) where {T, DT<:SemialgebraicSets.AbstractAlgebraicSet, MT, MVT, CT}

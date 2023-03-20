@@ -2,12 +2,9 @@ module Symmetry
 
 import LinearAlgebra
 
-import MutableArithmetics
-const MA = MutableArithmetics
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
-import MultivariateBases
-const MB = MultivariateBases
+import MutableArithmetics as MA
+import MultivariatePolynomials as MP
+import MultivariateBases as MB
 
 import SymbolicWedderburn
 

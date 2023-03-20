@@ -4,12 +4,9 @@
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Symmetry/symmetry_reduction.ipynb)
 # **Adapted from**: [SymbolicWedderburn example](https://github.com/kalmarek/SymbolicWedderburn.jl/blob/tw/ex_sos/examples/ex_C4.jl)
 
-import MutableArithmetics
-const MA = MutableArithmetics
+import MutableArithmetics as MA
 using MultivariatePolynomials
-const MP = MultivariatePolynomials
 using MultivariateBases
-const MB = MultivariateBases
 
 using Test #src
 using DynamicPolynomials

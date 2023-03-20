@@ -1,9 +1,7 @@
 module Sparsity
 
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
-import MultivariateBases
-const MB = MultivariateBases
+import MultivariatePolynomials as MP
+import MultivariateBases as MB
 using SemialgebraicSets
 
 include("ChordalExtensionGraph.jl")

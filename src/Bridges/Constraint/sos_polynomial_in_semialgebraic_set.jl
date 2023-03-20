@@ -12,7 +12,7 @@ struct SOSPolynomialInSemialgebraicSetBridge{
     UMCT <: Union{Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
                   MOI.ConstraintIndex{MOI.VectorOfVariables}},
     UMST, MCT,
-    MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MOIB.Constraint.AbstractBridge
+    MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MOI.Bridges.Constraint.AbstractBridge
     lagrangian_bases::Vector{B}
     lagrangian_variables::Vector{Union{Vector{MOI.VariableIndex}, Vector{Vector{MOI.VariableIndex}}}}
     lagrangian_constraints::Vector{UMCT}
@@ -63,14 +63,14 @@ function MOI.supports_constraint(::Type{SOSPolynomialInSemialgebraicSetBridge{T}
                                  ::Type{<:SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet}}) where T
     return true
 end
-function MOIB.added_constrained_variable_types(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT}}) where {T, F, DT, CT}
+function MOI.Bridges.added_constrained_variable_types(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT}}) where {T, F, DT, CT}
     return constrained_variable_types(SOS.matrix_cone_type(CT))
 end
-function MOIB.added_constraint_types(
+function MOI.Bridges.added_constraint_types(
     ::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, B, UMCT, UMST, MCT, MT, MVT}}) where {T, F, DT, CT, B, UMCT, UMST, MCT, MT, MVT}
     return [(F, SOS.SOSPolynomialSet{DT, MT, MVT, CT})]
 end
-function MOIB.Constraint.concrete_bridge_type(
+function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:SOS.SOSPolynomialSet{SemialgebraicSets.BasicSemialgebraicSet{S, PS, AT}, MT, MVT, CT}}) where {T, S, PS, AT, CT, MT, MVT}

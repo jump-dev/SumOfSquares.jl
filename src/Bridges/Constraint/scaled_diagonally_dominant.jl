@@ -1,10 +1,10 @@
-struct ScaledDiagonallyDominantBridge{T, F, VBS} <: MOIB.Constraint.AbstractBridge
+struct ScaledDiagonallyDominantBridge{T, F, VBS} <: MOI.Bridges.Constraint.AbstractBridge
     side_dimension::Int
     variable_bridge::VBS
     equality::MOI.ConstraintIndex{F, MOI.Zeros}
 end
 
-function MOIB.Constraint.bridge_constraint(
+function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{ScaledDiagonallyDominantBridge{T, F, VBS}},
     model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
     s::SOS.ScaledDiagonallyDominantConeTriangle) where {T, F, VBS}
@@ -23,15 +23,15 @@ function MOI.supports_constraint(::Type{<:ScaledDiagonallyDominantBridge},
                                  ::Type{<:SOS.ScaledDiagonallyDominantConeTriangle})
     return true
 end
-function MOIB.added_constrained_variable_types(::Type{<:ScaledDiagonallyDominantBridge})
+function MOI.Bridges.added_constrained_variable_types(::Type{<:ScaledDiagonallyDominantBridge})
     return Tuple{DataType}[]
 end
-function MOIB.added_constraint_types(::Type{<:ScaledDiagonallyDominantBridge{T}}) where {T}
+function MOI.Bridges.added_constraint_types(::Type{<:ScaledDiagonallyDominantBridge{T}}) where {T}
     added = [(F, MOI.Zeros)]
     return append_added_constraint_types(
         added, SOS.ScaledDiagonallyDominantConeTriangle, T)
 end
-function MOIB.Constraint.concrete_bridge_type(
+function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:ScaledDiagonallyDominantBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{SOS.ScaledDiagonallyDominantConeTriangle}) where T

@@ -3,7 +3,7 @@ import MultivariateBases
 using DynamicPolynomials
 
 function quadratic_test(
-    optimizer, config::MOIT.Config,
+    optimizer, config::MOI.Test.Config,
     cone::SumOfSquares.PolyJuMP.PolynomialSet, basis, bivariate::Bool)
     atol = config.atol
     rtol = config.rtol

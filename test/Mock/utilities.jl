@@ -1,5 +1,4 @@
 using JuMP
-const MOIT = MOI.Test
 
 MOIU.@model(NoFreeVariable,
             (), (MOI.EqualTo, MOI.LessThan, MOI.GreaterThan), (MOI.Nonnegatives, MOI.Nonpositives, MOI.Zeros, MOI.RotatedSecondOrderCone, MOI.PositiveSemidefiniteConeTriangle), (),

@@ -2,7 +2,7 @@
 # SOSDEMO10 --- Set containment
 # Section 3.10 of SOSTOOLS User's Manual
 
-function sosdemo10_test(optimizer, config::MOIT.Config)
+function sosdemo10_test(optimizer, config::MOI.Test.Config)
     @polyvar x[1:2]
 
     ε = 1e-6

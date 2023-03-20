@@ -12,7 +12,7 @@ using SumOfSquares
 using DynamicPolynomials
 
 function quartic_comparison_test(
-    optimizer, config::MOIT.Config,
+    optimizer, config::MOI.Test.Config,
     cone::SumOfSquares.PolyJuMP.PolynomialSet, expected_objective_value)
     atol = config.atol
     rtol = config.rtol

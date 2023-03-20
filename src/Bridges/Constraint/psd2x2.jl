@@ -1,11 +1,11 @@
 # PSD constraints on 2x2 matrices are SOC representable.
 # [Q11 Q12] is PSD iff Q11, Q22 ≥ 0 and       Q11*Q22 ≥     Q12 ^2
 # [Q12 Q22]                             <=> 2*Q11*Q22 ≥ (√2*Q12)^2
-struct PositiveSemidefinite2x2Bridge{T, F} <: MOIB.Constraint.AbstractBridge
+struct PositiveSemidefinite2x2Bridge{T, F} <: MOI.Bridges.Constraint.AbstractBridge
     rsoc::MOI.ConstraintIndex{F, MOI.RotatedSecondOrderCone}
 end
 
-function MOIB.Constraint.bridge_constraint(
+function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{PositiveSemidefinite2x2Bridge{T, F}},
     model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
     s::SOS.PositiveSemidefinite2x2ConeTriangle) where {T, F}
@@ -21,13 +21,13 @@ function MOI.supports_constraint(::Type{<:PositiveSemidefinite2x2Bridge},
                                  ::Type{SOS.PositiveSemidefinite2x2ConeTriangle})
     return true
 end
-function MOIB.added_constrained_variable_types(::Type{<:PositiveSemidefinite2x2Bridge})
+function MOI.Bridges.added_constrained_variable_types(::Type{<:PositiveSemidefinite2x2Bridge})
     return Tuple{DataType}[]
 end
-function MOIB.added_constraint_types(::Type{PositiveSemidefinite2x2Bridge{T, F}}) where {T, F}
+function MOI.Bridges.added_constraint_types(::Type{PositiveSemidefinite2x2Bridge{T, F}}) where {T, F}
     return [(F, MOI.RotatedSecondOrderCone)]
 end
-function MOIB.Constraint.concrete_bridge_type(
+function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:PositiveSemidefinite2x2Bridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{SOS.PositiveSemidefinite2x2ConeTriangle}) where T

@@ -4,13 +4,11 @@ using LinearAlgebra
 
 import Reexport
 
-import MutableArithmetics
-const MA = MutableArithmetics
+import MutableArithmetics as MA
 
 # MultivariatePolynomials extension
 
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
 Reexport.@reexport using MultivariateBases
 # @set assumes that `SemialgebraicSets` is defined
 Reexport.@reexport using SemialgebraicSets
@@ -41,9 +39,7 @@ include("rand.jl")
 
 # MOI extension
 
-using MathOptInterface
-const MOI = MathOptInterface
-const MOIU = MathOptInterface.Utilities
+import MathOptInterface as MOI
 
 Reexport.@reexport using PolyJuMP
 

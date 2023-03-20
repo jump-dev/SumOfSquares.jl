@@ -1,5 +1,4 @@
-import ComplexOptInterface
-const COI = ComplexOptInterface
+import ComplexOptInterface as COI
 
 function matrix_cone(::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, d)
     return COI.HermitianPositiveSemidefiniteConeTriangle(d)

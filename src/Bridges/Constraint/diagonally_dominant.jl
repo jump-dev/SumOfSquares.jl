@@ -1,4 +1,4 @@
-struct DiagonallyDominantBridge{T, F, G} <: MOIB.Constraint.AbstractBridge
+struct DiagonallyDominantBridge{T, F, G} <: MOI.Bridges.Constraint.AbstractBridge
     # |Qij| variables
     abs_vars::Vector{MOI.VariableIndex}
     # |Qij| ≥ +Qij
@@ -11,7 +11,7 @@ struct DiagonallyDominantBridge{T, F, G} <: MOIB.Constraint.AbstractBridge
     dominance::Vector{MOI.ConstraintIndex{F, MOI.GreaterThan{T}}}
 end
 
-function MOIB.Constraint.bridge_constraint(
+function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{DiagonallyDominantBridge{T, F, G}},
     model::MOI.ModelLike, f::MOI.AbstractVectorFunction,
     s::SOS.DiagonallyDominantConeTriangle) where {T, F, G}
@@ -55,17 +55,17 @@ function MOI.supports_constraint(::Type{<:DiagonallyDominantBridge},
                                  ::Type{<:SOS.DiagonallyDominantConeTriangle})
     return true
 end
-function MOIB.added_constrained_variable_types(::Type{<:DiagonallyDominantBridge})
+function MOI.Bridges.added_constrained_variable_types(::Type{<:DiagonallyDominantBridge})
     return Tuple{DataType}[]
 end
-function MOIB.added_constraint_types(::Type{<:DiagonallyDominantBridge{T, F}}) where {T, F}
+function MOI.Bridges.added_constraint_types(::Type{<:DiagonallyDominantBridge{T, F}}) where {T, F}
     added = [(F, MOI.GreaterThan{T})]
     if F != MOI.ScalarAffineFunction{T}
         push!(added, (MOI.ScalarAffineFunction{T}, MOI.GreaterThan{T}))
     end
     return added
 end
-function MOIB.Constraint.concrete_bridge_type(
+function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:DiagonallyDominantBridge{T}},
     G::Type{<:MOI.AbstractVectorFunction},
     ::Type{SOS.DiagonallyDominantConeTriangle}) where T

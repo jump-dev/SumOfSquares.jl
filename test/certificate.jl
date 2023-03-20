@@ -1,8 +1,6 @@
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
 
-import MultivariateBases
-const MB = MultivariateBases
+import MultivariateBases as MB
 
 @testset "_merge_sorted" begin
     @test SumOfSquares.Certificate._merge_sorted([4, 1], [3, 0]) == [4, 3, 1, 0]

@@ -23,7 +23,7 @@ using DynamicPolynomials
 
 # Search for polynomial Lyapunov functions of degree `2d` for `A1/γ` and `A2/γ`
 function lyapunov_switched_system_test(
-    optimizer, config::MOIT.Config, degree::Int, γ, feasible::Bool, basis)
+    optimizer, config::MOI.Test.Config, degree::Int, γ, feasible::Bool, basis)
 
     atol = config.atol
     rtol = config.rtol
