@@ -10,7 +10,7 @@ import PolyJuMP
         "constraint.jl",
     )
     err = ErrorException(
-        "At $path:9: `@constraint(model, [1 x; -x 0] in SOSMatrixCone())`: The polynomial matrix constrained to be SOS must be symmetric.",
+        "At $path:15: `@constraint(model, [1 x; -x 0] in SOSMatrixCone())`: The polynomial matrix constrained to be SOS must be symmetric.",
     )
     @test_throws err @constraint(model, [1 x; -x 0] in SOSMatrixCone())
 end
