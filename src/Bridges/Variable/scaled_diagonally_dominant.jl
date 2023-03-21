@@ -121,11 +121,11 @@ function MOI.Bridges.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
         func = zero(MOI.ScalarAffineFunction{T})
         for k in 1:(i - 1)
             idx = offdiag_vector_index(k, i)
-            MOIU.operate!(+, T, func, bridge.variables[idx][3])
+            MOI.Utilities.operate!(+, T, func, bridge.variables[idx][3])
         end
         for k in (i + 1):bridge.side_dimension
             idx = offdiag_vector_index(i, k)
-            MOIU.operate!(+, T, func, bridge.variables[idx][1])
+            MOI.Utilities.operate!(+, T, func, bridge.variables[idx][1])
         end
         return func
     else

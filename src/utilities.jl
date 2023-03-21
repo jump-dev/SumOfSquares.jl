@@ -11,7 +11,7 @@ function MP.polynomial(p::GramMatrix{MOI.VariableIndex, B, U}) where {B, U}
     return MP.polynomial(GramMatrix(SymMatrix(Q, p.Q.n), p.basis))
 end
 #function MP.polynomial(p::GramMatrix{F}) where {F <: MOI.AbstractFunction}
-#    MP.polynomial(p, MOIU.promote_operation(+, Float64, F, F))
+#    MP.polynomial(p, MOI.Utilities.promote_operation(+, Float64, F, F))
 #end
 
 function primal_value(model, p::GramMatrix{MOI.VariableIndex})

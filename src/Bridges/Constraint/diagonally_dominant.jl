@@ -19,7 +19,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     n = s.side_dimension
     g = F[zero(F) for i in 1:n]
-    fs = MOIU.eachscalar(f)
+    fs = MOI.Utilities.eachscalar(f)
     num_off_diag = MOI.dimension(s) - n
     CI = MOI.ConstraintIndex{MOI.ScalarAffineFunction{T}, MOI.GreaterThan{T}}
     abs_vars = Vector{MOI.VariableIndex}(undef, num_off_diag)
@@ -35,15 +35,15 @@ function MOI.Bridges.Constraint.bridge_constraint(
             # abs ≥ |Qij|
             abs_vars[koff] = MOI.add_variable(model)
             fabs = abs_vars[koff]
-            MOIU.operate!(-, T, g[j], fabs)
-            MOIU.operate!(-, T, g[i], fabs)
+            MOI.Utilities.operate!(-, T, g[j], fabs)
+            MOI.Utilities.operate!(-, T, g[i], fabs)
             abs_plus[koff] = MOI.add_constraint(
-                model, MOIU.operate(+, T, fabs, fs[k]), MOI.GreaterThan(0.0))
+                model, MOI.Utilities.operate(+, T, fabs, fs[k]), MOI.GreaterThan(0.0))
             abs_minus[koff] = MOI.add_constraint(
-                model, MOIU.operate(-, T, fabs, fs[k]), MOI.GreaterThan(0.0))
+                model, MOI.Utilities.operate(-, T, fabs, fs[k]), MOI.GreaterThan(0.0))
         end
         k += 1
-        MOIU.operate!(+, T, g[j], fs[k])
+        MOI.Utilities.operate!(+, T, g[j], fs[k])
     end
     dominance = map(f -> MOI.add_constraint(model, f, MOI.GreaterThan(0.0)), g)
     return DiagonallyDominantBridge{T, F, G}(abs_vars, abs_plus, abs_minus,
@@ -70,8 +70,8 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     G::Type{<:MOI.AbstractVectorFunction},
     ::Type{SOS.DiagonallyDominantConeTriangle}) where T
 
-    S = MOIU.scalar_type(G)
-    F = MOIU.promote_operation(-, T, S, MOI.VariableIndex)
+    S = MOI.Utilities.scalar_type(G)
+    F = MOI.Utilities.promote_operation(-, T, S, MOI.VariableIndex)
     return DiagonallyDominantBridge{T, F, G}
 end
 
@@ -135,7 +135,7 @@ end
 function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintFunction,
                  bridge::DiagonallyDominantBridge{T, F, G}) where {T, F, G}
     set = MOI.get(model, MOI.ConstraintSet(), bridge)
-    H = MOIU.scalar_type(G)
+    H = MOI.Utilities.scalar_type(G)
     g = Vector{H}(undef, MOI.dimension(set))
     k = 0
     koff = 0
@@ -144,15 +144,15 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintFunction,
             k += 1
             koff += 1
             func = MOI.get(model, attr, bridge.abs_plus[koff])
-            g[k] = MOIU.convert_approx(H, MOIU.remove_variable(
+            g[k] = MOI.Utilities.convert_approx(H, MOI.Utilities.remove_variable(
                 func, bridge.abs_vars))
         end
         k += 1
         func = MOI.get(model, attr, bridge.dominance[j])
-        g[k] = MOIU.convert_approx(H, MOIU.remove_variable(
+        g[k] = MOI.Utilities.convert_approx(H, MOI.Utilities.remove_variable(
             func, bridge.abs_vars))
     end
-    return MOIU.vectorize(g)
+    return MOI.Utilities.vectorize(g)
 end
 
 # TODO ConstraintPrimal

@@ -12,7 +12,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     @assert MOI.output_dimension(f) == MOI.dimension(s)
     Q, variable_bridge = add_matrix_variable_bridge(
         model, SOS.ScaledDiagonallyDominantConeTriangle, MOI.side_dimension(s), T)
-    g = MOI.operate(-, T, f, MOIU.vectorize(g))
+    g = MOI.operate(-, T, f, MOI.Utilities.vectorize(g))
     equality = MOI.add_constraint(model, g, MOI.Zeros(MOI.dimension(s)))
     return ScaledDiagonallyDominantBridge{T, F, VBS}(
         MOI.side_dimension(s), variable_bridge, equality)
@@ -36,7 +36,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{SOS.ScaledDiagonallyDominantConeTriangle}) where T
 
-    G = MOIU.promote_operation(-, T, F, MOI.VectorAffineFunction{T})
+    G = MOI.Utilities.promote_operation(-, T, F, MOI.VectorAffineFunction{T})
     VBS = union_vector_bridge_types(SOS.ScaledDiagonallyDominantConeTriangle, T)
     return ScaledDiagonallyDominantBridge{T, G, VBS}
 end

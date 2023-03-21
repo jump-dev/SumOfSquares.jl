@@ -99,7 +99,7 @@ function MOI.Bridges.bridged_function(bridge::PositiveSemidefinite2x2Bridge{T},
                                i::MOI.Bridges.IndexInVector) where T
     func = _variable(bridge, i)
     if i.value == 2
-        return MOIU.operate(/, T, func, convert(T, √2))
+        return MOI.Utilities.operate(/, T, func, convert(T, √2))
     else
         return convert(MOI.ScalarAffineFunction{T}, func)
     end
@@ -109,7 +109,7 @@ function MOI.Bridges.Variable.unbridged_map(
     vi::MOI.VariableIndex, i::MOI.Bridges.IndexInVector) where T
 
     if i.value == 2
-        func = MOIU.operate(*, T, convert(T, √2), vi)
+        func = MOI.Utilities.operate(*, T, convert(T, √2), vi)
     else
         func = convert(MOI.ScalarAffineFunction{T}, vi)
     end

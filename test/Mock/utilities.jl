@@ -1,6 +1,6 @@
 using JuMP
 
-MOIU.@model(NoFreeVariable,
+MOI.Utilities.@model(NoFreeVariable,
             (), (MOI.EqualTo, MOI.LessThan, MOI.GreaterThan), (MOI.Nonnegatives, MOI.Nonpositives, MOI.Zeros, MOI.RotatedSecondOrderCone, MOI.PositiveSemidefiniteConeTriangle), (),
             (), (MOI.ScalarAffineFunction,), (MOI.VectorOfVariables,), (MOI.VectorAffineFunction,))
 # No free variables to make sure variable bridges are used to increase coverage
@@ -20,16 +20,16 @@ function bridged_mock(mock_optimize!::Function...;
 end
 
 function cached_mock(
-    args...; cache = () -> MOIU.UniversalFallback(MOIU.Model{Float64}()), kws...)
-    # We want the MOI backend of the JuMP model to be in `MOIU.EMPTY_OPTIMIZER`
+    args...; cache = () -> MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}()), kws...)
+    # We want the MOI backend of the JuMP model to be in `MOI.Utilities.EMPTY_OPTIMIZER`
     # mode so that it's copied at `optimize!` to test that `copy_to` works.
     # If we just return `cached`, it will be emptied in `_model` and the state
-    # will be `MOIU.ATTACHED_OPTIMIZER` which is not what we want. For this
+    # will be `MOI.Utilities.ATTACHED_OPTIMIZER` which is not what we want. For this
     # reason we return a `JuMP.OptimizerFactory` which returns `cached` instead.
     return (() -> begin
-        cached = MOIU.CachingOptimizer(cache(), MOIU.AUTOMATIC)
+        cached = MOI.Utilities.CachingOptimizer(cache(), MOI.Utilities.AUTOMATIC)
         optimizer = bridged_mock(args...; kws...)
-        MOIU.reset_optimizer(cached, optimizer)
+        MOI.Utilities.reset_optimizer(cached, optimizer)
         return cached
     end)
 end

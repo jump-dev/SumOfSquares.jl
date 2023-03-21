@@ -108,7 +108,7 @@ function MOI.Bridges.bridged_function(bridge::CopositiveInnerBridge{T},
                    bridge.matrix_variables[i.value])
     row, col = matrix_indices(i.value)
     if row != col
-        func = MOIU.operate!(+, T, func,
+        func = MOI.Utilities.operate!(+, T, func,
             bridge.nonneg_variables[vector_index(row, col - 1)])
     end
     return func

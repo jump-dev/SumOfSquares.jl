@@ -12,7 +12,7 @@ config = MOI.Test.Config(atol=1e-5, rtol=1e-5)
 #                 0   1+α]
 # P - A2'P*A*2 = [1+α 0
 #                 0   β]
-optimize!(mock) = MOIU.mock_optimize!(mock, [α, α, 0.0, β, 1 + α, 0.0, 1 + α, β, 0.0])
+optimize!(mock) = MOI.Utilities.mock_optimize!(mock, [α, α, 0.0, β, 1 + α, 0.0, 1 + α, β, 0.0])
 for mock in mocks(optimize!)
     Tests.quadratic_feasible_lyapunov_switched_system_test(mock, config)
     Tests.quadratic_feasible_scaled_lyapunov_switched_system_test(mock, config)

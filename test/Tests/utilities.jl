@@ -82,7 +82,7 @@ function test_delete_bridge(model::Model,
 end
 
 # Utilities for building the mock `optimize!` from the solution of a solver
-_inner(model::MOIU.CachingOptimizer) = _inner(model.optimizer)
+_inner(model::MOI.Utilities.CachingOptimizer) = _inner(model.optimizer)
 _inner(model::MOI.Bridges.LazyBridgeOptimizer) = model.model
 _cheat_inner(model::MOI.ModelLike) = model
 _cheat_inner(model::MOI.Bridges.Constraint.SingleBridgeOptimizer) = _cheat_inner(model.model)
@@ -100,7 +100,7 @@ function inner_variable_value(model, atol=1e-4)
     inner = _inner(backend(model))
     values = MOI.get(inner, MOI.VariablePrimal(),
                      MOI.get(inner, MOI.ListOfVariableIndices()))
-    println("optimize!(mock) = MOIU.mock_optimize!(mock,")
+    println("optimize!(mock) = MOI.Utilities.mock_optimize!(mock,")
     println(JuMP.termination_status(model))
     if JuMP.primal_status(model) != MOI.NO_SOLUTION
         values = MOI.get(inner, MOI.VariablePrimal(),
