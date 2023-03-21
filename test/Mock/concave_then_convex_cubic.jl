@@ -34,11 +34,22 @@ function optimize_bridged!(mock)
     )
 end
 function optimize_cached!(mock)
+    sol = [
+        zeros(2)
+        3.0
+        zeros(3)
+        3.0
+        zeros(7)
+        3.0
+        zeros(3)
+        3.0
+        zeros(5)
+        1.0
+        zeros(3)
+    ]
     return MOI.Utilities.mock_optimize!(
         mock,
-        [zeros(2) 3.0 zeros(3) 3.0 zeros(7) 3.0 zeros(3) 3.0 zeros(5) 1.0 zeros(
-            3,
-        )],
+        sol,
         (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64}) => zeros(4),
         (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(7), zeros(7)],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
