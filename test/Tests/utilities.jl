@@ -1,6 +1,4 @@
 using Test, JuMP
-const MOIT = MOI.Test
-const MOIB = MOI.Bridges
 using SumOfSquares
 
 function _model(optimizer::MOI.AbstractOptimizer)
@@ -12,7 +10,7 @@ function _model(factory)
     return Model(factory)
 end
 
-#const SOSPolynomial{T, OT<:MOI.ModelLike} = MOIB.Constraint.SingleBridgeOptimizer{SumOfSquares.SOSPolynomialBridge{T}, OT}
+#const SOSPolynomial{T, OT<:MOI.ModelLike} = MOI.Bridges.Constraint.SingleBridgeOptimizer{SumOfSquares.SOSPolynomialBridge{T}, OT}
 
 #function _cheat_model(factory::OptimizerFactory)
 #    return Model(with_optimizer(() -> SOSPolynomial{Float64}(factory())))
@@ -84,10 +82,10 @@ function test_delete_bridge(model::Model,
 end
 
 # Utilities for building the mock `optimize!` from the solution of a solver
-_inner(model::MOIU.CachingOptimizer) = _inner(model.optimizer)
-_inner(model::MOIB.LazyBridgeOptimizer) = model.model
+_inner(model::MOI.Utilities.CachingOptimizer) = _inner(model.optimizer)
+_inner(model::MOI.Bridges.LazyBridgeOptimizer) = model.model
 _cheat_inner(model::MOI.ModelLike) = model
-_cheat_inner(model::MOIB.Constraint.SingleBridgeOptimizer) = _cheat_inner(model.model)
+_cheat_inner(model::MOI.Bridges.Constraint.SingleBridgeOptimizer) = _cheat_inner(model.model)
 # Variables primal values for inner bridged model
 function print_value(v, atol)
     i = round(v)
@@ -102,7 +100,7 @@ function inner_variable_value(model, atol=1e-4)
     inner = _inner(backend(model))
     values = MOI.get(inner, MOI.VariablePrimal(),
                      MOI.get(inner, MOI.ListOfVariableIndices()))
-    println("optimize!(mock) = MOIU.mock_optimize!(mock,")
+    println("optimize!(mock) = MOI.Utilities.mock_optimize!(mock,")
     println(JuMP.termination_status(model))
     if JuMP.primal_status(model) != MOI.NO_SOLUTION
         values = MOI.get(inner, MOI.VariablePrimal(),

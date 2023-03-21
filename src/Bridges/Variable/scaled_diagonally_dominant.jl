@@ -15,14 +15,14 @@ into a sum of constrained variables in [`SumOfSquares.PositiveSemidefinite2x2Con
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
 ArXiv e-prints, **2017**.
 """
-struct ScaledDiagonallyDominantBridge{T} <: MOIB.Variable.AbstractBridge
+struct ScaledDiagonallyDominantBridge{T} <: MOI.Bridges.Variable.AbstractBridge
     side_dimension::Int
     variables::Vector{Vector{MOI.VariableIndex}}
     constraints::Vector{MOI.ConstraintIndex{
         MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}
 end
 
-function MOIB.Variable.bridge_constrained_variable(
+function MOI.Bridges.Variable.bridge_constrained_variable(
     ::Type{ScaledDiagonallyDominantBridge{T}}, model::MOI.ModelLike,
     s::SOS.ScaledDiagonallyDominantConeTriangle) where T
     n = s.side_dimension
@@ -43,16 +43,16 @@ function MOIB.Variable.bridge_constrained_variable(
     return ScaledDiagonallyDominantBridge{T}(n, variables, constraints)
 end
 
-function MOIB.Variable.supports_constrained_variable(
+function MOI.Bridges.Variable.supports_constrained_variable(
     ::Type{<:ScaledDiagonallyDominantBridge},
     ::Type{SOS.ScaledDiagonallyDominantConeTriangle})
     return true
 end
-function MOIB.added_constrained_variable_types(
+function MOI.Bridges.added_constrained_variable_types(
     ::Type{<:ScaledDiagonallyDominantBridge})
     return [(SOS.PositiveSemidefinite2x2ConeTriangle,)]
 end
-function MOIB.added_constraint_types(
+function MOI.Bridges.added_constraint_types(
     ::Type{<:ScaledDiagonallyDominantBridge})
     return Tuple{DataType, DataType}[]
 end
@@ -95,7 +95,7 @@ end
 trimap(i, j) = div(j * (j - 1), 2) + i
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOIB.IndexInVector) where T
+                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOI.Bridges.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         value = zero(T)
@@ -114,18 +114,18 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
     end
 end
 
-function MOIB.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
-                               i::MOIB.IndexInVector) where T
+function MOI.Bridges.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
+                               i::MOI.Bridges.IndexInVector) where T
     i, j = matrix_indices(i.value)
     if i == j
         func = zero(MOI.ScalarAffineFunction{T})
         for k in 1:(i - 1)
             idx = offdiag_vector_index(k, i)
-            MOIU.operate!(+, T, func, bridge.variables[idx][3])
+            MOI.Utilities.operate!(+, T, func, bridge.variables[idx][3])
         end
         for k in (i + 1):bridge.side_dimension
             idx = offdiag_vector_index(i, k)
-            MOIU.operate!(+, T, func, bridge.variables[idx][1])
+            MOI.Utilities.operate!(+, T, func, bridge.variables[idx][1])
         end
         return func
     else
@@ -133,7 +133,7 @@ function MOIB.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
         return MOI.convert(MOI.ScalarAffineFunction{T}, bridge.variables[idx][2])
     end
 end
-function MOIB.Variable.unbridged_map(
+function MOI.Bridges.Variable.unbridged_map(
     bridge::ScaledDiagonallyDominantBridge{T},
     vis::Vector{MOI.VariableIndex}) where T
 

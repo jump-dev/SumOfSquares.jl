@@ -1,11 +1,11 @@
-struct CopositiveInnerBridge{T, S} <: MOIB.Variable.AbstractBridge
+struct CopositiveInnerBridge{T, S} <: MOI.Bridges.Variable.AbstractBridge
     matrix_variables::Vector{MOI.VariableIndex}
     matrix_constraint::MOI.ConstraintIndex{MOI.VectorOfVariables, S}
     nonneg_variables::Vector{MOI.VariableIndex}
     nonneg_constraint::MOI.ConstraintIndex{MOI.VectorOfVariables, MOI.Nonnegatives}
 end
 
-function MOIB.Variable.bridge_constrained_variable(
+function MOI.Bridges.Variable.bridge_constrained_variable(
     ::Type{CopositiveInnerBridge{T, S}},
     model::MOI.ModelLike, set::SOS.CopositiveInnerCone) where {T, S}
 
@@ -17,17 +17,17 @@ function MOIB.Variable.bridge_constrained_variable(
     )
 end
 
-function MOIB.Variable.supports_constrained_variable(
+function MOI.Bridges.Variable.supports_constrained_variable(
     ::Type{<:CopositiveInnerBridge}, ::Type{<:SOS.CopositiveInnerCone})
     return true
 end
-function MOIB.added_constrained_variable_types(::Type{CopositiveInnerBridge{T, S}}) where {T, S}
+function MOI.Bridges.added_constrained_variable_types(::Type{CopositiveInnerBridge{T, S}}) where {T, S}
     return [(S,), (MOI.Nonnegatives,)]
 end
-function MOIB.added_constraint_types(::Type{<:CopositiveInnerBridge})
+function MOI.Bridges.added_constraint_types(::Type{<:CopositiveInnerBridge})
     return Tuple{DataType, DataType}[]
 end
-function MOIB.Variable.concrete_bridge_type(
+function MOI.Bridges.Variable.concrete_bridge_type(
     ::Type{<:CopositiveInnerBridge{T}}, ::Type{SOS.CopositiveInnerCone{S}}) where {T, S}
     return CopositiveInnerBridge{T, S}
 end
@@ -93,7 +93,7 @@ function offdiag_vector_index(i, j)
 end
 
 function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::CopositiveInnerBridge, i::MOIB.IndexInVector)
+                 bridge::CopositiveInnerBridge, i::MOI.Bridges.IndexInVector)
     value = MOI.get(model, attr, bridge.matrix_variables[i.value])
     row, col = matrix_indices(i.value)
     if row != col
@@ -102,20 +102,20 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
     return value
 end
 
-function MOIB.bridged_function(bridge::CopositiveInnerBridge{T},
-                               i::MOIB.IndexInVector) where T
+function MOI.Bridges.bridged_function(bridge::CopositiveInnerBridge{T},
+                               i::MOI.Bridges.IndexInVector) where T
     func = convert(MOI.ScalarAffineFunction{T},
                    bridge.matrix_variables[i.value])
     row, col = matrix_indices(i.value)
     if row != col
-        func = MOIU.operate!(+, T, func,
+        func = MOI.Utilities.operate!(+, T, func,
             bridge.nonneg_variables[vector_index(row, col - 1)])
     end
     return func
 end
-function MOIB.Variable.unbridged_map(
+function MOI.Bridges.Variable.unbridged_map(
     bridge::CopositiveInnerBridge{T},
-    vi::MOI.VariableIndex, i::MOIB.IndexInVector) where T
+    vi::MOI.VariableIndex, i::MOI.Bridges.IndexInVector) where T
 
     F = MOI.ScalarAffineFunction{T}
     func = convert(F, vi)

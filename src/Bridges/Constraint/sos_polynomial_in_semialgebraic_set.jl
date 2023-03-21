@@ -12,7 +12,7 @@ struct SOSPolynomialInSemialgebraicSetBridge{
     UMCT <: Union{Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
                   MOI.ConstraintIndex{MOI.VectorOfVariables}},
     UMST, MCT,
-    MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MOIB.Constraint.AbstractBridge
+    MT <: MP.AbstractMonomial, MVT <: AbstractVector{MT}} <: MOI.Bridges.Constraint.AbstractBridge
     lagrangian_bases::Vector{B}
     lagrangian_variables::Vector{Union{Vector{MOI.VariableIndex}, Vector{Vector{MOI.VariableIndex}}}}
     lagrangian_constraints::Vector{UMCT}
@@ -29,7 +29,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
-    p = MP.polynomial(MOIU.scalarize(f), copy(set.monomials))
+    p = MP.polynomial(MOI.Utilities.scalarize(f), copy(set.monomials))
     λ_bases     = B[]
     λ_variables = Union{Vector{MOI.VariableIndex}, Vector{Vector{MOI.VariableIndex}}}[]
     λ_constraints = UMCT[]
@@ -51,7 +51,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     new_set = SOS.SOSPolynomialSet(
         set.domain.V, MP.monomials(p),
         Certificate.ideal_certificate(set.certificate))
-    constraint = MOI.add_constraint(model, MOIU.vectorize(MP.coefficients(p)),
+    constraint = MOI.add_constraint(model, MOI.Utilities.vectorize(MP.coefficients(p)),
                                     new_set)
 
     return SOSPolynomialInSemialgebraicSetBridge{
@@ -63,21 +63,21 @@ function MOI.supports_constraint(::Type{SOSPolynomialInSemialgebraicSetBridge{T}
                                  ::Type{<:SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet}}) where T
     return true
 end
-function MOIB.added_constrained_variable_types(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT}}) where {T, F, DT, CT}
+function MOI.Bridges.added_constrained_variable_types(::Type{<:SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT}}) where {T, F, DT, CT}
     return constrained_variable_types(SOS.matrix_cone_type(CT))
 end
-function MOIB.added_constraint_types(
+function MOI.Bridges.added_constraint_types(
     ::Type{SOSPolynomialInSemialgebraicSetBridge{T, F, DT, CT, B, UMCT, UMST, MCT, MT, MVT}}) where {T, F, DT, CT, B, UMCT, UMST, MCT, MT, MVT}
     return [(F, SOS.SOSPolynomialSet{DT, MT, MVT, CT})]
 end
-function MOIB.Constraint.concrete_bridge_type(
+function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:SOS.SOSPolynomialSet{SemialgebraicSets.BasicSemialgebraicSet{S, PS, AT}, MT, MVT, CT}}) where {T, S, PS, AT, CT, MT, MVT}
 
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
-    G = MOIU.promote_operation(-, T, F, MOI.VectorOfVariables)
+    G = MOI.Utilities.promote_operation(-, T, F, MOI.VectorOfVariables)
     MCT = SOS.matrix_cone_type(CT)
     B = Certificate.multiplier_basis_type(CT)
     UMCT = union_constraint_types(MCT)

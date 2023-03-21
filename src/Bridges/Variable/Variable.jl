@@ -1,12 +1,8 @@
 module Variable
 
-import MathOptInterface
-const MOI = MathOptInterface
-const MOIU = MOI.Utilities
-const MOIB = MOI.Bridges
+import MathOptInterface as MOI
 
-import SumOfSquares
-const SOS = SumOfSquares
+import SumOfSquares as SOS
 
 include("psd2x2.jl")
 include("scaled_diagonally_dominant.jl")

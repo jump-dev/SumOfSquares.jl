@@ -3,7 +3,7 @@ using SumOfSquares
 using DynamicPolynomials
 
 function quartic_constant_test(optimizer,
-                   config::MOIT.Config,
+                   config::MOI.Test.Config,
                    cone::SumOfSquares.PolyJuMP.PolynomialSet)
     atol = config.atol
     rtol = config.rtol

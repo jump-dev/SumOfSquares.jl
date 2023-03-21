@@ -3,7 +3,7 @@ using SumOfSquares
 using DynamicPolynomials
 
 # Inspired from https://github.com/jump-dev/SumOfSquares.jl/issues/79
-function concave_then_convex_cubic_test(optimizer, config::MOIT.Config,
+function concave_then_convex_cubic_test(optimizer, config::MOI.Test.Config,
                                         MCT::Type{<:MOI.AbstractVectorSet})
     atol = config.atol
     rtol = config.rtol

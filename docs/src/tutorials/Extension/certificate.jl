@@ -40,8 +40,7 @@ optimize!(model)
 
 # We now define the Schmüdgen's certificate:
 
-using MultivariateBases
-const MB = MultivariateBases
+import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
 struct Schmüdgen{IC <: SOSC.AbstractIdealCertificate, CT <: SOS.SOSLikeCone, BT <: SOS.AbstractPolynomialBasis} <: SOSC.AbstractPreorderCertificate

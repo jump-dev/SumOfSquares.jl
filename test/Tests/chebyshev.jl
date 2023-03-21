@@ -6,7 +6,7 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 
-function chebyshev_test(optimizer, config::MOIT.Config)
+function chebyshev_test(optimizer, config::MOI.Test.Config)
     ndeg = 8   # Degree of Chebyshev polynomial
 
     @polyvar x

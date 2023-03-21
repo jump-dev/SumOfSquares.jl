@@ -2,22 +2,16 @@ module Constraint
 
 using LinearAlgebra
 
-using MutableArithmetics
-const MA = MutableArithmetics
+import MutableArithmetics as MA
 
-using MathOptInterface
-const MOI = MathOptInterface
-const MOIU = MOI.Utilities
-const MOIB = MOI.Bridges
+import MathOptInterface as MOI
 
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
 import MultivariateBases
 import SemialgebraicSets
 import MultivariateMoments
 import PolyJuMP
-import SumOfSquares
-const SOS = SumOfSquares
+import SumOfSquares as SOS
 const Certificate = SOS.Certificate
 
 # Symmetric PSD matrix bridges

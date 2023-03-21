@@ -1,7 +1,6 @@
 using Test
 using SumOfSquares
-import MultivariateBases
-const MB = MultivariateBases
+import MultivariateBases as MB
 
 function xor_complement_test()
     @test Certificate.Sparsity.xor_complement([1], 1) == Int[]
