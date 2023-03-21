@@ -35,7 +35,10 @@ struct SOSDecompositionAttribute <: MOI.AbstractConstraintAttribute
     dec::MultivariateMoments.LowRankChol
     result_index::Int
 end
-function SOSDecompositionAttribute(ranktol::Real, dec::MultivariateMoments.LowRankChol)
+function SOSDecompositionAttribute(
+    ranktol::Real,
+    dec::MultivariateMoments.LowRankChol,
+)
     return SOSDecompositionAttribute(ranktol, dec, 1)
 end
 
@@ -76,26 +79,45 @@ LagrangianMultipliers() = LagrangianMultipliers(1)
 
 # Needs to declare it set by optimize that it is not queried in the Caching
 # optimize, even of `CertificateBasis` which is set befor optimize.
-function MOI.is_set_by_optimize(::Union{CertificateBasis,
-                                        GramMatrixAttribute,
-                                        SOSDecompositionAttribute,
-                                        MomentMatrixAttribute,
-                                        LagrangianMultipliers})
+function MOI.is_set_by_optimize(
+    ::Union{
+        CertificateBasis,
+        GramMatrixAttribute,
+        SOSDecompositionAttribute,
+        MomentMatrixAttribute,
+        LagrangianMultipliers,
+    },
+)
     return true
 end
 
 # If a variable is bridged, the `VectorOfVariables`-in-`SOSPolynomialSet` is
 # bridged by `MOI.Bridges.Constraint.VectorFunctionizeBridge` and it has
 # to pass the constraint to the SOS bridge.
-function MOI.Bridges.Constraint.invariant_under_function_conversion(::Union{
-    CertificateBasis, GramMatrixAttribute,
-    MomentMatrixAttribute, LagrangianMultipliers})
+function MOI.Bridges.Constraint.invariant_under_function_conversion(
+    ::Union{
+        CertificateBasis,
+        GramMatrixAttribute,
+        MomentMatrixAttribute,
+        LagrangianMultipliers,
+    },
+)
     return true
 end
 
 # This is type piracy but we tolerate it.
-const ObjectWithoutIndex = Union{AbstractGramMatrix{<:MOI.Utilities.ObjectWithoutIndex},SOSDecomposition{<:MOI.Utilities.ObjectWithoutIndex}}
-const ObjectOrTupleWithoutIndex = Union{ObjectWithoutIndex, Tuple{Vararg{ObjectWithoutIndex}}}
-const ObjectOrTupleOrArrayWithoutIndex = Union{ObjectOrTupleWithoutIndex, AbstractArray{<:ObjectOrTupleWithoutIndex}}
+const ObjectWithoutIndex = Union{
+    AbstractGramMatrix{<:MOI.Utilities.ObjectWithoutIndex},
+    SOSDecomposition{<:MOI.Utilities.ObjectWithoutIndex},
+}
+const ObjectOrTupleWithoutIndex =
+    Union{ObjectWithoutIndex,Tuple{Vararg{ObjectWithoutIndex}}}
+const ObjectOrTupleOrArrayWithoutIndex =
+    Union{ObjectOrTupleWithoutIndex,AbstractArray{<:ObjectOrTupleWithoutIndex}}
 MOI.Utilities.map_indices(::Function, x::ObjectOrTupleOrArrayWithoutIndex) = x
-MOI.Utilities.substitute_variables(::Function, x::ObjectOrTupleOrArrayWithoutIndex) = x
+function MOI.Utilities.substitute_variables(
+    ::Function,
+    x::ObjectOrTupleOrArrayWithoutIndex,
+)
+    return x
+end

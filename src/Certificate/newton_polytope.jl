@@ -36,7 +36,9 @@ function _filter(X::AbstractVector{<:MP.AbstractMonomial}, extdeg, exp, n)
         minmultideg[i] = cld(mapreduce(exponent_i, min, X), 2)
         maxmultideg[i] = fld(mapreduce(exponent_i, max, X), 2)
     end
-    return mindeg, maxdeg, mono -> begin
+    return mindeg,
+    maxdeg,
+    mono -> begin
         all(i -> minmultideg[i] <= exp(mono, i) <= maxmultideg[i], 1:n)
     end
 end
@@ -45,31 +47,56 @@ function _full_filter(X::AbstractVector{<:MP.AbstractMonomial}, extdeg, exp, n)
     return mono -> mindeg <= MP.degree(mono) <= maxdeg && filter(mono)
 end
 
-function _sub_half_newton_polytope(X::AbstractVector{<:MP.AbstractMonomial},
-                                   extdeg, exp, vars)
+function _sub_half_newton_polytope(
+    X::AbstractVector{<:MP.AbstractMonomial},
+    extdeg,
+    exp,
+    vars,
+)
     mindeg, maxdeg, filter = _filter(X, extdeg, exp, length(vars))
     return MP.monomials(vars, mindeg:maxdeg, filter)
 end
 
-function sub_half_newton_polytope(X::AbstractVector{<:MP.AbstractMonomial},
-                                  vars)
-    _sub_half_newton_polytope(X, sub_extdegree(X, vars),
-                              (mono, i) -> MP.degree(mono, vars[i]), vars)
+function sub_half_newton_polytope(
+    X::AbstractVector{<:MP.AbstractMonomial},
+    vars,
+)
+    return _sub_half_newton_polytope(
+        X,
+        sub_extdegree(X, vars),
+        (mono, i) -> MP.degree(mono, vars[i]),
+        vars,
+    )
 end
 
-is_commutative(vars) = length(vars) < 2 || prod(vars[1:2]) == prod(reverse(vars[1:2]))
+function is_commutative(vars)
+    return length(vars) < 2 || prod(vars[1:2]) == prod(reverse(vars[1:2]))
+end
 
 # Multipartite
 # TODO we might do this recursively : do 2 parts, merge them, merge with next
 #      one and so on so that the filter at the end prunes more.
-function half_newton_polytope(X::AbstractVector, parts::Tuple; apply_post_filter = true)
+function half_newton_polytope(
+    X::AbstractVector,
+    parts::Tuple;
+    apply_post_filter = true,
+)
     if !is_commutative(MP.variables(X))
-        throw(ArgumentError("Multipartite Newton polytope not supported with noncommutative variables."))
+        throw(
+            ArgumentError(
+                "Multipartite Newton polytope not supported with noncommutative variables.",
+            ),
+        )
     end
-    if !all(i -> all(j -> i == j || isempty(parts[i] ∩ parts[j]),
-                     1:length(parts)),
-            1:length(parts))
-        throw(ArgumentError("Parts are not disjoint in multipartite Newton polytope estimation: $parts."))
+    if !all(
+        i -> all(j -> i == j || isempty(parts[i] ∩ parts[j]), 1:length(parts)),
+        1:length(parts),
+    )
+        throw(
+            ArgumentError(
+                "Parts are not disjoint in multipartite Newton polytope estimation: $parts.",
+            ),
+        )
     end
     # Some variables might be in no part...
     missing = setdiff(MP.variables(X), reduce(union, parts))
@@ -81,7 +108,11 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple; apply_post_filter
     end
     if length(all_parts) == 1
         # all variables on same part, fallback to shortcut
-        return half_newton_polytope(X, tuple(); apply_post_filter = apply_post_filter)
+        return half_newton_polytope(
+            X,
+            tuple();
+            apply_post_filter = apply_post_filter,
+        )
     end
     monovecs = map(vars -> sub_half_newton_polytope(X, vars), all_parts)
     # Cartesian product of the newton polytopes of the different parts
@@ -89,7 +120,8 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple; apply_post_filter
     mindeg, maxdeg = cfld(MP.extdegree(X), 2)
     # We know that the degree inequalities are satisfied variable-wise and
     # part-wise but for all variables together so we filter with that
-    monos = MP.monovec(filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product))
+    monos =
+        MP.monovec(filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product))
     if apply_post_filter
         return post_filter(monos, X)
     else
@@ -130,7 +162,11 @@ end
 
 # Shortcut for more efficient `extdeg` and `exp` function in case all the
 # variables are in the same part
-function half_newton_polytope(X::AbstractVector, parts::Tuple{}; apply_post_filter = true)
+function half_newton_polytope(
+    X::AbstractVector,
+    parts::Tuple{};
+    apply_post_filter = true,
+)
     vars = MP.variables(X)
     if is_commutative(vars)
         # Commutative variables
@@ -146,8 +182,12 @@ function half_newton_polytope(X::AbstractVector, parts::Tuple{}; apply_post_filt
         vars = unique!(sort(vars))
         function ncexp(mono, i)
             mvars = MP.variables(mono)
-            return mapreduce(j -> mvars[j] == vars[i] ? MP.exponents(mono)[j] : 0,
-                             +, eachindex(mvars), init=0)
+            return mapreduce(
+                j -> mvars[j] == vars[i] ? MP.exponents(mono)[j] : 0,
+                +,
+                eachindex(mvars),
+                init = 0,
+            )
         end
         filter = _full_filter(X, MP.extdegree(X), ncexp, length(vars))
         _monos = eltype(X)[]
@@ -186,7 +226,7 @@ end
 function post_filter(monos, X)
     num = Dict(mono => 1 for mono in X)
     function _increase(mono)
-        num[mono] = get(num, mono, 0) + 1
+        return num[mono] = get(num, mono, 0) + 1
     end
     function _decrease(mono)
         value = num[mono] - 1
@@ -204,7 +244,7 @@ function post_filter(monos, X)
             end
         end
     end
-    back = Dict{eltype(monos), Int}()
+    back = Dict{eltype(monos),Int}()
     keep = ones(Bool, length(monos))
     function _delete(i)
         keep[i] = false
@@ -230,6 +270,14 @@ function post_filter(monos, X)
     return monos[findall(keep)]
 end
 
-function monomials_half_newton_polytope(X::AbstractVector, parts; apply_post_filter = true)
-    half_newton_polytope(MP.monovec(X), parts; apply_post_filter = apply_post_filter)
+function monomials_half_newton_polytope(
+    X::AbstractVector,
+    parts;
+    apply_post_filter = true,
+)
+    return half_newton_polytope(
+        MP.monovec(X),
+        parts;
+        apply_post_filter = apply_post_filter,
+    )
 end

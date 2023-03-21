@@ -34,23 +34,32 @@ function csp_graph(poly::MP.APL, domain::BasicSemialgebraicSet)
 end
 
 function chordal_csp_graph(poly::MP.APL, domain::AbstractBasicSemialgebraicSet)
-    H, cliques = CEG.chordal_extension(csp_graph(poly, domain), CEG.GreedyFillIn())
+    H, cliques =
+        CEG.chordal_extension(csp_graph(poly, domain), CEG.GreedyFillIn())
     for clique in cliques
-        sort!(clique, rev=true)
+        sort!(clique, rev = true)
         unique!(clique)
     end
     return H, cliques
-
 end
 
-function sparsity(poly::MP.AbstractPolynomial, domain::BasicSemialgebraicSet,
-                  sp::Variable, certificate::SumOfSquares.Certificate.Putinar)
+function sparsity(
+    poly::MP.AbstractPolynomial,
+    domain::BasicSemialgebraicSet,
+    sp::Variable,
+    certificate::SumOfSquares.Certificate.Putinar,
+)
     H, cliques = chordal_csp_graph(poly, domain)
     function bases(q)
         return [
-            SumOfSquares.Certificate.maxdegree_gram_basis(certificate.basis, clique,
-                                 SumOfSquares.Certificate.multiplier_maxdegree(certificate.maxdegree, q))
-            for clique in cliques if MP.variables(q) ⊆ clique
+            SumOfSquares.Certificate.maxdegree_gram_basis(
+                certificate.basis,
+                clique,
+                SumOfSquares.Certificate.multiplier_maxdegree(
+                    certificate.maxdegree,
+                    q,
+                ),
+            ) for clique in cliques if MP.variables(q) ⊆ clique
         ]
     end
     return bases(poly), map(bases, domain.p)

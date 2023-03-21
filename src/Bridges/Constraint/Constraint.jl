@@ -25,7 +25,6 @@ include("utilities.jl")
 include("sos_polynomial.jl")
 include("sos_polynomial_in_semialgebraic_set.jl")
 
-
 # TODO bridges should redirect to `MOI.get_fallback` as well so that
 # we can just use `Union{MOI.ConstraintIndex,MOI.Bridges.AbstractBridge}` in the `get_fallback` in `attributes.jl`
 function MOI.get(

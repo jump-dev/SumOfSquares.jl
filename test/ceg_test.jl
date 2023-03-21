@@ -126,7 +126,7 @@ end
         G = CEG.LabelledGraph{Int}()
         @test CEG.add_node!(G, 1) == 1
         @test CEG.add_edge!(G, (1, 2)) == (1, 2)
-        @test CEG.add_edge!.(G, [(1, 2), (2, 3)]) isa Vector{Tuple{Int, Int}}
+        @test CEG.add_edge!.(G, [(1, 2), (2, 3)]) isa Vector{Tuple{Int,Int}}
         @test CEG.add_clique!(G, [1, 2, 3]) === nothing
     end
 
@@ -205,5 +205,4 @@ end
         @test isempty(H.graph.disabled)
         @test isempty(I.graph.disabled)
     end
-
 end

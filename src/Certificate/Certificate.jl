@@ -23,7 +23,7 @@ struct IdealIndex
     value::Int
 end
 
-const Index = Union{PreorderIndex, IdealIndex}
+const Index = Union{PreorderIndex,IdealIndex}
 
 abstract type Attribute end
 
@@ -66,7 +66,11 @@ such that `h_i(x) = 0`.
 The polynomials `σ_i(x)` are search over `cone` with a basis of type `basis` such that
 the degree of `σ_i(x) g_i(x)` does not exceed `maxdegree`.
 """
-struct Putinar{IC <: AbstractIdealCertificate, CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: AbstractPreorderCertificate
+struct Putinar{
+    IC<:AbstractIdealCertificate,
+    CT<:SumOfSquares.SOSLikeCone,
+    BT<:MB.AbstractPolynomialBasis,
+} <: AbstractPreorderCertificate
     ideal_certificate::IC
     cone::CT
     basis::Type{BT}
@@ -75,7 +79,7 @@ end
 
 cone(certificate::Putinar) = certificate.cone
 
-struct WithVariables{S, V}
+struct WithVariables{S,V}
     inner::S
     variables::V
 end
@@ -127,13 +131,21 @@ function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
     return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
 end
 multiplier_maxdegree(maxdegree, q) = maxdegree - MP.maxdegree(q)
-function multiplier_basis(certificate::Putinar, index::PreorderIndex, domain::WithVariables)
+function multiplier_basis(
+    certificate::Putinar,
+    index::PreorderIndex,
+    domain::WithVariables,
+)
     q = domain.inner.p[index.value]
     vars = sort!([domain.variables..., MP.variables(q)...], rev = true)
     unique!(vars)
-    return maxdegree_gram_basis(certificate.basis, vars, multiplier_maxdegree(certificate.maxdegree, q))
+    return maxdegree_gram_basis(
+        certificate.basis,
+        vars,
+        multiplier_maxdegree(certificate.maxdegree, q),
+    )
 end
-function multiplier_basis_type(::Type{Putinar{IC, CT, BT}}) where {IC, CT, BT}
+function multiplier_basis_type(::Type{Putinar{IC,CT,BT}}) where {IC,CT,BT}
     return BT
 end
 
@@ -144,21 +156,29 @@ end
 ideal_certificate(certificate::Putinar) = certificate.ideal_certificate
 ideal_certificate(::Type{<:Putinar{IC}}) where {IC} = IC
 
-SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC, CT}}) where {IC, CT} = SumOfSquares.matrix_cone_type(CT)
+function SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC,CT}}) where {IC,CT}
+    return SumOfSquares.matrix_cone_type(CT)
+end
 
 ######################
 # Ideal certificates #
 ######################
 
-abstract type SimpleIdealCertificate{CT, BT} <: AbstractIdealCertificate end
+abstract type SimpleIdealCertificate{CT,BT} <: AbstractIdealCertificate end
 reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
 
 cone(certificate::SimpleIdealCertificate) = certificate.cone
-SumOfSquares.matrix_cone_type(::Type{<:SimpleIdealCertificate{CT}}) where {CT} = SumOfSquares.matrix_cone_type(CT)
+function SumOfSquares.matrix_cone_type(
+    ::Type{<:SimpleIdealCertificate{CT}},
+) where {CT}
+    return SumOfSquares.matrix_cone_type(CT)
+end
 
 # TODO return something else when `PolyJuMP` support other bases.
 zero_basis(certificate::SimpleIdealCertificate) = MB.MonomialBasis
-zero_basis_type(::Type{<:SimpleIdealCertificate{CT, BT}}) where {CT, BT} = MB.MonomialBasis
+function zero_basis_type(::Type{<:SimpleIdealCertificate{CT,BT}}) where {CT,BT}
+    return MB.MonomialBasis
+end
 
 """
     struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
@@ -174,15 +194,20 @@ such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with a basis of type `basis` such that
 the degree of `σ(x)` does not exceed `maxdegree`.
 """
-struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+struct MaxDegree{CT<:SumOfSquares.SOSLikeCone,BT<:MB.AbstractPolynomialBasis} <:
+       SimpleIdealCertificate{CT,BT}
     cone::CT
     basis::Type{BT}
     maxdegree::Int
 end
 function gram_basis(certificate::MaxDegree, poly)
-    return maxdegree_gram_basis(certificate.basis, MP.variables(poly), certificate.maxdegree)
+    return maxdegree_gram_basis(
+        certificate.basis,
+        MP.variables(poly),
+        certificate.maxdegree,
+    )
 end
-function gram_basis_type(::Type{MaxDegree{CT, BT}}) where {CT, BT}
+function gram_basis_type(::Type{MaxDegree{CT,BT}}) where {CT,BT}
     return BT
 end
 
@@ -198,14 +223,17 @@ such that `p(x) - σ(x)` is guaranteed to be zero for all `x`
 such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with basis `basis`.
 """
-struct FixedBasis{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+struct FixedBasis{
+    CT<:SumOfSquares.SOSLikeCone,
+    BT<:MB.AbstractPolynomialBasis,
+} <: SimpleIdealCertificate{CT,BT}
     cone::CT
     basis::BT
 end
 function gram_basis(certificate::FixedBasis, poly)
     return certificate.basis
 end
-function gram_basis_type(::Type{FixedBasis{CT, BT}}) where {CT, BT}
+function gram_basis_type(::Type{FixedBasis{CT,BT}}) where {CT,BT}
     return BT
 end
 
@@ -225,15 +253,25 @@ chosen using the multipartite Newton polytope with parts `variable_groups`.
 If `variable_groups = tuple()` then it falls back to the classical Newton polytope
 with all variables in the same part.
 """
-struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, NPT <: Tuple} <: SimpleIdealCertificate{CT, BT}
+struct Newton{
+    CT<:SumOfSquares.SOSLikeCone,
+    BT<:MB.AbstractPolynomialBasis,
+    NPT<:Tuple,
+} <: SimpleIdealCertificate{CT,BT}
     cone::CT
     basis::Type{BT}
     variable_groups::NPT
 end
-function gram_basis(certificate::Newton{CT, B}, poly) where {CT, B}
-    return MB.basis_covering_monomials(B, monomials_half_newton_polytope(MP.monomials(poly), certificate.variable_groups))
+function gram_basis(certificate::Newton{CT,B}, poly) where {CT,B}
+    return MB.basis_covering_monomials(
+        B,
+        monomials_half_newton_polytope(
+            MP.monomials(poly),
+            certificate.variable_groups,
+        ),
+    )
 end
-function gram_basis_type(::Type{<:Newton{CT, BT}}) where {CT, BT}
+function gram_basis_type(::Type{<:Newton{CT,BT}}) where {CT,BT}
     return BT
 end
 
@@ -264,12 +302,14 @@ end
 function gram_basis(certificate::Remainder, poly)
     return gram_basis(certificate.gram_certificate, poly)
 end
-function gram_basis_type(::Type{Remainder{GCT}}) where GCT
+function gram_basis_type(::Type{Remainder{GCT}}) where {GCT}
     return gram_basis_type(GCT)
 end
 
 cone(certificate::Remainder) = cone(certificate.gram_certificate)
-SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT} = SumOfSquares.matrix_cone_type(GCT)
+function SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT}
+    return SumOfSquares.matrix_cone_type(GCT)
+end
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
 

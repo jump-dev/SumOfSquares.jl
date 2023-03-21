@@ -1,4 +1,5 @@
-export certificate_basis, certificate_monomials, gram_matrix, lagrangian_multipliers
+export certificate_basis,
+    certificate_monomials, gram_matrix, lagrangian_multipliers
 export NonnegPolyInnerCone, DSOSCone, SDSOSCone, SOSCone
 export PSDMatrixInnerCone, SOSMatrixCone
 export ConvexPolyInnerCone, SOSConvexCone
@@ -15,8 +16,7 @@ X^\\top Q X
 where `X` is a vector of monomials and `Q` is a symmetric matrix that belongs to
 the cone `psd_inner`.
 """
-struct NonnegPolyInnerCone{MCT <: MOI.AbstractVectorSet} <: SOSLikeCone
-end
+struct NonnegPolyInnerCone{MCT<:MOI.AbstractVectorSet} <: SOSLikeCone end
 matrix_cone_type(::Type{NonnegPolyInnerCone{MCT}}) where {MCT} = MCT
 
 _wrap(::MIME"text/plain", s) = s
@@ -66,44 +66,87 @@ function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
     return Certificate.cone(set.certificate)
 end
 
-function default_ideal_certificate(domain, basis, cone, maxdegree, newton_polytope)
+function default_ideal_certificate(
+    domain,
+    basis,
+    cone,
+    maxdegree,
+    newton_polytope,
+)
     if maxdegree === nothing
         return Certificate.Newton(cone, basis, newton_polytope)
     else
         return Certificate.MaxDegree(cone, basis, maxdegree)
     end
 end
-function default_ideal_certificate(domain::FixedVariablesSet, basis, cone, maxdegree, newton_polytope)
-    return Certificate.Remainder(Certificate.Newton(cone, basis, newton_polytope))
+function default_ideal_certificate(
+    domain::FixedVariablesSet,
+    basis,
+    cone,
+    maxdegree,
+    newton_polytope,
+)
+    return Certificate.Remainder(
+        Certificate.Newton(cone, basis, newton_polytope),
+    )
 end
-function default_ideal_certificate(domain::FullSpace, basis, cone, maxdegree, newton_polytope)
+function default_ideal_certificate(
+    domain::FullSpace,
+    basis,
+    cone,
+    maxdegree,
+    newton_polytope,
+)
     return Certificate.Newton(cone, basis, newton_polytope)
 end
 
 function default_ideal_certificate(
-    ::AbstractAlgebraicSet, ::Certificate.Sparsity.NoPattern, basis::AbstractPolynomialBasis, cone, args...)
+    ::AbstractAlgebraicSet,
+    ::Certificate.Sparsity.NoPattern,
+    basis::AbstractPolynomialBasis,
+    cone,
+    args...,
+)
     return Certificate.FixedBasis(cone, basis)
 end
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, ::Certificate.Sparsity.NoPattern, args...)
+    domain::AbstractAlgebraicSet,
+    ::Certificate.Sparsity.NoPattern,
+    args...,
+)
     return default_ideal_certificate(domain, args...)
 end
 function default_ideal_certificate(
-    ::AbstractAlgebraicSet, sparsity::Certificate.Sparsity.Pattern, args...)
+    ::AbstractAlgebraicSet,
+    sparsity::Certificate.Sparsity.Pattern,
+    args...,
+)
     return Certificate.Sparsity.Ideal(sparsity, args...)
 end
 
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, symmetry::Nothing, args...)
+    domain::AbstractAlgebraicSet,
+    symmetry::Nothing,
+    args...,
+)
     return default_ideal_certificate(domain, args...)
 end
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, symmetry::Certificate.Symmetry.Pattern, args...)
-    return Certificate.Symmetry.Ideal(symmetry, default_ideal_certificate(domain, args...))
+    domain::AbstractAlgebraicSet,
+    symmetry::Certificate.Symmetry.Pattern,
+    args...,
+)
+    return Certificate.Symmetry.Ideal(
+        symmetry,
+        default_ideal_certificate(domain, args...),
+    )
 end
 
 function default_ideal_certificate(
-    domain::AbstractAlgebraicSet, newton_of_remainder::Bool, args...)
+    domain::AbstractAlgebraicSet,
+    newton_of_remainder::Bool,
+    args...,
+)
     c = default_ideal_certificate(domain, args...)
     if newton_of_remainder && !(c isa SumOfSquares.Certificate.Remainder)
         return SumOfSquares.Certificate.Remainder(c)
@@ -115,24 +158,48 @@ function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
     return default_ideal_certificate(domain.V, args...)
 end
 
-function default_certificate(::AbstractAlgebraicSet, sparsity, ideal_certificate, cone, basis, maxdegree)
+function default_certificate(
+    ::AbstractAlgebraicSet,
+    sparsity,
+    ideal_certificate,
+    cone,
+    basis,
+    maxdegree,
+)
     return ideal_certificate
 end
-function default_certificate(::BasicSemialgebraicSet, sparsity::Certificate.Sparsity.Pattern,
-                             ideal_certificate::Certificate.Sparsity.Ideal, cone,
-                             basis, maxdegree)
+function default_certificate(
+    ::BasicSemialgebraicSet,
+    sparsity::Certificate.Sparsity.Pattern,
+    ideal_certificate::Certificate.Sparsity.Ideal,
+    cone,
+    basis,
+    maxdegree,
+)
     return Certificate.Sparsity.Preorder(
-        sparsity, Certificate.Putinar(ideal_certificate.certificate, cone, basis, maxdegree))
+        sparsity,
+        Certificate.Putinar(
+            ideal_certificate.certificate,
+            cone,
+            basis,
+            maxdegree,
+        ),
+    )
 end
-function default_certificate(::BasicSemialgebraicSet, ::Certificate.Sparsity.NoPattern,
-                             ideal_certificate, cone, basis, maxdegree)
-    return Certificate.Putinar(
-        ideal_certificate, cone, basis, maxdegree)
+function default_certificate(
+    ::BasicSemialgebraicSet,
+    ::Certificate.Sparsity.NoPattern,
+    ideal_certificate,
+    cone,
+    basis,
+    maxdegree,
+)
+    return Certificate.Putinar(ideal_certificate, cone, basis, maxdegree)
 end
 
 # Julia v1.0 does not support `init` keyword
 #_max_maxdegree(p) = maximum(MP.maxdegree, p, init=0)
-_max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init=0)
+_max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init = 0)
 
 _maxdegree(domain) = 0
 
@@ -160,48 +227,74 @@ end
 function JuMP.moi_set(
     cone::SOSLikeCone,
     monos::AbstractVector{<:MP.AbstractMonomial};
-    domain::AbstractSemialgebraicSet=FullSpace(),
-    basis=MonomialBasis,
-    newton_polytope::Tuple=tuple(),
-    maxdegree::Union{Nothing, Int}=default_maxdegree(monos, domain),
-    sparsity::Certificate.Sparsity.Pattern=Certificate.Sparsity.NoPattern(),
-    symmetry::Union{Nothing,Certificate.Symmetry.Pattern}=nothing,
-    newton_of_remainder::Bool=false,
-    ideal_certificate=default_ideal_certificate(
-        domain, newton_of_remainder, symmetry, sparsity, basis, cone, maxdegree, newton_polytope),
-    certificate=default_certificate(
-        domain, sparsity, ideal_certificate, cone, basis, maxdegree)
-    )
+    domain::AbstractSemialgebraicSet = FullSpace(),
+    basis = MonomialBasis,
+    newton_polytope::Tuple = tuple(),
+    maxdegree::Union{Nothing,Int} = default_maxdegree(monos, domain),
+    sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
+    symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
+    newton_of_remainder::Bool = false,
+    ideal_certificate = default_ideal_certificate(
+        domain,
+        newton_of_remainder,
+        symmetry,
+        sparsity,
+        basis,
+        cone,
+        maxdegree,
+        newton_polytope,
+    ),
+    certificate = default_certificate(
+        domain,
+        sparsity,
+        ideal_certificate,
+        cone,
+        basis,
+        maxdegree,
+    ),
+)
     return SOSPolynomialSet(domain, monos, certificate)
 end
 
-function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{EmptyCone})
+function PolyJuMP.bridges(
+    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{EmptyCone},
+)
     return [Bridges.Constraint.EmptyBridge]
 end
 
-function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{PositiveSemidefinite2x2ConeTriangle})
+function PolyJuMP.bridges(
+    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{PositiveSemidefinite2x2ConeTriangle},
+)
     return [Bridges.Constraint.PositiveSemidefinite2x2Bridge]
 end
 
-function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{<:DiagonallyDominantConeTriangle})
+function PolyJuMP.bridges(
+    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:DiagonallyDominantConeTriangle},
+)
     return [Bridges.Constraint.DiagonallyDominantBridge]
 end
 
-function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{<:ScaledDiagonallyDominantConeTriangle})
+function PolyJuMP.bridges(
+    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:ScaledDiagonallyDominantConeTriangle},
+)
     return [Bridges.Constraint.ScaledDiagonallyDominantBridge]
 end
 
-function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}})
+function PolyJuMP.bridges(
+    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}},
+)
     return [Bridges.Constraint.SOSPolynomialBridge]
 end
 
-function PolyJuMP.bridges(::Type{<:MOI.AbstractVectorFunction},
-                          ::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}})
+function PolyJuMP.bridges(
+    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}},
+)
     return [Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge]
 end
 
@@ -210,12 +303,14 @@ function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
     monos = MP.monomials(p)
     set = JuMP.moi_set(cone, monos; kws...)
     shape = PolyJuMP.PolynomialShape(monos)
-    return PolyJuMP.bridgeable(JuMP.VectorConstraint(coefs, set, shape),
-                               JuMP.moi_function_type(typeof(coefs)),
-                               typeof(set))
+    return PolyJuMP.bridgeable(
+        JuMP.VectorConstraint(coefs, set, shape),
+        JuMP.moi_function_type(typeof(coefs)),
+        typeof(set),
+    )
 end
 
-_non_constant(a::Vector{T}) where T = convert.(MOI.ScalarAffineFunction{T}, a)
+_non_constant(a::Vector{T}) where {T} = convert.(MOI.ScalarAffineFunction{T}, a)
 _non_constant(a::Vector{<:JuMP.AbstractJuMPScalar}) = moi_function.(a)
 _non_constant(a::Vector{<:MOI.AbstractFunction}) = a
 
@@ -231,19 +326,29 @@ function JuMP.add_constraint(model::MOI.ModelLike, p, cone::SOSLikeCone; kws...)
 end
 function JuMP.add_constraint(model::JuMP.Model, p, cone::SOSLikeCone; kws...)
     ci = JuMP.add_constraint(JuMP.backend(model), p, cone; kws...)
-    return JuMP.ConstraintRef(model, ci, PolyJuMP.PolynomialShape(MP.monomials(p)))
+    return JuMP.ConstraintRef(
+        model,
+        ci,
+        PolyJuMP.PolynomialShape(MP.monomials(p)),
+    )
 end
 
 struct ValueNotSupported <: Exception end
 function Base.showerror(io::IO, ::ValueNotSupported)
-    print(io, "`value` is no supported for Sum-of-Squares constraints, use",
-          " `gram_matrix` instead.")
+    return print(
+        io,
+        "`value` is no supported for Sum-of-Squares constraints, use",
+        " `gram_matrix` instead.",
+    )
 end
 
 struct DualNotSupported <: Exception end
 function Base.showerror(io::IO, ::DualNotSupported)
-    print(io, "`dual` is no supported for Sum-of-Squares constraints in a",
-          " domain, use `moment_matrix` instead.")
+    return print(
+        io,
+        "`dual` is no supported for Sum-of-Squares constraints in a",
+        " domain, use `moment_matrix` instead.",
+    )
 end
 
 """
@@ -260,8 +365,11 @@ end
 
 Return the [`SOSDecompositionAttribute`](@ref) of `cref`.
 """
-function sos_decomposition(cref::JuMP.ConstraintRef, ranktol::Real=0.0,
-                           dec::MultivariateMoments.LowRankChol=SVDChol())
+function sos_decomposition(
+    cref::JuMP.ConstraintRef,
+    ranktol::Real = 0.0,
+    dec::MultivariateMoments.LowRankChol = SVDChol(),
+)
     return MOI.get(cref.model, SOSDecompositionAttribute(ranktol, dec), cref)
 end
 
@@ -270,7 +378,11 @@ end
 
 Return representation in the quadraic module associated with K.
 """
-function sos_decomposition(cref::JuMP.ConstraintRef, K::AbstractBasicSemialgebraicSet, args...)
+function sos_decomposition(
+    cref::JuMP.ConstraintRef,
+    K::AbstractBasicSemialgebraicSet,
+    args...,
+)
     lm = SOSDecomposition.(lagrangian_multipliers(cref), args...)
     gm = sos_decomposition(cref, args...)
     return SOSDecompositionWithDomain(gm, lm, K)
@@ -306,7 +418,11 @@ function certificate_monomials(cref::JuMP.ConstraintRef)
     return basis_monomials(certificate_basis(cref))
 end
 basis_monomials(basis::AbstractMonomialBasis) = basis.monomials
-basis_monomials(basis::AbstractPolynomialBasis) = error("`certificate_monomials` is not supported with `$(typeof(basis))`, use `certificate_basis` instead.")
+function basis_monomials(basis::AbstractPolynomialBasis)
+    return error(
+        "`certificate_monomials` is not supported with `$(typeof(basis))`, use `certificate_basis` instead.",
+    )
+end
 
 """
     lagrangian_multipliers(cref::JuMP.ConstraintRef)
@@ -327,8 +443,7 @@ matrices such that the polynomial ``y^\\top P(x) y`` belongs to
 `NonnegPolyInnerCone{MCT}` where `y` is a vector of ``n`` auxiliary polynomial
 variables.
 """
-struct PSDMatrixInnerCone{MCT <: MOI.AbstractVectorSet} <: PolyJuMP.PolynomialSet
-end
+struct PSDMatrixInnerCone{MCT<:MOI.AbstractVectorSet} <: PolyJuMP.PolynomialSet end
 
 """
     const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
@@ -342,10 +457,13 @@ Society for Industrial and Applied Mathematics, 2012.
 """
 const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-function JuMP.build_constraint(_error::Function, P::AbstractMatrix{<:MP.APL},
-                               ::PSDMatrixInnerCone{MCT};
-                               newton_polytope::Tuple = tuple(),
-                               kws...) where MCT
+function JuMP.build_constraint(
+    _error::Function,
+    P::AbstractMatrix{<:MP.APL},
+    ::PSDMatrixInnerCone{MCT};
+    newton_polytope::Tuple = tuple(),
+    kws...,
+) where {MCT}
     n = LinearAlgebra.checksquare(P)
     if !issymmetric(P)
         _error("The polynomial matrix constrained to be SOS must be symmetric.")
@@ -355,8 +473,13 @@ function JuMP.build_constraint(_error::Function, P::AbstractMatrix{<:MP.APL},
     # TODO Newton_polytope=(y,) may not be the best idea if exact newton
     #      polytope computation is used.
     #      See "Sum-of-Squares Matrices" notebook
-    JuMP.build_constraint(_error, p, NonnegPolyInnerCone{MCT}();
-                          newton_polytope=(y, newton_polytope...), kws...)
+    return JuMP.build_constraint(
+        _error,
+        p,
+        NonnegPolyInnerCone{MCT}();
+        newton_polytope = (y, newton_polytope...),
+        kws...,
+    )
 end
 
 """
@@ -380,8 +503,17 @@ Society for Industrial and Applied Mathematics, 2012.
 """
 const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-function JuMP.build_constraint(_error::Function, p::MP.APL,
-                               ::ConvexPolyInnerCone{MCT}; kws...) where MCT
+function JuMP.build_constraint(
+    _error::Function,
+    p::MP.APL,
+    ::ConvexPolyInnerCone{MCT};
+    kws...,
+) where {MCT}
     hessian = MP.differentiate(p, MP.variables(p), 2)
-    JuMP.build_constraint(_error, hessian, PSDMatrixInnerCone{MCT}(); kws...)
+    return JuMP.build_constraint(
+        _error,
+        hessian,
+        PSDMatrixInnerCone{MCT}();
+        kws...,
+    )
 end

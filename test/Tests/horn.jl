@@ -13,18 +13,22 @@ using SemialgebraicSets
 # *Semidefinite Optimization and Convex Algebraic Geometry*.
 # Society for Industrial and Applied Mathematics, **2012**.
 
-function horn_test(optimizer,
-                   config::MOI.Test.Config,
-                   cone::SumOfSquares.PolyJuMP.PolynomialSet)
+function horn_test(
+    optimizer,
+    config::MOI.Test.Config,
+    cone::SumOfSquares.PolyJuMP.PolynomialSet,
+)
     atol = config.atol
     rtol = config.rtol
 
     # Horn matrix
-    H = [1 -1  1  1 -1;
-        -1  1 -1  1  1;
-         1 -1  1 -1  1;
-         1  1 -1  1 -1;
-        -1  1  1 -1  1]
+    H = [
+        1 -1 1 1 -1
+        -1 1 -1 1 1
+        1 -1 1 -1 1
+        1 1 -1 1 -1
+        -1 1 1 -1 1
+    ]
 
     @polyvar x[1:5]
 
@@ -42,8 +46,9 @@ function horn_test(optimizer,
     @test termination_status(model) == MOI.INFEASIBLE
 
     delete(model, cref)
-    orthant = orthant ∩ basicsemialgebraicset(
-        FullSpace(), polynomial.(monomials(x, 3)))
+    orthant =
+        orthant ∩
+        basicsemialgebraicset(FullSpace(), polynomial.(monomials(x, 3)))
     cref = @constraint(model, sum(x) * x' * H * x in cone, domain = orthant)
     optimize!(model)
 
@@ -60,9 +65,9 @@ function horn_test(optimizer,
         @test termination_status(model) == MOI.INFEASIBLE
     end
 end
-sos_horn_test(optimizer, config)   = horn_test(optimizer, config, SOSCone())
+sos_horn_test(optimizer, config) = horn_test(optimizer, config, SOSCone())
 sd_tests["sos_horn"] = sos_horn_test
 sdsos_horn_test(optimizer, config) = horn_test(optimizer, config, SDSOSCone())
 soc_tests["sdsos_horn"] = sdsos_horn_test
-dsos_horn_test(optimizer, config)  = horn_test(optimizer, config, DSOSCone())
+dsos_horn_test(optimizer, config) = horn_test(optimizer, config, DSOSCone())
 linear_tests["dsos_horn"] = dsos_horn_test

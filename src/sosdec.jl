@@ -5,15 +5,21 @@ export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
 Represents a Sum-of-Squares decomposition without domain.
 """
-struct SOSDecomposition{T, PT <: MP.APL{T}, U} <: AbstractDecomposition{U}
+struct SOSDecomposition{T,PT<:MP.APL{T},U} <: AbstractDecomposition{U}
     ps::Vector{PT}
-    function SOSDecomposition{T, PT, U}(ps::Vector{PT}) where {T, PT, U}
-        new(ps)
+    function SOSDecomposition{T,PT,U}(ps::Vector{PT}) where {T,PT,U}
+        return new(ps)
     end
 end
 
-SOSDecomposition(ps::Vector{PT}) where {T, PT <: MP.APL{T}} = SOSDecomposition{T, PT, _promote_add_mul(T)}(ps)
-MP.polynomialtype(::Union{SOSDecomposition{T, PT, U}, Type{SOSDecomposition{T, PT, U}}}) where {T, PT, U} = MP.polynomialtype(PT, U)
+function SOSDecomposition(ps::Vector{PT}) where {T,PT<:MP.APL{T}}
+    return SOSDecomposition{T,PT,_promote_add_mul(T)}(ps)
+end
+function MP.polynomialtype(
+    ::Union{SOSDecomposition{T,PT,U},Type{SOSDecomposition{T,PT,U}}},
+) where {T,PT,U}
+    return MP.polynomialtype(PT, U)
+end
 
 #function SOSDecomposition(ps::Vector)
 #    T = reduce(promote_type, Int, map(eltype, ps))
@@ -35,16 +41,19 @@ function GramMatrix(p::SOSDecomposition{T}) where {T}
             j += 1
         end
     end
-    GramMatrix(Q' * Q, X)
+    return GramMatrix(Q' * Q, X)
 end
 
-function SOSDecomposition(p::GramMatrix, ranktol=0.0,
-                          dec::MultivariateMoments.LowRankChol=SVDChol())
+function SOSDecomposition(
+    p::GramMatrix,
+    ranktol = 0.0,
+    dec::MultivariateMoments.LowRankChol = SVDChol(),
+)
     n = length(p.basis)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
     nM, cM, Q = MultivariateMoments.lowrankchol(Matrix(getmat(p)), dec, ranktol)
-    ps = [MP.polynomial(Q[i,:], p.basis) for i in axes(Q, 1)]
+    ps = [MP.polynomial(Q[i, :], p.basis) for i in axes(Q, 1)]
     return SOSDecomposition(ps)
 end
 # Without LDL^T, we need to do float(T)
@@ -73,21 +82,30 @@ function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
     if length(q.ps) != m
         false
     else
-        MultivariateMoments.permcomp((i, j) -> isapprox(p.ps[i], q.ps[j]; kwargs...), m)
+        MultivariateMoments.permcomp(
+            (i, j) -> isapprox(p.ps[i], q.ps[j]; kwargs...),
+            m,
+        )
     end
 end
 
-function Base.promote_rule(::Type{SOSDecomposition{T1, PT1, U1}}, ::Type{SOSDecomposition{T2, PT2, U2}}) where {T1, T2, PT1<:MP.APL{T1}, PT2<:MP.APL{T2}, U1, U2}
+function Base.promote_rule(
+    ::Type{SOSDecomposition{T1,PT1,U1}},
+    ::Type{SOSDecomposition{T2,PT2,U2}},
+) where {T1,T2,PT1<:MP.APL{T1},PT2<:MP.APL{T2},U1,U2}
     T = promote_type(T1, T2)
-    return SOSDecomposition{T, promote_type(PT1, PT2), _promote_add_mul(T)}
+    return SOSDecomposition{T,promote_type(PT1, PT2),_promote_add_mul(T)}
 end
 
-function Base.convert(::Type{SOSDecomposition{T, PT, U}}, p::SOSDecomposition) where {T, PT, U}
+function Base.convert(
+    ::Type{SOSDecomposition{T,PT,U}},
+    p::SOSDecomposition,
+) where {T,PT,U}
     return SOSDecomposition(convert(Vector{PT}, p.ps))
 end
 
 function MP.polynomial(decomp::SOSDecomposition)
-    return sum(decomp.ps.^2)
+    return sum(decomp.ps .^ 2)
 end
 function MP.polynomial(decomp::SOSDecomposition, T::Type)
     return MP.polynomial(MP.polynomial(decomp), T)
@@ -98,17 +116,25 @@ end
 
 Represents a Sum-of-Squares decomposition on a basic semi-algebraic domain.
 """
-struct SOSDecompositionWithDomain{T, PT <: MP.APL{T}, U, S <: AbstractSemialgebraicSet}
-    sos::SOSDecomposition{T, PT, U}
-    sosj::Vector{SOSDecomposition{T, PT, U}}
+struct SOSDecompositionWithDomain{T,PT<:MP.APL{T},U,S<:AbstractSemialgebraicSet}
+    sos::SOSDecomposition{T,PT,U}
+    sosj::Vector{SOSDecomposition{T,PT,U}}
     domain::S
 end
 
-function SOSDecompositionWithDomain(ps::SOSDecomposition{T1, PT1, U1}, vps::Vector{SOSDecomposition{T2, PT2, U2}}, set::AbstractSemialgebraicSet ) where {T1, T2, PT1, PT2, U1, U2}
-    ptype = promote_type(SOSDecomposition{T1, PT1, U1}, SOSDecomposition{T2, PT2, U2})
-    return SOSDecompositionWithDomain(convert(ptype, ps), convert(Vector{ptype}, vps), set)
+function SOSDecompositionWithDomain(
+    ps::SOSDecomposition{T1,PT1,U1},
+    vps::Vector{SOSDecomposition{T2,PT2,U2}},
+    set::AbstractSemialgebraicSet,
+) where {T1,T2,PT1,PT2,U1,U2}
+    ptype =
+        promote_type(SOSDecomposition{T1,PT1,U1}, SOSDecomposition{T2,PT2,U2})
+    return SOSDecompositionWithDomain(
+        convert(ptype, ps),
+        convert(Vector{ptype}, vps),
+        set,
+    )
 end
-
 
 function Base.show(io::IO, decomp::SOSDecompositionWithDomain)
     print(io, decomp.sos)
@@ -128,11 +154,17 @@ function MP.polynomial(decomp::SOSDecompositionWithDomain)
         @error "Semialgebraic set has equality constraints"
     end
     for (Gj, gj) in zip(decomp.sosj, inequalities(decomp.domain))
-        p += MP.polynomial(Gj)*gj
+        p += MP.polynomial(Gj) * gj
     end
     return p
 end
 
-function Base.isapprox(p::SOSDecompositionWithDomain, q::SOSDecompositionWithDomain; kwargs...)
-    return isapprox(p.sos, q.sos) && all(isapprox.(p.sosj, q.sosj)) && p.domain == q.domain
+function Base.isapprox(
+    p::SOSDecompositionWithDomain,
+    q::SOSDecompositionWithDomain;
+    kwargs...,
+)
+    return isapprox(p.sos, q.sos) &&
+           all(isapprox.(p.sosj, q.sosj)) &&
+           p.domain == q.domain
 end

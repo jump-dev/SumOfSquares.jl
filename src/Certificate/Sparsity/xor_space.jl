@@ -1,7 +1,7 @@
 mutable struct XORSpace{T<:Integer}
     dimension::Int
     basis::Vector{T}
-    function XORSpace{T}(n) where T
+    function XORSpace{T}(n) where {T}
         return new(0, zeros(T, n))
     end
 end
@@ -19,7 +19,7 @@ end
 function XORSpace(n)
     return XORSpace{appropriate_type(n)}(n)
 end
-function Base.push!(xs::XORSpace{T}, x::T) where T
+function Base.push!(xs::XORSpace{T}, x::T) where {T}
     for i in eachindex(xs.basis)
         if !iszero(x & (one(T) << (i - 1)))
             if iszero(xs.basis[i])
@@ -33,14 +33,14 @@ function Base.push!(xs::XORSpace{T}, x::T) where T
     end
     return xs
 end
-function orthogonal_complement(xs::XORSpace{T}) where T
+function orthogonal_complement(xs::XORSpace{T}) where {T}
     r = Vector{T}(undef, length(xs.basis) - xs.dimension)
     k = 0
     for i in eachindex(xs.basis)
         if iszero(xs.basis[i])
             e = one(T) << (i - 1)
             x = e
-            for j in 1:(i - 1)
+            for j in 1:(i-1)
                 if !iszero(xs.basis[j] & e)
                     x |= (one(T) << (j - 1))
                 end
@@ -52,7 +52,7 @@ function orthogonal_complement(xs::XORSpace{T}) where T
     @assert k == length(r)
     return r
 end
-function xor_complement(x, n, ::Type{T} = appropriate_type(n)) where T
+function xor_complement(x, n, ::Type{T} = appropriate_type(n)) where {T}
     xs = XORSpace{T}(n)
     for xi in x
         push!(xs, xi)

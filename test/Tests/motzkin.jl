@@ -5,7 +5,7 @@ using DynamicPolynomials
 function motzkin_test(optimizer, config::MOI.Test.Config)
     @polyvar x y
     # Motzkin polynomial
-    p = x^4*y^2 + x^2*y^4 + 1 - 3*x^2*y^2
+    p = x^4 * y^2 + x^2 * y^4 + 1 - 3 * x^2 * y^2
 
     model = _model(optimizer)
     # We want to write `p ≥ 0` instead of `p in SOSCone()` so we need to set

@@ -20,7 +20,9 @@ else
     if try_import(:TypedPolynomials)
         import TypedPolynomials.@polyvar
     else
-        error("No polynomial implementation installed : Please install TypedPolynomials or DynamicPolynomials")
+        error(
+            "No polynomial implementation installed : Please install TypedPolynomials or DynamicPolynomials",
+        )
     end
 end
 

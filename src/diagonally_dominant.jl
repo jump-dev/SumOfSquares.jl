@@ -1,5 +1,7 @@
-function matrix_cone(S::Type{<:MOI.AbstractSymmetricMatrixSetTriangle},
-                     side_dimension)
+function matrix_cone(
+    S::Type{<:MOI.AbstractSymmetricMatrixSetTriangle},
+    side_dimension,
+)
     if iszero(side_dimension)
         # Some solvers such as Mosek does not support 0-dimensional PSD cone
         return EmptyCone()
@@ -37,8 +39,7 @@ struct DiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle
     side_dimension::Int
 end
 
-function matrix_cone(S::Type{DiagonallyDominantConeTriangle},
-                     side_dimension)
+function matrix_cone(S::Type{DiagonallyDominantConeTriangle}, side_dimension)
     if iszero(side_dimension)
         return EmptyCone()
     elseif isone(side_dimension)
@@ -60,12 +61,15 @@ See Definition 4 of [AM17] for a precise definition of the last two items.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
 ArXiv e-prints, **2017**.
 """
-struct ScaledDiagonallyDominantConeTriangle <: MOI.AbstractSymmetricMatrixSetTriangle
+struct ScaledDiagonallyDominantConeTriangle <:
+       MOI.AbstractSymmetricMatrixSetTriangle
     side_dimension::Int
 end
 
-function matrix_cone(S::Type{ScaledDiagonallyDominantConeTriangle},
-                     side_dimension)
+function matrix_cone(
+    S::Type{ScaledDiagonallyDominantConeTriangle},
+    side_dimension,
+)
     if iszero(side_dimension)
         return EmptyCone()
     elseif isone(side_dimension)
@@ -78,7 +82,11 @@ function matrix_cone(S::Type{ScaledDiagonallyDominantConeTriangle},
 end
 
 # isbits types, nothing to copy
-function Base.copy(set::Union{DiagonallyDominantConeTriangle,
-                              ScaledDiagonallyDominantConeTriangle})
+function Base.copy(
+    set::Union{
+        DiagonallyDominantConeTriangle,
+        ScaledDiagonallyDominantConeTriangle,
+    },
+)
     return set
 end

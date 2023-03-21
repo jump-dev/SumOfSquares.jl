@@ -40,11 +40,10 @@ function add_edge!(G::Graph, i::Int, j::Int)
         push!(G.neighbors[j], i)
     end
     return (i, j)
-
 end
 function add_clique!(G::Graph, nodes::Vector{Int})
-    for i in 1:(length(nodes) - 1)
-        for j in (i + 1):length(nodes)
+    for i in 1:(length(nodes)-1)
+        for j in (i+1):length(nodes)
             add_edge!(G, nodes[i], nodes[j])
         end
     end
@@ -62,19 +61,26 @@ function neighbors(G::Graph, node::Int)
     return G.neighbors[node]
 end
 
-function _num_edges_subgraph(G::Graph, nodes::Union{Vector{Int}, Set{Int}}, node::Int)
+function _num_edges_subgraph(
+    G::Graph,
+    nodes::Union{Vector{Int},Set{Int}},
+    node::Int,
+)
     neighs = neighbors(G, node)
     return count(nodes) do node
-        is_enabled(G, node) && node in neighs
+        return is_enabled(G, node) && node in neighs
     end
 end
-function num_edges_subgraph(G::Graph, nodes::Union{Vector{Int}, Set{Int}})
+function num_edges_subgraph(G::Graph, nodes::Union{Vector{Int},Set{Int}})
     return mapreduce(+, nodes; init = 0) do node
-        is_enabled(G, node) ? _num_edges_subgraph(G, nodes, node) : 0
+        return is_enabled(G, node) ? _num_edges_subgraph(G, nodes, node) : 0
     end
 end
 
-function num_missing_edges_subgraph(G::Graph, nodes::Union{Vector{Int}, Set{Int}})
+function num_missing_edges_subgraph(
+    G::Graph,
+    nodes::Union{Vector{Int},Set{Int}},
+)
     n = count(node -> is_enabled(G, node), nodes)
     # A clique is a completely connected graph. As such it has n*(n-1)/2 undirected
     # or equivalently n*(n-1) directed edges.
@@ -103,7 +109,9 @@ struct FillInCache
     graph::Graph
     fill_in::Vector{Int}
 end
-FillInCache(graph::Graph) = FillInCache(graph, [fill_in(graph, i) for i in 1:num_nodes(graph)])
+function FillInCache(graph::Graph)
+    return FillInCache(graph, [fill_in(graph, i) for i in 1:num_nodes(graph)])
+end
 Base.copy(G::FillInCache) = FillInCache(copy(G.graph), copy(G.fill_in))
 
 num_nodes(G::FillInCache) = num_nodes(G.graph)
@@ -123,17 +131,22 @@ function add_edge!(G::FillInCache, i::Int, j::Int)
             G.fill_in[node] -= 1
         end
     end
-    G.fill_in[i] += count(k -> is_enabled(G.graph, k), ni) - _num_edges_subgraph(G.graph, ni, j)
-    G.fill_in[j] += count(k -> is_enabled(G.graph, k), nj) - _num_edges_subgraph(G.graph, nj, i)
-    add_edge!(G.graph, i, j)
+    G.fill_in[i] +=
+        count(k -> is_enabled(G.graph, k), ni) -
+        _num_edges_subgraph(G.graph, ni, j)
+    G.fill_in[j] +=
+        count(k -> is_enabled(G.graph, k), nj) -
+        _num_edges_subgraph(G.graph, nj, i)
+    return add_edge!(G.graph, i, j)
 end
 fill_in(G::FillInCache, node::Int) = G.fill_in[node]
 function disable_node!(G::FillInCache, node::Int)
     for neighbor in neighbors(G, node)
         nodes = neighbors(G, neighbor)
-        G.fill_in[neighbor] -= (length(nodes) - 1) - _num_edges_subgraph(G.graph, nodes, node)
+        G.fill_in[neighbor] -=
+            (length(nodes) - 1) - _num_edges_subgraph(G.graph, nodes, node)
     end
-    disable_node!(G.graph, node)
+    return disable_node!(G.graph, node)
 end
 is_enabled(G::FillInCache, node::Int) = is_enabled(G.graph, node)
 
@@ -147,23 +160,27 @@ is_enabled(G::FillInCache, node::Int) = is_enabled(G.graph, node)
 Type to represend a graph with nodes of type T.
 """
 struct LabelledGraph{T}
-    n2int::Dict{T, Int}
+    n2int::Dict{T,Int}
     int2n::Vector{T}
     graph::Graph
 end
 
 Base.broadcastable(g::LabelledGraph) = Ref(g)
-Base.copy(G::LabelledGraph{T}) where T = LabelledGraph(copy(G.n2int), copy(G.int2n), copy(G.graph))
+function Base.copy(G::LabelledGraph{T}) where {T}
+    return LabelledGraph(copy(G.n2int), copy(G.int2n), copy(G.graph))
+end
 
-function LabelledGraph{T}() where T
-    return LabelledGraph(Dict{T, Int}(), T[], Graph())
+function LabelledGraph{T}() where {T}
+    return LabelledGraph(Dict{T,Int}(), T[], Graph())
 end
 
 function LabelledGraph()
-    error("`LabelledGraph()` constructor is not valid, you need to specify the type of nodes as type parameter, e.g. `LabelledGraph{Int}()`.")
+    return error(
+        "`LabelledGraph()` constructor is not valid, you need to specify the type of nodes as type parameter, e.g. `LabelledGraph{Int}()`.",
+    )
 end
 
-function Base.show(io::IO, G::LabelledGraph{T}) where T
+function Base.show(io::IO, G::LabelledGraph{T}) where {T}
     println(io, "$T-LabelledGraph with")
     println(io, "Nodes:")
     for node in G.int2n
@@ -186,7 +203,7 @@ end
 Add the node i to graph G.
 If i is already a node of G, only return the reference.
 """
-function add_node!(G::LabelledGraph{T}, i::T) where T
+function add_node!(G::LabelledGraph{T}, i::T) where {T}
     if haskey(G.n2int, i)
         idx = G.n2int[i]
     else
@@ -203,7 +220,7 @@ end
 
 Add the unweighted edge (i, j) to graph G. Duplicate edges are not taken into account.
 """
-function add_edge!(G::LabelledGraph{T}, xi::T, xj::T) where T
+function add_edge!(G::LabelledGraph{T}, xi::T, xj::T) where {T}
     add_edge!(G.graph, add_node!(G, xi), add_node!(G, xj))
     return (xi, xj)
 end
@@ -213,8 +230,8 @@ end
 
 Add the unweighted edge e to graph G. Duplicate edges are not taken into account.
 """
-function add_edge!(G::LabelledGraph{T}, e::Tuple{T,T}) where T
-    add_edge!(G, first(e), last(e))
+function add_edge!(G::LabelledGraph{T}, e::Tuple{T,T}) where {T}
+    return add_edge!(G, first(e), last(e))
 end
 
 """
@@ -223,8 +240,8 @@ end
 Add all elements of x as nodes to G and add edges such that x is fully
 connected in G.
 """
-function add_clique!(G::LabelledGraph{T}, x::Vector{T}) where T
-    add_clique!(G.graph, add_node!.(G, x))
+function add_clique!(G::LabelledGraph{T}, x::Vector{T}) where {T}
+    return add_clique!(G.graph, add_node!.(G, x))
 end
 
 struct GreedyFillIn <: AbstractGreedyAlgorithm end
@@ -241,35 +258,38 @@ function _greedy_triangulation!(G, algo::AbstractGreedyAlgorithm)
                 typemax(Int)
             end
         end)
-#=
-        # look at all its neighbors. In G we want the neighbors to form a clique.
-        neighbor_nodes = collect(neighbors(G, node))
+        #=
+                # look at all its neighbors. In G we want the neighbors to form a clique.
+                neighbor_nodes = collect(neighbors(G, node))
 
-        # add neighbors and node as a potentially maximal clique
-        candidate_clique = [neighbor for neighbor in neighbor_nodes if is_enabled(G, neighbor)]
-        push!(candidate_clique, node)
-        push!(candidate_cliques, candidate_clique)
+                # add neighbors and node as a potentially maximal clique
+                candidate_clique = [neighbor for neighbor in neighbor_nodes if is_enabled(G, neighbor)]
+                push!(candidate_clique, node)
+                push!(candidate_cliques, candidate_clique)
 
-        # add edges to G to make the new candidate_clique at least potentially a clique
-        for i in eachindex(neighbor_nodes)
-            if is_enabled(G, i)
-                for j in (i + 1):length(neighbor_nodes)
-                    if is_enabled(G, j)
-                        add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
+                # add edges to G to make the new candidate_clique at least potentially a clique
+                for i in eachindex(neighbor_nodes)
+                    if is_enabled(G, i)
+                        for j in (i + 1):length(neighbor_nodes)
+                            if is_enabled(G, j)
+                                add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
+                            end
+                        end
                     end
                 end
+        =#
+        neighbor_nodes = [
+            neighbor for
+            neighbor in neighbors(G, node) if is_enabled(G, neighbor)
+        ]
+        push!(candidate_cliques, [node, neighbor_nodes...])
+        for i in eachindex(neighbor_nodes)
+            for j in (i+1):length(neighbor_nodes)
+                add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
             end
         end
-=#
-	neighbor_nodes = [neighbor for neighbor in neighbors(G, node) if is_enabled(G, neighbor)]
-	push!(candidate_cliques, [node, neighbor_nodes...])
-	for i in eachindex(neighbor_nodes)
-		for j in (i+1):length(neighbor_nodes)
-			add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
-		end
-	end
 
-    disable_node!(G, node)
+        disable_node!(G, node)
     end
     return candidate_cliques
 end
@@ -296,7 +316,9 @@ function completion(G::Graph, comp::ChordalCompletion)
     unique!(candidate_cliques)
 
     # check whether candidate cliques are actually cliques
-    candidate_cliques = candidate_cliques[[is_clique(H, clique) for clique in candidate_cliques]]
+    candidate_cliques = candidate_cliques[[
+        is_clique(H, clique) for clique in candidate_cliques
+    ]]
     sort!(candidate_cliques, by = x -> length(x))
     reverse!(candidate_cliques) # TODO use `rev=true` in `sort!`.
 
@@ -345,9 +367,10 @@ function completion(G::Graph, ::ClusterCompletion)
     return H, cliques
 end
 
-function completion(G::LabelledGraph{T}, comp::AbstractCompletion) where T
+function completion(G::LabelledGraph{T}, comp::AbstractCompletion) where {T}
     H, cliques = completion(G.graph, comp)
-    return LabelledGraph{T}(G.n2int, G.int2n, H), [[G.int2n[i] for i in clique] for clique in cliques]
+    return LabelledGraph{T}(G.n2int, G.int2n, H),
+    [[G.int2n[i] for i in clique] for clique in cliques]
 end
 
 chordal_extension(G, algo) = completion(G, ChordalCompletion(algo))
