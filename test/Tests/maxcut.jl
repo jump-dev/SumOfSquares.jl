@@ -13,10 +13,12 @@ function maxcut_test(optimizer, config::MOI.Test.Config)
     @polyvar x[1:5]
 
     # Number of cuts
-    f = 2.5 - 0.5*x[1]*x[2] - 0.5*x[2]*x[3] - 0.5*x[3]*x[4] - 0.5*x[4]*x[5] - 0.5*x[5]*x[1]
+    f =
+        2.5 - 0.5 * x[1] * x[2] - 0.5 * x[2] * x[3] - 0.5 * x[3] * x[4] -
+        0.5 * x[4] * x[5] - 0.5 * x[5] * x[1]
 
     # Boolean constraints
-    bc = vec(x).^2 .- 1
+    bc = vec(x) .^ 2 .- 1
 
     model = _model(optimizer)
 
@@ -26,8 +28,17 @@ function maxcut_test(optimizer, config::MOI.Test.Config)
     Z = monomials(x, 0:2)
     @variable(model, p[1:5], Poly(Z))
 
-    @testset "with γ=$γ it should be $(feasible ? "feasible" : "infeasible")" for (γ, feasible) in [(3.9, false), (4.1, true)]
-        cref = @constraint(model, p1*(γ-f) + dot(p, bc) - (γ-f)^2 in SOSCone())
+    @testset "with γ=$γ it should be $(feasible ? "feasible" : "infeasible")" for (
+        γ,
+        feasible,
+    ) in [
+        (3.9, false),
+        (4.1, true),
+    ]
+        cref = @constraint(
+            model,
+            p1 * (γ - f) + dot(p, bc) - (γ - f)^2 in SOSCone()
+        )
 
         JuMP.optimize!(model)
 

@@ -5,8 +5,10 @@
 function sosdemo9_test(optimizer, config::MOI.Test.Config)
     @polyvar x1 x2 x3
 
-    P = [x1^4+x1^2*x2^2+x1^2*x3^2 x1*x2*x3^2-x1^3*x2-x1*x2*(x2^2+2*x3^2);
-         x1*x2*x3^2-x1^3*x2-x1*x2*(x2^2+2*x3^2) x1^2*x2^2+x2^2*x3^2+(x2^2+2*x3^2)^2]
+    P = [
+        x1^4+x1^2*x2^2+x1^2*x3^2 x1*x2*x3^2-x1^3*x2-x1*x2*(x2^2+2*x3^2)
+        x1*x2*x3^2-x1^3*x2-x1*x2*(x2^2+2*x3^2) x1^2*x2^2+x2^2*x3^2+(x2^2+2*x3^2)^2
+    ]
 
     # Test if P(x1,x2,x3) is an SOS matrix
     model = _model(optimizer)

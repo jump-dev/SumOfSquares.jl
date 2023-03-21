@@ -23,15 +23,24 @@ using DynamicPolynomials
 
 # Search for polynomial Lyapunov functions of degree `2d` for `A1/γ` and `A2/γ`
 function lyapunov_switched_system_test(
-    optimizer, config::MOI.Test.Config, degree::Int, γ, feasible::Bool, basis)
-
+    optimizer,
+    config::MOI.Test.Config,
+    degree::Int,
+    γ,
+    feasible::Bool,
+    basis,
+)
     atol = config.atol
     rtol = config.rtol
 
-    A1 = [1 0
-          1 0]
-    A2 = [0  1
-          0 -1]
+    A1 = [
+        1 0
+        1 0
+    ]
+    A2 = [
+        0 1
+        0 -1
+    ]
 
     model = _model(optimizer)
 
@@ -41,16 +50,24 @@ function lyapunov_switched_system_test(
     # and sum it with a strictly positive `q`.
     # Since the problem is homogeneous (i.e. given any `λ > 0`, `p` is
     # feasible iff `λp` is feasible), this is wlog.
-    p0 = @variable(model, variable_type=SOSPoly(basis(monomials(x, degree))))
-    q = GramMatrix(SOSDecomposition(x.^degree))
+    p0 = @variable(model, variable_type = SOSPoly(basis(monomials(x, degree))))
+    q = GramMatrix(SOSDecomposition(x .^ degree))
 
     # Keep `p` in a `GramMatrix` form while `q + p0` would transform it to
     # a polynomial. It is not mandatory to keep it in its `GramMatrix` form
     # but it will allow us to test `JuMP.value(::GramMatrix{JuMP.AffExpr})`.
     p = gram_operate(+, q, p0)
 
-    c1 = @constraint(model, p - p(x => (A1 / γ) * vec(x)) in SOSCone(), basis = basis)
-    c2 = @constraint(model, p - p(x => (A2 / γ) * vec(x)) in SOSCone(), basis = basis)
+    c1 = @constraint(
+        model,
+        p - p(x => (A1 / γ) * vec(x)) in SOSCone(),
+        basis = basis
+    )
+    c2 = @constraint(
+        model,
+        p - p(x => (A2 / γ) * vec(x)) in SOSCone(),
+        basis = basis
+    )
 
     JuMP.optimize!(model)
 
@@ -59,14 +76,15 @@ function lyapunov_switched_system_test(
         @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
         @test all(eigvals(Matrix(getmat(JuMP.value(p0)))) .≥ -atol)
         @test JuMP.value(p0).basis isa basis
-        @test getmat(JuMP.value(p)) ≈ getmat(gram_operate(+, q, JuMP.value(p0))) atol=atol rtol=rtol
+        @test getmat(JuMP.value(p)) ≈ getmat(gram_operate(+, q, JuMP.value(p0))) atol =
+            atol rtol = rtol
         @test gram_matrix(c1).basis isa basis
         @test gram_matrix(c2).basis isa basis
     else
         @test JuMP.termination_status(model) == MOI.INFEASIBLE
         @test JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
-        for (μ1, μ2) in [(JuMP.dual(c1), JuMP.dual(c2)),
-                         (moments(c1), moments(c2))]
+        for (μ1, μ2) in
+            [(JuMP.dual(c1), JuMP.dual(c2)), (moments(c1), moments(c2))]
             # The dual constraint should work on any polynomial.
             # Let's test it with q
             lhs = dot(μ1, q(x => A1 * vec(x))) + dot(μ2, q(x => A2 * vec(x)))
@@ -78,19 +96,131 @@ function lyapunov_switched_system_test(
     end
 end
 
-quadratic_infeasible_lyapunov_switched_system_test(optimizer, config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 1, √2 - ε, false, MonomialBasis)
-sd_tests["quadratic_infeasible_lyapunov_switched_system"] = quadratic_infeasible_lyapunov_switched_system_test
-quadratic_infeasible_scaled_lyapunov_switched_system_test(optimizer, config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 1, √2 - ε, false, ScaledMonomialBasis)
-sd_tests["quadratic_infeasible_scaled_lyapunov_switched_system"] = quadratic_infeasible_scaled_lyapunov_switched_system_test
-quadratic_feasible_lyapunov_switched_system_test(optimizer,   config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 1, √2 + ε, true, MonomialBasis)
-sd_tests["quadratic_feasible_lyapunov_switched_system"]   = quadratic_feasible_lyapunov_switched_system_test
-quadratic_feasible_scaled_lyapunov_switched_system_test(optimizer,   config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 1, √2 + ε, true, ScaledMonomialBasis)
-sd_tests["quadratic_feasible_scaled_lyapunov_switched_system"]   = quadratic_feasible_scaled_lyapunov_switched_system_test
-quartic_infeasible_lyapunov_switched_system_test(optimizer,   config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 2,  1 - ε, false, MonomialBasis)
-sd_tests["quartic_infeasible_lyapunov_switched_system"]   = quartic_infeasible_lyapunov_switched_system_test
-quartic_infeasible_scaled_lyapunov_switched_system_test(optimizer,   config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 2,  1 - ε, false, ScaledMonomialBasis)
-sd_tests["quartic_infeasible_scaled_lyapunov_switched_system"]   = quartic_infeasible_scaled_lyapunov_switched_system_test
-quartic_feasible_lyapunov_switched_system_test(optimizer,     config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 2,  1 + ε, true, MonomialBasis)
-sd_tests["quartic_feasible_lyapunov_switched_system"]     = quartic_feasible_lyapunov_switched_system_test
-quartic_feasible_scaled_lyapunov_switched_system_test(optimizer,     config, ε = 2e-1) = lyapunov_switched_system_test(optimizer, config, 2,  1 + ε, true, ScaledMonomialBasis)
-sd_tests["quartic_feasible_scaled_lyapunov_switched_system"]     = quartic_feasible_scaled_lyapunov_switched_system_test
+function quadratic_infeasible_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        1,
+        √2 - ε,
+        false,
+        MonomialBasis,
+    )
+end
+sd_tests["quadratic_infeasible_lyapunov_switched_system"] =
+    quadratic_infeasible_lyapunov_switched_system_test
+function quadratic_infeasible_scaled_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        1,
+        √2 - ε,
+        false,
+        ScaledMonomialBasis,
+    )
+end
+sd_tests["quadratic_infeasible_scaled_lyapunov_switched_system"] =
+    quadratic_infeasible_scaled_lyapunov_switched_system_test
+function quadratic_feasible_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        1,
+        √2 + ε,
+        true,
+        MonomialBasis,
+    )
+end
+sd_tests["quadratic_feasible_lyapunov_switched_system"] =
+    quadratic_feasible_lyapunov_switched_system_test
+function quadratic_feasible_scaled_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        1,
+        √2 + ε,
+        true,
+        ScaledMonomialBasis,
+    )
+end
+sd_tests["quadratic_feasible_scaled_lyapunov_switched_system"] =
+    quadratic_feasible_scaled_lyapunov_switched_system_test
+function quartic_infeasible_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        2,
+        1 - ε,
+        false,
+        MonomialBasis,
+    )
+end
+sd_tests["quartic_infeasible_lyapunov_switched_system"] =
+    quartic_infeasible_lyapunov_switched_system_test
+function quartic_infeasible_scaled_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        2,
+        1 - ε,
+        false,
+        ScaledMonomialBasis,
+    )
+end
+sd_tests["quartic_infeasible_scaled_lyapunov_switched_system"] =
+    quartic_infeasible_scaled_lyapunov_switched_system_test
+function quartic_feasible_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        2,
+        1 + ε,
+        true,
+        MonomialBasis,
+    )
+end
+sd_tests["quartic_feasible_lyapunov_switched_system"] =
+    quartic_feasible_lyapunov_switched_system_test
+function quartic_feasible_scaled_lyapunov_switched_system_test(
+    optimizer,
+    config,
+    ε = 2e-1,
+)
+    return lyapunov_switched_system_test(
+        optimizer,
+        config,
+        2,
+        1 + ε,
+        true,
+        ScaledMonomialBasis,
+    )
+end
+sd_tests["quartic_feasible_scaled_lyapunov_switched_system"] =
+    quartic_feasible_scaled_lyapunov_switched_system_test

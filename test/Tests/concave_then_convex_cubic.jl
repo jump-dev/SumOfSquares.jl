@@ -3,8 +3,11 @@ using SumOfSquares
 using DynamicPolynomials
 
 # Inspired from https://github.com/jump-dev/SumOfSquares.jl/issues/79
-function concave_then_convex_cubic_test(optimizer, config::MOI.Test.Config,
-                                        MCT::Type{<:MOI.AbstractVectorSet})
+function concave_then_convex_cubic_test(
+    optimizer,
+    config::MOI.Test.Config,
+    MCT::Type{<:MOI.AbstractVectorSet},
+)
     atol = config.atol
     rtol = config.rtol
 
@@ -13,11 +16,11 @@ function concave_then_convex_cubic_test(optimizer, config::MOI.Test.Config,
     @polyvar x
     @variable(model, p, Poly(monomials(x, 0:3)))
     cone = ConvexPolyInnerCone{MCT}()
-    cref_convex  = @constraint(model,  p in cone, domain = (@set x >= 0))
+    cref_convex = @constraint(model, p in cone, domain = (@set x >= 0))
     cref_concave = @constraint(model, -p in cone, domain = (@set x <= 0))
-    @constraint(model, p(x =>  2) ==  8)
+    @constraint(model, p(x => 2) == 8)
     @constraint(model, p(x => -2) == -8)
-    @constraint(model, p(x =>  1) ==  1)
+    @constraint(model, p(x => 1) == 1)
     @constraint(model, p(x => -1) == -1)
 
     optimize!(model)
@@ -25,7 +28,7 @@ function concave_then_convex_cubic_test(optimizer, config::MOI.Test.Config,
     @test termination_status(model) == MOI.OPTIMAL
 
     @test primal_status(model) == MOI.FEASIBLE_POINT
-    @test value(p) ≈ x^3 atol=atol rtol=rtol
+    @test value(p) ≈ x^3 atol = atol rtol = rtol
 
     # The monomials contain the variables created for the Hessian so we cannot
     # check them easily
@@ -40,17 +43,28 @@ function concave_then_convex_cubic_test(optimizer, config::MOI.Test.Config,
 end
 
 function sos_concave_then_convex_cubic_test(optimizer, config)
-    concave_then_convex_cubic_test(optimizer, config,
-                                   MOI.PositiveSemidefiniteConeTriangle)
+    return concave_then_convex_cubic_test(
+        optimizer,
+        config,
+        MOI.PositiveSemidefiniteConeTriangle,
+    )
 end
 sd_tests["sos_concave_then_convex_cubic"] = sos_concave_then_convex_cubic_test
 function sdsos_concave_then_convex_cubic_test(optimizer, config)
-    concave_then_convex_cubic_test(optimizer, config,
-                                   SumOfSquares.ScaledDiagonallyDominantConeTriangle)
+    return concave_then_convex_cubic_test(
+        optimizer,
+        config,
+        SumOfSquares.ScaledDiagonallyDominantConeTriangle,
+    )
 end
-soc_tests["sdsos_concave_then_convex_cubic"] = sdsos_concave_then_convex_cubic_test
+soc_tests["sdsos_concave_then_convex_cubic"] =
+    sdsos_concave_then_convex_cubic_test
 function dsos_concave_then_convex_cubic_test(optimizer, config)
-    concave_then_convex_cubic_test(optimizer, config,
-                                   SumOfSquares.DiagonallyDominantConeTriangle)
+    return concave_then_convex_cubic_test(
+        optimizer,
+        config,
+        SumOfSquares.DiagonallyDominantConeTriangle,
+    )
 end
-linear_tests["dsos_concave_then_convex_cubic"] = dsos_concave_then_convex_cubic_test
+linear_tests["dsos_concave_then_convex_cubic"] =
+    dsos_concave_then_convex_cubic_test

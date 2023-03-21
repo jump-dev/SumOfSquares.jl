@@ -2,9 +2,9 @@ module Tests
 
 include("utilities.jl")
 
-const linear_tests = Dict{String, Function}()
-const soc_tests = Dict{String, Function}()
-const sd_tests = Dict{String, Function}()
+const linear_tests = Dict{String,Function}()
+const soc_tests = Dict{String,Function}()
+const sd_tests = Dict{String,Function}()
 
 include("term.jl")
 include("term_fixed.jl")

@@ -26,7 +26,8 @@ function matrix_cone_type end
 
 export Certificate
 include("Certificate/Certificate.jl")
-using .Certificate: Sparsity, SignSymmetry, ChordalCompletion, ClusterCompletion, Symmetry
+using .Certificate:
+    Sparsity, SignSymmetry, ChordalCompletion, ClusterCompletion, Symmetry
 export Sparsity, SignSymmetry, ChordalCompletion, ClusterCompletion
 export Symmetry
 
@@ -70,7 +71,7 @@ export SOSModel
 function SOSModel(args...; kwargs...)
     model = Model(args...; kwargs...)
     setpolymodule!(model, SumOfSquares)
-    model
+    return model
 end
 
 end # module

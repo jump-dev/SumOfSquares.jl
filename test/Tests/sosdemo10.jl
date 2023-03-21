@@ -6,9 +6,9 @@ function sosdemo10_test(optimizer, config::MOI.Test.Config)
     @polyvar x[1:2]
 
     ε = 1e-6
-    p = x[1]^2+x[2]^2
+    p = x[1]^2 + x[2]^2
     γ = 1
-    g0 = 2*x[1]
+    g0 = 2 * x[1]
     θ = 1
 
     model = _model(optimizer)
@@ -23,8 +23,10 @@ function sosdemo10_test(optimizer, config::MOI.Test.Config)
     Z = monomials(x, 2:3)
     @variable(model, g1, Poly(Z))
 
-    Sc = [θ^2 - s * (γ - p) g0 + g1
-          g0 + g1           1]
+    Sc = [
+        θ^2-s*(γ-p) g0+g1
+        g0+g1 1
+    ]
 
     @constraint(model, Matrix(ε * I, 2, 2) <= Sc, PSDCone())
 
@@ -37,7 +39,8 @@ function sosdemo10_test(optimizer, config::MOI.Test.Config)
 
     # ALMOST_OPTIMAL and NEARLY_FEASIBLE_POINT for CSDP
     @test JuMP.termination_status(model) in [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL]
-    @test JuMP.primal_status(model) in [MOI.FEASIBLE_POINT, MOI.NEARLY_FEASIBLE_POINT]
+    @test JuMP.primal_status(model) in
+          [MOI.FEASIBLE_POINT, MOI.NEARLY_FEASIBLE_POINT]
 
     #@show JuMP.value(s)
     #@show JuMP.value(g1)

@@ -23,9 +23,11 @@ function choi_test(optimizer, config::MOI.Test.Config)
     model = _model(optimizer)
     PolyJuMP.setpolymodule!(model, SumOfSquares)
 
-    C = [ x^2 + 2y^2 -x*y        -x*z
-         -x*y         y^2 + 2z^2 -y*z
-         -x*z        -y*z         z^2 + 2x^2]
+    C = [
+        x^2+2y^2 -x*y -x*z
+        -x*y y^2+2z^2 -y*z
+        -x*z -y*z z^2+2x^2
+    ]
 
     @constraint(model, C in PSDCone())
 

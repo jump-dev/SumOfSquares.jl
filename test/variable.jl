@@ -16,7 +16,7 @@ end
     q = GramMatrix([α β; β α], [x, y])
     JuMP.fix(α, 2)
     JuMP.fix(β, 3)
-    @test_broken JuMP.value(q) == 2x^2 + 2y^2 + 6x*y
+    @test_broken JuMP.value(q) == 2x^2 + 2y^2 + 6x * y
 end
 @testset "Container of GramMatrix" begin
     model = JuMP.Model()

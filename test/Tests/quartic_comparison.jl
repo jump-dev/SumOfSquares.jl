@@ -12,8 +12,11 @@ using SumOfSquares
 using DynamicPolynomials
 
 function quartic_comparison_test(
-    optimizer, config::MOI.Test.Config,
-    cone::SumOfSquares.PolyJuMP.PolynomialSet, expected_objective_value)
+    optimizer,
+    config::MOI.Test.Config,
+    cone::SumOfSquares.PolyJuMP.PolynomialSet,
+    expected_objective_value,
+)
     atol = config.atol
     rtol = config.rtol
 
@@ -29,12 +32,19 @@ function quartic_comparison_test(
     @objective(model, Max, γ)
     JuMP.optimize!(model)
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-    @test JuMP.objective_value(model) ≈ expected_objective_value atol=atol rtol=rtol
+    @test JuMP.objective_value(model) ≈ expected_objective_value atol = atol rtol =
+        rtol
 end
 
-sos_quartic_comparison_test(optimizer, config)   = quartic_comparison_test(optimizer, config, SOSCone(), -0.184667)
-sd_tests["sos_quartic_comparison"]      = sos_quartic_comparison_test
-sdsos_quartic_comparison_test(optimizer, config) = quartic_comparison_test(optimizer, config, SDSOSCone(), -3.172412)
-soc_tests["sdsos_quartic_comparison"]   = sdsos_quartic_comparison_test
-dsos_quartic_comparison_test(optimizer, config)  = quartic_comparison_test(optimizer, config, DSOSCone(), -11/3)
+function sos_quartic_comparison_test(optimizer, config)
+    return quartic_comparison_test(optimizer, config, SOSCone(), -0.184667)
+end
+sd_tests["sos_quartic_comparison"] = sos_quartic_comparison_test
+function sdsos_quartic_comparison_test(optimizer, config)
+    return quartic_comparison_test(optimizer, config, SDSOSCone(), -3.172412)
+end
+soc_tests["sdsos_quartic_comparison"] = sdsos_quartic_comparison_test
+function dsos_quartic_comparison_test(optimizer, config)
+    return quartic_comparison_test(optimizer, config, DSOSCone(), -11 / 3)
+end
 linear_tests["dsos_quartic_comparison"] = dsos_quartic_comparison_test

@@ -7,18 +7,18 @@ function ordered_block_diag(As, d)
     @assert iU ≈ inv(U)
     Bs = [iU * A * U for A in As]
     @assert all(Bs) do B
-        isblockdim(B, d)
+        return isblockdim(B, d)
     end
     refs = [B[1:d, 1:d] for B in Bs]
     offset = d
-    for offset in d:d:(size(U, 1) - d)
+    for offset in d:d:(size(U, 1)-d)
         I = offset .+ (1:d)
         Cs = [B[I, I] for B in Bs]
         σ_ok = nothing
         for σ in Combinatorics.permutations(1:d)
             if all(zip(refs, Cs)) do refC
                 ref, C = refC
-                isapprox(ref[σ, σ], C, rtol=1e-8)
+                return isapprox(ref[σ, σ], C, rtol = 1e-8)
             end
                 σ_ok = σ
                 break
@@ -38,7 +38,7 @@ function ordered_block_check(U, As, d)
     iU = U'
     @assert iU ≈ inv(U)
     @assert all(As) do A
-        is_ordered_blockdim(iU * A * U, d)
+        return is_ordered_blockdim(iU * A * U, d)
     end
 end
 
@@ -72,7 +72,7 @@ function block_diag(As, d)
                     V === nothing && break
                     V *= transpose(T[:, v])
                 end
-                U[:, offset .+ eachindex(v)] = V
+                U[:, offset.+eachindex(v)] = V
                 offset += length(v)
             end
             if offset == n
@@ -82,7 +82,11 @@ function block_diag(As, d)
     end
 end
 
-function merge_sparsity!(union_find::DataStructures.IntDisjointSets, A, tol=1e-8)
+function merge_sparsity!(
+    union_find::DataStructures.IntDisjointSets,
+    A,
+    tol = 1e-8,
+)
     for I in CartesianIndices(A)
         i, j = I.I
         if abs(A[I]) > tol
@@ -91,15 +95,14 @@ function merge_sparsity!(union_find::DataStructures.IntDisjointSets, A, tol=1e-8
     end
 end
 
-function is_ordered_blockdim(A, d, tol=1e-8)
+function is_ordered_blockdim(A, d, tol = 1e-8)
     B = A[1:d, 1:d]
-    return isblockdim(A, d, tol) &&
-        all(d:d:(size(A, 1) - d)) do offset
-            I = offset .+ (1:d)
-            isapprox(B, A[I, I], rtol=tol)
-        end
+    return isblockdim(A, d, tol) && all(d:d:(size(A, 1)-d)) do offset
+        I = offset .+ (1:d)
+        return isapprox(B, A[I, I], rtol = tol)
+    end
 end
-function isblockdim(A, d, tol=1e-8)
+function isblockdim(A, d, tol = 1e-8)
     for I in CartesianIndices(A)
         i, j = I.I
         if abs(i - j) >= d && abs(A[I]) > tol

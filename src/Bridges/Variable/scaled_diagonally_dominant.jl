@@ -18,26 +18,45 @@ ArXiv e-prints, **2017**.
 struct ScaledDiagonallyDominantBridge{T} <: MOI.Bridges.Variable.AbstractBridge
     side_dimension::Int
     variables::Vector{Vector{MOI.VariableIndex}}
-    constraints::Vector{MOI.ConstraintIndex{
-        MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}
+    constraints::Vector{
+        MOI.ConstraintIndex{
+            MOI.VectorOfVariables,
+            SOS.PositiveSemidefinite2x2ConeTriangle,
+        },
+    }
 end
 
 function MOI.Bridges.Variable.bridge_constrained_variable(
-    ::Type{ScaledDiagonallyDominantBridge{T}}, model::MOI.ModelLike,
-    s::SOS.ScaledDiagonallyDominantConeTriangle) where T
+    ::Type{ScaledDiagonallyDominantBridge{T}},
+    model::MOI.ModelLike,
+    s::SOS.ScaledDiagonallyDominantConeTriangle,
+) where {T}
     n = s.side_dimension
     if n <= 1
-        error("The bridges does not work with 1, `matrix_cone` should have returned `Nonnegatives` instead.")
+        error(
+            "The bridges does not work with 1, `matrix_cone` should have returned `Nonnegatives` instead.",
+        )
     end
     N = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(n - 1))
     variables = Vector{Vector{MOI.VariableIndex}}(undef, N)
-    constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}(undef, N)
+    constraints = Vector{
+        MOI.ConstraintIndex{
+            MOI.VectorOfVariables,
+            SOS.PositiveSemidefinite2x2ConeTriangle,
+        },
+    }(
+        undef,
+        N,
+    )
     k = 0
     for j in 1:n
         for i in 1:(j-1)
             k += 1
             # PSD constraints on 2x2 matrices are SOC representable
-            variables[k], constraints[k] = MOI.add_constrained_variables(model, SOS.PositiveSemidefinite2x2ConeTriangle())
+            variables[k], constraints[k] = MOI.add_constrained_variables(
+                model,
+                SOS.PositiveSemidefinite2x2ConeTriangle(),
+            )
         end
     end
     return ScaledDiagonallyDominantBridge{T}(n, variables, constraints)
@@ -45,39 +64,58 @@ end
 
 function MOI.Bridges.Variable.supports_constrained_variable(
     ::Type{<:ScaledDiagonallyDominantBridge},
-    ::Type{SOS.ScaledDiagonallyDominantConeTriangle})
+    ::Type{SOS.ScaledDiagonallyDominantConeTriangle},
+)
     return true
 end
 function MOI.Bridges.added_constrained_variable_types(
-    ::Type{<:ScaledDiagonallyDominantBridge})
+    ::Type{<:ScaledDiagonallyDominantBridge},
+)
     return [(SOS.PositiveSemidefinite2x2ConeTriangle,)]
 end
 function MOI.Bridges.added_constraint_types(
-    ::Type{<:ScaledDiagonallyDominantBridge})
-    return Tuple{DataType, DataType}[]
+    ::Type{<:ScaledDiagonallyDominantBridge},
+)
+    return Tuple{DataType,DataType}[]
 end
 
 # Attributes, Bridge acting as a model
-function MOI.get(bridge::ScaledDiagonallyDominantBridge,
-                 ::MOI.NumberOfVariables)
+function MOI.get(
+    bridge::ScaledDiagonallyDominantBridge,
+    ::MOI.NumberOfVariables,
+)
     return 3length(bridge.variables)
 end
-function MOI.get(bridge::ScaledDiagonallyDominantBridge,
-                 ::MOI.ListOfVariableIndices)
+function MOI.get(
+    bridge::ScaledDiagonallyDominantBridge,
+    ::MOI.ListOfVariableIndices,
+)
     return Iterators.flatten(bridge.variables)
 end
-function MOI.get(bridge::ScaledDiagonallyDominantBridge,
-                 ::MOI.NumberOfConstraints{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle})
+function MOI.get(
+    bridge::ScaledDiagonallyDominantBridge,
+    ::MOI.NumberOfConstraints{
+        MOI.VectorOfVariables,
+        SOS.PositiveSemidefinite2x2ConeTriangle,
+    },
+)
     return length(bridge.constraints)
 end
-function MOI.get(bridge::ScaledDiagonallyDominantBridge,
-                 ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle})
+function MOI.get(
+    bridge::ScaledDiagonallyDominantBridge,
+    ::MOI.ListOfConstraintIndices{
+        MOI.VectorOfVariables,
+        SOS.PositiveSemidefinite2x2ConeTriangle,
+    },
+)
     return bridge.constraints
 end
 
 # Indices
-function MOI.delete(model::MOI.ModelLike,
-                    bridge::ScaledDiagonallyDominantBridge)
+function MOI.delete(
+    model::MOI.ModelLike,
+    bridge::ScaledDiagonallyDominantBridge,
+)
     for variables in bridge.variables
         MOI.delete(model, variables)
     end
@@ -85,8 +123,11 @@ end
 
 # Attributes, Bridge acting as a constraint
 
-function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet,
-                 bridge::ScaledDiagonallyDominantBridge)
+function MOI.get(
+    ::MOI.ModelLike,
+    ::MOI.ConstraintSet,
+    bridge::ScaledDiagonallyDominantBridge,
+)
     return SOS.ScaledDiagonallyDominantConeTriangle(bridge.side_dimension)
 end
 
@@ -94,16 +135,20 @@ end
 
 trimap(i, j) = div(j * (j - 1), 2) + i
 
-function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
-                 bridge::ScaledDiagonallyDominantBridge{T}, i::MOI.Bridges.IndexInVector) where T
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::MOI.VariablePrimal,
+    bridge::ScaledDiagonallyDominantBridge{T},
+    i::MOI.Bridges.IndexInVector,
+) where {T}
     i, j = matrix_indices(i.value)
     if i == j
         value = zero(T)
-        for k in 1:(i - 1)
+        for k in 1:(i-1)
             idx = offdiag_vector_index(k, i)
             value += MOI.get(model, attr, bridge.variables[idx][3])
         end
-        for k in (i + 1):bridge.side_dimension
+        for k in (i+1):bridge.side_dimension
             idx = offdiag_vector_index(i, k)
             value += MOI.get(model, attr, bridge.variables[idx][1])
         end
@@ -114,31 +159,36 @@ function MOI.get(model::MOI.ModelLike, attr::MOI.VariablePrimal,
     end
 end
 
-function MOI.Bridges.bridged_function(bridge::ScaledDiagonallyDominantBridge{T},
-                               i::MOI.Bridges.IndexInVector) where T
+function MOI.Bridges.bridged_function(
+    bridge::ScaledDiagonallyDominantBridge{T},
+    i::MOI.Bridges.IndexInVector,
+) where {T}
     i, j = matrix_indices(i.value)
     if i == j
         func = zero(MOI.ScalarAffineFunction{T})
-        for k in 1:(i - 1)
+        for k in 1:(i-1)
             idx = offdiag_vector_index(k, i)
             MOI.Utilities.operate!(+, T, func, bridge.variables[idx][3])
         end
-        for k in (i + 1):bridge.side_dimension
+        for k in (i+1):bridge.side_dimension
             idx = offdiag_vector_index(i, k)
             MOI.Utilities.operate!(+, T, func, bridge.variables[idx][1])
         end
         return func
     else
         idx = offdiag_vector_index(i, j)
-        return MOI.convert(MOI.ScalarAffineFunction{T}, bridge.variables[idx][2])
+        return MOI.convert(
+            MOI.ScalarAffineFunction{T},
+            bridge.variables[idx][2],
+        )
     end
 end
 function MOI.Bridges.Variable.unbridged_map(
     bridge::ScaledDiagonallyDominantBridge{T},
-    vis::Vector{MOI.VariableIndex}) where T
-
+    vis::Vector{MOI.VariableIndex},
+) where {T}
     SAF = MOI.ScalarAffineFunction{T}
-    umap = Pair{MOI.VariableIndex, SAF}[]
+    umap = Pair{MOI.VariableIndex,SAF}[]
     k = 0
     z = zero(SAF)
     saf(i) = convert(SAF, vis[i])

@@ -21,11 +21,17 @@ end
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
 _map_idx(f, v::AbstractVector) = map(f, eachindex(v))
 _tuple_map_idx(f, ::Tuple{}, i) = tuple()
-_tuple_map_idx(f, v::Tuple, i) = (f(i), _tuple_map_idx(f, Base.tail(v), i + 1)...)
+function _tuple_map_idx(f, v::Tuple, i)
+    return (f(i), _tuple_map_idx(f, Base.tail(v), i + 1)...)
+end
 _map_idx(f, v::Tuple) = _tuple_map_idx(f, v, 1)
-function SymbolicWedderburn.action(::VariablePermutation, p, mono::MP.AbstractMonomial)
+function SymbolicWedderburn.action(
+    ::VariablePermutation,
+    p,
+    mono::MP.AbstractMonomial,
+)
     v = MP.variables(mono)
-    MP.substitute(MP.Eval(), mono, v => _map_idx(i -> v[i^p], v))
+    return MP.substitute(MP.Eval(), mono, v => _map_idx(i -> v[i^p], v))
 end
 abstract type OnMonomials <: SymbolicWedderburn.ByLinearTransformation end
 
@@ -34,14 +40,17 @@ function SymbolicWedderburn.action(
     el,
     term::MP.AbstractTerm,
 )
-    return MP.coefficient(term) * SymbolicWedderburn.action(a, el, MP.monomial(term))
+    return MP.coefficient(term) *
+           SymbolicWedderburn.action(a, el, MP.monomial(term))
 end
 function SymbolicWedderburn.action(
     a::Union{VariablePermutation,OnMonomials},
     el,
     poly::MP.AbstractPolynomial,
 )
-    return sum([SymbolicWedderburn.action(a, el, term) for term in MP.terms(poly)])
+    return sum([
+        SymbolicWedderburn.action(a, el, term) for term in MP.terms(poly)
+    ])
 end
 
 # TODO Move it to MultivariateBases
@@ -66,19 +75,32 @@ is modelled as a sum of Sum-of-Squares polynomials with smaller bases
 using the Symbolic Wedderburn decomposition of the symmetry pattern specified
 by `pattern`.
 """
-struct Ideal{C,GT,AT<:SymbolicWedderburn.Action} <: SumOfSquares.Certificate.AbstractIdealCertificate
+struct Ideal{C,GT,AT<:SymbolicWedderburn.Action} <:
+       SumOfSquares.Certificate.AbstractIdealCertificate
     pattern::Pattern{GT,AT}
     certificate::C
 end
-SumOfSquares.Certificate.cone(certificate::Ideal) = SumOfSquares.Certificate.cone(certificate.certificate)
+function SumOfSquares.Certificate.cone(certificate::Ideal)
+    return SumOfSquares.Certificate.cone(certificate.certificate)
+end
 function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
-SumOfSquares.Certificate.gram_basis_type(::Type{<:Ideal}) = Vector{Vector{MB.FixedPolynomialBasis}}
+function SumOfSquares.Certificate.gram_basis_type(::Type{<:Ideal})
+    return Vector{Vector{MB.FixedPolynomialBasis}}
+end
 SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.MonomialBasis
 SumOfSquares.Certificate.zero_basis(::Ideal) = MB.MonomialBasis
-function SumOfSquares.Certificate.reduced_polynomial(certificate::Ideal, poly, domain)
-    return SumOfSquares.Certificate.reduced_polynomial(certificate.certificate, poly, domain)
+function SumOfSquares.Certificate.reduced_polynomial(
+    certificate::Ideal,
+    poly,
+    domain,
+)
+    return SumOfSquares.Certificate.reduced_polynomial(
+        certificate.certificate,
+        poly,
+        domain,
+    )
 end
 
 function matrix_reps(pattern, R, basis, ::Type{T}, form) where {T}
@@ -97,13 +119,22 @@ end
 
 function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
     basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
-    T = SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(typeof(cert)))
+    T = SumOfSquares._complex(
+        Float64,
+        SumOfSquares.matrix_cone_type(typeof(cert)),
+    )
     return _gram_basis(cert.pattern, basis, T)
 end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
     # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
-    summands = SymbolicWedderburn.symmetry_adapted_basis(T, pattern.group, pattern.action, basis, semisimple=true)
+    summands = SymbolicWedderburn.symmetry_adapted_basis(
+        T,
+        pattern.group,
+        pattern.action,
+        basis,
+        semisimple = true,
+    )
     # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
     # SymbolicWedderburn guarantees that the invariant subspace spanned by the
     # polynomials of the vector `R * basis.monomials` is invariant under the
@@ -112,9 +143,9 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
     # That block is the matrix `S` computed below.
     # So an invariant solution `b'*Q*b` satisfies `Diagonal(S' for S in ...) * Q * Diagonal(S for S in ...) = Q`.
     # Or in equivalently: `Q * Diagonal(S for S in ...) = Diagonal(inv(S') for S in ...) * Q`.
-    form = if T <: Union{AbstractFloat, Complex{<:AbstractFloat}}
+    form = if T <: Union{AbstractFloat,Complex{<:AbstractFloat}}
         _OrthogonalMatrix()
-        else
+    else
         _RowEchelonMatrix()
     end
     return map(summands) do summand
@@ -140,7 +171,9 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
                 end
                 S = matrix_reps(pattern, R, basis, T, _OrthogonalMatrix())
                 if !all(is_orthogonal, S)
-                    error("The matrix representation induced from the action on the polynomial basis is not orthogonal.")
+                    error(
+                        "The matrix representation induced from the action on the polynomial basis is not orthogonal.",
+                    )
                     # We would like to just throw this warning and just not decompose the semisimple summand but
                     # as explained in the comment above, it's not even clear that the diagonalization induced by the simple summands is correct.
                     #@warn("The matrix representation induced from the action on the polynomial basis is not orthogonal. The $(m * d)-dimensional semisimple summand can be decomposed onto $m simple summands of degree $d so that the $(m * d) x $(m * d) diagonal block is reduced to $d identical copied of a single $m x $m diagonal block. However, as the action is not orthogonal, this decomposition will not happen.")
@@ -156,7 +189,9 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
                 U = Matrix{T}(LinearAlgebra.I, N, N)
             end
             if U === nothing
-                error("Could not simultaneously block-diagonalize into $m identical $dx$d blocks")
+                error(
+                    "Could not simultaneously block-diagonalize into $m identical $dx$d blocks",
+                )
             end
             # From Example 1.7.3 of
             # Sagan, The symmetric group, Springer Science & Business Media, 2001
@@ -168,8 +203,8 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
             # `Q = kron(I, Q)` by permuting the rows and columns:
             # `(U[1:d:(1+d*(m-1))] * F)' * basis.monomials`, `(U[2:d:(2+d*(m-1))] * F)' * basis.monomials`, ...
             map(1:d) do i
-                MB.FixedPolynomialBasis(
-                    (transpose(U[:, i:d:(i + d * (m - 1))]) * F) * basis.monomials,
+                return MB.FixedPolynomialBasis(
+                    (transpose(U[:, i:d:(i+d*(m-1))]) * F) * basis.monomials,
                 )
             end
         else
