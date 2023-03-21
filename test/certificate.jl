@@ -267,6 +267,28 @@ end
     end
 end
 
+function test_putinar_ijk(i, j, k)
+    @polyvar x y
+    poly = x^(2i) + y^(2j + 1)
+    domain = @set y^(2k + 1) >= 0
+    set = JuMP.moi_set(SOSCone(), monomials(poly); domain)
+    processed = Certificate.preprocessed_domain(set.certificate, domain, poly)
+    for idx in Certificate.preorder_indices(set.certificate, processed)
+        println(
+            Certificate.multiplier_basis(
+                set.certificate,
+                idx,
+                processed,
+            ).monomials,
+        )
+    end
+    icert = Certificate.ideal_certificate(set.certificate)
+    @test icert isa Certificate.Newton
+end
+
+test_putinar_ijk(1, 1, 2)
+test_putinar_ijk(1, 3, 2)
+
 include("ceg_test.jl")
 include("csp_test.jl")
 include("sparsity.jl")

@@ -164,7 +164,7 @@ end
 # variables are in the same part
 function half_newton_polytope(
     X::AbstractVector,
-    parts::Tuple{};
+    ::Tuple{};
     apply_post_filter = true,
 )
     vars = MP.variables(X)
@@ -279,5 +279,96 @@ function monomials_half_newton_polytope(
         MP.monovec(X),
         parts;
         apply_post_filter = apply_post_filter,
+    )
+end
+
+struct DegreeBounds{M}
+    mindegree::Int
+    maxdegree::Int
+    variablewise_mindegree::M
+    variablewise_maxdegree::M
+end
+
+function min_degree(p, v)
+    return mapreduce(Base.Fix2(MP.degree, v), min, MP.monomials(p))
+end
+minus_min_degree(p, v) = -min_degree(p, v)
+
+function _monomial(vars, exps)
+    return prod(vars .^ exps)
+end
+
+function max_degree(p, v)
+    return mapreduce(Base.Fix2(MP.degree, v), max, MP.monomials(p))
+end
+
+function minus_shift(
+    deg,
+    m::MP.AbstractMonomial,
+    p::MP.AbstractPolynomialLike,
+    offset,
+)
+    return _monomial(MP.variables(m), map(MP.powers(m)) do (v, d)
+        return div(d - deg(p, v) + offset, 2)
+    end)
+end
+
+function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
+    return DegreeBounds(
+        div(d - MP.mindegree(p) + 1, 2),
+        div(d - MP.maxdegree(p), 2),
+        minus_shift(min_degree, m, p, 1),
+        minus_shift(min_degree, m, p, 0),
+    )
+end
+
+_combine_sign(a, b) = (a == b ? a : zero(a))
+
+function deg_range(deg, p, gs, gram_deg)
+    d_max, sign = deg(p)
+    for g in gs
+        d_g, sign_g = deg(g) + 2gram_deg(g)
+        # Multiply by `-1` because we move it to lhs
+        # p = s_0 + sum s_i g_i -> p - sum s_i g_i = s_0
+        sign_g = -sign_g
+        if d_max == d_g
+            sign = _combine_sign(sign, sign_g)
+        end
+        if d_max <= d_g
+            d_max = d_g
+        end
+    end
+    if iszero(sign) || (iseven(d_max) && sign == 1)
+        return d_max
+    else
+        return d_max - 1
+    end
+end
+
+function putinar_degree_bounds(
+    p::MP.AbstractPolynialLike,
+    gs::AbstractVector{<:MP.AbstractPolynialLike},
+    vars,
+    maxdegree,
+)
+    mindegree = 0
+    # TODO homogeneous case
+    minus_mindeg(g) = -max(0, div(mindegree - MP.mindegree(g) + 1, 2))
+    # The multiplier will have degree `0:2div(maxdegree - MP.maxdegree(g), 2)`
+    mindegree = -deg_range(p -> -MP.mindegree(p), p, gs, minus_mindeg)
+    maxdeg(g) = div(maxdegree - MP.maxdegree(g), 2)
+    maxdegree = deg_range(MP.maxdegree, p, gs, maxdeg)
+    deg_range(MP.maxdegree, p, gs, maxdeg)
+    vars_mindeg = map(vars) do v
+        return -deg_range(Base.Fix2(minus_min_degree, v), p, gs, minus_mindeg)
+    end
+    vars_maxdeg = map(vars) do v
+        return deg_range(Base.Fix2(max_degree, v), p, gs, maxdeg)
+    end
+    return DegreeBounds(
+        mindegree,
+        maxdegree,
+        _monomial(vars, vars_mindeg),
+        _monomial(vars, vars_maxdeg),
     )
 end
