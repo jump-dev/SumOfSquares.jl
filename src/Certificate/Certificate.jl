@@ -227,7 +227,7 @@ function SumOfSquares.matrix_cone_type(
 end
 
 # TODO return something else when `PolyJuMP` support other bases.
-zero_basis(certificate::SimpleIdealCertificate) = MB.MonomialBasis
+zero_basis(::SimpleIdealCertificate) = MB.MonomialBasis
 function zero_basis_type(::Type{<:SimpleIdealCertificate{CT,BT}}) where {CT,BT}
     return MB.MonomialBasis
 end

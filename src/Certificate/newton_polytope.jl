@@ -340,8 +340,11 @@ end
 
 _combine_sign(a, b) = (a == b ? a : zero(a))
 
-function deg_sign(deg, p)
-    d = deg(p)
+_sign(a::Number) = sign(a)
+# Can be for instance a JuMP or MOI function so the sign can be anything
+_sign(a) = 0
+
+function deg_sign(deg, p, d)
     sgn = nothing
     for t in MP.terms(p)
         if deg(t) == d
@@ -353,18 +356,45 @@ function deg_sign(deg, p)
             end
         end
     end
-    return d, sgn
+    return sgn
 end
 
-function deg_range(deg, p, gs, gram_deg)
-    d_max, sign = deg_sign(deg, p)
+function deg_sign(deg, p)
+    d = deg(p)
+    return d, deg_sign(deg, p, d)
+end
+
+function _interval(a, b)
+    if a < b
+        return a:b
+    else
+        return b:a
+    end
+end
+
+function deg_range(deg, p, gs, gram_deg, truncation)
+    d_max = min(deg(p), truncation)
+    sign = deg_sign(deg, p, d_max)
     for g in gs
         d_g, sign_g = deg_sign(deg, g)
-        d = d_g + 2gram_deg(g)
+        d_s = gram_deg(g)
+        if isempty(d_s) || d_g + 2minimum(d_s) > truncation
+            continue
+        end
+        d = d_g + 2maximum(d_s)
+        if d > truncation
+            d = truncation
+            if mod(d_g, 2) != mod(truncation, 2)
+                d -= 1
+            end
+        end
         # Multiply by `-1` because we move it to lhs
         # p = s_0 + sum s_i g_i -> p - sum s_i g_i = s_0
         sign_g = -sign_g
-        if d_max <= d
+        if isnothing(sign)
+            d_max = d
+            sign = sign_g
+        elseif d_max <= d
             if d_max == d
                 sign = _combine_sign(sign, sign_g)
             else
@@ -373,11 +403,29 @@ function deg_range(deg, p, gs, gram_deg)
             d_max = d
         end
     end
-    if iszero(sign) || (iseven(d_max) && sign == 1)
-        return d_max
+    if !isnothing(sign) && (iszero(sign) || (iseven(d_max) && sign == 1))
+        return true, d_max
     else
-        return d_max - 1
+        return false, d_max - 1
     end
+end
+
+"""
+   deg_range(deg, p, gs, gram_deg, range)
+
+Maximum value of `deg(s_0 = p - sum s_i g_i for g in gs) in range` where
+`s_0, s_i` are SOS and `deg(s_i) <= gram_deg(g)`.
+Note that `range` should be in increasing order.
+"""
+function deg_range(deg, p, gs, gram_deg, range::UnitRange)
+    d = maximum(range)
+    while d in range
+        ok, d = deg_range(deg, p, gs, gram_deg, d)
+        if ok
+            return d
+        end
+    end
+    return
 end
 
 function putinar_degree_bounds(
@@ -388,21 +436,38 @@ function putinar_degree_bounds(
 )
     mindegree = 0
     # TODO homogeneous case
-    minus_mindeg(g) = -min_shift(mindegree, MP.mindegree(g))
-    # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
-    mindegree = -deg_range(p -> -MP.mindegree(p), p, gs, minus_mindeg)
+    mindeg(g) = min_shift(mindegree, MP.mindegree(g))
     maxdeg(g) = max_shift(maxdegree, MP.maxdegree(g))
-    maxdegree = deg_range(MP.maxdegree, p, gs, maxdeg)
-    deg_range(MP.maxdegree, p, gs, maxdeg)
+    degrange(g) = mindeg(g):maxdeg(g)
+    minus_degrange(g) = -maxdeg(g):-mindeg(g)
+    # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
+    mindegree = -deg_range(p -> -MP.mindegree(p), p, gs, minus_degrange, -maxdegree:0)
+    @show mindegree
+    if isnothing(mindegree)
+        return
+    end
+    maxdegree = deg_range(MP.maxdegree, p, gs, degrange, 0:maxdegree)
+    @show maxdegree
+    if isnothing(maxdegree)
+        return
+    end
     vars_mindeg = map(vars) do v
-        return -deg_range(Base.Fix2(minus_min_degree, v), p, gs, minus_mindeg)
+        @show v
+        return -deg_range(Base.Fix2(minus_min_degree, v), p, gs, minus_degrange, -maxdegree:0)
+    end
+    if any(isnothing, vars_mindeg)
+        return
     end
     vars_maxdeg = map(vars) do v
-        return deg_range(Base.Fix2(max_degree, v), p, gs, maxdeg)
+        @show v
+        return deg_range(Base.Fix2(max_degree, v), p, gs, degrange, 0:maxdegree)
+    end
+    if any(isnothing, vars_maxdeg)
+        return
     end
     @assert all(d -> d >= 0, vars_mindeg)
     @assert all(d -> d >= 0, vars_maxdeg)
-    return DegreeBounds(
+    return @show DegreeBounds(
         mindegree,
         maxdegree,
         _monomial(vars, vars_mindeg),
