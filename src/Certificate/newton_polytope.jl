@@ -295,6 +295,9 @@ end
 minus_min_degree(p, v) = -min_degree(p, v)
 
 function _monomial(vars, exps)
+    if any(Base.Fix2(isless, 0), exps)
+        return
+    end
     return prod(vars .^ exps)
 end
 
@@ -302,40 +305,72 @@ function max_degree(p, v)
     return mapreduce(Base.Fix2(MP.degree, v), max, MP.monomials(p))
 end
 
+function min_shift(d, shift)
+    return max(0, cld(d - shift, 2))
+end
+function max_shift(d, shift)
+    return fld(d - shift, 2)
+end
+
 function minus_shift(
     deg,
     m::MP.AbstractMonomial,
     p::MP.AbstractPolynomialLike,
-    offset,
+    shift,
 )
-    return _monomial(MP.variables(m), map(MP.powers(m)) do (v, d)
-        return div(d - deg(p, v) + offset, 2)
-    end)
+    exps = map(MP.powers(m)) do (v, d)
+        return shift(d, deg(p, v))
+    end
+    return _monomial(MP.variables(m), exps)
 end
 
 function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
+    var_mindegree = minus_shift(min_degree, d.variablewise_mindegree, p, min_shift)
+    var_maxdegree = minus_shift(max_degree, d.variablewise_maxdegree, p, max_shift)
+    if isnothing(var_maxdegree)
+        return
+    end
     return DegreeBounds(
-        div(d - MP.mindegree(p) + 1, 2),
-        div(d - MP.maxdegree(p), 2),
-        minus_shift(min_degree, m, p, 1),
-        minus_shift(min_degree, m, p, 0),
+        min_shift(d.mindegree, MP.mindegree(p)),
+        max_shift(d.maxdegree, MP.maxdegree(p)),
+        var_mindegree,
+        var_maxdegree,
     )
 end
 
 _combine_sign(a, b) = (a == b ? a : zero(a))
 
+function deg_sign(deg, p)
+    d = deg(p)
+    sgn = nothing
+    for t in MP.terms(p)
+        if deg(t) == d
+            s = sign(MP.coefficient(t))
+            if isnothing(sgn)
+                sgn = s
+            else
+                sgn = _combine_sign(sgn, s)
+            end
+        end
+    end
+    return d, sgn
+end
+
 function deg_range(deg, p, gs, gram_deg)
-    d_max, sign = deg(p)
+    d_max, sign = deg_sign(deg, p)
     for g in gs
-        d_g, sign_g = deg(g) + 2gram_deg(g)
+        d_g, sign_g = deg_sign(deg, g)
+        d = d_g + 2gram_deg(g)
         # Multiply by `-1` because we move it to lhs
         # p = s_0 + sum s_i g_i -> p - sum s_i g_i = s_0
         sign_g = -sign_g
-        if d_max == d_g
-            sign = _combine_sign(sign, sign_g)
-        end
-        if d_max <= d_g
-            d_max = d_g
+        if d_max <= d
+            if d_max == d
+                sign = _combine_sign(sign, sign_g)
+            else
+                sign = sign_g
+            end
+            d_max = d
         end
     end
     if iszero(sign) || (iseven(d_max) && sign == 1)
@@ -346,17 +381,17 @@ function deg_range(deg, p, gs, gram_deg)
 end
 
 function putinar_degree_bounds(
-    p::MP.AbstractPolynialLike,
-    gs::AbstractVector{<:MP.AbstractPolynialLike},
+    p::MP.AbstractPolynomialLike,
+    gs::AbstractVector{<:MP.AbstractPolynomialLike},
     vars,
     maxdegree,
 )
     mindegree = 0
     # TODO homogeneous case
-    minus_mindeg(g) = -max(0, div(mindegree - MP.mindegree(g) + 1, 2))
-    # The multiplier will have degree `0:2div(maxdegree - MP.maxdegree(g), 2)`
+    minus_mindeg(g) = -min_shift(mindegree, MP.mindegree(g))
+    # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
     mindegree = -deg_range(p -> -MP.mindegree(p), p, gs, minus_mindeg)
-    maxdeg(g) = div(maxdegree - MP.maxdegree(g), 2)
+    maxdeg(g) = max_shift(maxdegree, MP.maxdegree(g))
     maxdegree = deg_range(MP.maxdegree, p, gs, maxdeg)
     deg_range(MP.maxdegree, p, gs, maxdeg)
     vars_mindeg = map(vars) do v
@@ -365,6 +400,8 @@ function putinar_degree_bounds(
     vars_maxdeg = map(vars) do v
         return deg_range(Base.Fix2(max_degree, v), p, gs, maxdeg)
     end
+    @assert all(d -> d >= 0, vars_mindeg)
+    @assert all(d -> d >= 0, vars_maxdeg)
     return DegreeBounds(
         mindegree,
         maxdegree,

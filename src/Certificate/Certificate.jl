@@ -86,10 +86,7 @@ end
 
 struct WithDegreeBounds{S,M}
     inner::S
-    mindegree::Int
-    maxdegree::Int
-    variable_mindegree::M
-    variable_maxdegree::M
+    bounds::DegreeBounds{M}
 end
 
 function MP.variables(v::WithVariables)
@@ -131,7 +128,7 @@ function with_bounds(domain, p, maxdegree)
     v = with_variables(domain, p)
     return WithDegreeBounds(
         v.inner,
-        putinar_degree_bounds(p, domain.p, v.variables, maxdegree)...,
+        putinar_degree_bounds(p, domain.p, v.variables, maxdegree),
     )
 end
 
@@ -143,31 +140,29 @@ function preprocessed_domain(
     return with_bounds(domain, p, certificate.maxdegree)
 end
 
-function preorder_indices(::Putinar, domain::WithVariables)
+function preorder_indices(::Putinar, domain::Union{WithVariables,WithDegreeBounds})
     return map(PreorderIndex, eachindex(domain.inner.p))
-end
-
-function preorder_indices(c::Putinar, domain::WithBounds)
-    return preorder_indices(c, domain.inner)
 end
 
 function maxdegree_gram_basis(
     B::Type{<:MB.AbstractMonomialBasis},
-    variables,
     bounds::DegreeBounds,
 )
+    variables = MP.variables(bounds.variablewise_maxdegree)
+    display(bounds)
     function filter(mono)
         return MP.divides(bounds.variablewise_mindegree, mono) &&
-               MP.divides(mino, bounds.variablewise_max)
+               MP.divides(mono, bounds.variablewise_maxdegree)
     end
     return B(MP.monomials(variables, bounds.mindegree:bounds.maxdegree, filter))
 end
-function maxdegree_gram_basis(B::Type, variables, bounds::DegreeBounds)
+function maxdegree_gram_basis(B::Type, bounds::DegreeBounds)
     # TODO use bounds here too
+    variables = MP.variables(bounds.variablewise_maxdegree)
     return maxdegree_gram_basis(B, variables, bounds.maxdegree)
 end
 function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
-    return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
+    return MB.maxdegree_basis(B, variables, fld(maxdegree, 2))
 end
 multiplier_maxdegree(maxdegree, q) = maxdegree - MP.maxdegree(q)
 function multiplier_basis(
@@ -185,20 +180,29 @@ end
 function multiplier_basis(
     certificate::Putinar,
     index::PreorderIndex,
-    domain::WithBounds,
+    domain::WithDegreeBounds,
 )
     q = domain.inner.p[index.value]
-    return maxdegree_gram_basis(
-        certificate.basis,
-        vars,
-        minus_shift(domain.bounds, q),
-    )
+    shifted = minus_shift(domain.bounds, q)
+    if isnothing(shifted)
+        # TODO add `MB.empty_basis` to API
+        return MB.maxdegree_basis(
+            certificate.basis,
+            MP.variables(domain.bounds.variablewise_mindegree),
+            -1,
+        )
+    else
+        return maxdegree_gram_basis(
+            certificate.basis,
+            minus_shift(domain.bounds, q),
+        )
+    end
 end
 function multiplier_basis_type(::Type{Putinar{IC,CT,BT}}) where {IC,CT,BT}
     return BT
 end
 
-function generator(::Putinar, index::PreorderIndex, domain::WithVariables)
+function generator(::Putinar, index::PreorderIndex, domain::Union{WithVariables,WithDegreeBounds})
     return domain.inner.p[index.value]
 end
 
