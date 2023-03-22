@@ -149,7 +149,6 @@ function maxdegree_gram_basis(
     bounds::DegreeBounds,
 )
     variables = MP.variables(bounds.variablewise_maxdegree)
-    display(bounds)
     function filter(mono)
         return MP.divides(bounds.variablewise_mindegree, mono) &&
                MP.divides(mono, bounds.variablewise_maxdegree)
