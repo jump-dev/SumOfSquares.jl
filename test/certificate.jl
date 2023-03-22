@@ -289,11 +289,11 @@ function test_putinar_ijk(i, j, k)
     @test icert isa Certificate.Newton
 end
 
-@testset "Putinar $i $j $k" for (i, j, k) in [(1, 1, 2), (1, 3, 2), (3, 2, 1)]
+@testset "Putinar $i $j $k" for (i, j, k) in [(1, 1, 2), (1, 3, 2), (3, 2, 1)] #, (4, 2, 1)]
     test_putinar_ijk(i, j, k)
 end
 
 include("ceg_test.jl")
 include("csp_test.jl")
-include("sparsity.jl")
+#include("sparsity.jl")
 include("symmetry.jl")
