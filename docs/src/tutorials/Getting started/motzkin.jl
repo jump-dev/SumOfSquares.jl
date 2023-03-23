@@ -23,8 +23,9 @@ motzkin = x^4*y^2 + x^2*y^4 + 1 - 3x^2*y^2
 # We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
 
 using SumOfSquares
-import CSDP
-solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+import Dualization
+import SCS
+solver = SCS.Optimizer
 model = SOSModel(solver)
 @constraint(model, motzkin >= 0) # We constraint `motzkin` to be a sum of squares
 
