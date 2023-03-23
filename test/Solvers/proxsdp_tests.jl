@@ -8,13 +8,17 @@ config = MOI.Test.Config(atol = 2e-2, rtol = 2e-2)
         config,
         [
             "dsos_options_pricing",
-            # Expression: termination_status(model) == MOI.OPTIMAL
-            #  Evaluated: MathOptInterface.INFEASIBLE_OR_UNBOUNDED == MathOptInterface.OPTIMAL
-            "dsos_concave_then_convex_cubic",
             # Expression: JuMP.primal_status(model) == MOI.FEASIBLE_POINT
             #  Evaluated: MathOptInterface.INFEASIBLE_POINT == MathOptInterface.FEASIBLE_POINT
             "dsos_quartic_comparison",
-            "dsos_horn",
+            "dsos_cheby_bivariate_quadratic",
+            "dsos_cheby_univariate_quadratic",
+            "dsos_term",
+            "dsos_term_fixed",
+            "dsos_scaled_bivariate_quadratic",
+            "dsos_scaled_univariate_quadratic",
+            "dsos_bivariate_quadratic",
+            "dsos_univariate_quadratic",
         ],
     )
 end
@@ -24,13 +28,11 @@ end
         config,
         [
             "sdsos_options_pricing",
-            # Expression: termination_status(model) == MOI.OPTIMAL
-            #  Evaluated: MathOptInterface.INFEASIBLE_OR_UNBOUNDED == MathOptInterface.OPTIMAL
-            "sdsos_concave_then_convex_cubic",
             # ConstraintDual not implemented for VoV-in-SOC
             "sdsos_univariate_quadratic",
-            "sdsos_horn",
             "sdsos_bivariate_quadratic",
+            "sdsos_term_fixed",
+            "sdsos_term",
         ],
     )
 end
@@ -53,11 +55,12 @@ end
             "motzkin",
             # ArgumentError: ModelLike of type ProxSDP.Optimizer does not support accessing the attribute MathOptInterface.ConstraintDual(1)
             "sos_univariate_quadratic",
-            "sos_horn",
             "sos_bivariate_quadratic",
             "quadratic_infeasible_lyapunov_switched_system",
             "quartic_infeasible_lyapunov_switched_system",
             "sosdemo5_infeasible",
+            "sos_term_fixed",
+            "sos_term",
         ],
     )
 end

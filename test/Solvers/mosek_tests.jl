@@ -5,13 +5,12 @@ using MosekTools
 # for `sdsos_bivariate_quadratic`
 factory = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
 config = MOI.Test.Config(atol = 1e-5, rtol = 1e-5)
+Tests.dsos_horn_test(factory, config)
 @testset "Linear" begin
     Tests.linear_test(factory, config)
 end
 @testset "SOC" begin
-    Tests.soc_test(factory, config, String[
-    # FIXME MethodError: Cannot `convert` an object of type Nothing to an object of type MathOptInterface.VariableIndex
-        "sdsos_horn"])
+    Tests.soc_test(factory, config)
 end
 @testset "SDP" begin
     Tests.sd_test(
@@ -25,7 +24,6 @@ end
             "BPT12e399_maxdegree",
             # FIXME AssertionError: m.x_type[ref2id(vi)] == Deleted
             "maxcut",
-            "sos_horn",
             "motzkin",
             # Expression: JuMP.termination_status(model) == MOI.INFEASIBLE
             # Evaluated: MathOptInterface.SLOW_PROGRESS == MathOptInterface.INFEASIBLE

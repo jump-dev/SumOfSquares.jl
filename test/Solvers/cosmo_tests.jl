@@ -5,15 +5,12 @@ factory = optimizer_with_attributes(COSMO.Optimizer, "verbose" => false, "max_it
 config = MOI.Test.Config(atol = 1e-3, rtol = 1e-3)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
-        # See https://github.com/oxfordcontrol/COSMO.jl/issues/96
-        "dsos_horn",
+        "dsos_options_pricing",
     ])
 end
 @testset "SOC" begin
     Tests.soc_test(factory, config, [
         "sdsos_options_pricing",
-        # See https://github.com/oxfordcontrol/COSMO.jl/issues/96
-        "sdsos_horn",
     ])
 end
 @testset "SDP" begin
@@ -26,11 +23,7 @@ end
             "chebyshev",
             # Expression: JuMP.termination_status(model) == MOI.INFEASIBLE
             # Evaluated: MathOptInterface.OPTIMAL == MathOptInterface.INFEASIBLE
-            "quartic_infeasible_lyapunov_switched_system",
-            "quartic_infeasible_scaled_lyapunov_switched_system",
             "maxcut",
-            "sos_horn",
-            "motzkin",
         ],
     )
 end

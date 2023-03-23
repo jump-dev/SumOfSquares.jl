@@ -6,7 +6,7 @@ config = MOI.Test.Config(atol = 1e-5, rtol = 1e-5)
     Tests.linear_test(factory, config)
 end
 @testset "SOC" begin
-    Tests.soc_test(factory, config, [
+    Tests.soc_test(factory, config, String[
         # K = 30: Test Failed at /home/blegat/.julia/dev/SumOfSquares/test/Tests/options_pricing.jl:31
         #   Expression: JuMP.primal_status(model) == MOI.FEASIBLE_POINT
         #    Evaluated: MathOptInterface.NEARLY_FEASIBLE_POINT == MathOptInterface.FEASIBLE_POINT
