@@ -53,7 +53,7 @@ function sparsity(
     function bases(q)
         return [
             SumOfSquares.Certificate.maxdegree_gram_basis(
-                certificate.basis,
+                certificate.multipliers_certificate.basis,
                 clique,
                 SumOfSquares.Certificate.multiplier_maxdegree(
                     certificate.maxdegree,

@@ -231,7 +231,17 @@ end
     maxdegree = 2
     function _test(certificate::Certificate.AbstractIdealCertificate)
         certificate_api(certificate)
-        preorder = Certificate.Putinar(certificate, cone, BT, maxdegree)
+        mult_cert = certificate
+        if mult_cert isa Certificate.Sparsity.Ideal
+            mult_cert = mult_cert.certificate
+        end
+        if mult_cert isa Certificate.Remainder # FIXME not supported yet as mult cert
+            mult_cert = mult_cert.gram_certificate
+        end
+        if mult_cert isa Certificate.FixedBasis # FIXME not supported yet
+            mult_cert = Certificate.MaxDegree(cone, BT, maxdegree)
+        end
+        preorder = Certificate.Putinar(mult_cert, certificate, maxdegree)
         certificate_api(preorder)
         sparsities = Sparsity.Pattern[Sparsity.Variable()]
         if certificate isa Certificate.MaxDegree

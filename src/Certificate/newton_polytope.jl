@@ -348,7 +348,7 @@ function deg_sign(deg, p, d)
     sgn = nothing
     for t in MP.terms(p)
         if deg(t) == d
-            s = sign(MP.coefficient(t))
+            s = _sign(MP.coefficient(t))
             if isnothing(sgn)
                 sgn = s
             else
@@ -442,24 +442,20 @@ function putinar_degree_bounds(
     minus_degrange(g) = -maxdeg(g):-mindeg(g)
     # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
     mindegree = -deg_range(p -> -MP.mindegree(p), p, gs, minus_degrange, -maxdegree:0)
-    @show mindegree
     if isnothing(mindegree)
         return
     end
     maxdegree = deg_range(MP.maxdegree, p, gs, degrange, 0:maxdegree)
-    @show maxdegree
     if isnothing(maxdegree)
         return
     end
     vars_mindeg = map(vars) do v
-        @show v
         return -deg_range(Base.Fix2(minus_min_degree, v), p, gs, minus_degrange, -maxdegree:0)
     end
     if any(isnothing, vars_mindeg)
         return
     end
     vars_maxdeg = map(vars) do v
-        @show v
         return deg_range(Base.Fix2(max_degree, v), p, gs, degrange, 0:maxdegree)
     end
     if any(isnothing, vars_maxdeg)
@@ -467,7 +463,7 @@ function putinar_degree_bounds(
     end
     @assert all(d -> d >= 0, vars_mindeg)
     @assert all(d -> d >= 0, vars_maxdeg)
-    return @show DegreeBounds(
+    return DegreeBounds(
         mindegree,
         maxdegree,
         _monomial(vars, vars_mindeg),

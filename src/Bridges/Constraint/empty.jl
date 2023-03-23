@@ -1,4 +1,4 @@
-struct EmptyBridge{T} <: MOI.Bridges.Constraint.AbstractBridge end
+struct EmptyBridge{T,F<:MOI.AbstractVectorFunction} <: MOI.Bridges.Constraint.AbstractBridge end
 
 function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{EmptyBridge{T}},
@@ -25,14 +25,22 @@ function MOI.Bridges.added_constraint_types(::Type{<:EmptyBridge})
 end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:EmptyBridge{T}},
-    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{F},
     ::Type{SOS.EmptyCone},
-) where {T}
-    return EmptyBridge{T}
+) where {T,F<:MOI.AbstractVectorFunction}
+    return EmptyBridge{T,F}
 end
 
 # Indices
-function MOI.delete(model::MOI.ModelLike, bridge::EmptyBridge) end
+function MOI.delete(::MOI.ModelLike, ::EmptyBridge) end
+
+function MOI.get(
+    ::MOI.ModelLike,
+    ::ConstraintFunction,
+    ::EmptyBridge{T,F},
+) where {T,F}
+    return MOI.Utilities.zero_with_output_dimension(F, 0)
+end
 
 function MOI.get(
     ::MOI.ModelLike,
