@@ -1,4 +1,5 @@
-struct EmptyBridge{T,F<:MOI.AbstractVectorFunction} <: MOI.Bridges.Constraint.AbstractBridge end
+struct EmptyBridge{T,F<:MOI.AbstractVectorFunction} <:
+       MOI.Bridges.Constraint.AbstractBridge end
 
 function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{EmptyBridge{T}},

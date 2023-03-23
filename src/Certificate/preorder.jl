@@ -21,10 +21,8 @@ such that `h_i(x) = 0`.
 The polynomials `σ_i(x)` are search over `cone` with a basis of type `basis` such that
 the degree of `σ_i(x) g_i(x)` does not exceed `maxdegree`.
 """
-struct Putinar{
-    MC<:AbstractIdealCertificate,
-    IC<:AbstractIdealCertificate,
-} <: AbstractPreorderCertificate
+struct Putinar{MC<:AbstractIdealCertificate,IC<:AbstractIdealCertificate} <:
+       AbstractPreorderCertificate
     multipliers_certificate::MC
     ideal_certificate::IC
     # FIXME `maxdegree` here is needed if `multipliers_certificate` is `Newton`
@@ -103,7 +101,10 @@ function preprocessed_domain(
     return with_bounds(domain, p, certificate.maxdegree)
 end
 
-function preorder_indices(::Putinar, domain::Union{WithVariables,WithDegreeBounds})
+function preorder_indices(
+    ::Putinar,
+    domain::Union{WithVariables,WithDegreeBounds},
+)
     return map(PreorderIndex, eachindex(domain.inner.p))
 end
 
@@ -146,7 +147,11 @@ function multiplier_basis_type(::Type{<:Putinar{MC}}) where {MC}
     return gram_basis_type(MC)
 end
 
-function generator(::Putinar, index::PreorderIndex, domain::Union{WithVariables,WithDegreeBounds})
+function generator(
+    ::Putinar,
+    index::PreorderIndex,
+    domain::Union{WithVariables,WithDegreeBounds},
+)
     return domain.inner.p[index.value]
 end
 

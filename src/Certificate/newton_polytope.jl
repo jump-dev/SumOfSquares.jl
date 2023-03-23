@@ -325,8 +325,10 @@ function minus_shift(
 end
 
 function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
-    var_mindegree = minus_shift(min_degree, d.variablewise_mindegree, p, min_shift)
-    var_maxdegree = minus_shift(max_degree, d.variablewise_maxdegree, p, max_shift)
+    var_mindegree =
+        minus_shift(min_degree, d.variablewise_mindegree, p, min_shift)
+    var_maxdegree =
+        minus_shift(max_degree, d.variablewise_maxdegree, p, max_shift)
     if isnothing(var_maxdegree)
         return
     end
@@ -441,7 +443,8 @@ function putinar_degree_bounds(
     degrange(g) = mindeg(g):maxdeg(g)
     minus_degrange(g) = -maxdeg(g):-mindeg(g)
     # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
-    mindegree = -deg_range(p -> -MP.mindegree(p), p, gs, minus_degrange, -maxdegree:0)
+    mindegree =
+        -deg_range(p -> -MP.mindegree(p), p, gs, minus_degrange, -maxdegree:0)
     if isnothing(mindegree)
         return
     end
@@ -450,7 +453,13 @@ function putinar_degree_bounds(
         return
     end
     vars_mindeg = map(vars) do v
-        return -deg_range(Base.Fix2(minus_min_degree, v), p, gs, minus_degrange, -maxdegree:0)
+        return -deg_range(
+            Base.Fix2(minus_min_degree, v),
+            p,
+            gs,
+            minus_degrange,
+            -maxdegree:0,
+        )
     end
     if any(isnothing, vars_mindeg)
         return

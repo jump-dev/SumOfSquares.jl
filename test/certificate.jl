@@ -284,15 +284,16 @@ function test_putinar_ijk(i, j, k)
     set = JuMP.moi_set(SOSCone(), monomials(poly); domain)
     processed = Certificate.preprocessed_domain(set.certificate, domain, poly)
     for idx in Certificate.preorder_indices(set.certificate, processed)
-        monos = Certificate.multiplier_basis(
-            set.certificate,
-            idx,
-            processed,
-        ).monomials
+        monos =
+            Certificate.multiplier_basis(
+                set.certificate,
+                idx,
+                processed,
+            ).monomials
         if k > j
             @test isempty(monos)
         else
-            @test monos == MP.monomials([x, y], max(0, min(i, j) - k):(j - k))
+            @test monos == MP.monomials([x, y], max(0, min(i, j) - k):(j-k))
         end
     end
     icert = Certificate.ideal_certificate(set.certificate)
