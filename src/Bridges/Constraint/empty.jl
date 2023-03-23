@@ -37,7 +37,7 @@ function MOI.delete(::MOI.ModelLike, ::EmptyBridge) end
 
 function MOI.get(
     ::MOI.ModelLike,
-    ::ConstraintFunction,
+    ::MOI.ConstraintFunction,
     ::EmptyBridge{T,F},
 ) where {T,F}
     return MOI.Utilities.zero_with_output_dimension(F, 0)
