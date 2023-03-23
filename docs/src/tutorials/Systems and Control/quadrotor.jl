@@ -157,12 +157,12 @@ function γ_step(solver, V, γ_min, degree_k, degree_s3; γ_tol = 1e-1, max_iter
         @info("Iteration $num_iters/$max_iters : Solving with $(solver_name(model)) for `γ = $γ`")
         optimize!(model)
         @info("After $(solve_time(model)) seconds, terminated with $(termination_status(model)) ($(raw_status(model)))")
-        if primal_status(model) == MOI.FEASIBLE_POINT || primal_status(model) == MOI.NEARLY_FEASIBLE_POINT
+        if primal_status(model) in [MOI.FEASIBLE_POINT, MOI.NEARLY_FEASIBLE_POINT]
             @info("Feasible solution found : primal is $(primal_status(model))")
             γ_min = γ
             k_best = value.(k)
             s3_best = value(s3)
-        elseif dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
+        elseif dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE || termination_status(model) in [MOI.INFEASIBLE, MOI.INFEASIBLE_OR_UNBOUNDED] # `INFEASIBLE_OR_UNBOUNDED` means `INFEASIBLE` because there is no objective so it cannot be unbounded
             @info("Infeasibility certificate found : dual is $(dual_status(model))")
             if γ == γ0_min # This corresponds to the case above where we reached the tol or max iteration and we just did a last run at the value of `γ_min` provided by the user
                 error("The value `$γ0_min` of `γ_min` provided is not feasible")
