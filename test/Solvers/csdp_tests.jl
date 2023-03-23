@@ -18,6 +18,6 @@ end
             "motzkin",
             "quartic_infeasible_scaled_lyapunov_switched_system",
             "choi",
-        ]
+        ],
     )
 end

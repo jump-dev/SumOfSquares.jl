@@ -1,6 +1,10 @@
 include("solver_preamble.jl")
 import SDPNAL
-factory = optimizer_with_attributes(SDPNAL.Optimizer, "printlevel" => 0, "tol" => 1e-4)
+factory = optimizer_with_attributes(
+    SDPNAL.Optimizer,
+    "printlevel" => 0,
+    "tol" => 1e-4,
+)
 config = MOI.Test.Config(atol = 5e-3, rtol = 5e-3)
 @testset "Linear" begin
     Tests.linear_test(factory, config, [
