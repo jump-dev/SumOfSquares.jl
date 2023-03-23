@@ -5,7 +5,6 @@ using MosekTools
 # for `sdsos_bivariate_quadratic`
 factory = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
 config = MOI.Test.Config(atol = 1e-5, rtol = 1e-5)
-Tests.dsos_horn_test(factory, config)
 @testset "Linear" begin
     Tests.linear_test(factory, config)
 end

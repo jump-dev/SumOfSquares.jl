@@ -18,9 +18,6 @@ function horn_test(
     config::MOI.Test.Config,
     cone::SumOfSquares.PolyJuMP.PolynomialSet,
 )
-    atol = config.atol
-    rtol = config.rtol
-
     # Horn matrix
     H = [
         1 -1 1 1 -1
