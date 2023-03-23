@@ -1,6 +1,6 @@
 include("solver_preamble.jl")
 import ProxSDP
-factory = with_optimizer(ProxSDP.Optimizer, log_verbose = false)
+factory = optimizer_with_attributes(ProxSDP.Optimizer, "log_verbose" => false)
 config = MOI.Test.Config(atol = 2e-2, rtol = 2e-2)
 @testset "Linear" begin
     Tests.linear_test(

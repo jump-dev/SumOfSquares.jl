@@ -13,7 +13,7 @@ end
 #const SOSPolynomial{T, OT<:MOI.ModelLike} = MOI.Bridges.Constraint.SingleBridgeOptimizer{SumOfSquares.SOSPolynomialBridge{T}, OT}
 
 #function _cheat_model(factory::OptimizerFactory)
-#    return Model(with_optimizer(() -> SOSPolynomial{Float64}(factory())))
+#    return Model(optimizer_with_attributes(() -> SOSPolynomial{Float64}(factory())))
 #end
 
 #"""

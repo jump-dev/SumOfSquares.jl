@@ -2,7 +2,7 @@ import Pkg
 using Test
 
 function solver_test(name::Symbol)
-    if string(name) in keys(Pkg.installed())
+    if any(dep -> dep.name == string(name), values(Pkg.dependencies()))
         ok = false
         try
             @eval import $name
@@ -16,7 +16,9 @@ function solver_test(name::Symbol)
             end
         end
     else
-        @warn("The solver $name is not installed, run `] add $name`.")
+        @warn(
+            "The solver $name is not part of the dependencies, run `] add $name`."
+        )
     end
 end
 

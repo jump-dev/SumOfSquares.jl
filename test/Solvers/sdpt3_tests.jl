@@ -1,6 +1,6 @@
 include("solver_preamble.jl")
 import SDPT3
-factory = with_optimizer(SDPT3.Optimizer, printlevel = 0)
+factory = optimizer_with_attributes(SDPT3.Optimizer, printlevel = 0)
 config = MOI.Test.Config(atol = 1e-4, rtol = 1e-4)
 @testset "Linear" begin
     Tests.linear_test(factory, config)

@@ -1,9 +1,9 @@
 include("solver_preamble.jl")
 import SDPAFamily
-factory = with_optimizer(
+factory = optimizer_with_attributes(
     SDPAFamily.Optimizer{Float64},
-    params = (gammaStar = 0.8, maxIteration = 200),
-    presolve = true,
+    "params" => (gammaStar = 0.8, maxIteration = 200),
+    "presolve" => true,
 )
 config = MOI.Test.Config(atol = 1e-5, rtol = 1e-5)
 @testset "Linear" begin

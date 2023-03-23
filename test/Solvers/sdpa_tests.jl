@@ -1,6 +1,6 @@
 include("solver_preamble.jl")
 import SDPA
-factory = with_optimizer(SDPA.Optimizer)
+factory = optimizer_with_attributes(SDPA.Optimizer)
 config = MOI.Test.Config(atol = 1e-5, rtol = 1e-5)
 @testset "Linear" begin
     Tests.linear_test(
