@@ -164,7 +164,7 @@ end
 # variables are in the same part
 function half_newton_polytope(
     X::AbstractVector,
-    parts::Tuple{};
+    ::Tuple{};
     apply_post_filter = true,
 )
     vars = MP.variables(X)
@@ -279,5 +279,201 @@ function monomials_half_newton_polytope(
         MP.monovec(X),
         parts;
         apply_post_filter = apply_post_filter,
+    )
+end
+
+struct DegreeBounds{M}
+    mindegree::Int
+    maxdegree::Int
+    variablewise_mindegree::M
+    variablewise_maxdegree::M
+end
+
+function min_degree(p, v)
+    return mapreduce(Base.Fix2(MP.degree, v), min, MP.monomials(p))
+end
+minus_min_degree(p, v) = -min_degree(p, v)
+
+function _monomial(vars, exps)
+    if any(Base.Fix2(isless, 0), exps)
+        return
+    end
+    return prod(vars .^ exps)
+end
+
+function max_degree(p, v)
+    return mapreduce(Base.Fix2(MP.degree, v), max, MP.monomials(p))
+end
+
+function min_shift(d, shift)
+    return max(0, cld(d - shift, 2))
+end
+function max_shift(d, shift)
+    return fld(d - shift, 2)
+end
+
+function minus_shift(
+    deg,
+    m::MP.AbstractMonomial,
+    p::MP.AbstractPolynomialLike,
+    shift,
+)
+    exps = map(MP.powers(m)) do (v, d)
+        return shift(d, deg(p, v))
+    end
+    return _monomial(MP.variables(m), exps)
+end
+
+function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
+    var_mindegree =
+        minus_shift(min_degree, d.variablewise_mindegree, p, min_shift)
+    var_maxdegree =
+        minus_shift(max_degree, d.variablewise_maxdegree, p, max_shift)
+    if isnothing(var_maxdegree)
+        return
+    end
+    return DegreeBounds(
+        min_shift(d.mindegree, MP.mindegree(p)),
+        max_shift(d.maxdegree, MP.maxdegree(p)),
+        var_mindegree,
+        var_maxdegree,
+    )
+end
+
+_combine_sign(a, b) = (a == b ? a : zero(a))
+
+_sign(a::Number) = sign(a)
+# Can be for instance a JuMP or MOI function so the sign can be anything
+_sign(a) = 0
+
+function deg_sign(deg, p, d)
+    sgn = nothing
+    for t in MP.terms(p)
+        if deg(t) == d
+            s = _sign(MP.coefficient(t))
+            if isnothing(sgn)
+                sgn = s
+            else
+                sgn = _combine_sign(sgn, s)
+            end
+        end
+    end
+    return sgn
+end
+
+function deg_sign(deg, p)
+    d = deg(p)
+    return d, deg_sign(deg, p, d)
+end
+
+function _interval(a, b)
+    if a < b
+        return a:b
+    else
+        return b:a
+    end
+end
+
+function deg_range(deg, p, gs, gram_deg, truncation)
+    d_max = min(deg(p), truncation)
+    sign = deg_sign(deg, p, d_max)
+    for g in gs
+        d_g, sign_g = deg_sign(deg, g)
+        d_s = gram_deg(g)
+        if isempty(d_s) || d_g + 2minimum(d_s) > truncation
+            continue
+        end
+        d = d_g + 2maximum(d_s)
+        if d > truncation
+            d = truncation
+            if mod(d_g, 2) != mod(truncation, 2)
+                d -= 1
+            end
+        end
+        # Multiply by `-1` because we move it to lhs
+        # p = s_0 + sum s_i g_i -> p - sum s_i g_i = s_0
+        sign_g = -sign_g
+        if isnothing(sign)
+            d_max = d
+            sign = sign_g
+        elseif d_max <= d
+            if d_max == d
+                sign = _combine_sign(sign, sign_g)
+            else
+                sign = sign_g
+            end
+            d_max = d
+        end
+    end
+    if !isnothing(sign) && (iszero(sign) || (iseven(d_max) && sign == 1))
+        return true, d_max
+    else
+        return false, d_max - 1
+    end
+end
+
+#    deg_range(deg, p, gs, gram_deg, range)
+#
+# Maximum value of `deg(s_0 = p - sum s_i g_i for g in gs) in range` where
+# `s_0, s_i` are SOS and `deg(s_i) <= gram_deg(g)`.
+# Note that `range` should be in increasing order.
+function deg_range(deg, p, gs, gram_deg, range::UnitRange)
+    d = maximum(range)
+    while d in range
+        ok, d = deg_range(deg, p, gs, gram_deg, d)
+        if ok
+            return d
+        end
+    end
+    return
+end
+
+function putinar_degree_bounds(
+    p::MP.AbstractPolynomialLike,
+    gs::AbstractVector{<:MP.AbstractPolynomialLike},
+    vars,
+    maxdegree,
+)
+    mindegree = 0
+    # TODO homogeneous case
+    mindeg(g) = min_shift(mindegree, MP.mindegree(g))
+    maxdeg(g) = max_shift(maxdegree, MP.maxdegree(g))
+    degrange(g) = mindeg(g):maxdeg(g)
+    minus_degrange(g) = -maxdeg(g):-mindeg(g)
+    # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
+    mindegree =
+        -deg_range(p -> -MP.mindegree(p), p, gs, minus_degrange, -maxdegree:0)
+    if isnothing(mindegree)
+        return
+    end
+    maxdegree = deg_range(MP.maxdegree, p, gs, degrange, 0:maxdegree)
+    if isnothing(maxdegree)
+        return
+    end
+    vars_mindeg = map(vars) do v
+        return -deg_range(
+            Base.Fix2(minus_min_degree, v),
+            p,
+            gs,
+            minus_degrange,
+            -maxdegree:0,
+        )
+    end
+    if any(isnothing, vars_mindeg)
+        return
+    end
+    vars_maxdeg = map(vars) do v
+        return deg_range(Base.Fix2(max_degree, v), p, gs, degrange, 0:maxdegree)
+    end
+    if any(isnothing, vars_maxdeg)
+        return
+    end
+    @assert all(d -> d >= 0, vars_mindeg)
+    @assert all(d -> d >= 0, vars_maxdeg)
+    return DegreeBounds(
+        mindegree,
+        maxdegree,
+        _monomial(vars, vars_mindeg),
+        _monomial(vars, vars_maxdeg),
     )
 end

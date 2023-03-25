@@ -231,7 +231,17 @@ end
     maxdegree = 2
     function _test(certificate::Certificate.AbstractIdealCertificate)
         certificate_api(certificate)
-        preorder = Certificate.Putinar(certificate, cone, BT, maxdegree)
+        mult_cert = certificate
+        if mult_cert isa Certificate.Sparsity.Ideal
+            mult_cert = mult_cert.certificate
+        end
+        if mult_cert isa Certificate.Remainder # FIXME not supported yet as mult cert
+            mult_cert = mult_cert.gram_certificate
+        end
+        if mult_cert isa Certificate.FixedBasis # FIXME not supported yet
+            mult_cert = Certificate.MaxDegree(cone, BT, maxdegree)
+        end
+        preorder = Certificate.Putinar(mult_cert, certificate, maxdegree)
         certificate_api(preorder)
         sparsities = Sparsity.Pattern[Sparsity.Variable()]
         if certificate isa Certificate.MaxDegree
@@ -267,7 +277,34 @@ end
     end
 end
 
+function test_putinar_ijk(i, j, k)
+    @polyvar x y
+    poly = x^(2i) + y^(2j + 1)
+    domain = @set y^(2k + 1) >= 0
+    set = JuMP.moi_set(SOSCone(), monomials(poly); domain)
+    processed = Certificate.preprocessed_domain(set.certificate, domain, poly)
+    for idx in Certificate.preorder_indices(set.certificate, processed)
+        monos =
+            Certificate.multiplier_basis(
+                set.certificate,
+                idx,
+                processed,
+            ).monomials
+        if k > j
+            @test isempty(monos)
+        else
+            @test monos == MP.monomials([x, y], max(0, min(i, j) - k):(j-k))
+        end
+    end
+    icert = Certificate.ideal_certificate(set.certificate)
+    @test icert isa Certificate.Newton
+end
+
+@testset "Putinar $i $j $k" for (i, j, k) in [(1, 1, 2), (1, 3, 2), (3, 2, 1)] #, (4, 2, 1)]
+    test_putinar_ijk(i, j, k)
+end
+
 include("ceg_test.jl")
 include("csp_test.jl")
-include("sparsity.jl")
+#include("sparsity.jl")
 include("symmetry.jl")

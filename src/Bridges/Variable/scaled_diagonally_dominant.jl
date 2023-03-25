@@ -8,8 +8,8 @@
 
 A matrix is SDD iff it is the sum of psd matrices Mij that are zero except
 for entries ii, ij and jj [Lemma 9, AM17]. This bridge substitute the
-constrained variables in [`SumOfSquares.ScaledDiagonallyDominantConeTriangle`](@ref)
-into a sum of constrained variables in [`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref).
+constrained variables in [`SOS.ScaledDiagonallyDominantConeTriangle`](@ref)
+into a sum of constrained variables in [`SOS.PositiveSemidefinite2x2ConeTriangle`](@ref).
 
 [AM17] Ahmadi, A. A. & Majumdar, A.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*

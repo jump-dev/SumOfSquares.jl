@@ -67,7 +67,7 @@ function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
 end
 
 function default_ideal_certificate(
-    domain,
+    ::AbstractAlgebraicSet,
     basis,
     cone,
     maxdegree,
@@ -80,7 +80,7 @@ function default_ideal_certificate(
     end
 end
 function default_ideal_certificate(
-    domain::FixedVariablesSet,
+    ::FixedVariablesSet,
     basis,
     cone,
     maxdegree,
@@ -91,7 +91,7 @@ function default_ideal_certificate(
     )
 end
 function default_ideal_certificate(
-    domain::FullSpace,
+    ::FullSpace,
     basis,
     cone,
     maxdegree,
@@ -126,7 +126,7 @@ end
 
 function default_ideal_certificate(
     domain::AbstractAlgebraicSet,
-    symmetry::Nothing,
+    ::Nothing,
     args...,
 )
     return default_ideal_certificate(domain, args...)
@@ -165,36 +165,58 @@ function default_certificate(
     cone,
     basis,
     maxdegree,
+    newton_polytope,
 )
     return ideal_certificate
 end
 function default_certificate(
-    ::BasicSemialgebraicSet,
+    domain::BasicSemialgebraicSet,
     sparsity::Certificate.Sparsity.Pattern,
     ideal_certificate::Certificate.Sparsity.Ideal,
     cone,
     basis,
     maxdegree,
+    newton_polytope,
 )
-    return Certificate.Sparsity.Preorder(
-        sparsity,
-        Certificate.Putinar(
-            ideal_certificate.certificate,
-            cone,
-            basis,
-            maxdegree,
-        ),
+    nonsparse = default_certificate(
+        domain,
+        Certificate.Sparsity.NoPattern(),
+        ideal_certificate.certificate,
+        cone,
+        basis,
+        maxdegree,
+        newton_polytope,
     )
+    return Certificate.Sparsity.Preorder(sparsity, nonsparse)
 end
 function default_certificate(
-    ::BasicSemialgebraicSet,
+    domain::BasicSemialgebraicSet,
     ::Certificate.Sparsity.NoPattern,
     ideal_certificate,
     cone,
     basis,
     maxdegree,
+    newton_polytope,
 )
-    return Certificate.Putinar(ideal_certificate, cone, basis, maxdegree)
+    # We could take `multipliers_certificate = ideal_certificate` here but
+    # that wouldn't work if `ideal_certificate` is `Remainder`,
+    # `Sparseity.Ideal` or `Symmetry.Ideal`
+    multipliers_certificate = default_ideal_certificate(
+        domain.V,
+        basis,
+        cone,
+        maxdegree,
+        newton_polytope,
+    )
+    if multipliers_certificate isa Certificate.Remainder
+        # TODO not supported yet so we drop the `Remainder` part
+        multipliers_certificate = multipliers_certificate.gram_certificate
+    end
+    return Certificate.Putinar(
+        multipliers_certificate,
+        ideal_certificate,
+        maxdegree,
+    )
 end
 
 # Julia v1.0 does not support `init` keyword
@@ -251,6 +273,7 @@ function JuMP.moi_set(
         cone,
         basis,
         maxdegree,
+        newton_polytope,
     ),
 )
     return SOSPolynomialSet(domain, monos, certificate)

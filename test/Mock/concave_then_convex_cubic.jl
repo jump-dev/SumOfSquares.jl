@@ -1,12 +1,13 @@
 config = MOI.Test.Config()
+vals = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
 function optimize!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [1.0; zeros(5); 6.0; zeros(12); 6.0; zeros(10)],
+        vals,
         (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}) =>
             zeros(26),
         (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64}) => zeros(4),
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(7), zeros(7)],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(2), zeros(2)],
     )
 end
 for mock in mocks(optimize!)
@@ -15,43 +16,19 @@ end
 function optimize_bridged!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [
-            1.0
-            zeros(5)
-            3.0
-            zeros(3)
-            3.0
-            zeros(7)
-            3.0
-            zeros(3)
-            3.0
-            zeros(5)
-        ],
+        vals,
         (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64}) => zeros(4),
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(7), zeros(7)],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(2), zeros(2)],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
             [zeros(3) for i in 1:8],
     )
 end
 function optimize_cached!(mock)
-    sol = [
-        zeros(2)
-        3.0
-        zeros(3)
-        3.0
-        zeros(7)
-        3.0
-        zeros(3)
-        3.0
-        zeros(5)
-        1.0
-        zeros(3)
-    ]
     return MOI.Utilities.mock_optimize!(
         mock,
-        sol,
+        vals,
         (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64}) => zeros(4),
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(7), zeros(7)],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(2), zeros(2)],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
             [zeros(3) for i in 1:8],
     )
@@ -62,11 +39,11 @@ end
 function optimize_bridged!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [1.0; zeros(5); 6.0; zeros(8); 6.0; zeros(6)],
+        vals,
         (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64}) => zeros(4),
         (MOI.VectorOfVariables, MOI.PositiveSemidefiniteConeTriangle) =>
             [zeros(6), zeros(6)],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(7), zeros(7)],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(2), zeros(2)],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
             [zeros(3), zeros(3)],
     )
@@ -74,11 +51,11 @@ end
 function optimize_cached!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [zeros(5); 6.0; zeros(8); 6.0; zeros(3); 1.0; zeros(3)],
+        vals,
         (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64}) => zeros(4),
         (MOI.VectorOfVariables, MOI.PositiveSemidefiniteConeTriangle) =>
             [zeros(6), zeros(6)],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(7), zeros(7)],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [zeros(2), zeros(2)],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
             [zeros(3), zeros(3)],
     )

@@ -117,9 +117,8 @@ function wml19()
         Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple()),
     ]
         preorder_certificate = Certificate.Putinar(
+            Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 4),
             ideal_certificate,
-            SOSCone(),
-            MB.MonomialBasis,
             4,
         )
         @polyvar x[1:2]
@@ -337,8 +336,8 @@ function l09()
     end
 end
 function square_domain(ideal_certificate, d)
-    preorder_certificate =
-        Certificate.Putinar(ideal_certificate, SOSCone(), MB.MonomialBasis, d)
+    mult_cert = Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, d)
+    preorder_certificate = Certificate.Putinar(mult_cert, ideal_certificate, d)
     @polyvar x y
     f = x^2 * y^4 + x^4 * y^2 - 3 * x^2 * y * 2 + 1
     K = @set(1 - x^2 >= 0 && 1 - y^2 >= 0)
@@ -482,9 +481,8 @@ function drop_monomials()
             Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple()),
         ]
             preorder_certificate = Certificate.Putinar(
+                Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 3),
                 ideal_certificate,
-                SOSCone(),
-                MB.MonomialBasis,
                 3,
             )
             f = polynomial(x^3)

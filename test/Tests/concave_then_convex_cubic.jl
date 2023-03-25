@@ -38,7 +38,7 @@ function concave_then_convex_cubic_test(
     end
     for μ in [moments(cref_convex), moments(cref_concave)]
         @test μ isa AbstractMeasure{Float64}
-        @test length(moments(μ)) == 7
+        @test length(moments(μ)) == 2
     end
 end
 

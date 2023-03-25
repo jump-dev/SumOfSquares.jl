@@ -42,276 +42,30 @@ function generator end
 function multiplier_basis end
 function multiplier_basis_type end
 
-# PreorderCertificate
-# IdealCertificate
-# FullSpaceCertificate
-
 abstract type AbstractCertificate end
 
-abstract type AbstractPreorderCertificate <: AbstractCertificate end
-abstract type AbstractIdealCertificate <: AbstractCertificate end
-
-"""
-    struct Putinar{IC <: AbstractIdealCertificate, CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: AbstractPreorderCertificate
-        ideal_certificate::IC
-        cone::CT
-        basis::Type{BT}
-        maxdegree::Int
-    end
-
-The `Putinar` certificate ensures the nonnegativity of `p(x)` for all `x` such that
-`g_i(x) >= 0` and `h_i(x) = 0` by exhibiting Sum-of-Squares polynomials `σ_i(x)`
-such that `p(x) - ∑ σ_i(x) g_i(x)` is guaranteed to be nonnegativity for all `x`
-such that `h_i(x) = 0`.
-The polynomials `σ_i(x)` are search over `cone` with a basis of type `basis` such that
-the degree of `σ_i(x) g_i(x)` does not exceed `maxdegree`.
-"""
-struct Putinar{
-    IC<:AbstractIdealCertificate,
-    CT<:SumOfSquares.SOSLikeCone,
-    BT<:MB.AbstractPolynomialBasis,
-} <: AbstractPreorderCertificate
-    ideal_certificate::IC
-    cone::CT
-    basis::Type{BT}
-    maxdegree::Int
-end
-
-cone(certificate::Putinar) = certificate.cone
-
-struct WithVariables{S,V}
-    inner::S
-    variables::V
-end
-
-function MP.variables(v::WithVariables)
-    return v.variables
-end
-function MP.monomials(v::WithVariables)
-    return MP.monomials(v.inner)
-end
-
-_merge_sorted(a::Vector, ::Tuple{}) = a
-function _merge_sorted(a::Vector, b::Vector)
-    vars = sort!(vcat(a, b), rev = true)
-    unique!(vars)
-    return vars
-end
-_merge_sorted(a::Tuple{}, ::Tuple{}) = a
-_merge_sorted(a::Tuple, ::Tuple{}) = a
-_merge_sorted(::Tuple{}, b::Tuple) = b
-function _merge_sorted(a::Tuple, b::Tuple)
-    v = first(a)
-    w = first(b)
-    if v == w
-        return (v, _merge_sorted(Base.tail(a), Base.tail(b))...)
-    elseif v > w
-        return (v, _merge_sorted(Base.tail(a), b)...)
-    else
-        return (w, _merge_sorted(a, Base.tail(b))...)
-    end
-end
-
-_vars(::SemialgebraicSets.FullSpace) = tuple()
-_vars(x) = MP.variables(x)
-
-function with_variables(inner, outer)
-    return WithVariables(inner, _merge_sorted(_vars(inner), _vars(outer)))
-end
-
-function preprocessed_domain(::Putinar, domain::BasicSemialgebraicSet, p)
-    return with_variables(domain, p)
-end
-
-function preorder_indices(::Putinar, domain::WithVariables)
-    return map(PreorderIndex, eachindex(domain.inner.p))
-end
-
-function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
-    return MB.maxdegree_basis(B, variables, div(maxdegree, 2))
-end
-multiplier_maxdegree(maxdegree, q) = maxdegree - MP.maxdegree(q)
-function multiplier_basis(
-    certificate::Putinar,
-    index::PreorderIndex,
-    domain::WithVariables,
+function maxdegree_gram_basis(
+    B::Type{<:MB.AbstractMonomialBasis},
+    bounds::DegreeBounds,
 )
-    q = domain.inner.p[index.value]
-    vars = sort!([domain.variables..., MP.variables(q)...], rev = true)
-    unique!(vars)
-    return maxdegree_gram_basis(
-        certificate.basis,
-        vars,
-        multiplier_maxdegree(certificate.maxdegree, q),
-    )
-end
-function multiplier_basis_type(::Type{Putinar{IC,CT,BT}}) where {IC,CT,BT}
-    return BT
-end
-
-function generator(::Putinar, index::PreorderIndex, domain::WithVariables)
-    return domain.inner.p[index.value]
-end
-
-ideal_certificate(certificate::Putinar) = certificate.ideal_certificate
-ideal_certificate(::Type{<:Putinar{IC}}) where {IC} = IC
-
-function SumOfSquares.matrix_cone_type(::Type{<:Putinar{IC,CT}}) where {IC,CT}
-    return SumOfSquares.matrix_cone_type(CT)
-end
-
-######################
-# Ideal certificates #
-######################
-
-abstract type SimpleIdealCertificate{CT,BT} <: AbstractIdealCertificate end
-reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
-
-cone(certificate::SimpleIdealCertificate) = certificate.cone
-function SumOfSquares.matrix_cone_type(
-    ::Type{<:SimpleIdealCertificate{CT}},
-) where {CT}
-    return SumOfSquares.matrix_cone_type(CT)
-end
-
-# TODO return something else when `PolyJuMP` support other bases.
-zero_basis(certificate::SimpleIdealCertificate) = MB.MonomialBasis
-function zero_basis_type(::Type{<:SimpleIdealCertificate{CT,BT}}) where {CT,BT}
-    return MB.MonomialBasis
-end
-
-"""
-    struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
-        cone::CT
-        basis::Type{BT}
-        maxdegree::Int
+    variables = MP.variables(bounds.variablewise_maxdegree)
+    function filter(mono)
+        return MP.divides(bounds.variablewise_mindegree, mono) &&
+               MP.divides(mono, bounds.variablewise_maxdegree)
     end
-
-The `MaxDegree` certificate ensures the nonnegativity of `p(x)` for all `x` such that
-`h_i(x) = 0` by exhibiting a Sum-of-Squares polynomials `σ(x)`
-such that `p(x) - σ(x)` is guaranteed to be zero for all `x`
-such that `h_i(x) = 0`.
-The polynomial `σ(x)` is search over `cone` with a basis of type `basis` such that
-the degree of `σ(x)` does not exceed `maxdegree`.
-"""
-struct MaxDegree{CT<:SumOfSquares.SOSLikeCone,BT<:MB.AbstractPolynomialBasis} <:
-       SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::Type{BT}
-    maxdegree::Int
+    return B(MP.monomials(variables, bounds.mindegree:bounds.maxdegree, filter))
 end
-function gram_basis(certificate::MaxDegree, poly)
-    return maxdegree_gram_basis(
-        certificate.basis,
-        MP.variables(poly),
-        certificate.maxdegree,
-    )
+function maxdegree_gram_basis(B::Type, bounds::DegreeBounds)
+    # TODO use bounds here too
+    variables = MP.variables(bounds.variablewise_maxdegree)
+    return maxdegree_gram_basis(B, variables, bounds.maxdegree)
 end
-function gram_basis_type(::Type{MaxDegree{CT,BT}}) where {CT,BT}
-    return BT
+function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
+    return MB.maxdegree_basis(B, variables, fld(maxdegree, 2))
 end
 
-"""
-    struct FixedBasis{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
-        cone::CT
-        basis::BT
-    end
-
-The `FixedBasis` certificate ensures the nonnegativity of `p(x)` for all `x` such that
-`h_i(x) = 0` by exhibiting a Sum-of-Squares polynomials `σ(x)`
-such that `p(x) - σ(x)` is guaranteed to be zero for all `x`
-such that `h_i(x) = 0`.
-The polynomial `σ(x)` is search over `cone` with basis `basis`.
-"""
-struct FixedBasis{
-    CT<:SumOfSquares.SOSLikeCone,
-    BT<:MB.AbstractPolynomialBasis,
-} <: SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::BT
-end
-function gram_basis(certificate::FixedBasis, poly)
-    return certificate.basis
-end
-function gram_basis_type(::Type{FixedBasis{CT,BT}}) where {CT,BT}
-    return BT
-end
-
-"""
-    struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, NPT <: Tuple} <: SimpleIdealCertificate{CT, BT}
-        cone::CT
-        basis::Type{BT}
-        variable_groups::NPT
-    end
-
-The `Newton` certificate ensures the nonnegativity of `p(x)` for all `x` such that
-`h_i(x) = 0` by exhibiting a Sum-of-Squares polynomials `σ(x)`
-such that `p(x) - σ(x)` is guaranteed to be zero for all `x`
-such that `h_i(x) = 0`.
-The polynomial `σ(x)` is search over `cone` with a basis of type `basis`
-chosen using the multipartite Newton polytope with parts `variable_groups`.
-If `variable_groups = tuple()` then it falls back to the classical Newton polytope
-with all variables in the same part.
-"""
-struct Newton{
-    CT<:SumOfSquares.SOSLikeCone,
-    BT<:MB.AbstractPolynomialBasis,
-    NPT<:Tuple,
-} <: SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::Type{BT}
-    variable_groups::NPT
-end
-function gram_basis(certificate::Newton{CT,B}, poly) where {CT,B}
-    return MB.basis_covering_monomials(
-        B,
-        monomials_half_newton_polytope(
-            MP.monomials(poly),
-            certificate.variable_groups,
-        ),
-    )
-end
-function gram_basis_type(::Type{<:Newton{CT,BT}}) where {CT,BT}
-    return BT
-end
-
-"""
-    struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
-        gram_certificate::GCT
-    end
-
-The `Remainder` certificate ensures the nonnegativity of `p(x)` for all `x` such that
-`h_i(x) = 0` by guaranteeing the remainder of `p(x)` modulo the ideal generated by
-`⟨h_i⟩` to be nonnegative for all `x` such that `h_i(x) = 0` using the certificate
-`gram_certificate`.
-For instance, if `gram_certificate` is [`SumOfSquares.Certificate.Newton`](@ref),
-then the certificate `Remainder(gram_certificate)` will take the remainder before
-computing the Newton polytope hence might generate a much smaller Newton polytope
-hence a smaller basis and smaller semidefinite program.
-However, this then corresponds to a lower degree of the hierarchy which might
-be insufficient to find a certificate.
-"""
-struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
-    gram_certificate::GCT
-end
-
-function reduced_polynomial(::Remainder, poly, domain)
-    return convert(typeof(poly), rem(poly, ideal(domain)))
-end
-
-function gram_basis(certificate::Remainder, poly)
-    return gram_basis(certificate.gram_certificate, poly)
-end
-function gram_basis_type(::Type{Remainder{GCT}}) where {GCT}
-    return gram_basis_type(GCT)
-end
-
-cone(certificate::Remainder) = cone(certificate.gram_certificate)
-function SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT}
-    return SumOfSquares.matrix_cone_type(GCT)
-end
-zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
-zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
+include("ideal.jl")
+include("preorder.jl")
 
 include("Sparsity/Sparsity.jl")
 using .Sparsity: SignSymmetry, ChordalCompletion, ClusterCompletion

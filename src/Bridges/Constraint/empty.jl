@@ -1,13 +1,14 @@
-struct EmptyBridge{T} <: MOI.Bridges.Constraint.AbstractBridge end
+struct EmptyBridge{T,F<:MOI.AbstractVectorFunction} <:
+       MOI.Bridges.Constraint.AbstractBridge end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{EmptyBridge{T}},
+    ::Type{EmptyBridge{T,F}},
     model::MOI.ModelLike,
-    f::MOI.AbstractVectorFunction,
+    f::F,
     s::SOS.EmptyCone,
-) where {T}
+) where {T,F}
     @assert MOI.output_dimension(f) == MOI.dimension(s)
-    return EmptyBridge{T}()
+    return EmptyBridge{T,F}()
 end
 
 function MOI.supports_constraint(
@@ -25,14 +26,28 @@ function MOI.Bridges.added_constraint_types(::Type{<:EmptyBridge})
 end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:EmptyBridge{T}},
-    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{F},
     ::Type{SOS.EmptyCone},
-) where {T}
-    return EmptyBridge{T}
+) where {T,F<:MOI.AbstractVectorFunction}
+    return EmptyBridge{T,F}
 end
 
 # Indices
-function MOI.delete(model::MOI.ModelLike, bridge::EmptyBridge) end
+function MOI.delete(::MOI.ModelLike, ::EmptyBridge) end
+
+function _empty_function(::Type{MOI.VectorOfVariables})
+    return MOI.VectorOfVariables(MOI.VariableIndex[])
+end
+function _empty_function(::Type{F}) where {F}
+    return MOI.Utilities.zero_with_output_dimension(F, 0)
+end
+function MOI.get(
+    ::MOI.ModelLike,
+    ::MOI.ConstraintFunction,
+    ::EmptyBridge{T,F},
+) where {T,F}
+    return _empty_function(F)
+end
 
 function MOI.get(
     ::MOI.ModelLike,
