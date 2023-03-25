@@ -412,13 +412,11 @@ function deg_range(deg, p, gs, gram_deg, truncation)
     end
 end
 
-"""
-   deg_range(deg, p, gs, gram_deg, range)
-
-Maximum value of `deg(s_0 = p - sum s_i g_i for g in gs) in range` where
-`s_0, s_i` are SOS and `deg(s_i) <= gram_deg(g)`.
-Note that `range` should be in increasing order.
-"""
+#    deg_range(deg, p, gs, gram_deg, range)
+#
+# Maximum value of `deg(s_0 = p - sum s_i g_i for g in gs) in range` where
+# `s_0, s_i` are SOS and `deg(s_i) <= gram_deg(g)`.
+# Note that `range` should be in increasing order.
 function deg_range(deg, p, gs, gram_deg, range::UnitRange)
     d = maximum(range)
     while d in range
