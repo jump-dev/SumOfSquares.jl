@@ -1,9 +1,6 @@
-import MutableArithmetics
-const MA = MutableArithmetics
+import MutableArithmetics as MA
 using MultivariatePolynomials
-const MP = MultivariatePolynomials
 using MultivariateBases
-const MB = MultivariateBases
 
 using DynamicPolynomials
 @polyvar x[1:4]

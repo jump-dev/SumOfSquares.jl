@@ -37,8 +37,7 @@ function Base.iterate(c::CyclicGroup, prev::CyclicElem=CyclicElem(c.n, -1))
     end
 end
 
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
 
 using SumOfSquares
 

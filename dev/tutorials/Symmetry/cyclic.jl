@@ -50,8 +50,7 @@ end
 # cyclically. So for instance, `CyclicElem(3, 1)` would transform
 # `x_1^3*x_2*x_3^4` into `x_1^4*x_2^3*x_3`.
 
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
 
 using SumOfSquares
 

@@ -1,22 +1,22 @@
 using DynamicPolynomials
 @polyvar x y
-p = x^3 - x^2 + 2x*y -y^2 + y^3 + x^3 * y
+p = x^3 - x^2 + 2x*y - y^2 + y^3 + x^3 * y
 using SumOfSquares
 S = @set x >= 0 && y >= 0 && x^2 + y^2 >= 2
 
-import CSDP
-solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+import SCS
+using Dualization
+solver = dual_optimizer(SCS.Optimizer)
 
 model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
 @constraint(model, c, p >= α, domain = S)
 optimize!(model)
-@show termination_status(model)
-@show objective_value(model)
 
-using MultivariateBases
-const MB = MultivariateBases
+solution_summary(model)
+
+import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
 struct Schmüdgen{IC <: SOSC.AbstractIdealCertificate, CT <: SOS.SOSLikeCone, BT <: SOS.AbstractPolynomialBasis} <: SOSC.AbstractPreorderCertificate
@@ -65,8 +65,7 @@ ideal_certificate = SOSC.Newton(SOSCone(), MB.MonomialBasis, tuple())
 certificate = Schmüdgen(ideal_certificate, SOSCone(), MB.MonomialBasis, maxdegree(p))
 @constraint(model, c, p >= α, domain = S, certificate = certificate)
 optimize!(model)
-@show termination_status(model)
-@show objective_value(model)
+solution_summary(model)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 

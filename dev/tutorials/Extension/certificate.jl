@@ -17,31 +17,44 @@
 using Test #src
 using DynamicPolynomials
 @polyvar x y
-p = x^3 - x^2 + 2x*y -y^2 + y^3 + x^3 * y
+p = x^3 - x^2 + 2x*y - y^2 + y^3 + x^3 * y
 using SumOfSquares
 S = @set x >= 0 && y >= 0 && x^2 + y^2 >= 2
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
 # We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# Note that SumOfSquares generates a *standard form* SDP (i.e., SDP variables
+# and equality constraints) while SCS expects a *geometric form* SDP (i.e.,
+# free variables and symmetric matrices depending affinely on these variables
+# constrained to belong to the PSD cone).
+# JuMP will transform the standard from to the geometric form will create the PSD
+# variables as free variables and then constrain then to be PSD.
+# While this will work, since the dual of a standard from is in in geometric form,
+# dualizing the problem will generate a smaller SDP.
+# We use therefore `Dualization.dual_optimizer` so that SCS solves the dual problem.
 
-import CSDP
-solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+import SCS
+using Dualization
+solver = dual_optimizer(SCS.Optimizer)
 
 # A Sum-of-Squares certificate that $p \ge \alpha$ over the domain `S`, ensures that $\alpha$ is a lower bound to the polynomial optimization problem.
-# The following program searches for the largest upper bound and finds zero.
+# The following program searches for the largest lower bound.
 
 model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
 @constraint(model, c, p >= α, domain = S)
 optimize!(model)
-@show termination_status(model)
-@show objective_value(model)
+
+# We can see that the problem is infeasible, meaning that no lower bound was found.
+
+@test termination_status(model) == MOI.INFEASIBLE #src
+@test dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE #src
+solution_summary(model)
 
 # We now define the Schmüdgen's certificate:
 
-using MultivariateBases
-const MB = MultivariateBases
+import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
 struct Schmüdgen{IC <: SOSC.AbstractIdealCertificate, CT <: SOS.SOSLikeCone, BT <: SOS.AbstractPolynomialBasis} <: SOSC.AbstractPreorderCertificate
@@ -92,6 +105,8 @@ ideal_certificate = SOSC.Newton(SOSCone(), MB.MonomialBasis, tuple())
 certificate = Schmüdgen(ideal_certificate, SOSCone(), MB.MonomialBasis, maxdegree(p))
 @constraint(model, c, p >= α, domain = S, certificate = certificate)
 optimize!(model)
-@show termination_status(model)
-@show objective_value(model)
+@test termination_status(model) == MOI.OPTIMAL #src
+@test primal_status(model) == MOI.FEASIBLE_POINT #src
+@test objective_value(model) ≈ 0.8284 rtol=1e-3 #src
 @test length(lagrangian_multipliers(c)) == 7 #src
+solution_summary(model)

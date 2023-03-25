@@ -1,12 +1,9 @@
 module MyUnivariateSolver
 
 import LinearAlgebra
-import MathOptInterface
-const MOI = MathOptInterface
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
-import SumOfSquares
-const SOS = SumOfSquares
+import MathOptInterface as MOI
+import MultivariatePolynomials as MP
+import SumOfSquares as SOS
 
 function decompose(p::MP.AbstractPolynomial, tol=1e-6)
     vars = MP.effective_variables(p)
