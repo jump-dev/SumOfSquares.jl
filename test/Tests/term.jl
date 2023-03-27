@@ -45,11 +45,14 @@ function term_test(
     @test getmat(ν) ≈ ones(1, 1) atol = atol rtol = rtol
     @test ν.basis.monomials == [x]
 
+    N = SumOfSquares.Certificate.NewtonFilter{
+        SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
+    }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
         Monomial{true},
         MonomialVector{true},
-        SumOfSquares.Certificate.Newton{typeof(cone),MonomialBasis,Tuple{}},
+        SumOfSquares.Certificate.Newton{typeof(cone),MonomialBasis,N},
     }
     @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
     return test_delete_bridge(

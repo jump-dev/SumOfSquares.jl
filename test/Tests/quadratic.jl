@@ -80,11 +80,14 @@ function quadratic_test(
         @test ν.basis.monomials == cert_monos
     end
 
+    N = SumOfSquares.Certificate.NewtonFilter{
+        SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
+    }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
         Monomial{true},
         MonomialVector{true},
-        SumOfSquares.Certificate.Newton{typeof(cone),basis,Tuple{}},
+        SumOfSquares.Certificate.Newton{typeof(cone),basis,N},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     return test_delete_bridge(
