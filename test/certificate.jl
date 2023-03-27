@@ -35,7 +35,7 @@ end
         )
         @test_throws err SumOfSquares.Certificate.monomials_half_newton_polytope(
             [a * b, b^2],
-            parts,
+            Certificate.NewtonDegreeBounds(parts),
         )
     end
     @testset "Multipartite error not disjoint: $parts" for parts in [
@@ -48,41 +48,46 @@ end
         )
         @test_throws err SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x * y, y^2],
-            parts,
+            Certificate.NewtonDegreeBounds(parts),
         )
     end
+    uni = Certificate.NewtonDegreeBounds(tuple())
     @testset "Unipartite" begin
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x * y, y^2],
-            tuple(),
+            uni,
         ) == [y]
         @test isempty(
             SumOfSquares.Certificate.monomials_half_newton_polytope(
                 [x, y],
-                tuple(),
+                uni,
             ),
         )
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
-            tuple(),
+            uni,
         ) == [x, y]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
-            ([x, y],),
+            Certificate.NewtonDegreeBounds(([x, y],)),
         ) == [x, y]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
-            ([y, x],),
+            Certificate.NewtonDegreeBounds(([y, x],)),
         ) == [x, y]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
-            tuple(),
+            uni,
+        ) == [x^2 * y^2, x, x * y, x^2, x * y^2, x^2 * y]
+        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+            [x^2, x^3 * y^2, x^4 * y^4],
+            Certificate.NewtonFilter(uni),
         ) == [x^2 * y^2, x]
     end
     @testset "Non-commutative" begin
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [a^4, a^3 * b, a * b * a^2, a * b * a * b],
-            tuple(),
+            uni,
         ) == [a^2, a * b]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [
@@ -91,7 +96,7 @@ end
                 a^11 * b^20 * a^10,
                 a^10 * b^20 * a^20 * b^20 * a^10,
             ],
-            tuple(),
+            Certificate.NewtonFilter(uni),
         ) == [a^10 * b^20 * a^10, a]
     end
     @testset "Multipartite" begin
@@ -99,34 +104,28 @@ end
         X = [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             X,
-            tuple(),
-            apply_post_filter = false,
+            uni,
         ) == [x^2, x * y, x * z, y * z, x, y, z]
         function full_test(X, Y, part1, part2)
             @test SumOfSquares.Certificate.monomials_half_newton_polytope(
                 X,
-                (part1,),
-                apply_post_filter = false,
+                Certificate.NewtonDegreeBounds((part1,)),
             ) == Y
             @test SumOfSquares.Certificate.monomials_half_newton_polytope(
                 X,
-                (part2,),
-                apply_post_filter = false,
+                Certificate.NewtonDegreeBounds((part2,)),
             ) == Y
             a = SumOfSquares.Certificate.monomials_half_newton_polytope(
                 X,
-                (part2,),
-                apply_post_filter = false,
+                Certificate.NewtonDegreeBounds((part2,)),
             )
             @test SumOfSquares.Certificate.monomials_half_newton_polytope(
                 X,
-                (part1, part2),
-                apply_post_filter = false,
+                Certificate.NewtonDegreeBounds((part1, part2)),
             ) == Y
             @test SumOfSquares.Certificate.monomials_half_newton_polytope(
                 X,
-                (part2, part1),
-                apply_post_filter = false,
+                Certificate.NewtonDegreeBounds((part2, part1)),
             ) == Y
         end
         full_test(X, monovec([x^2, x * y, x * z, x, y, z]), [x], [y, z])
@@ -135,8 +134,7 @@ end
         # FIXME: With recursive merging, it should give [x^2, x*y, x*z, x]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z],
-            ([x], [y], [z]),
-            apply_post_filter = false,
+            Certificate.NewtonDegreeBounds(([x], [y], [z])),
         ) == [x^2, x * y, x * z, y * z, x, y, z]
     end
 end

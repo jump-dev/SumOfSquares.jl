@@ -37,9 +37,9 @@ struct WithVariables{S,V}
     variables::V
 end
 
-struct WithDegreeBounds{S,M}
+struct WithFixedBases{S,B}
     inner::S
-    bounds::DegreeBounds{M}
+    bases::Vector{B}
 end
 
 function MP.variables(v::WithVariables)
@@ -77,11 +77,11 @@ function with_variables(inner, outer)
     return WithVariables(inner, _merge_sorted(_vars(inner), _vars(outer)))
 end
 
-function with_bounds(domain, p, maxdegree)
+function with_fixed_basis(domain, p, maxdegree, newton::AbstractNewtonPolytopeApproximation)
     v = with_variables(domain, p)
-    return WithDegreeBounds(
+    return WithFixedBases(
         v.inner,
-        putinar_degree_bounds(p, domain.p, v.variables, maxdegree),
+        half_newton_polytope(p, domain.p, v.variables, maxdegree, newton),
     )
 end
 
@@ -98,12 +98,12 @@ function preprocessed_domain(
     domain::BasicSemialgebraicSet,
     p,
 )
-    return with_bounds(domain, p, certificate.maxdegree)
+    return with_fixed_basis(domain, p, certificate.maxdegree, certificate.multipliers_certificate.newton)
 end
 
 function preorder_indices(
     ::Putinar,
-    domain::Union{WithVariables,WithDegreeBounds},
+    domain::Union{WithVariables,WithFixedBases},
 )
     return map(PreorderIndex, eachindex(domain.inner.p))
 end
@@ -125,23 +125,9 @@ end
 function multiplier_basis(
     certificate::Putinar{<:Newton},
     index::PreorderIndex,
-    domain::WithDegreeBounds,
+    domain::WithFixedBases,
 )
-    q = domain.inner.p[index.value]
-    shifted = minus_shift(domain.bounds, q)
-    if isnothing(shifted)
-        # TODO add `MB.empty_basis` to API
-        return MB.maxdegree_basis(
-            certificate.multipliers_certificate.basis,
-            MP.variables(domain.bounds.variablewise_mindegree),
-            -1,
-        )
-    else
-        return maxdegree_gram_basis(
-            certificate.multipliers_certificate.basis,
-            minus_shift(domain.bounds, q),
-        )
-    end
+    return domain.bases[index.value]
 end
 function multiplier_basis_type(::Type{<:Putinar{MC}}) where {MC}
     return gram_basis_type(MC)
@@ -150,7 +136,7 @@ end
 function generator(
     ::Putinar,
     index::PreorderIndex,
-    domain::Union{WithVariables,WithDegreeBounds},
+    domain::Union{WithVariables,WithFixedBases},
 )
     return domain.inner.p[index.value]
 end
