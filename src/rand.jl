@@ -15,7 +15,10 @@ function _randsos(
     eps = 0.1,
 )
     if monotype == :Classic
-        x = Certificate.monomials_half_newton_polytope(X, tuple())
+        x = Certificate.monomials_half_newton_polytope(
+            X,
+            Certificate.NewtonDegreeBounds(tuple()),
+        )
     elseif monotype == :Gram
         x = X
     else

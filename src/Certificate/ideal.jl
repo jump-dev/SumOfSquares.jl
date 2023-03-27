@@ -96,19 +96,25 @@ with all variables in the same part.
 struct Newton{
     CT<:SumOfSquares.SOSLikeCone,
     BT<:MB.AbstractPolynomialBasis,
-    NPT<:Tuple,
+    N<:AbstractNewtonPolytopeApproximation,
 } <: SimpleIdealCertificate{CT,BT}
     cone::CT
     basis::Type{BT}
-    variable_groups::NPT
+    newton::N
 end
+
+function Newton(cone, basis, variable_groups::Tuple)
+    return Newton(
+        cone,
+        basis,
+        NewtonFilter(NewtonDegreeBounds(variable_groups)),
+    )
+end
+
 function gram_basis(certificate::Newton{CT,B}, poly) where {CT,B}
     return MB.basis_covering_monomials(
         B,
-        monomials_half_newton_polytope(
-            MP.monomials(poly),
-            certificate.variable_groups,
-        ),
+        monomials_half_newton_polytope(MP.monomials(poly), certificate.newton),
     )
 end
 function gram_basis_type(::Type{<:Newton{CT,BT}}) where {CT,BT}

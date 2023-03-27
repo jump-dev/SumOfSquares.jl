@@ -73,14 +73,18 @@ function is_commutative(vars)
     return length(vars) < 2 || prod(vars[1:2]) == prod(reverse(vars[1:2]))
 end
 
+abstract type AbstractNewtonPolytopeApproximation end
+
+# `maxdegree` and `mindegree` on each variable separately
+# and on each group of variable.
+struct NewtonDegreeBounds{NPT} <: AbstractNewtonPolytopeApproximation
+    variable_groups::NPT
+end
+
 # Multipartite
 # TODO we might do this recursively : do 2 parts, merge them, merge with next
 #      one and so on so that the filter at the end prunes more.
-function half_newton_polytope(
-    X::AbstractVector,
-    parts::Tuple;
-    apply_post_filter = true,
-)
+function half_newton_polytope(X::AbstractVector, newton::NewtonDegreeBounds)
     if !is_commutative(MP.variables(X))
         throw(
             ArgumentError(
@@ -88,6 +92,7 @@ function half_newton_polytope(
             ),
         )
     end
+    parts = newton.variable_groups
     if !all(
         i -> all(j -> i == j || isempty(parts[i] ∩ parts[j]), 1:length(parts)),
         1:length(parts),
@@ -108,11 +113,7 @@ function half_newton_polytope(
     end
     if length(all_parts) == 1
         # all variables on same part, fallback to shortcut
-        return half_newton_polytope(
-            X,
-            tuple();
-            apply_post_filter = apply_post_filter,
-        )
+        return half_newton_polytope(X, NewtonDegreeBounds(tuple()))
     end
     monovecs = map(vars -> sub_half_newton_polytope(X, vars), all_parts)
     # Cartesian product of the newton polytopes of the different parts
@@ -120,13 +121,15 @@ function half_newton_polytope(
     mindeg, maxdeg = cfld(MP.extdegree(X), 2)
     # We know that the degree inequalities are satisfied variable-wise and
     # part-wise but for all variables together so we filter with that
-    monos =
-        MP.monovec(filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product))
-    if apply_post_filter
-        return post_filter(monos, X)
-    else
-        return monos
-    end
+    gram_monos = filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product)
+    return MP.monovec(gram_monos)
+end
+
+# Filters out points ouside the Newton polytope from the
+# outer approximation given by `outer_approximation`.
+struct NewtonFilter{N<:AbstractNewtonPolytopeApproximation} <:
+       AbstractNewtonPolytopeApproximation
+    outer_approximation::N
 end
 
 function __chip(cur, i, vars, exps, n, op)
@@ -162,16 +165,12 @@ end
 
 # Shortcut for more efficient `extdeg` and `exp` function in case all the
 # variables are in the same part
-function half_newton_polytope(
-    X::AbstractVector,
-    ::Tuple{};
-    apply_post_filter = true,
-)
+function half_newton_polytope(X::AbstractVector, ::NewtonDegreeBounds{Tuple{}})
     vars = MP.variables(X)
     if is_commutative(vars)
         # Commutative variables
         exp(mono, i) = MP.exponents(mono)[i]
-        monos = _sub_half_newton_polytope(X, MP.extdegree(X), exp, vars)
+        return _sub_half_newton_polytope(X, MP.extdegree(X), exp, vars)
     else
         # Non-commutative variables
         # We use Newton chip method of [Section 2.3, BKP16].
@@ -201,13 +200,13 @@ function half_newton_polytope(
                 end
             end
         end
-        monos = MP.monovec(_monos)
+        return MP.monovec(_monos)
     end
-    if apply_post_filter
-        return post_filter(monos, X)
-    else
-        return monos
-    end
+end
+
+function half_newton_polytope(monos::AbstractVector, newton::NewtonFilter)
+    gram_monos = half_newton_polytope(monos, newton.outer_approximation)
+    return post_filter(gram_monos, monos)
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
@@ -271,15 +270,10 @@ function post_filter(monos, X)
 end
 
 function monomials_half_newton_polytope(
-    X::AbstractVector,
-    parts;
-    apply_post_filter = true,
+    monos::AbstractVector,
+    newton::AbstractNewtonPolytopeApproximation,
 )
-    return half_newton_polytope(
-        MP.monovec(X),
-        parts;
-        apply_post_filter = apply_post_filter,
-    )
+    return half_newton_polytope(MP.monovec(monos), newton)
 end
 
 struct DegreeBounds{M}
@@ -287,6 +281,27 @@ struct DegreeBounds{M}
     maxdegree::Int
     variablewise_mindegree::M
     variablewise_maxdegree::M
+end
+
+# TODO add to MP
+function _map_powers(f, mono)
+    exps = map(f, MP.powers(mono))
+    return _monomial(MP.variables(mono), exps)
+end
+function _map_exponents(f, mono)
+    exps = map(f, MP.exponents(mono))
+    return _monomial(MP.variables(mono), exps)
+end
+
+_min_half(d::Integer) = cld(d, 2)
+_max_half(d::Integer) = fld(d, 2)
+function _half(d::DegreeBounds)
+    return DegreeBounds(
+        _min_half(d.mindegree),
+        _max_half(d.maxdegree),
+        _map_exponents(_min_half, d.variablewise_mindegree),
+        _map_exponents(_max_half, d.variablewise_maxdegree),
+    )
 end
 
 function min_degree(p, v)
@@ -306,35 +321,30 @@ function max_degree(p, v)
 end
 
 function min_shift(d, shift)
-    return max(0, cld(d - shift, 2))
-end
-function max_shift(d, shift)
-    return fld(d - shift, 2)
+    return max(0, d - shift)
 end
 
 function minus_shift(
     deg,
-    m::MP.AbstractMonomial,
+    mono::MP.AbstractMonomial,
     p::MP.AbstractPolynomialLike,
     shift,
 )
-    exps = map(MP.powers(m)) do (v, d)
+    return _map_powers(mono) do (v, d)
         return shift(d, deg(p, v))
     end
-    return _monomial(MP.variables(m), exps)
 end
 
 function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
     var_mindegree =
         minus_shift(min_degree, d.variablewise_mindegree, p, min_shift)
-    var_maxdegree =
-        minus_shift(max_degree, d.variablewise_maxdegree, p, max_shift)
+    var_maxdegree = minus_shift(max_degree, d.variablewise_maxdegree, p, -)
     if isnothing(var_maxdegree)
         return
     end
     return DegreeBounds(
         min_shift(d.mindegree, MP.mindegree(p)),
-        max_shift(d.maxdegree, MP.maxdegree(p)),
+        d.maxdegree - MP.maxdegree(p),
         var_mindegree,
         var_maxdegree,
     )
@@ -436,8 +446,8 @@ function putinar_degree_bounds(
 )
     mindegree = 0
     # TODO homogeneous case
-    mindeg(g) = min_shift(mindegree, MP.mindegree(g))
-    maxdeg(g) = max_shift(maxdegree, MP.maxdegree(g))
+    mindeg(g) = _min_half(min_shift(mindegree, MP.mindegree(g)))
+    maxdeg(g) = _max_half(maxdegree - MP.maxdegree(g))
     degrange(g) = mindeg(g):maxdeg(g)
     minus_degrange(g) = -maxdeg(g):-mindeg(g)
     # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
@@ -475,5 +485,54 @@ function putinar_degree_bounds(
         maxdegree,
         _monomial(vars, vars_mindeg),
         _monomial(vars, vars_maxdeg),
+    )
+end
+
+function multiplier_basis(g::MP.AbstractPolynomialLike, bounds::DegreeBounds)
+    shifted = minus_shift(bounds, g)
+    if isnothing(shifted)
+        halved = nothing
+    else
+        halved = _half(shifted)
+    end
+    basis = MB.MonomialBasis
+    if isnothing(halved)
+        # TODO add `MB.empty_basis` to API
+        return MB.maxdegree_basis(
+            basis,
+            MP.variables(bounds.variablewise_mindegree),
+            -1,
+        )
+    else
+        return maxdegree_gram_basis(basis, halved)
+    end
+end
+
+function half_newton_polytope(
+    p::MP.AbstractPolynomialLike,
+    gs::AbstractVector{<:MP.AbstractPolynomialLike},
+    vars,
+    maxdegree,
+    ::NewtonDegreeBounds,
+)
+    # TODO take `variable_groups` into account
+    bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
+    return [multiplier_basis(g, bounds) for g in gs]
+end
+
+function half_newton_polytope(
+    p::MP.AbstractPolynomialLike,
+    gs::AbstractVector{<:MP.AbstractPolynomialLike},
+    vars,
+    maxdegree,
+    newton::NewtonFilter{<:NewtonDegreeBounds},
+)
+    # TODO
+    return half_newton_polytope(
+        p,
+        gs,
+        vars,
+        maxdegree,
+        newton.outer_approximation,
     )
 end
