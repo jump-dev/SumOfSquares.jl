@@ -350,11 +350,17 @@ function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
     )
 end
 
-_combine_sign(a, b) = (a == b ? a : zero(a))
+function _combine_sign(a, b)
+    if ismissing(a) || ismissing(b)
+        return missing
+    else
+        return a == b ? a : missing
+    end
+end
 
 _sign(a::Number) = sign(a)
 # Can be for instance a JuMP or MOI function so the sign can be anything
-_sign(a) = 0
+_sign(a) = missing
 
 function deg_sign(deg, p, d)
     sgn = nothing
@@ -415,7 +421,7 @@ function deg_range(deg, p, gs, gram_deg, truncation)
             d_max = d
         end
     end
-    if !isnothing(sign) && (iszero(sign) || (iseven(d_max) && sign == 1))
+    if !isnothing(sign) && (ismissing(sign) || (iseven(d_max) && sign == 1))
         return true, d_max
     else
         return false, d_max - 1
@@ -525,14 +531,131 @@ function half_newton_polytope(
     gs::AbstractVector{<:MP.AbstractPolynomialLike},
     vars,
     maxdegree,
-    newton::NewtonFilter{<:NewtonDegreeBounds},
+    ::NewtonFilter{<:NewtonDegreeBounds},
 )
-    # TODO
-    return half_newton_polytope(
-        p,
-        gs,
-        vars,
-        maxdegree,
-        newton.outer_approximation,
+    bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
+    bases = [multiplier_basis(g, bounds).monomials for g in gs]
+    push!(
+        bases,
+        maxdegree_gram_basis(MB.MonomialBasis, _half(bounds)).monomials,
     )
+    gs = copy(gs)
+    push!(gs, one(eltype(gs)))
+    filtered_bases = post_filter(p, gs, bases)
+    # The last one will be recomputed by the ideal certificate
+    return MB.MonomialBasis.(filtered_bases[1:(end-1)])
+end
+struct SignCount
+    unknown::Int
+    positive::Int
+    negative::Int
+end
+SignCount() = SignCount(0, 0, 0)
+function _sign(c::SignCount)
+    if !iszero(c.unknown)
+        return missing
+    elseif iszero(c.positive)
+        return -1
+    elseif iszero(c.negative)
+        return -1
+    else
+        return missing
+    end
+end
+
+function add(c::SignCount, ::Missing, Δ)
+    @assert c.unknown >= -Δ
+    return SignCount(c.unknown + Δ, c.positive, c.negative)
+end
+function add(c::SignCount, a::Number, Δ)
+    if a > 0
+        @assert c.positive >= -Δ
+        return SignCount(c.unknown, c.positive + Δ, c.negative)
+    elseif a < 0
+        @assert c.negative >= -Δ
+        return SignCount(c.unknown, c.positive, c.negative + Δ)
+    elseif iszero(a)
+        error(
+            "A polynomial should never contain a term with zero coefficient but found `$a`.",
+        )
+    else
+        error("Cannot determine sign of `$a`.")
+    end
+end
+function add(counter, sign, mono, Δ)
+    count = get(counter, mono, SignCount())
+    return counter[mono] = add(count, sign, Δ)
+end
+
+function increase(counter, generator_sign, monos, mult)
+    for a in monos
+        for b in monos
+            sign = (a != b) ? missing : generator_sign
+            add(counter, sign, a * b * mult, 1)
+        end
+    end
+end
+
+function post_filter(poly, generators, multipliers_gram_monos)
+    counter = Dict{MP.monomialtype(poly),SignCount}()
+    for t in MP.terms(poly)
+        coef = SignCount()
+        counter[MP.monomial(t)] = add(coef, _sign(MP.coefficient(t)), 1)
+    end
+    for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
+        for t in MP.terms(mult)
+            sign = -_sign(MP.coefficient(t))
+            mono = MP.monomial(t)
+            increase(counter, sign, gram_monos, mono)
+        end
+    end
+    function decrease(sign, mono)
+        count = add(counter, sign, mono, -1)
+        count_sign = _sign(count)
+        # This means the `counter` has a sign and it didn't have a sign before
+        # so we need to delete back edges
+        if !ismissing(count_sign) && (ismissing(count) || count != count_sign)
+            # TODO could see later if deleting the counter improves perf
+            if haskey(back, mono)
+                for (i, j) in back[mono]
+                    delete(i, j)
+                end
+            end
+        end
+    end
+    back = Dict{eltype(eltype(multipliers_gram_monos)),Vector{Tuple{Int,Int}}}()
+    keep = [ones(Bool, length(monos)) for monos in multipliers_gram_monos]
+    function delete(i, j)
+        if !keep[i][j]
+            return
+        end
+        keep[i][j] = false
+        a = multipliers_gram_monos[i][j]
+        for t in MP.terms(generators[i])
+            sign = -_sign(MP.coefficient(t))
+            decrease(sign, MP.monomial(t) * a^2)
+            for (j, b) in enumerate(multipliers_gram_monos[i])
+                if keep[i][j]
+                    decrease(missing, MP.monomial(t) * a * b)
+                    decrease(missing, MP.monomial(t) * b * a)
+                end
+            end
+        end
+    end
+    for i in eachindex(generators)
+        for t in MP.terms(generators[i])
+            for (j, mono) in enumerate(multipliers_gram_monos[i])
+                w = MP.monomial(t) * mono^2
+                if ismissing(_sign(counter[w]))
+                    push!(get(back, w, Tuple{Int,Int}[]), (i, j))
+                else
+                    delete(i, j)
+                end
+            end
+        end
+    end
+    return [
+        gram_monos[findall(keep)] for
+        (keep, gram_monos) in zip(keep, multipliers_gram_monos)
+    ]
 end

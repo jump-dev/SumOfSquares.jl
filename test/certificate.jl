@@ -273,31 +273,40 @@ end
     end
 end
 
-function test_putinar_ijk(i, j, k)
-    @polyvar x y
+function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
+    v = @polyvar x y
     poly = x^(2i) + y^(2j + 1)
     domain = @set y^(2k + 1) >= 0
-    set = JuMP.moi_set(SOSCone(), monomials(poly); domain)
-    processed = Certificate.preprocessed_domain(set.certificate, domain, poly)
-    for idx in Certificate.preorder_indices(set.certificate, processed)
+    if default
+        certificate =
+            JuMP.moi_set(SOSCone(), monomials(poly); domain).certificate
+    else
+        newton = Certificate.NewtonDegreeBounds(tuple())
+        if post_filter
+            newton = Certificate.NewtonFilter(newton)
+        end
+        cert = Certificate.Newton(SOSCone(), MB.MonomialBasis, newton)
+        certificate = Certificate.Putinar(cert, cert, max(2i, 2j + 1, 2k + 1))
+    end
+    processed = Certificate.preprocessed_domain(certificate, domain, poly)
+    for idx in Certificate.preorder_indices(certificate, processed)
         monos =
-            Certificate.multiplier_basis(
-                set.certificate,
-                idx,
-                processed,
-            ).monomials
+            Certificate.multiplier_basis(certificate, idx, processed).monomials
         if k > j
             @test isempty(monos)
         else
-            @test monos == MP.monomials([x, y], max(0, min(i, j) - k):(j-k))
+            w = post_filter ? v[2:2] : v
+            @test monos == MP.monomials(w, max(0, min(i, j) - k):(j-k))
         end
     end
-    icert = Certificate.ideal_certificate(set.certificate)
+    icert = Certificate.ideal_certificate(certificate)
     @test icert isa Certificate.Newton
 end
 
 @testset "Putinar $i $j $k" for (i, j, k) in [(1, 1, 2), (1, 3, 2), (3, 2, 1)] #, (4, 2, 1)]
-    test_putinar_ijk(i, j, k)
+    @testset "post_filter=$post" for post in [true, false]
+        test_putinar_ijk(i, j, k, post)
+    end
 end
 
 include("ceg_test.jl")
