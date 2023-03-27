@@ -17,6 +17,9 @@ termination_status(model)
 p = vec(y)' * P * vec(y)
 
 X = monomials(p)
+unipartite = Certificate.NewtonDegreeBounds(tuple())
+
+multipartite = Certificate.NewtonDegreeBounds(([x], y))
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 
