@@ -102,10 +102,8 @@ end
     @testset "Multipartite" begin
         # In the part [y, z], the degree is between 0 and 2
         X = [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
-            X,
-            uni,
-        ) == [x^2, x * y, x * z, y * z, x, y, z]
+        @test SumOfSquares.Certificate.monomials_half_newton_polytope(X, uni) ==
+              [x^2, x * y, x * z, y * z, x, y, z]
         function full_test(X, Y, part1, part2)
             @test SumOfSquares.Certificate.monomials_half_newton_polytope(
                 X,

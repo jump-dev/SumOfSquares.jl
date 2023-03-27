@@ -84,10 +84,7 @@ end
 # Multipartite
 # TODO we might do this recursively : do 2 parts, merge them, merge with next
 #      one and so on so that the filter at the end prunes more.
-function half_newton_polytope(
-    X::AbstractVector,
-    newton::NewtonDegreeBounds,
-)
+function half_newton_polytope(X::AbstractVector, newton::NewtonDegreeBounds)
     if !is_commutative(MP.variables(X))
         throw(
             ArgumentError(
@@ -116,10 +113,7 @@ function half_newton_polytope(
     end
     if length(all_parts) == 1
         # all variables on same part, fallback to shortcut
-        return half_newton_polytope(
-            X,
-            NewtonDegreeBounds(tuple()),
-        )
+        return half_newton_polytope(X, NewtonDegreeBounds(tuple()))
     end
     monovecs = map(vars -> sub_half_newton_polytope(X, vars), all_parts)
     # Cartesian product of the newton polytopes of the different parts
@@ -133,7 +127,8 @@ end
 
 # Filters out points ouside the Newton polytope from the
 # outer approximation given by `outer_approximation`.
-struct NewtonFilter{N<:AbstractNewtonPolytopeApproximation} <: AbstractNewtonPolytopeApproximation
+struct NewtonFilter{N<:AbstractNewtonPolytopeApproximation} <:
+       AbstractNewtonPolytopeApproximation
     outer_approximation::N
 end
 
@@ -211,7 +206,7 @@ end
 
 function half_newton_polytope(monos::AbstractVector, newton::NewtonFilter)
     gram_monos = half_newton_polytope(monos, newton.outer_approximation)
-    post_filter(gram_monos, monos)
+    return post_filter(gram_monos, monos)
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
@@ -343,8 +338,7 @@ end
 function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
     var_mindegree =
         minus_shift(min_degree, d.variablewise_mindegree, p, min_shift)
-    var_maxdegree =
-        minus_shift(max_degree, d.variablewise_maxdegree, p, -)
+    var_maxdegree = minus_shift(max_degree, d.variablewise_maxdegree, p, -)
     if isnothing(var_maxdegree)
         return
     end
@@ -494,10 +488,7 @@ function putinar_degree_bounds(
     )
 end
 
-function multiplier_basis(
-    g::MP.AbstractPolynomialLike,
-    bounds::DegreeBounds,
-)
+function multiplier_basis(g::MP.AbstractPolynomialLike, bounds::DegreeBounds)
     shifted = minus_shift(bounds, g)
     if isnothing(shifted)
         halved = nothing
@@ -537,5 +528,11 @@ function half_newton_polytope(
     newton::NewtonFilter{<:NewtonDegreeBounds},
 )
     # TODO
-    return half_newton_polytope(p, gs, vars, maxdegree, newton.outer_approximation)
+    return half_newton_polytope(
+        p,
+        gs,
+        vars,
+        maxdegree,
+        newton.outer_approximation,
+    )
 end

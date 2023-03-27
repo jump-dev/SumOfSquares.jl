@@ -77,7 +77,12 @@ function with_variables(inner, outer)
     return WithVariables(inner, _merge_sorted(_vars(inner), _vars(outer)))
 end
 
-function with_fixed_basis(domain, p, maxdegree, newton::AbstractNewtonPolytopeApproximation)
+function with_fixed_basis(
+    domain,
+    p,
+    maxdegree,
+    newton::AbstractNewtonPolytopeApproximation,
+)
     v = with_variables(domain, p)
     return WithFixedBases(
         v.inner,
@@ -98,7 +103,12 @@ function preprocessed_domain(
     domain::BasicSemialgebraicSet,
     p,
 )
-    return with_fixed_basis(domain, p, certificate.maxdegree, certificate.multipliers_certificate.newton)
+    return with_fixed_basis(
+        domain,
+        p,
+        certificate.maxdegree,
+        certificate.multipliers_certificate.newton,
+    )
 end
 
 function preorder_indices(
