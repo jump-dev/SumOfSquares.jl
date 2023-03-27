@@ -236,9 +236,14 @@ function l09()
     @testset "Example 1 and 2" begin
         @polyvar x[1:2]
         f = 1 + x[1]^4 * x[2]^2 + x[1]^2 * x[2]^4
+        newt = Certificate.NewtonDegreeBounds(tuple())
         @test Certificate.monomials_half_newton_polytope(
             monomials(f),
-            tuple(),
+            newt,
+        ) == [x[1]^2 * x[2], x[1] * x[2]^2, x[1]^2, x[1] * x[2], x[2]^2, x[1], x[2], 1]
+        @test Certificate.monomials_half_newton_polytope(
+            monomials(f),
+            Certificate.NewtonFilter(newt),
         ) == [x[1]^2 * x[2], x[1] * x[2]^2, 1]
         expected = Set(
             monovec.([
