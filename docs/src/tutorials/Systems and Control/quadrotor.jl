@@ -57,12 +57,17 @@ n_u = size(g, 2)
 using SumOfSquares
 rectangle = [1.7, 0.85, 0.8, 1, π/12, π/2, 1.5, π/12]
 X = BasicSemialgebraicSet(FullSpace(), typeof(x[1] + 1.0)[])
-for i in eachindex(x)
-    lower = x[i] + rectangle[i] # x[i] >= -rectangle[i]
-    upper = rectangle[i] - x[i] # x[i] <= rectangle[i]
-    addinequality!(X, lower * upper) # -rectangle[i] <= x[i] <= rectangle[i]
+function rect(vars, bounds)
+    R = BasicSemialgebraicSet(FullSpace(), typeof(vars[1] + 1.0)[])
+    for (var, bound) in zip(vars, bounds)
+        lower = var + bound # var >= -bound
+        upper = bound - var # var <=  bound
+        addinequality!(R, lower * upper) # -bound <= var <= bound
+    end
+    return R
 end
-X
+X = rect(x, rectangle[1:n_x])
+U = rect(u, rectangle[n_x .+ (1:n_u)])
 
 ## Controller for the linearized system
 
@@ -101,6 +106,15 @@ P, _, _ = MatrixEquations.arec(A - B * K, 0.0, 10.0)
 
 V0 = x' * P * x
 
+# We can see that many terms have a coefficient that is almost zero:
+
+zero_V0 = [monomial(t) for t in terms(V0) if abs(DynamicPolynomials.coefficient(t)) < 1e-8] #src
+[monomial(t) for t in terms(V0) if abs(DynamicPolynomials.coefficient(t)) < 1e-8]
+
+# This might cause troubles in the optimization so let's drop them:
+
+V0 = mapcoefficients(c -> (abs(c) < 1e-8 ? 0.0 : c), V0)
+
 # ## γ-step
 
 # It is a Lyapunov function for the linear system but not necessarily for the nonlinear system as well.
@@ -108,12 +122,9 @@ V0 = x' * P * x
 # We can try to see if there a larger `γ` such that the γ-sublevel set is also controlled invariant using
 # the γ step of [YAP21, Algorithm 1]
 
-function _create(model, d, P)
+function _create(model, d)
     if d isa Int
-        if P == SOSPoly   # `d` is the maxdegree while for `SOSPoly`,
-            d = div(d, 2) # it is the monomial basis of the squares
-        end
-        return @variable(model, variable_type = P(monomials(x, 0:d)))
+        return @variable(model, variable_type = Poly(monomials(x, 0:d)))
     else
         return d
     end
@@ -122,11 +133,16 @@ end
 using LinearAlgebra
 function base_model(solver, V, k, s3, γ)
     model = SOSModel(solver)
-    V = _create(model, V, Poly)
-    k = _create.(model, k, Poly)
-    s3 = _create(model, s3, SOSPoly)
+    V = _create(model, V)
+    k = _create.(model, k)
     ∂ = differentiate # Let's use a fancy shortcut
-    @constraint(model, ∂(V, x) ⋅ (f + g * k) <= s3 * (V - γ)) # [YAP21, (E.2)]
+    dV = ∂(V, x) ⋅ (f + g * k)
+    # [YAP21, (E.2)]
+    if s3 isa Int
+        @constraint(model, con, dV <= 0, domain = @set(V <= γ))
+    else
+        @constraint(model, dV <= s3 * (V - γ))
+    end
     for r in inequalities(X) # `{V ≤ γ} ⊆ {r ≥ 0}` iff `r ≤ 0 => V ≥ γ`
         @constraint(model, V >= γ, domain = @set(r <= 0)) # [YAP21, (E.3)]
     end
@@ -152,7 +168,7 @@ function γ_step(solver, V, γ_min, degree_k, degree_s3; γ_tol = 1e-1, max_iter
         else
             break
         end
-        model, V, k, s3 = base_model(solver, V, degree_k, degree_s3, γ)
+        model, V, k = base_model(solver, V, degree_k, degree_s3, γ)
         num_iters += 1
         @info("Iteration $num_iters/$max_iters : Solving with $(solver_name(model)) for `γ = $γ`")
         optimize!(model)
@@ -161,7 +177,7 @@ function γ_step(solver, V, γ_min, degree_k, degree_s3; γ_tol = 1e-1, max_iter
             @info("Feasible solution found : primal is $(primal_status(model))")
             γ_min = γ
             k_best = value.(k)
-            s3_best = value(s3)
+            s3_best = lagrangian_multipliers(model[:con])[1]
         elseif dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
             @info("Infeasibility certificate found : dual is $(dual_status(model))")
             if γ == γ0_min # This corresponds to the case above where we reached the tol or max iteration and we just did a last run at the value of `γ_min` provided by the user
@@ -186,6 +202,15 @@ import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
 γ1, κ1, s3_1 = γ_step(solver, V0, 0.0, [2, 2], 2)
 @test γ1 ≈ 0.5 atol = 1.e-1 #src
+nothing # hide
+
+# The best `γ` found is
+
+γ1
+
+# with state feedback:
+
+κ1
 
 # Let's visualize now the controlled invariant set we have found:
 
@@ -231,9 +256,12 @@ function V_step(solver, V0, γ, k, s3)
 end
 
 model, V1 = V_step(solver, V0, γ1, κ1, s3_1)
-solution_summary(model)
+nothing # hide
 
 # We can see that the solver found a feasible solution.
+
+solution_summary(model)
+
 # Let's compare it:
 
 push!(Vs, V1 - γ1)
@@ -246,6 +274,7 @@ plot_lyapunovs(Vs, [1, 2])
 # want to find a better `κ` so let's set `max_iters` to zero
 
 γ2, κ2, s3_2 = γ_step(solver, V0, γ1, [2, 2], 2, max_iters = 0)
+nothing # hide
 
 # Let's see if this new controller allows to find a better Lyapunov.
 
@@ -329,6 +358,17 @@ eigen(Symmetric(Px * (A + B * K) + (A + B * K)' * Px)).values
 # The corresponding Lyapunov is:
 
 support_V0 = x' * Px * x
+
+# We can see that `support_V0` shares the same monomial with almost zero coefficient
+# with `V0`.
+
+zero_support_V0 = [monomial(t) for t in terms(support_V0) if abs(DynamicPolynomials.coefficient(t)) < 1e-8] #src
+@test zero_support_V0 == zero_V0
+[monomial(t) for t in terms(support_V0) if abs(DynamicPolynomials.coefficient(t)) < 1e-8]
+
+# Let's drop them for `support_V0` as well:
+
+support_V0 = mapcoefficients(c -> (abs(c) < 1e-8 ? 0.0 : c), support_V0)
 
 # `support_V0 - 1` is a controlled invariant set for the linearized system
 # but not for the nonlinear one. We can plot it to visualize but
