@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cyclic symmetry for Sums of Hermitian Squares · SumOfSquares</title><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><form class="docs-search" action="../../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-5-1" type="checkbox"/><label class="tocitem" for="menuitem-5-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/circle/">Nonnegative over a variety</a></li><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li><li><a class="tocitem" href="../../Getting started/univariate/">Minimization of a univariate polynomial</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-2" type="checkbox"/><label class="tocitem" for="menuitem-5-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Polynomial Optimization/bound_on_global_extremum/">Bound on Global Extremum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/extracting_minimizers/">Extracting minimizers</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-3" type="checkbox"/><label class="tocitem" for="menuitem-5-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Systems and Control/julia_set/">Outer approximation of Julia set</a></li><li><a class="tocitem" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../../Systems and Control/quadrotor/">Viability tube for quadrotor</a></li><li><a class="tocitem" href="../../Systems and Control/stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-4" type="checkbox"/><label class="tocitem" for="menuitem-5-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Other Applications/bounds_in_probability/">Bounds in Probability</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-5" type="checkbox"/><label class="tocitem" for="menuitem-5-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-6" type="checkbox"/><label class="tocitem" for="menuitem-5-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/sign_symmetry/">Sign symmetry</a></li><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-7" type="checkbox" checked/><label class="tocitem" for="menuitem-5-7"><span class="docs-label">Symmetry</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Cyclic symmetry for Sums of Hermitian Squares</a></li><li><a class="tocitem" href="../dihedral_symmetry_of_the_robinson_form/">Dihedral symmetry of the Robinson form</a></li><li><a class="tocitem" href="../even_reduction/">Even reduction</a></li><li><a class="tocitem" href="../permutation_symmetry/">Symmetry reduction</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-8" type="checkbox"/><label class="tocitem" for="menuitem-5-8"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Extension/certificate/">Certificate</a></li><li><a class="tocitem" href="../../Extension/hypercube/">Hypercube</a></li><li><a class="tocitem" href="../../Extension/typed/">Multivariate polynomials implementations</a></li><li><a class="tocitem" href="../../Extension/univariate_solver/">Univariate Solver</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Symmetry</a></li><li class="is-active"><a href>Cyclic symmetry for Sums of Hermitian Squares</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cyclic symmetry for Sums of Hermitian Squares</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/master/docs/src/tutorials/Symmetry/cyclic.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Cyclic-symmetry-for-Sums-of-Hermitian-Squares"><a class="docs-heading-anchor" href="#Cyclic-symmetry-for-Sums-of-Hermitian-Squares">Cyclic symmetry for Sums of Hermitian Squares</a><a id="Cyclic-symmetry-for-Sums-of-Hermitian-Squares-1"></a><a class="docs-heading-anchor-permalink" href="#Cyclic-symmetry-for-Sums-of-Hermitian-Squares" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR289/generated/Symmetry/cyclic.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR289/generated/Symmetry/cyclic.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a></p><p>We start by defining the Cyclic group.</p><pre><code class="language-julia hljs">using GroupsCore
+import PermutationGroups
+
+struct CyclicElem &lt;: GroupElement
+    n::Int
+    id::Int
+end
+Base.:(==)(a::CyclicElem, b::CyclicElem) = a.n == b.n &amp;&amp; a.id == b.id
+Base.inv(el::CyclicElem) = CyclicElem(el.n, (el.n - el.id) % el.n)
+
+function Base.:*(a::CyclicElem, b::CyclicElem)
+    return CyclicElem(a.n, (a.id + b.id) % a.n)
+end
+Base.:^(el::CyclicElem, k::Integer) = CyclicElem(el.n, (el.id * k) % el.n)
+
+Base.conj(a::CyclicElem, b::CyclicElem) = inv(b) * a * b
+Base.:^(a::CyclicElem, b::CyclicElem) = conj(a, b)
+
+function PermutationGroups.order(el::CyclicElem)
+    return div(el.n, gcd(el.n, el.id))
+end
+
+struct CyclicGroup &lt;: Group
+    n::Int
+end
+Base.eltype(::CyclicGroup) = CyclicElem
+Base.one(c::Union{CyclicGroup, CyclicElem}) = CyclicElem(c.n, 0)
+PermutationGroups.gens(c::CyclicGroup) = [CyclicElem(c.n, 1)]
+PermutationGroups.order(::Type{T}, c::CyclicGroup) where {T} = convert(T, c.n)
+function Base.iterate(c::CyclicGroup, prev::CyclicElem=CyclicElem(c.n, -1))
+    id = prev.id + 1
+    if id &gt;= c.n
+        return nothing
+    else
+        next = CyclicElem(c.n, id)
+        return next, next
+    end
+end</code></pre><p>Now we define that the cyclic group acts on monomial by permuting variables cyclically. So for instance, <code>CyclicElem(3, 1)</code> would transform <code>x_1^3*x_2*x_3^4</code> into <code>x_1^4*x_2^3*x_3</code>.</p><pre><code class="language-julia hljs">import MultivariatePolynomials as MP
+
+using SumOfSquares
+
+struct Action{V&lt;:MP.AbstractVariable} &lt;: Symmetry.OnMonomials
+    variables::Vector{V}
+end
+Symmetry.SymbolicWedderburn.coeff_type(::Action) = Float64
+function Symmetry.SymbolicWedderburn.action(a::Action, el::CyclicElem, mono::MP.AbstractMonomial)
+    return prod(MP.powers(mono), init=MP.constantmonomial(mono)) do (var, exp)
+        index = findfirst(isequal(var), a.variables)
+        new_index = mod1(index + el.id, el.n)
+        return a.variables[new_index]^exp
+    end
+end
+
+using DynamicPolynomials
+@polyvar x[1:3]
+action = Action(x)
+g = CyclicElem(3, 1)
+Symmetry.SymbolicWedderburn.action(action, g, x[1]^3 * x[2] * x[3]^4)</code></pre><p class="math-container">\[ x_{1}^{4}x_{2}^{3}x_{3} \]</p><p>The following polynomial <code>poly</code> is invariant under the action of the group <code>G</code>.</p><pre><code class="language-julia hljs">N = 3
+G = CyclicGroup(N)
+poly = sum(x[i] * x[mod1(i + 1, N)] for i in 1:N) + sum(x.^2)
+Symmetry.SymbolicWedderburn.action(action, g, poly)</code></pre><p class="math-container">\[ x_{1}^{2} + x_{1}x_{2} + x_{1}x_{3} + x_{2}^{2} + x_{2}x_{3} + x_{3}^{2} \]</p><p>Let&#39;s now find the minimum of <code>p</code> by exploiting this symmetry.</p><pre><code class="language-julia hljs">import CSDP
+solver = CSDP.Optimizer
+model = Model(solver)
+@variable(model, t)
+@objective(model, Max, t)
+pattern = Symmetry.Pattern(G, action)
+con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
+optimize!(model)
+solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : CSDP
+
+* Status
+  Result count       : 1
+  Termination status : OPTIMAL
+  Message from the solver:
+  &quot;Problem solved to optimality.&quot;
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : FEASIBLE_POINT
+  Objective value    : -3.33067e-16
+  Dual objective value : -4.61598e-10
+
+* Work counters
+  Solve time (sec)   : 1.53208e-03
+</code></pre><p>Let&#39;s look at the symmetry adapted basis used.</p><pre><code class="language-julia hljs">for gram in gram_matrix(con_ref).sub_gram_matrices
+    println(gram.basis.polynomials)
+    display(gram.Q)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DynamicPolynomials.Polynomial{true, Float64}[1.0, -0.5773502691896257x₁ - 0.5773502691896257x₂ - 0.5773502691896257x₃]
+DynamicPolynomials.Polynomial{true, Float64}[-0.816496580927726x₁ + 0.4082482904638631x₂ + 0.4082482904638631x₃]
+DynamicPolynomials.Polynomial{true, Float64}[-0.7071067811865477x₂ + 0.7071067811865477x₃]</code></pre><p>Let&#39;s look into more details at the last two elements of the basis.</p><pre><code class="language-julia hljs">basis = [(-2x[1] + x[2] + x[3])/√6, (-x[2] + x[3])/√2]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{DynamicPolynomials.Polynomial{true, Float64}}:
+ -0.8164965809277261x₁ + 0.4082482904638631x₂ + 0.4082482904638631x₃
+ -0.7071067811865475x₂ + 0.7071067811865475x₃</code></pre><p>This actually constitutes the basis for an invariant subspace corresponding to a group character of degree 2 and multiplicity 1. This means that it decomposes the semidefinite matrix into 2 blocks of size 1-by-1 that are equal. Indeed, we see above that <code>gram.Q</code> is identically equal for both. As the group is generated by one element <code>g</code>, we can just verify it by verifying its invariance under <code>g</code>. The image of each element under the basis is:</p><pre><code class="language-julia hljs">image = [Symmetry.SymbolicWedderburn.action(action, g, p) for p in basis]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{DynamicPolynomials.Polynomial{true, Float64}}:
+ 0.4082482904638631x₁ - 0.8164965809277261x₂ + 0.4082482904638631x₃
+ 0.7071067811865475x₁ - 0.7071067811865475x₃</code></pre><p>We can see that they are both still in the same 2-dimensional subspace.</p><pre><code class="language-julia hljs">a = -1/2
+b = -√3/2
+[a -b; b a] * basis</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{DynamicPolynomials.Polynomial{true, Float64}}:
+ 0.4082482904638631x₁ - 0.816496580927726x₂ + 0.4082482904638629x₃
+ 0.7071067811865476x₁ - 5.551115123125783e-17x₂ - 0.7071067811865475x₃</code></pre><p>In fact, these last two basis comes from the real decomposition of a complex one.</p><pre><code class="language-julia hljs">import CSDP
+solver = CSDP.Optimizer
+model = Model(solver)
+add_bridge(model, SumOfSquares.COI.Bridges.Variable.HermitianToSymmetricPSDBridge)
+add_bridge(model, SumOfSquares.COI.Bridges.Constraint.SplitZeroBridge)
+MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.ZeroPolynomialBridge{Complex{Float64}})
+MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{Complex{Float64}})
+@variable(model, t)
+@objective(model, Max, t)
+pattern = Symmetry.Pattern(G, action)
+cone = SumOfSquares.NonnegPolyInnerCone{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}()
+pp = (1.0 + 0.0im) * poly - (1.0 + 0.0im) * t
+con_ref = @constraint(model, pp in cone, symmetry = pattern)
+optimize!(model)
+solution_summary(model)
+
+for gram in gram_matrix(con_ref).sub_gram_matrices
+    println(gram.basis.polynomials)
+    display(gram.Q)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iter:  8 Ap: 1.00e+00 Pobj: -3.3306691e-16 Ad: 1.00e+00 Dobj: -4.6159787e-10
+Success: SDP solved
+Primal objective value: -3.3306691e-16
+Dual objective value: -4.6159787e-10
+Relative primal infeasibility: 5.24e-16
+Relative dual infeasibility: 9.50e-11
+Real Relative Gap: -4.62e-10
+XZ Relative Gap: 1.63e-10
+DIMACS error measures: 9.04e-16 0.00e+00 1.96e-10 0.00e+00 -4.62e-10 1.63e-10
+CSDP 6.2.0
+Iter:  0 Ap: 0.00e+00 Pobj:  0.0000000e+00 Ad: 0.00e+00 Dobj:  0.0000000e+00
+Iter:  1 Ap: 1.00e+00 Pobj: -8.9695645e+00 Ad: 8.99e-01 Dobj:  4.8057396e+01
+Iter:  2 Ap: 1.00e+00 Pobj: -5.5765601e+00 Ad: 9.19e-01 Dobj:  1.0915994e+01
+Iter:  3 Ap: 1.00e+00 Pobj: -6.7409826e-01 Ad: 8.90e-01 Dobj:  3.2804758e+00
+Iter:  4 Ap: 1.00e+00 Pobj: -4.6779878e-02 Ad: 9.10e-01 Dobj:  4.2325484e-01
+Iter:  5 Ap: 1.00e+00 Pobj: -4.7292949e-03 Ad: 9.32e-01 Dobj:  4.2123354e-02
+Iter:  6 Ap: 1.00e+00 Pobj: -4.4557929e-04 Ad: 9.38e-01 Dobj:  3.8810274e-03
+Iter:  7 Ap: 1.00e+00 Pobj: -4.4026114e-05 Ad: 9.88e-01 Dobj:  1.7352989e-04
+Iter:  8 Ap: 1.00e+00 Pobj: -2.3658438e-06 Ad: 9.99e-01 Dobj:  4.5205618e-06
+Iter:  9 Ap: 1.00e+00 Pobj: -9.4438051e-08 Ad: 1.00e+00 Dobj: -2.3976165e-06
+Iter: 10 Ap: 1.00e+00 Pobj: -4.0043973e-09 Ad: 9.69e-01 Dobj: -9.9023525e-08
+DynamicPolynomials.Polynomial{true, ComplexF64}[(1.0 - 0.0im), (-0.5773502691896257 - 0.0im)x₁ + (-0.5773502691896257 - 0.0im)x₂ + (-0.5773502691896257 - 0.0im)x₃]
+DynamicPolynomials.Polynomial{true, ComplexF64}[(-0.577350269189626 - 0.0im)x₁ + (0.28867513459481314 - 0.49999999999999994im)x₂ + (0.2886751345948128 + 0.5000000000000001im)x₃]
+DynamicPolynomials.Polynomial{true, ComplexF64}[(-0.577350269189626 - 0.0im)x₁ + (0.2886751345948128 + 0.5000000000000001im)x₂ + (0.28867513459481314 - 0.49999999999999994im)x₃]</code></pre><p>We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:</p><pre><code class="language-julia hljs">complex_basis = basis[1] + im * basis[2]
+image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)</code></pre><p class="math-container">\[ (0.4082482904638631 + 0.7071067811865475im)x_{1} + (-0.8164965809277261 + 0.0im)x_{2} + (0.4082482904638631 - 0.7071067811865475im)x_{3} \]</p><p>And there is a direct correspondance between the representation of the real and complex versions:</p><pre><code class="language-julia hljs">(a + b * im) * complex_basis</code></pre><p class="math-container">\[ (0.4082482904638631 + 0.7071067811865476im)x_{1} + (-0.816496580927726 - 5.551115123125783e-17im)x_{2} + (0.4082482904638629 - 0.7071067811865475im)x_{3} \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../dihedral_symmetry_of_the_robinson_form/">Dihedral symmetry of the Robinson form »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 29 March 2023 08:31">Wednesday 29 March 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
