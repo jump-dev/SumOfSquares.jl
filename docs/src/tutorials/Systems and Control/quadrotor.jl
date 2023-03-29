@@ -137,8 +137,7 @@ function base_model(solver, V, k, s3, γ)
     k = _create.(model, k)
     ∂ = differentiate # Let's use a fancy shortcut
     dV = ∂(V, x) ⋅ (f + g * k)
-    # [YAP21, (E.2)]
-    if s3 isa Int
+    if s3 isa Int # [YAP21, (E.2)]
         @constraint(model, con, dV <= 0, domain = @set(V <= γ))
     else
         @constraint(model, dV <= s3 * (V - γ))
