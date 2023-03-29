@@ -362,7 +362,7 @@ support_V0 = x' * Px * x
 # with `V0`.
 
 zero_support_V0 = [monomial(t) for t in terms(support_V0) if abs(DynamicPolynomials.coefficient(t)) < 1e-8] #src
-@test zero_support_V0 == zero_V0
+@test zero_support_V0 == zero_V0 #src
 [monomial(t) for t in terms(support_V0) if abs(DynamicPolynomials.coefficient(t)) < 1e-8]
 
 # Let's drop them for `support_V0` as well:
