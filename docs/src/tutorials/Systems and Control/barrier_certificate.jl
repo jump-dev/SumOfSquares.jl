@@ -1,6 +1,6 @@
 # # Barrier certificates for collision avoidance
 
-# **Adapted from**: Example 5 of "Engineering applications of SOS polynomials" by Georgina Hall, from 
+# **Adapted from**: Example 2 of "Engineering applications of SOS polynomials" by Georgina Hall, from 
 # the 2019 AMS Short Course on Sum of Squares: Theory and Applications
 
 using Test #src
