@@ -2,6 +2,7 @@
 
 # **Adapted from**: Example 2 of "Engineering applications of SOS polynomials" by Georgina Hall, from 
 # the 2019 AMS Short Course on Sum of Squares: Theory and Applications
+# Implementation by: Hugo Tadashi Kussaba
 
 using Test #src
 using DynamicPolynomials
