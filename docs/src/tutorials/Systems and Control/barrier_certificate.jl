@@ -21,27 +21,25 @@ model = SOSModel(solver);
 f = [ x[2],
      -x[1] + (1/3)*x[1]^3 - x[2]]
 
-# We now define the functions that describes the initial and unsafe sets
-
-g₁ = -(x[1]+1)^2 - (x[2]+1)^2 + 0.16
-h₁ = -(x[1]-1.5)^2 - x[2]^2 + 0.25
+# Semi-algebraic function describing the unsafe set 𝒳ᵤ
+g₁ = -(x[1]+1)^2 - (x[2]+1)^2 + 0.16  # 𝒳ᵤ = {x ∈ R²: g₁(x) ≥ 0}
+# Semi-algebraic function describing the initial set 𝒳₀
+h₁ = -(x[1]-1.5)^2 - x[2]^2 + 0.25    # 𝒳₀ = {x ∈ R²: h₁(x) ≥ 0}
 
 # Define SOS barrier function B
 monos = monomials(x, 0:4)
 @variable(model, B, Poly(monos))
 
-# Define barrier certificate constraints 
+# Define barrier certificate constraints using SOS relaxation
 
-# B(x) = ε + σ₀(x) + σ₁(x)g₁(x) where σᵢ are SOS and ε > 0
+# B(x) > 0 for all x ∈ 𝒳ᵤ
 ε = 0.001
-@variable(model, σ₁, Poly(monos))
-@constraint(model, B - ε - σ₁*g₁ >= 0)
+@constraint(model, B >= ε, domain = @set(g₁ >= 0))
 
-# -B(x) = τ₀(x) + τ₁(x)h₁(x) where τᵢ are SOS
-@variable(model, τ₁, Poly(monos))
-@constraint(model, -B - τ₁*h₁ >= 0)
+# B(x) ≤ 0 for all x ∈ 𝒳₀
+@constraint(model, B <= 0, domain = @set(h₁ >= 0))
 
-# -Ḃ is SOS
+# Ḃ(x) ≤ 0 for all x ∈ R²
 using LinearAlgebra # Needed for `dot`
 dBdt = dot(differentiate(B, x), f)
 @constraint(model, -dBdt >= 0)
