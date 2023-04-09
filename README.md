@@ -1,20 +1,38 @@
-# Sum of Squares Programming for Julia.
+# SumOfSquares.jl
 
-| **Documentation** | **Build Status** | **Social** | **References to cite** |
-|:-----------------:|:----------------:|:----------:|:----------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![Build Status][build-img]][build-url] | [![Gitter][gitter-img]][gitter-url] | [![DOI][zenodo-img]][zenodo-url] |
-| [![][docs-latest-img]][docs-latest-url] | [![Codecov branch][codecov-img]][codecov-url] | [<img src="https://upload.wikimedia.org/wikipedia/en/a/af/Discourse_logo.png" width="64">][discourse-url] | [.bib](https://github.com/jump-dev/SumOfSquares.jl/blob/master/CITATION.bib) |
+[![Build Status](https://github.com/jump-dev/SumOfSquares.jl/workflows/CI/badge.svg?branch=master)](https://github.com/jump-dev/SumOfSquares.jl/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/jump-dev/SumOfSquares.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jump-dev/SumOfSquares.jl)
 
-This packages contains the Sum of Squares reformulation for polynomial optimization.
-When used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) and [PolyJuMP](https://github.com/jump-dev/PolyJuMP.jl), it provides a Sum of Squares Programming extension for [JuMP](https://github.com/jump-dev/JuMP.jl).
-Enabling the creation of sum of squares variables and constraints.
+[SumOfSquares.jl](https://github.com/jump-dev) is a JuMP extension that, when
+used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl)
+and [PolyJuMP](https://github.com/jump-dev/PolyJuMP.jl), implements a sum of
+squares reformulation for polynomial optimization.
+
+## License
+
+`SumOfSquares.jl` is licensed under the [MIT license](https://github.com/jump-dev/SumOfSquares.jl/blob/master/LICENSE.md).
+
+## Installation
+
+Install `SumOfSquares` using `Pkg.add`:
+```julia
+import Pkg
+Pkg.add("SumOfSquares")
+```
 
 ## Documentation
 
-- [**STABLE**][docs-stable-url] &mdash; **most recently tagged version of the documentation.**
-- [**LATEST**][docs-latest-url] &mdash; *in-development version of the documentation.*
+See [https://jump.dev/SumOfSquares.jl/stable](https://jump.dev/SumOfSquares.jl/stable)
+for the most recently tagged version of the documentation.
 
-Some presentations on, or using, SumOfSquares (see [here](https://github.com/blegat/SumOfSquaresSlides) for the source code of the presentations):
+See [https://jump.dev/SumOfSquares.jl/stable](https://jump.dev/SumOfSquares.jl/latest)
+for the in-development version of the documentation.
+
+## Presentations
+
+Some presentations on, or using, SumOfSquares (see [blegat/SumOfSquaresSlides](https://github.com/blegat/SumOfSquaresSlides)
+for the source code of the presentations):
+
   * Benoît Legat, Marek Kaluba and Tillmann Weisser at INFORMS 2022 [[Slides](https://drive.google.com/file/d/1rlsIxgcnKWT436k4MNenjHfgH0UYRLAB/view?usp=share_link)]
   * Benoît Legat at [POEMA Learning Week 2](http://poema-network.eu/index.php/news-and-events/project-workshops/13-poema-learning-week-2)
   * Benoît Legat, Marek Kaluba and Tillmann Weisser at [JuMP-dev 2021](https://pretalx.com/juliacon2021/talk/L8DTE3/) [[Slides](https://drive.google.com/file/d/1HtArDFNMQ6IYUqRjSWR3JviJp9xLtSlB/view?usp=sharing)]
@@ -30,20 +48,3 @@ Some presentations on, or using, SumOfSquares (see [here](https://github.com/ble
 ## Citing
 
 See [CITATION.bib](https://github.com/jump-dev/SumOfSquares.jl/blob/master/CITATION.bib).
-
-[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-stable-url]: https://jump.dev/SumOfSquares.jl/stable
-[docs-latest-url]: https://jump.dev/SumOfSquares.jl/latest
-
-[build-img]: https://github.com/jump-dev/SumOfSquares.jl/workflows/CI/badge.svg?branch=master
-[build-url]: https://github.com/jump-dev/SumOfSquares.jl/actions?query=workflow%3ACI
-[codecov-img]: http://codecov.io/github/jump-dev/SumOfSquares.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/jump-dev/SumOfSquares.jl?branch=master
-
-[gitter-url]: https://gitter.im/JuliaOpt/SumOfSquares.jl?utm_source=share-link&utm_medium=link&utm_campaign=share-link
-[gitter-img]: https://badges.gitter.im/JuliaOpt/SumOfSquares.jl.svg
-[discourse-url]: https://discourse.julialang.org/c/domain/opt
-
-[zenodo-url]: https://doi.org/10.5281/zenodo.1208672
-[zenodo-img]: https://zenodo.org/badge/DOI/10.5281/zenodo.1208672.svg
