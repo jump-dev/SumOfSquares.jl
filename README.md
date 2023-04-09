@@ -3,8 +3,8 @@
 [![Build Status](https://github.com/jump-dev/SumOfSquares.jl/workflows/CI/badge.svg?branch=master)](https://github.com/jump-dev/SumOfSquares.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/jump-dev/SumOfSquares.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jump-dev/SumOfSquares.jl)
 
-[SumOfSquares.jl](https://github.com/jump-dev) is a JuMP extension that, when
-used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl)
+[SumOfSquares.jl](https://github.com/jump-dev/SumOfSquares.jl) is a JuMP
+extension that, when used in conjunction with [MultivariatePolynomial](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl)
 and [PolyJuMP](https://github.com/jump-dev/PolyJuMP.jl), implements a sum of
 squares reformulation for polynomial optimization.
 
