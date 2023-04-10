@@ -78,11 +78,11 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
 * Candidate solution (result #1)
   Primal status      : FEASIBLE_POINT
   Dual status        : FEASIBLE_POINT
-  Objective value    : -4.44089e-16
+  Objective value    : -3.33067e-16
   Dual objective value : -4.61598e-10
 
 * Work counters
-  Solve time (sec)   : 1.57499e-03
+  Solve time (sec)   : 1.61290e-03
 </code></pre><p>Let&#39;s look at the symmetry adapted basis used.</p><pre><code class="language-julia hljs">for gram in gram_matrix(con_ref).sub_gram_matrices
     println(gram.basis.polynomials)
     display(gram.Q)
@@ -115,28 +115,28 @@ solution_summary(model)
 for gram in gram_matrix(con_ref).sub_gram_matrices
     println(gram.basis.polynomials)
     display(gram.Q)
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iter:  8 Ap: 1.00e+00 Pobj: -4.4408921e-16 Ad: 1.00e+00 Dobj: -4.6159784e-10
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iter:  8 Ap: 1.00e+00 Pobj: -3.3306691e-16 Ad: 1.00e+00 Dobj: -4.6159787e-10
 Success: SDP solved
-Primal objective value: -4.4408921e-16
-Dual objective value: -4.6159784e-10
-Relative primal infeasibility: 5.86e-16
+Primal objective value: -3.3306691e-16
+Dual objective value: -4.6159787e-10
+Relative primal infeasibility: 5.24e-16
 Relative dual infeasibility: 9.50e-11
 Real Relative Gap: -4.62e-10
 XZ Relative Gap: 1.63e-10
-DIMACS error measures: 1.01e-15 0.00e+00 1.96e-10 0.00e+00 -4.62e-10 1.63e-10
+DIMACS error measures: 9.04e-16 0.00e+00 1.96e-10 0.00e+00 -4.62e-10 1.63e-10
 CSDP 6.2.0
 Iter:  0 Ap: 0.00e+00 Pobj:  0.0000000e+00 Ad: 0.00e+00 Dobj:  0.0000000e+00
 Iter:  1 Ap: 1.00e+00 Pobj: -8.9695645e+00 Ad: 8.99e-01 Dobj:  4.8057396e+01
 Iter:  2 Ap: 1.00e+00 Pobj: -5.5765601e+00 Ad: 9.19e-01 Dobj:  1.0915994e+01
 Iter:  3 Ap: 1.00e+00 Pobj: -6.7409826e-01 Ad: 8.90e-01 Dobj:  3.2804758e+00
-Iter:  4 Ap: 1.00e+00 Pobj: -4.6779790e-02 Ad: 9.10e-01 Dobj:  4.2325436e-01
-Iter:  5 Ap: 1.00e+00 Pobj: -4.7292973e-03 Ad: 9.32e-01 Dobj:  4.2123641e-02
-Iter:  6 Ap: 1.00e+00 Pobj: -4.4558265e-04 Ad: 9.38e-01 Dobj:  3.8810359e-03
-Iter:  7 Ap: 1.00e+00 Pobj: -4.4025517e-05 Ad: 9.88e-01 Dobj:  1.7353006e-04
-Iter:  8 Ap: 1.00e+00 Pobj: -2.3658563e-06 Ad: 9.99e-01 Dobj:  4.5205788e-06
-Iter:  9 Ap: 1.00e+00 Pobj: -9.4438393e-08 Ad: 1.00e+00 Dobj: -2.3976158e-06
-Iter: 10 Ap: 1.00e+00 Pobj: -4.0044090e-09 Ad: 9.69e-01 Dobj: -9.9022827e-08
+Iter:  4 Ap: 1.00e+00 Pobj: -4.6779878e-02 Ad: 9.10e-01 Dobj:  4.2325484e-01
+Iter:  5 Ap: 1.00e+00 Pobj: -4.7292949e-03 Ad: 9.32e-01 Dobj:  4.2123354e-02
+Iter:  6 Ap: 1.00e+00 Pobj: -4.4557929e-04 Ad: 9.38e-01 Dobj:  3.8810274e-03
+Iter:  7 Ap: 1.00e+00 Pobj: -4.4026114e-05 Ad: 9.88e-01 Dobj:  1.7352989e-04
+Iter:  8 Ap: 1.00e+00 Pobj: -2.3658438e-06 Ad: 9.99e-01 Dobj:  4.5205618e-06
+Iter:  9 Ap: 1.00e+00 Pobj: -9.4438051e-08 Ad: 1.00e+00 Dobj: -2.3976165e-06
+Iter: 10 Ap: 1.00e+00 Pobj: -4.0043973e-09 Ad: 9.69e-01 Dobj: -9.9023525e-08
 DynamicPolynomials.Polynomial{true, ComplexF64}[(1.0 - 0.0im), (-0.5773502691896257 - 0.0im)x₁ + (-0.5773502691896257 - 0.0im)x₂ + (-0.5773502691896257 - 0.0im)x₃]
 DynamicPolynomials.Polynomial{true, ComplexF64}[(-0.577350269189626 - 0.0im)x₁ + (0.28867513459481314 - 0.49999999999999994im)x₂ + (0.2886751345948128 + 0.5000000000000001im)x₃]
 DynamicPolynomials.Polynomial{true, ComplexF64}[(-0.577350269189626 - 0.0im)x₁ + (0.2886751345948128 + 0.5000000000000001im)x₂ + (0.28867513459481314 - 0.49999999999999994im)x₃]</code></pre><p>We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:</p><pre><code class="language-julia hljs">complex_basis = basis[1] + im * basis[2]
-image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)</code></pre><p class="math-container">\[ (0.4082482904638631 + 0.7071067811865475im)x_{1} + (-0.8164965809277261 + 0.0im)x_{2} + (0.4082482904638631 - 0.7071067811865475im)x_{3} \]</p><p>And there is a direct correspondance between the representation of the real and complex versions:</p><pre><code class="language-julia hljs">(a + b * im) * complex_basis</code></pre><p class="math-container">\[ (0.4082482904638631 + 0.7071067811865476im)x_{1} + (-0.816496580927726 - 5.551115123125783e-17im)x_{2} + (0.4082482904638629 - 0.7071067811865475im)x_{3} \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../dihedral_symmetry_of_the_robinson_form/">Dihedral symmetry of the Robinson form »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Sunday 9 April 2023 22:16">Sunday 9 April 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)</code></pre><p class="math-container">\[ (0.4082482904638631 + 0.7071067811865475im)x_{1} + (-0.8164965809277261 + 0.0im)x_{2} + (0.4082482904638631 - 0.7071067811865475im)x_{3} \]</p><p>And there is a direct correspondance between the representation of the real and complex versions:</p><pre><code class="language-julia hljs">(a + b * im) * complex_basis</code></pre><p class="math-container">\[ (0.4082482904638631 + 0.7071067811865476im)x_{1} + (-0.816496580927726 - 5.551115123125783e-17im)x_{2} + (0.4082482904638629 - 0.7071067811865475im)x_{3} \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../dihedral_symmetry_of_the_robinson_form/">Dihedral symmetry of the Robinson form »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Monday 10 April 2023 22:24">Monday 10 April 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
