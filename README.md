@@ -26,7 +26,7 @@ Pkg.add("SumOfSquares")
 See [https://jump.dev/SumOfSquares.jl/stable](https://jump.dev/SumOfSquares.jl/stable)
 for the most recently tagged version of the documentation.
 
-See [https://jump.dev/SumOfSquares.jl/stable](https://jump.dev/SumOfSquares.jl/latest)
+See [https://jump.dev/SumOfSquares.jl/dev](https://jump.dev/SumOfSquares.jl/dev)
 for the in-development version of the documentation.
 
 ## Presentations
