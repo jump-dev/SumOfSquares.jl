@@ -7,17 +7,17 @@ function union_constraint_types(MCT)
 end
 function union_set_types(MCT)
     return Union{
-        typeof(SOS.matrix_cone(MCT, 0)),
-        typeof(SOS.matrix_cone(MCT, 1)),
-        typeof(SOS.matrix_cone(MCT, 2)),
-        typeof(SOS.matrix_cone(MCT, 3)),
+        SOS.matrix_cone_type(MCT, 0),
+        SOS.matrix_cone_type(MCT, 1),
+        SOS.matrix_cone_type(MCT, 2),
+        SOS.matrix_cone_type(MCT, 3),
     }
 end
 function constrained_variable_types(MCT)
     return [
-        (typeof(SOS.matrix_cone(MCT, 0)),),
-        (typeof(SOS.matrix_cone(MCT, 1)),),
-        (typeof(SOS.matrix_cone(MCT, 2)),),
-        (typeof(SOS.matrix_cone(MCT, 3)),),
+        (SOS.matrix_cone_type(MCT, 0),),
+        (SOS.matrix_cone_type(MCT, 1),),
+        (SOS.matrix_cone_type(MCT, 2),),
+        (SOS.matrix_cone_type(MCT, 3),),
     ]
 end

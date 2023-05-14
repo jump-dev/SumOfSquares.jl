@@ -110,10 +110,10 @@ end
 
 function union_constraint_indices_types(MCT)
     return Union{
-        MOI.ConstraintIndex{MOI.VectorOfVariables,typeof(matrix_cone(MCT, 0))},
-        MOI.ConstraintIndex{MOI.VectorOfVariables,typeof(matrix_cone(MCT, 1))},
-        MOI.ConstraintIndex{MOI.VectorOfVariables,typeof(matrix_cone(MCT, 2))},
-        MOI.ConstraintIndex{MOI.VectorOfVariables,typeof(matrix_cone(MCT, 3))},
+        MOI.ConstraintIndex{MOI.VectorOfVariables,matrix_cone_type(MCT, 0)},
+        MOI.ConstraintIndex{MOI.VectorOfVariables,matrix_cone_type(MCT, 1)},
+        MOI.ConstraintIndex{MOI.VectorOfVariables,matrix_cone_type(MCT, 2)},
+        MOI.ConstraintIndex{MOI.VectorOfVariables,matrix_cone_type(MCT, 3)},
     }
 end
 
