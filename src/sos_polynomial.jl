@@ -4,6 +4,13 @@ function matrix_cone(::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, d)
     return COI.HermitianPositiveSemidefiniteConeTriangle(d)
 end
 
+function matrix_cone_type(
+    ::Type{COI.HermitianPositiveSemidefiniteConeTriangle},
+    d,
+)
+    return COI.HermitianPositiveSemidefiniteConeTriangle
+end
+
 function vectorized_matrix(Q, basis, ::Type, ::Type)
     return MultivariateMoments.SymMatrix(Q, basis)
 end
