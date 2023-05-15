@@ -65,7 +65,10 @@ function matrix_cone(S::Type{DiagonallyDominantConeTriangle}, side_dimension)
     end
 end
 
-function matrix_cone_type(S::Type{DiagonallyDominantConeTriangle}, side_dimension)
+function matrix_cone_type(
+    S::Type{DiagonallyDominantConeTriangle},
+    side_dimension,
+)
     if iszero(side_dimension)
         return EmptyCone
     elseif isone(side_dimension)
