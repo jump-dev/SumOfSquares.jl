@@ -13,7 +13,7 @@
     @test P.Q.Q == [4, 3, 5, 2, 4, 6]
     p = polynomial(P)
     @test coefficients(p) == [4, 3, 5, 4, 3, 2, 6, 5, 4]
-    @test monomials(p) == monovec([
+    @test monomials(p) == monomial_vector([
         x^4,
         x^3 * y,
         x^2 * y^2,

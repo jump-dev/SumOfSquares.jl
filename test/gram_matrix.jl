@@ -14,8 +14,8 @@ using LinearAlgebra, Test, SumOfSquares
         @test zP == 0
         p = polynomial(P)
         @test coefficients(p) == [2, 6, 12, 10, 6]
-        @test monomialtype(p) == typeof(x * y)
-        @test monomialtype(typeof(p)) == typeof(x * y)
+        @test monomial_type(p) == typeof(x * y)
+        @test monomial_type(typeof(p)) == typeof(x * y)
         @test monomials(p) == [x^4, x^3 * y, x^2 * y^2, x * y^3, y^4]
         for i in 1:3
             for j in 1:3
@@ -24,9 +24,9 @@ using LinearAlgebra, Test, SumOfSquares
         end
         for P in (
             GramMatrix{Int}((i, j) -> i * j, [y, x]),
-            GramMatrix{Int}((i, j) -> (3 - i) * (3 - j), monovec([y, x])),
+            GramMatrix{Int}((i, j) -> (3 - i) * (3 - j), monomial_vector([y, x])),
             GramMatrix([1 2; 2 4], [y, x]),
-            GramMatrix([4 2; 2 1], monovec([y, x])),
+            GramMatrix([4 2; 2 1], monomial_vector([y, x])),
         )
             @test P.Q.Q == [4, 2, 1]
             @test P.basis.monomials[1] == x
@@ -100,10 +100,10 @@ using LinearAlgebra, Test, SumOfSquares
             a = MOI.VariableIndex(1)
             g = GramMatrix(SymMatrix([a, a, a], 2), [x, y])
             U = MOI.ScalarAffineFunction{Float64}
-            @test coefficienttype(g) == U
+            @test coefficient_type(g) == U
             @test g isa AbstractPolynomialLike{U}
-            @test polynomialtype(g) <: AbstractPolynomial{U}
-            @test polynomialtype(typeof(g)) <: AbstractPolynomial{U}
+            @test polynomial_type(g) <: AbstractPolynomial{U}
+            @test polynomial_type(typeof(g)) <: AbstractPolynomial{U}
             @test polynomial(g) isa AbstractPolynomial{U}
         end
     end
@@ -117,7 +117,7 @@ using LinearAlgebra, Test, SumOfSquares
         #       @test P == P
         #       @test isapprox(GramMatrix(SOSDecomposition(P)), P)
         P = GramMatrix{Int}((i, j) -> i + j, [x^2, x * y, y^2])
-        @test polynomialtype(SOSDecomposition(P)) <: AbstractPolynomialLike
+        @test polynomial_type(SOSDecomposition(P)) <: AbstractPolynomialLike
         @test sprint(show, SOSDecomposition([x + y, x - y])) ==
               "(x + y)^2 + (x - y)^2"
         @test polynomial(SOSDecomposition([x + y, x - y])) ==
@@ -150,10 +150,10 @@ using LinearAlgebra, Test, SumOfSquares
             q = polynomial([a], [y])
             s = SOSDecomposition([p, q])
             U = MOI.ScalarQuadraticFunction{Float64}
-            @test coefficienttype(s) == U
+            @test coefficient_type(s) == U
             @test s isa AbstractPolynomialLike{U}
-            @test polynomialtype(s) <: AbstractPolynomial{U}
-            @test polynomialtype(typeof(s)) <: AbstractPolynomial{U}
+            @test polynomial_type(s) <: AbstractPolynomial{U}
+            @test polynomial_type(typeof(s)) <: AbstractPolynomial{U}
         end
     end
 
@@ -211,7 +211,7 @@ using LinearAlgebra, Test, SumOfSquares
             @test g.Q[1, 2] == v[2]
             p = polynomial(g)
             @test p isa AbstractPolynomial{MOI.ScalarAffineFunction{T}}
-            @test typeof(p) == polynomialtype(g)
+            @test typeof(p) == polynomial_type(g)
             #@test_throws DimensionMismatch SumOfSquares.build_gram_matrix(v, basis, T, MOI.HermitianPositiveSemidefiniteConeTriangle)
             h = SumOfSquares.build_gram_matrix(
                 w,
@@ -232,7 +232,7 @@ using LinearAlgebra, Test, SumOfSquares
             @test h.Q[1, 2] ≈ w[2] + im * w[4]
             q = polynomial(h)
             @test q isa AbstractPolynomial{MOI.ScalarAffineFunction{Complex{T}}}
-            @test typeof(q) == polynomialtype(h)
+            @test typeof(q) == polynomial_type(h)
         end
     end
 end

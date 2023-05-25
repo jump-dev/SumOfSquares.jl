@@ -59,7 +59,7 @@ struct Action{V<:MP.AbstractVariable} <: Symmetry.OnMonomials
 end
 Symmetry.SymbolicWedderburn.coeff_type(::Action) = Float64
 function Symmetry.SymbolicWedderburn.action(a::Action, el::CyclicElem, mono::MP.AbstractMonomial)
-    return prod(MP.powers(mono), init=MP.constantmonomial(mono)) do (var, exp)
+    return prod(MP.powers(mono), init=MP.constant_monomial(mono)) do (var, exp)
         index = findfirst(isequal(var), a.variables)
         new_index = mod1(index + el.id, el.n)
         return a.variables[new_index]^exp

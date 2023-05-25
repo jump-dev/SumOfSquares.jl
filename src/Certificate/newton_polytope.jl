@@ -115,14 +115,14 @@ function half_newton_polytope(X::AbstractVector, newton::NewtonDegreeBounds)
         # all variables on same part, fallback to shortcut
         return half_newton_polytope(X, NewtonDegreeBounds(tuple()))
     end
-    monovecs = map(vars -> sub_half_newton_polytope(X, vars), all_parts)
+    monomial_vectors = map(vars -> sub_half_newton_polytope(X, vars), all_parts)
     # Cartesian product of the newton polytopes of the different parts
-    product = [prod(monos) for monos in Iterators.product(monovecs...)]
+    product = [prod(monos) for monos in Iterators.product(monomial_vectors...)]
     mindeg, maxdeg = cfld(MP.extdegree(X), 2)
     # We know that the degree inequalities are satisfied variable-wise and
     # part-wise but for all variables together so we filter with that
     gram_monos = filter(mono -> mindeg <= MP.degree(mono) <= maxdeg, product)
-    return MP.monovec(gram_monos)
+    return MP.monomial_vector(gram_monos)
 end
 
 # Filters out points ouside the Newton polytope from the
@@ -151,7 +151,7 @@ function _chip(mono, n)
     else
         op = *
     end
-    return __chip(MP.constantmonomial(mono), 1, vars, exps, abs(n), op)
+    return __chip(MP.constant_monomial(mono), 1, vars, exps, abs(n), op)
 end
 
 function _is_hermitian_square(mono)
@@ -200,7 +200,7 @@ function half_newton_polytope(X::AbstractVector, ::NewtonDegreeBounds{Tuple{}})
                 end
             end
         end
-        return MP.monovec(_monos)
+        return MP.monomial_vector(_monos)
     end
 end
 
@@ -273,7 +273,7 @@ function monomials_half_newton_polytope(
     monos::AbstractVector,
     newton::AbstractNewtonPolytopeApproximation,
 )
-    return half_newton_polytope(MP.monovec(monos), newton)
+    return half_newton_polytope(MP.monomial_vector(monos), newton)
 end
 
 struct DegreeBounds{M}
@@ -597,7 +597,7 @@ function increase(counter, generator_sign, monos, mult)
 end
 
 function post_filter(poly, generators, multipliers_gram_monos)
-    counter = Dict{MP.monomialtype(poly),SignCount}()
+    counter = Dict{MP.monomial_type(poly),SignCount}()
     for t in MP.terms(poly)
         coef = SignCount()
         counter[MP.monomial(t)] = add(coef, _sign(MP.coefficient(t)), 1)

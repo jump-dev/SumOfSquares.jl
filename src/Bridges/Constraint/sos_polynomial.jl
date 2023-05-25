@@ -42,14 +42,14 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # The monomials may be copied by MA however so we need to copy it.
     p = MP.polynomial(MOI.Utilities.scalarize(f), copy(s.monomials))
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
-    # need to call `changecoefficienttype`. This is critical since `T` is
+    # need to call `similar`. This is critical since `T` is
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
     # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     r = SOS.Certificate.reduced_polynomial(
         s.certificate,
         p,
-        MP.changecoefficienttype(s.domain, T),
+        MP.similar(s.domain, T),
     )
     gram_basis = SOS.Certificate.gram_basis(
         s.certificate,
@@ -206,7 +206,7 @@ function MOI.get(
     μ = MultivariateMoments.measure(dual, set.monomials)
     function reduced(mono)
         p = MP.polynomial(mono, T)
-        domain = MP.changecoefficienttype(bridge.domain, T)
+        domain = similar(bridge.domain, T)
         return SOS.Certificate.reduced_polynomial(bridge.certificate, p, domain)
     end
     return [dot(reduced(mono), μ) for mono in bridge.monomials]
