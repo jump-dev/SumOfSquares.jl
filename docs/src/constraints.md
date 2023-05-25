@@ -15,7 +15,7 @@ julia> n = 3
 julia> using DynamicPolynomials
 
 julia> @polyvar x[1:n]
-(DynamicPolynomials.PolyVar{true}[x₁, x₂, x₃],)
+(PolyVar{true}[x₁, x₂, x₃],)
 
 julia> X = monomials(x, 0:2)
 10-element MonomialVector{true}:

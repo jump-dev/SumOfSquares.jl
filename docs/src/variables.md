@@ -103,8 +103,8 @@ sum-of-squares polynomial variables:
 ```jldoctest variables
 julia> @variable(model, [1:2], SOSPoly(X))
 2-element Vector{GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}}:
- GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[177] _[178] … _[187] _[192]; _[178] _[179] … _[188] _[193]; … ; _[187] _[188] … _[191] _[196]; _[192] _[193] … _[196] _[197]], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
- GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[198] _[199] … _[208] _[213]; _[199] _[200] … _[209] _[214]; … ; _[208] _[209] … _[212] _[217]; _[213] _[214] … _[217] _[218]], MonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y², x, y, 1]))
+ GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[177] _[178] … _[187] _[192]; _[178] _[179] … _[188] _[193]; … ; _[187] _[188] … _[191] _[196]; _[192] _[193] … _[196] _[197]], MonomialBasis{Monomial{true}, MonomialVector{true}}(Monomial{true}[x², xy, y², x, y, 1]))
+ GramMatrix{VariableRef, MonomialBasis{Monomial{true}, MonomialVector{true}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[198] _[199] … _[208] _[213]; _[199] _[200] … _[209] _[214]; … ; _[208] _[209] … _[212] _[217]; _[213] _[214] … _[217] _[218]], MonomialBasis{Monomial{true}, MonomialVector{true}}(Monomial{true}[x², xy, y², x, y, 1]))
 ```
 There is however an *important* difference between the meaning of the
 vector of monomials `X` between `Poly` and `SOSPoly`. For `SOSPoly`, it
@@ -135,7 +135,7 @@ For instance, creating an univariate cubic polynomial variable `p` using the
 Chebyshev basis can be done as follows:
 ```jldoctest variables
 julia> cheby_basis = FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])
-FixedPolynomialBasis{Polynomial{true, Int64}, Vector{Polynomial{true, Int64}}}(DynamicPolynomials.Polynomial{true, Int64}[1, x, 2x² - 1, 4x³ - 3x])
+FixedPolynomialBasis{Polynomial{true, Int64}, Vector{Polynomial{true, Int64}}}(Polynomial{true, Int64}[1, x, 2x² - 1, 4x³ - 3x])
 
 julia> @variable(model, variable_type=Poly(cheby_basis))
 (4 _[222])x³ + (2 _[221])x² + (_[220] - 3 _[222])x + (_[219] - _[221])
@@ -150,7 +150,7 @@ julia> X = monomials([x, y], 2)
  y²
 
 julia> scaled_basis = ScaledMonomialBasis(X)
-ScaledMonomialBasis{Monomial{true}, MonomialVector{true}}(DynamicPolynomials.Monomial{true}[x², xy, y²])
+ScaledMonomialBasis{Monomial{true}, MonomialVector{true}}(Monomial{true}[x², xy, y²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (_[223])x² + (1.4142135623730951 _[224])xy + (_[225])y²
@@ -158,7 +158,7 @@ julia> @variable(model, variable_type=Poly(scaled_basis))
 which is equivalent to
 ```jldoctest variables
 julia> scaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])
-FixedPolynomialBasis{Term{true, Float64}, Vector{Term{true, Float64}}}(DynamicPolynomials.Term{true, Float64}[x², 1.4142135623730951xy, y²])
+FixedPolynomialBasis{Term{true, Float64}, Vector{Term{true, Float64}}}(Term{true, Float64}[x², 1.4142135623730951xy, y²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (_[226])x² + (1.4142135623730951 _[227])xy + (_[228])y²
