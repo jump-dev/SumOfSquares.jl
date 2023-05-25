@@ -33,7 +33,7 @@ function controller(f, g, b, α, degs)
         @warn("Termination status $(termination_status(model)): $(raw_status(model))")
     end
     u = value(c_poly) / value(a)
-    return MultivariatePolynomials.mapcoefficientsnz(coef -> abs(coef) < 1e-6 ? 0.0 : coef, u)
+    return MultivariatePolynomials.map_coefficients(coef -> abs(coef) < 1e-6 ? 0.0 : coef, u)
 end
 
 import DifferentialEquations, Plots

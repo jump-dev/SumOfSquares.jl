@@ -54,14 +54,14 @@ function SymbolicWedderburn.action(
 end
 
 # TODO Move it to MultivariateBases
-function MP.polynomialtype(
+function MP.polynomial_type(
     ::Type{<:MB.AbstractPolynomialVectorBasis{PT}},
     T::Type,
 ) where {PT}
-    C = MP.coefficienttype(PT)
+    C = MP.coefficient_type(PT)
     U = MA.promote_operation(*, C, T)
     V = MA.promote_operation(+, U, U)
-    return MP.polynomialtype(PT, V)
+    return MP.polynomial_type(PT, V)
 end
 
 """

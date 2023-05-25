@@ -139,8 +139,8 @@ function monomial_sparsity_iteration(
     end
     return P_next, (cliques, multiplier_cliques)
 end
-_monovec(cliques::AbstractVector{<:MP.AbstractMonomial}) = MP.monovec(cliques)
-_monovec(cliques) = _monovec.(cliques)
+_monomial_vector(cliques::AbstractVector{<:MP.AbstractMonomial}) = MP.monomial_vector(cliques)
+_monomial_vector(cliques) = _monomial_vector.(cliques)
 function sparsity(
     monos::AbstractVector{<:MP.AbstractMonomial},
     sp::Monomial,
@@ -178,7 +178,7 @@ function sparsity(
         end
         iter += 1
     end
-    return _monovec(cliques)
+    return _monomial_vector(cliques)
 end
 # This also checks that it is indeed a monomial basis
 _monos(basis::MB.MonomialBasis) = basis.monomials
@@ -208,7 +208,7 @@ function _ideal_monos(poly_monos, multiplier_gram_monos)
             end
         end
     end
-    return MP.monovec(collect(monos_set))
+    return MP.monomial_vector(collect(monos_set))
 end
 # The ideal certificate should only ask for `MP.monomial`
 struct DummyPolynomial{M}

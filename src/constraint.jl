@@ -491,7 +491,7 @@ function JuMP.build_constraint(
     if !issymmetric(P)
         _error("The polynomial matrix constrained to be SOS must be symmetric.")
     end
-    y = [MP.similarvariable(eltype(P), gensym()) for i in 1:n]
+    y = [MP.similar_variable(eltype(P), gensym()) for i in 1:n]
     p = dot(y, P * y)
     # TODO Newton_polytope=(y,) may not be the best idea if exact newton
     #      polytope computation is used.

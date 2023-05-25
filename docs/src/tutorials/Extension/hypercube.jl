@@ -74,7 +74,7 @@ struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
 end
 MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
-MP.changecoefficienttype(set::HypercubeSet, ::Type) = set
+Base.similar(set::HypercubeSet, ::Type) = set
 SS.ideal(set::HypercubeSet) = set.ideal
 function Base.rem(p, set::HypercubeIdeal)
     return MP.polynomial(map(MP.terms(p)) do term

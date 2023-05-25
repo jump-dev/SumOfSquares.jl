@@ -34,7 +34,7 @@ function sosdemo5_test(optimizer, config::MOI.Test.Config, feasible::Bool, γ)
     # -- Q(x)'s -- : sums of squares
     # Monomial vector: [x1; ... x8]
     Q = Vector{
-        GramMatrix{JuMP.VariableRef,monomialtype(x[1]),monovectype(x[1])},
+        GramMatrix{JuMP.VariableRef,monomial_type(x[1]),monomial_vector_type(x[1])},
     }(
         undef,
         4,

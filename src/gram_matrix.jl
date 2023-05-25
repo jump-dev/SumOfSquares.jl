@@ -18,15 +18,15 @@ end
 
 abstract type AbstractGramMatrix{T,B,U} <: AbstractDecomposition{U} end
 
-function MP.monomialtype(
+function MP.monomial_type(
     ::Union{AbstractGramMatrix{T,B},Type{<:AbstractGramMatrix{T,B}}},
 ) where {T,B}
-    return MP.monomialtype(B)
+    return MP.monomial_type(B)
 end
-function MP.polynomialtype(
+function MP.polynomial_type(
     ::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
 ) where {T,B,U}
-    return MP.polynomialtype(B, U)
+    return MP.polynomial_type(B, U)
 end
 
 Base.:(==)(p::MP.APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
@@ -68,7 +68,7 @@ function GramMatrix(
     return GramMatrix{T,typeof(basis)}(Q, basis)
 end
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
-MP.constantmonomial(p::GramMatrix) = MP.constantmonomial(MP.monomialtype(p))
+MP.constant_monomial(p::GramMatrix) = MP.constant_monomial(MP.monomial_type(p))
 MP.variables(p::GramMatrix) = MP.variables(p.basis)
 MP.nvariables(p::GramMatrix) = MP.nvariables(p.basis)
 
@@ -93,7 +93,7 @@ function GramMatrix{T}(
     return GramMatrix{T,typeof(basis)}(vectorized_symmetric_matrix(T, f, length(basis), σ), basis)
 end
 function GramMatrix{T}(f::Function, monos::AbstractVector) where {T}
-    σ, sorted_monos = MP.sortmonovec(monos)
+    σ, sorted_monos = MP.sort_monomial_vector(monos)
     return GramMatrix{T}(f, MonomialBasis(sorted_monos), σ)
 end
 
@@ -105,12 +105,12 @@ function GramMatrix(
     return GramMatrix{T}((i, j) -> Q[σ[i], σ[j]], basis)
 end
 function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
-    σ, sorted_monos = MP.sortmonovec(monos)
+    σ, sorted_monos = MP.sort_monomial_vector(monos)
     return GramMatrix(Q, MonomialBasis(sorted_monos), σ)
 end
 
 #function Base.convert{T, PT <: AbstractPolynomial{T}}(::Type{PT}, p::GramMatrix)
-#    # coefficienttype(p) may be different than T and MP.polynomial(p) may be different than PT (different module)
+#    # coefficient_type(p) may be different than T and MP.polynomial(p) may be different than PT (different module)
 #    convert(PT, MP.polynomial(p))
 #end
 function MP.polynomial(p::GramMatrix{T,B,U}) where {T,B,U}
@@ -206,6 +206,6 @@ function MP.polynomial(p::SparseGramMatrix)
         identity,
         MA.add!!,
         p.sub_gram_matrices,
-        init = zero(MP.polynomialtype(p)),
+        init = zero(MP.polynomial_type(p)),
     )
 end

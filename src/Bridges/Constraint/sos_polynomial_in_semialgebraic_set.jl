@@ -68,7 +68,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         push!(λ_constraints, λ_constraint)
         push!(λ_bases, λ_basis)
         # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
-        # need to call `changecoefficienttype`. This is critical since `T` is
+        # need to call `similar`. This is critical since `T` is
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
         g = Certificate.generator(set.certificate, index, preprocessed)
@@ -78,7 +78,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
             p,
             -one(T),
             λ,
-            MP.changecoefficienttype(g, T),
+            similar(g, T),
         )
     end
     new_set = SOS.SOSPolynomialSet(

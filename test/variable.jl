@@ -2,7 +2,7 @@ import PolyJuMP
 
 @testset "Creating polynomial with empty MonomialVector" begin
     @polyvar x
-    X = emptymonovec(typeof(x^2))
+    X = empty_monomial_vector(typeof(x^2))
     model = SOSModel()
     v = PolyJuMP.Variable(SOSPoly(X), false, false)
     #@inferred JuMP.add_variable(model, v) # FIXME broken

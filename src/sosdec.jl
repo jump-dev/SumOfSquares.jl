@@ -15,10 +15,10 @@ end
 function SOSDecomposition(ps::Vector{PT}) where {T,PT<:MP.APL{T}}
     return SOSDecomposition{T,PT,_promote_add_mul(T)}(ps)
 end
-function MP.polynomialtype(
+function MP.polynomial_type(
     ::Union{SOSDecomposition{T,PT,U},Type{SOSDecomposition{T,PT,U}}},
 ) where {T,PT,U}
-    return MP.polynomialtype(PT, U)
+    return MP.polynomial_type(PT, U)
 end
 
 #function SOSDecomposition(ps::Vector)
@@ -27,7 +27,7 @@ end
 #end
 
 function GramMatrix(p::SOSDecomposition{T}) where {T}
-    X = MP.mergemonovec(map(MP.monomials, p))
+    X = MP.merge_monomial_vectors(map(MP.monomials, p))
     m = length(p)
     n = length(X)
     Q = zeros(T, m, n)
