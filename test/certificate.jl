@@ -167,7 +167,7 @@ function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
         # `ScalarAffineFunction{Float64}` with an `Int`).
         monos = basis.monomials
         @test typeof(monos) == typeof(monovec(monos))
-        @test issorted(monos, rev = true)
+        @test issorted(monos)
     end
 end
 function _basis_check(basis, basis_type)
