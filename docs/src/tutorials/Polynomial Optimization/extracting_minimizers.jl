@@ -65,7 +65,7 @@ model7 = solve(7)
 # ...and proves it by exhibiting the minimizer.
 
 ν7 = moment_matrix(model7[:c])
-η = extractatoms(ν7, 1e-3) # Returns nothing as the dual is not atomic
+η = atomic_measure(ν7, 1e-3) # Returns nothing as the dual is not atomic
 @test length(η.atoms) == 1 #src
 @test η.atoms[1].center ≈ [2.3295, 3.1785] rtol=1e-4 #src
 

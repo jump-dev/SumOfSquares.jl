@@ -29,7 +29,7 @@ primal_status(model)
 # We now inspect this solution:
 
 q = gram_matrix(con_ref)
-Q = getmat(q) #src
+Q = value_matrix(q) #src
 @test isapprox(Q[1, 1], 2, rtol=1e-5) #src
 @test isapprox(Q[1, 2], 1, rtol=1e-5) #src
 @test isapprox(Q[3, 3], 5, rtol=1e-5) #src

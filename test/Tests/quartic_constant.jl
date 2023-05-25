@@ -31,7 +31,7 @@ function quartic_constant_test(
 
     p = gram_matrix(cref)
     @test p isa SumOfSquares.GramMatrix
-    @test getmat(p) ≈ ones(1, 1) atol = atol rtol = rtol
+    @test value_matrix(p) ≈ ones(1, 1) atol = atol rtol = rtol
     @test p.basis isa FixedPolynomialBasis
     @test p.basis.polynomials == [x^2]
 

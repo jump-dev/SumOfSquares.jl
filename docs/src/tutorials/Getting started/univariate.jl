@@ -47,7 +47,7 @@ expected = x^2 - 2x - 3 #src
 # This matrix is the convex combination of the moment matrices corresponding to two atomic measures at `-1` and `3`
 # which allows us to conclude that `-1` and `3` are global minimizers.
 
-η = extractatoms(ν, 1e-4)
+η = atomic_measure(ν, 1e-4)
 minimizers = [η.atoms[1].center; η.atoms[2].center]
 
 # Below are more details on what we mean by convex combination.

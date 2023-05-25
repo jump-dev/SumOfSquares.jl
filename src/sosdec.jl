@@ -47,12 +47,12 @@ end
 function SOSDecomposition(
     p::GramMatrix,
     ranktol = 0.0,
-    dec::MultivariateMoments.LowRankChol = SVDChol(),
+    dec::MultivariateMoments.LowRankLDLTAlgorithm = SVDLDLT(),
 )
     n = length(p.basis)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
-    nM, cM, Q = MultivariateMoments.lowrankchol(Matrix(getmat(p)), dec, ranktol)
+    nM, cM, Q = MultivariateMoments.low_rank_ldlt(Matrix(value_matrix(p)), dec, ranktol)
     ps = [MP.polynomial(Q[i, :], p.basis) for i in axes(Q, 1)]
     return SOSDecomposition(ps)
 end
@@ -82,7 +82,7 @@ function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
     if length(q.ps) != m
         false
     else
-        MultivariateMoments.permcomp(
+        MultivariateMoments.compare_modulo_permutation(
             (i, j) -> isapprox(p.ps[i], q.ps[j]; kwargs...),
             m,
         )
