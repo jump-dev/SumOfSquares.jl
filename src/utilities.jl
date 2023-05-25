@@ -26,7 +26,7 @@ end
 _complex(::Type{T}, ::Type) where {T} = T
 function _complex(
     ::Type{T},
-    ::Type{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle},
+    ::Type{MOI.HermitianPositiveSemidefiniteConeTriangle},
 ) where {T}
     return Complex{T}
 end

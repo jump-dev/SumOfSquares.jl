@@ -5,7 +5,6 @@ version = "0.6.4"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
-ComplexOptInterface = "25c3070e-1275-41b5-afef-2f982c87090a"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -22,10 +21,9 @@ SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 
 [compat]
 Combinatorics = "1"
-ComplexOptInterface = "0.1"
 DataStructures = "0.18"
-JuMP = "0.23, 1"
-MathOptInterface = "1"
+JuMP = "1.5"
+MathOptInterface = "1.13"
 MultivariateBases = "0.1.2"
 MultivariateMoments = "0.3"
 MultivariatePolynomials = "0.4"
