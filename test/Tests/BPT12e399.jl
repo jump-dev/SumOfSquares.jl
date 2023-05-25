@@ -49,10 +49,10 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
 
     p = gram_matrix(cref)
     if remainder
-        @test getmat(p) ≈ [1 -3; -3 9] atol = atol rtol = rtol
+        @test value_matrix(p) ≈ [1 -3; -3 9] atol = atol rtol = rtol
         @test p.basis.monomials == [y, 1]
     else
-        @test getmat(p) ≈ [4.0 0.0 0.0; 0.0 5.0 -5.0; 0.0 -5.0 5.0] atol = atol rtol =
+        @test value_matrix(p) ≈ [4.0 0.0 0.0; 0.0 5.0 -5.0; 0.0 -5.0 5.0] atol = atol rtol =
             rtol
         @test p.basis.monomials == [x, y, 1]
     end
@@ -107,10 +107,10 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
 
     p = gram_matrix(cref)
     if remainder
-        @test getmat(p) ≈ [1 3; 3 9] atol = atol rtol = rtol
+        @test value_matrix(p) ≈ [1 3; 3 9] atol = atol rtol = rtol
         @test p.basis.monomials == [y, 1]
     else
-        @test getmat(p) ≈ [4.0 0.0 0.0; 0.0 5.0 5.0; 0.0 5.0 5.0] atol = atol rtol =
+        @test value_matrix(p) ≈ [4.0 0.0 0.0; 0.0 5.0 5.0; 0.0 5.0 5.0] atol = atol rtol =
             rtol
         @test p.basis.monomials == [x, y, 1]
     end

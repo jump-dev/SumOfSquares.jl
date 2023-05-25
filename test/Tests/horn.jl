@@ -57,7 +57,7 @@ function horn_test(
         # Currently the lagrangian multipliers have degree 0 to 1.
         # Once we can force them to have degree 1 only, reenable the following:
         #@test isempty(certificate_monomials(cref))
-        #@test isempty(getmat(gram_matrix(cref)))
+        #@test isempty(value_matrix(gram_matrix(cref)))
     else
         @test termination_status(model) == MOI.INFEASIBLE
     end

@@ -34,10 +34,10 @@ function rearrangement_test(optimizer, config::MOI.Test.Config)
     p = gram_matrix(cref)
     @test p isa SumOfSquares.SparseGramMatrix
     @test length(p.sub_gram_matrices) == 2
-    @test getmat(p.sub_gram_matrices[1]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol = 9atol rtol =
+    @test value_matrix(p.sub_gram_matrices[1]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol = 9atol rtol =
         9rtol
     @test p.sub_gram_matrices[1].basis.monomials == [y, z, 1]
-    @test getmat(p.sub_gram_matrices[2]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol = 9atol rtol =
+    @test value_matrix(p.sub_gram_matrices[2]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol = 9atol rtol =
         9rtol
     @test p.sub_gram_matrices[2].basis.monomials == [x, y, 1]
 

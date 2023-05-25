@@ -391,7 +391,7 @@ Return the [`SOSDecompositionAttribute`](@ref) of `cref`.
 function sos_decomposition(
     cref::JuMP.ConstraintRef,
     ranktol::Real = 0.0,
-    dec::MultivariateMoments.LowRankChol = SVDChol(),
+    dec::MultivariateMoments.LowRankLDLTAlgorithm = SVDLDLT(),
 )
     return MOI.get(cref.model, SOSDecompositionAttribute(ranktol, dec), cref)
 end

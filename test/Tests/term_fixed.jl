@@ -31,7 +31,7 @@ function term_fixed_test(
     test_constraint_primal(cref, 0.0)
 
     p = gram_matrix(cref)
-    @test getmat(p) ≈ zeros(1, 1) atol = atol rtol = rtol
+    @test value_matrix(p) ≈ zeros(1, 1) atol = atol rtol = rtol
     @test p.basis.monomials == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
@@ -43,7 +43,7 @@ function term_fixed_test(
     end
 
     ν = moment_matrix(cref)
-    @test getmat(ν) ≈ ones(1, 1) atol = atol rtol = rtol
+    @test value_matrix(ν) ≈ ones(1, 1) atol = atol rtol = rtol
     @test ν.basis.monomials == [x]
 
     N = SumOfSquares.Certificate.NewtonFilter{

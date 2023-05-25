@@ -41,7 +41,7 @@ bound
 # We find the corresponding minimizer `(0, 0, 0)` by matching the moments
 # of the moment matrix with a dirac measure centered at this minimizer.
 
-extractatoms(ν, 1e-6)
+atomic_measure(ν, 1e-6)
 
 # We can see below that the basis contained 6 monomials hence we needed to use 6x6 PSD matrix variables.
 

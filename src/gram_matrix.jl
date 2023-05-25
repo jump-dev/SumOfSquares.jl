@@ -1,7 +1,7 @@
 export GramMatrix, SparseGramMatrix
 
-import MultivariateMoments: trimat, SymMatrix, getmat
-export gram_operate, getmat
+import MultivariateMoments: vectorized_symmetric_matrix, SymMatrix, value_matrix
+export gram_operate, value_matrix
 
 abstract type AbstractDecomposition{T} <: MP.AbstractPolynomialLike{T} end
 
@@ -83,14 +83,14 @@ Base.iszero(p::GramMatrix) = iszero(MP.polynomial(p))
 Base.getindex(p::GramMatrix, I...) = getindex(p.Q, I...)
 Base.copy(p::GramMatrix) = GramMatrix(copy(p.Q), copy(p.basis))
 
-MultivariateMoments.getmat(p::GramMatrix{T}) where {T} = p.Q
+MultivariateMoments.value_matrix(p::GramMatrix{T}) where {T} = p.Q
 
 function GramMatrix{T}(
     f::Function,
     basis::AbstractPolynomialBasis,
     σ = 1:length(basis),
 ) where {T}
-    return GramMatrix{T,typeof(basis)}(trimat(T, f, length(basis), σ), basis)
+    return GramMatrix{T,typeof(basis)}(vectorized_symmetric_matrix(T, f, length(basis), σ), basis)
 end
 function GramMatrix{T}(f::Function, monos::AbstractVector) where {T}
     σ, sorted_monos = MP.sortmonovec(monos)
@@ -117,7 +117,7 @@ function MP.polynomial(p::GramMatrix{T,B,U}) where {T,B,U}
     return MP.polynomial(p, U)
 end
 function MP.polynomial(p::GramMatrix, ::Type{S}) where {S}
-    return MP.polynomial(getmat(p), p.basis, S)
+    return MP.polynomial(value_matrix(p), p.basis, S)
 end
 
 function change_basis(

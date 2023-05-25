@@ -15,14 +15,14 @@ the positive semidefinite matrix `Q` indexed by the monomials in the vector `X`
 such that ``X^\\top Q X`` is the sum-of-squares certificate of the constraint.
 """
 struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute
-    N::Int
+    result_index::Int
 end
 GramMatrixAttribute() = GramMatrixAttribute(1)
 
 """
     struct SOSDecompositionAttribute
         ranktol::Real
-        dec::MultivariateMoments.LowRankChol
+        dec::MultivariateMoments.LowRankLDLTAlgorithm
     end
 
 A constraint attribute for the [`SOSDecomposition`](@ref) of a constraint.
@@ -32,12 +32,12 @@ By default, it is computed using
 """
 struct SOSDecompositionAttribute <: MOI.AbstractConstraintAttribute
     ranktol::Real
-    dec::MultivariateMoments.LowRankChol
+    dec::MultivariateMoments.LowRankLDLTAlgorithm
     result_index::Int
 end
 function SOSDecompositionAttribute(
     ranktol::Real,
-    dec::MultivariateMoments.LowRankChol,
+    dec::MultivariateMoments.LowRankLDLTAlgorithm,
 )
     return SOSDecompositionAttribute(ranktol, dec, 1)
 end
@@ -58,7 +58,7 @@ end
 A constraint attribute fot the `MomentMatrix` of a constraint.
 """
 struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
-    N::Int
+    result_index::Int
 end
 MomentMatrixAttribute() = MomentMatrixAttribute(1)
 
@@ -73,7 +73,7 @@ reducing the polynomials over the ideal they generate instead of explicitely
 creating multipliers.
 """
 struct LagrangianMultipliers <: MOI.AbstractConstraintAttribute
-    N::Int
+    result_index::Int
 end
 LagrangianMultipliers() = LagrangianMultipliers(1)
 

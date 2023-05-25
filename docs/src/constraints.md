@@ -224,7 +224,7 @@ to as the the matrix of moments can be obtained using [`moment_matrix`](@ref):
 ```julia
 ν = moment_matrix(cref)
 ```
-The `extractatoms` function of [MultivariateMoments](https://github.com/JuliaAlgebra/MultivariateMoments.jl)
+The `atomic_measure` function of [MultivariateMoments](https://github.com/JuliaAlgebra/MultivariateMoments.jl)
 can be used to check if there exists an *atomic* measure (i.e. a measure that is
 a sum of Dirac measures) that has the moments given in the the moment matrix
 `ν`. This can be used for instance in polynomial optimization (see

@@ -50,7 +50,7 @@ function quadratic_test(
     test_constraint_primal(cref, value(poly))
 
     p = gram_matrix(cref)
-    @test getmat(p) ≈ ones(2, 2) atol = atol rtol = rtol
+    @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     if basis == ChebyshevBasis
         @test p.basis.polynomials == cert_monos
     else
@@ -70,7 +70,7 @@ function quadratic_test(
     end
 
     ν = moment_matrix(cref)
-    @test getmat(ν) ≈ [
+    @test value_matrix(ν) ≈ [
         a[1] a[2]
         a[2] a[3]
     ] atol = atol rtol = rtol
