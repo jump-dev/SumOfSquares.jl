@@ -212,11 +212,11 @@ using LinearAlgebra, Test, SumOfSquares
             p = polynomial(g)
             @test p isa AbstractPolynomial{MOI.ScalarAffineFunction{T}}
             @test typeof(p) == polynomialtype(g)
-            #@test_throws DimensionMismatch SumOfSquares.build_gram_matrix(v, basis, T, SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle)
+            #@test_throws DimensionMismatch SumOfSquares.build_gram_matrix(v, basis, T, MOI.HermitianPositiveSemidefiniteConeTriangle)
             h = SumOfSquares.build_gram_matrix(
                 w,
                 basis,
-                SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle,
+                MOI.HermitianPositiveSemidefiniteConeTriangle,
                 T,
             )
             @test h isa GramMatrix{

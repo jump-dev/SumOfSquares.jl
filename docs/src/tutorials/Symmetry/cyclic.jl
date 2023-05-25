@@ -140,14 +140,12 @@ b = -√3/2
 import CSDP
 solver = CSDP.Optimizer
 model = Model(solver)
-add_bridge(model, SumOfSquares.COI.Bridges.Variable.HermitianToSymmetricPSDBridge)
-add_bridge(model, SumOfSquares.COI.Bridges.Constraint.SplitZeroBridge)
 MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.ZeroPolynomialBridge{Complex{Float64}})
 MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{Complex{Float64}})
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
-cone = SumOfSquares.NonnegPolyInnerCone{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}()
+cone = SumOfSquares.NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
 pp = (1.0 + 0.0im) * poly - (1.0 + 0.0im) * t
 con_ref = @constraint(model, pp in cone, symmetry = pattern)
 optimize!(model)

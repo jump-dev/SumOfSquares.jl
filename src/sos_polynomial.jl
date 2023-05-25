@@ -1,7 +1,5 @@
-import ComplexOptInterface as COI
-
-function matrix_cone(::Type{COI.HermitianPositiveSemidefiniteConeTriangle}, d)
-    return COI.HermitianPositiveSemidefiniteConeTriangle(d)
+function matrix_cone(::Type{MOI.HermitianPositiveSemidefiniteConeTriangle}, d)
+    return MOI.HermitianPositiveSemidefiniteConeTriangle(d)
 end
 
 function vectorized_matrix(Q, basis, ::Type, ::Type)
@@ -10,7 +8,7 @@ end
 function vectorized_matrix(
     Q,
     basis,
-    ::Type{COI.HermitianPositiveSemidefiniteConeTriangle},
+    ::Type{MOI.HermitianPositiveSemidefiniteConeTriangle},
     T::Type,
 )
     return MultivariateMoments.VectorizedHermitianMatrix{eltype(Q),T}(Q, basis)
@@ -18,13 +16,13 @@ end
 function vectorized_matrix(
     Q,
     basis,
-    ::Type{COI.HermitianPositiveSemidefiniteConeTriangle},
+    ::Type{MOI.HermitianPositiveSemidefiniteConeTriangle},
     ::Type{Complex{T}},
 ) where {T}
     return vectorized_matrix(
         Q,
         basis,
-        COI.HermitianPositiveSemidefiniteConeTriangle,
+        MOI.HermitianPositiveSemidefiniteConeTriangle,
         T,
     )
 end
