@@ -20,12 +20,12 @@ function quadratic_test(
     if bivariate
         @polyvar y
         poly = x^2 + α * x * y + y^2
-        cert_monos = [x, y]
-        monos = [x^2, x * y, y^2]
+        cert_monos = [y, x]
+        monos = [y^2, x * y, x^2]
     else
         poly = x^2 + α * x + 1
-        cert_monos = [x, 1]
-        monos = [x^2, x, 1]
+        cert_monos = [1, x]
+        monos = [1, x, x^2]
     end
     cref = @constraint(model, poly in cone, basis = basis)
 
@@ -85,8 +85,8 @@ function quadratic_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        Monomial{true},
-        MonomialVector{true},
+        monomial_type(x),
+        monomial_vector_type(x),
         SumOfSquares.Certificate.Newton{typeof(cone),basis,N},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
@@ -102,8 +102,8 @@ function quadratic_test(
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     SumOfSquares.FullSpace,
                     basis,
-                    Monomial{true},
-                    MonomialVector{true},
+                    monomial_type(x),
+                    monomial_vector_type(x),
                 },
                 0,
             ),

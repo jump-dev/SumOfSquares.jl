@@ -50,8 +50,8 @@ function term_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        Monomial{true},
-        MonomialVector{true},
+        monomial_type(x),
+        monomial_vector_type(x),
         SumOfSquares.Certificate.Newton{typeof(cone),MonomialBasis,N},
     }
     @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
@@ -66,8 +66,8 @@ function term_test(
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     SumOfSquares.FullSpace,
                     MonomialBasis,
-                    Monomial{true},
-                    MonomialVector{true},
+                    monomial_type(x),
+                    monomial_vector_type(x),
                 },
                 0,
             ),

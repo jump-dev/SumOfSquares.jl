@@ -23,6 +23,11 @@ function MP.monomial_type(
 ) where {T,B}
     return MP.monomial_type(B)
 end
+function MP.term_type(
+    p::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
+) where {T,B,U}
+    return MP.term_type(MP.polynomial_type(p))
+end
 function MP.polynomial_type(
     ::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
 ) where {T,B,U}
@@ -55,7 +60,7 @@ function GramMatrix{T,B}(
     Q::AbstractMatrix{T},
     basis::B,
 ) where {T,B<:AbstractPolynomialBasis}
-    return GramMatrix{T,B,_promote_sum(eltype(Q))}(Q, basis)
+    return GramMatrix{T,B,_promote_sum(T)}(Q, basis)
 end
 function GramMatrix(
     # We don't use `AbstractMatrix` to avoid clash with method below with `σ`.
@@ -67,6 +72,14 @@ function GramMatrix(
 ) where {T}
     return GramMatrix{T,typeof(basis)}(Q, basis)
 end
+
+function MP.similar_type(::Type{GramMatrix{T,B,U,MT}}, ::Type{S}) where {T,B,U,MT,S}
+    US = _promote_sum(S)
+    MS = MP.similar_type(MT, S)
+    return GramMatrix{S,B,US,MS}
+end
+
+
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
 MP.constant_monomial(p::GramMatrix) = MP.constant_monomial(MP.monomial_type(p))
 MP.variables(p::GramMatrix) = MP.variables(p.basis)
@@ -196,6 +209,14 @@ end
 
 struct SparseGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
     sub_gram_matrices::Vector{GramMatrix{T,B,U,MT}}
+end
+
+function _sparse_type(::Type{GramMatrix{T,B,U,MT}}) where {T,B,U,MT}
+    return SparseGramMatrix{T,B,U,MT}
+end
+
+function MP.similar_type(::Type{SparseGramMatrix{T,B,U,MT}}, ::Type{S}) where {T,B,U,MT,S}
+    return _sparse_type(MP.similar_type(GramMatrix{T,B,U,MT}, S))
 end
 
 function Base.zero(::Type{SparseGramMatrix{T,B,U,MT}}) where {T,B,U,MT}

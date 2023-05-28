@@ -364,11 +364,13 @@ function square_domain(ideal_certificate, d)
         )
         if k == 1
             if use_all_monomials
+                # [x, xy², x³], [1, y², x²],     [y, y³, x²y], [x, xy], [y, x², x²y], [1, x², x²y]
+                # [x, xy², x³], [1, y, x², x²y], [y, y³, x²y], [x, xy], [y, x², x²y], [1, x², x²y]
                 @test set_monos(basis) == Set(
                     monomial_vector.([
-                        [x^2 * y, y, 1],
+                        [x^2 * y, x^2, y],
                         [x^3, x * y^2, x],
-                        [x^2, y, 1],
+                        [x^2*y, x^2, 1],
                         [x^2, y^2, 1],
                         [x^2 * y, y^3, y],
                         [x * y, x],

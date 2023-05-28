@@ -51,8 +51,8 @@ function term_fixed_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         typeof(set),
-        Monomial{true},
-        MonomialVector{true},
+        monomial_type(x),
+        monomial_vector_type(x),
         SumOfSquares.Certificate.Remainder{
             SumOfSquares.Certificate.Newton{typeof(cone),MonomialBasis,N},
         },
@@ -69,8 +69,8 @@ function term_fixed_test(
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     typeof(set),
                     MonomialBasis,
-                    Monomial{true},
-                    MonomialVector{true},
+                    monomial_type(x),
+                    monomial_vector_type(x),
                 },
                 0,
             ),
