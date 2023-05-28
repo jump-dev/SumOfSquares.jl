@@ -33,14 +33,14 @@ function quartic_ideal_test(
         @test termination_status(model) == MOI.OPTIMAL
         @test primal_status(model) == MOI.FEASIBLE_POINT
         μ = dual(cref)
-        @test monomial(moments(μ)[1]) == x^4
+        @test monomial(moments(μ)[1]) == 1
         @test monomial(moments(μ)[2]) == x^2
-        @test monomial(moments(μ)[3]) == 1
+        @test monomial(moments(μ)[3]) == x^4
         μ = moments(cref)
-        @test monomial(moments(μ)[1]) == x^2
+        @test monomial(moments(μ)[1]) == 1
         @test monomial(moments(μ)[2]) == x^1
-        @test monomial(moments(μ)[3]) == 1
-        @test moment_matrix(cref).basis.monomials == [x^2, x, 1]
+        @test monomial(moments(μ)[3]) == x^2
+        @test moment_matrix(cref).basis.monomials == [1, x, x^2]
     end
 end
 function quartic_ideal_test(optimizer, config)

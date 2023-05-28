@@ -276,7 +276,10 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(domain, monos, certificate)
+    # For terms, `monomials` is `OneOrZeroElementVector`
+    # so we convert it with `monomial_vector`
+    # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
+    return SOSPolynomialSet(domain, MP.monomial_vector(monos), certificate)
 end
 
 function PolyJuMP.bridges(

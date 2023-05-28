@@ -52,8 +52,8 @@ function SOSDecomposition(
     n = length(p.basis)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
-    nM, cM, Q = MultivariateMoments.low_rank_ldlt(Matrix(value_matrix(p)), dec, ranktol)
-    ps = [MP.polynomial(Q[i, :], p.basis) for i in axes(Q, 1)]
+    ldlt = MultivariateMoments.low_rank_ldlt(Matrix(value_matrix(p)), dec, ranktol)
+    ps = [MP.polynomial(ldlt.L[:, i], p.basis) for i in axes(ldlt.L, 2)]
     return SOSDecomposition(ps)
 end
 # Without LDL^T, we need to do float(T)

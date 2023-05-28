@@ -158,7 +158,7 @@ end
 function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
     @test basis isa basis_type
     if basis isa MB.AbstractMonomialBasis
-        # This fails if `basis` is `Vector{Monomial{true}}` instead of `MonomialVector{true}`
+        # This fails if `basis` is `Vector{<:Monomial}` instead of `MonomialVector`
         # for DynamicPolynomials. This is important as
         # `polynomial(::AbstractMatrix, ::MonomialVector, ::Type)` is implemented but
         # `polynomial(Q::AbstractMatrix, X::AbstractVector, ::Type)` falls back to

@@ -263,7 +263,7 @@ function MOI.get(
     bridge::SOSPolynomialBridge{T,F,DT,UMCT,UMST,MCT},
 ) where {T,F,DT,UMCT,UMST,MCT}
     return _gram(
-        Q -> MOI.get(model, MOI.VariablePrimal(attr.N), Q),
+        Q -> MOI.get(model, MOI.VariablePrimal(attr.result_index), Q),
         bridge.Q,
         bridge.gram_basis,
         T::Type,
@@ -277,11 +277,11 @@ function MOI.get(
 )
     if bridge.cQ isa Vector{<:MOI.ConstraintIndex}
         return SOS.build_moment_matrix(bridge.gram_basis) do i
-            return MOI.get(model, MOI.ConstraintDual(attr.N), bridge.cQ[i])
+            return MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.cQ[i])
         end
     else
         return SOS.build_moment_matrix(
-            MOI.get(model, MOI.ConstraintDual(attr.N), bridge.cQ),
+            MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.cQ),
             bridge.gram_basis,
         )
     end
