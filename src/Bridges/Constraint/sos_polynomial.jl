@@ -277,7 +277,11 @@ function MOI.get(
 )
     if bridge.cQ isa Vector{<:MOI.ConstraintIndex}
         return SOS.build_moment_matrix(bridge.gram_basis) do i
-            return MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.cQ[i])
+            return MOI.get(
+                model,
+                MOI.ConstraintDual(attr.result_index),
+                bridge.cQ[i],
+            )
         end
     else
         return SOS.build_moment_matrix(

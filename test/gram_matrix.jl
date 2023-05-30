@@ -16,7 +16,8 @@ using LinearAlgebra, Test, SumOfSquares
         @test coefficients(p) == reverse([2, 6, 12, 10, 6])
         @test monomial_type(p) == typeof(x * y)
         @test monomial_type(typeof(p)) == typeof(x * y)
-        @test monomials(p) == monomial_vector([x^4, x^3 * y, x^2 * y^2, x * y^3, y^4])
+        @test monomials(p) ==
+              monomial_vector([x^4, x^3 * y, x^2 * y^2, x * y^3, y^4])
         for i in 1:3
             for j in 1:3
                 @test P[i, j] == 8 - (i + j)
