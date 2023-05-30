@@ -139,7 +139,9 @@ function monomial_sparsity_iteration(
     end
     return P_next, (cliques, multiplier_cliques)
 end
-_monomial_vector(cliques::AbstractVector{<:MP.AbstractMonomial}) = MP.monomial_vector(cliques)
+function _monomial_vector(cliques::AbstractVector{<:MP.AbstractMonomial})
+    return MP.monomial_vector(cliques)
+end
 _monomial_vector(cliques) = _monomial_vector.(cliques)
 function sparsity(
     monos::AbstractVector{<:MP.AbstractMonomial},

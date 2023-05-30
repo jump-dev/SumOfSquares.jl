@@ -127,8 +127,18 @@ end
             ) == Y
         end
         full_test(X, monomial_vector([x^2, x * y, x * z, x, y, z]), [x], [y, z])
-        full_test(X, monomial_vector([x^2, x * y, x * z, y * z, x, z]), [y], [x, z])
-        full_test(X, monomial_vector([x^2, x * y, x * z, y * z, x, y]), [z], [x, y])
+        full_test(
+            X,
+            monomial_vector([x^2, x * y, x * z, y * z, x, z]),
+            [y],
+            [x, z],
+        )
+        full_test(
+            X,
+            monomial_vector([x^2, x * y, x * z, y * z, x, y]),
+            [z],
+            [x, y],
+        )
         # FIXME: With recursive merging, it should give [x^2, x*y, x*z, x]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z],

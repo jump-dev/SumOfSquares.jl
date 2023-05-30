@@ -73,12 +73,14 @@ function GramMatrix(
     return GramMatrix{T,typeof(basis)}(Q, basis)
 end
 
-function MP.similar_type(::Type{GramMatrix{T,B,U,MT}}, ::Type{S}) where {T,B,U,MT,S}
+function MP.similar_type(
+    ::Type{GramMatrix{T,B,U,MT}},
+    ::Type{S},
+) where {T,B,U,MT,S}
     US = _promote_sum(S)
     MS = MP.similar_type(MT, S)
     return GramMatrix{S,B,US,MS}
 end
-
 
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
 MP.constant_monomial(p::GramMatrix) = MP.constant_monomial(MP.monomial_type(p))
@@ -103,7 +105,10 @@ function GramMatrix{T}(
     basis::AbstractPolynomialBasis,
     σ = 1:length(basis),
 ) where {T}
-    return GramMatrix{T,typeof(basis)}(vectorized_symmetric_matrix(T, f, length(basis), σ), basis)
+    return GramMatrix{T,typeof(basis)}(
+        vectorized_symmetric_matrix(T, f, length(basis), σ),
+        basis,
+    )
 end
 function GramMatrix{T}(f::Function, monos::AbstractVector) where {T}
     σ, sorted_monos = MP.sort_monomial_vector(monos)
@@ -215,7 +220,10 @@ function _sparse_type(::Type{GramMatrix{T,B,U,MT}}) where {T,B,U,MT}
     return SparseGramMatrix{T,B,U,MT}
 end
 
-function MP.similar_type(::Type{SparseGramMatrix{T,B,U,MT}}, ::Type{S}) where {T,B,U,MT,S}
+function MP.similar_type(
+    ::Type{SparseGramMatrix{T,B,U,MT}},
+    ::Type{S},
+) where {T,B,U,MT,S}
     return _sparse_type(MP.similar_type(GramMatrix{T,B,U,MT}, S))
 end
 
