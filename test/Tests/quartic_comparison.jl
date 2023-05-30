@@ -23,7 +23,7 @@ function quartic_comparison_test(
     @polyvar x[1:3]
     vx = monomials(x, 4) # Degree 4 homogeneous
     # Coefficient of polynomial
-    cp = 15:-1:1
+    cp = 1:15
     p = polynomial(cp, vx)
 
     model = _model(optimizer)

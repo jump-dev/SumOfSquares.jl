@@ -49,49 +49,52 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
 
     p = gram_matrix(cref)
     if remainder
-        @test value_matrix(p) ≈ [1 -3; -3 9] atol = atol rtol = rtol
-        @test p.basis.monomials == [y, 1]
+        @test value_matrix(p) ≈ [9 -3; -3 1] atol = atol rtol = rtol
+        @test p.basis.monomials == [1, y]
     else
-        @test value_matrix(p) ≈ [4.0 0.0 0.0; 0.0 5.0 -5.0; 0.0 -5.0 5.0] atol =
-            atol rtol = rtol
-        @test p.basis.monomials == [x, y, 1]
+        @test value_matrix(p) ≈ [
+             5 -5 0
+            -5  5 0
+             0  0 4
+        ] atol = atol rtol = rtol
+        @test p.basis.monomials == [1, y, x]
     end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     μ = dual(cref)
     @test μ isa AbstractMeasure{Float64}
     @test length(moments(μ)) == 3
-    @test moment_value(moments(μ)[1]) ≈ (remainder ? -8 / 3 : 0.0) atol = atol rtol =
+    @test moment_value(moments(μ)[1]) ≈ (remainder ? 1 / 3 : 1.0) atol = atol rtol =
         rtol
-    @test monomial(moments(μ)[1]) == x^2
+    @test monomial(moments(μ)[1]) == 1
     @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
     @test monomial(moments(μ)[2]) == y
-    @test moment_value(moments(μ)[3]) ≈ (remainder ? 1 / 3 : 1.0) atol = atol rtol =
+    @test moment_value(moments(μ)[3]) ≈ (remainder ? -8 / 3 : 0.0) atol = atol rtol =
         rtol
-    @test monomial(moments(μ)[3]) == 1
+    @test monomial(moments(μ)[3]) == x^2
 
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
     if remainder
         @test length(moments(μ)) == 3
-        @test moment_value(moments(μ)[1]) ≈ 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == y^2
+        @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
+        @test monomial(moments(μ)[1]) == 1
         @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
         @test monomial(moments(μ)[2]) == y
-        @test moment_value(moments(μ)[3]) ≈ 1 / 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[3]) == 1
+        @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
+        @test monomial(moments(μ)[3]) == y^2
     else
         @test length(moments(μ)) == 5
-        @test moment_value(moments(μ)[1]) ≈ 0 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == x * y
+        @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
+        @test monomial(moments(μ)[1]) == 1
         @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[2]) == y^2
+        @test monomial(moments(μ)[2]) == y
         @test moment_value(moments(μ)[3]) ≈ 0 atol = atol rtol = rtol
         @test monomial(moments(μ)[3]) == x
         @test moment_value(moments(μ)[4]) ≈ 1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[4]) == y
-        @test moment_value(moments(μ)[5]) ≈ 1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[5]) == 1
+        @test monomial(moments(μ)[4]) == y^2
+        @test moment_value(moments(μ)[5]) ≈ 0 atol = atol rtol = rtol
+        @test monomial(moments(μ)[5]) == x * y
     end
 
     @objective(model, Min, α)
@@ -107,49 +110,52 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
 
     p = gram_matrix(cref)
     if remainder
-        @test value_matrix(p) ≈ [1 3; 3 9] atol = atol rtol = rtol
-        @test p.basis.monomials == [y, 1]
+        @test value_matrix(p) ≈ [9 3; 3 1] atol = atol rtol = rtol
+        @test p.basis.monomials == [1, y]
     else
-        @test value_matrix(p) ≈ [4.0 0.0 0.0; 0.0 5.0 5.0; 0.0 5.0 5.0] atol =
-            atol rtol = rtol
-        @test p.basis.monomials == [x, y, 1]
+        @test value_matrix(p) ≈ [
+            5 5 0
+            5 5 0
+            0 0 4
+        ] atol = atol rtol = rtol
+        @test p.basis.monomials == [1, y, x]
     end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     μ = dual(cref)
     @test μ isa AbstractMeasure{Float64}
     @test length(moments(μ)) == 3
-    @test moment_value(moments(μ)[1]) ≈ (remainder ? -8 / 3 : 0.0) atol = atol rtol =
+    @test moment_value(moments(μ)[1]) ≈ (remainder ? 1 / 3 : 1.0) atol = atol rtol =
         rtol
-    @test monomial(moments(μ)[1]) == x^2
+    @test monomial(moments(μ)[1]) == 1
     @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
     @test monomial(moments(μ)[2]) == y
-    @test moment_value(moments(μ)[3]) ≈ (remainder ? 1 / 3 : 1.0) atol = atol rtol =
+    @test moment_value(moments(μ)[3]) ≈ (remainder ? -8 / 3 : 0.0) atol = atol rtol =
         rtol
-    @test monomial(moments(μ)[3]) == 1
+    @test monomial(moments(μ)[3]) == x^2
 
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
     if remainder
         @test length(moments(μ)) == 3
-        @test moment_value(moments(μ)[1]) ≈ 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == y^2
+        @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
+        @test monomial(moments(μ)[1]) == 1
         @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
         @test monomial(moments(μ)[2]) == y
-        @test moment_value(moments(μ)[3]) ≈ 1 / 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[3]) == 1
+        @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
+        @test monomial(moments(μ)[3]) == y^2
     else
         @test length(moments(μ)) == 5
-        @test moment_value(moments(μ)[1]) ≈ 0 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == x * y
-        @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[2]) == y^2
+        @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
+        @test monomial(moments(μ)[1]) == 1
+        @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
+        @test monomial(moments(μ)[2]) == y
         @test moment_value(moments(μ)[3]) ≈ 0 atol = atol rtol = rtol
         @test monomial(moments(μ)[3]) == x
-        @test moment_value(moments(μ)[4]) ≈ -1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[4]) == y
-        @test moment_value(moments(μ)[5]) ≈ 1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[5]) == 1
+        @test moment_value(moments(μ)[4]) ≈ 1 atol = atol rtol = rtol
+        @test monomial(moments(μ)[4]) == y^2
+        @test moment_value(moments(μ)[5]) ≈ 0 atol = atol rtol = rtol
+        @test monomial(moments(μ)[5]) == x * y
     end
 end
 
