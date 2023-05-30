@@ -2,16 +2,16 @@ config = MOI.Test.Config()
 function optimize!_max_bridged(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [6.0, 1.0, 9.0, -3.0 * √2],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[3, 1, 1 / 3]],
+        [6.0, 9.0, 1.0, -3.0 * √2],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1 / 3, 1, 3]],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) => [[3, 1 / 3, √2]],
     )
 end
 function optimize!_min_bridged(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [-6.0, 1.0, 9.0, 3.0 * √2],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[3, -1, 1 / 3]],
+        [-6.0, 9.0, 1.0, 3.0 * √2],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1 / 3, -1, 3]],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
             [[3, 1 / 3, -√2]],
     )
@@ -19,18 +19,18 @@ end
 function optimize!_max_cached(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [1.0, 9.0, -3.0 * √2, 6.0],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[3, 1, 1 / 3]],
-        (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) => [[3, 1 / 3, √2]],
+        [9.0, 1.0, -3.0 * √2, 6.0],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1 / 3, 1, 3]],
+        (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) => [[1 / 3, 3, √2]],
     )
 end
 function optimize!_min_cached(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [1.0, 9.0, 3.0 * √2, -6.0],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[3, -1, 1 / 3]],
+        [9.0, 1.0, 3.0 * √2, -6.0],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1 / 3, -1, 3]],
         (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
-            [[3, 1 / 3, -√2]],
+            [[1 / 3, 3, -√2]],
     )
 end
 for mock in [
@@ -42,29 +42,29 @@ end
 function optimize!_max_bridged(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [10.0, 4.0, 0.0, 5.0, 0.0, -5.0, 5.0],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[0.0, 1, 0, 1, 1]],
+        [10.0, 5.0, -5.0, 5.0, 0.0, 0.0, 4.0],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1, 1, 0.0, 1, 0]],
     )
 end
 function optimize!_min_bridged(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [-10.0, 4.0, 0.0, 5.0, 0.0, 5.0, 5.0],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[0.0, 1, 0, -1, 1]],
+        [-10.0, 5.0, 5.0, 5.0, 0.0, 0.0, 4.0],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1, -1, 0.0, 1, 0]],
     )
 end
 function optimize!_max_cached(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [4.0, 0.0, 5.0, 0.0, -5.0, 5.0, 10.0],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[0.0, 1, 0, 1, 1]],
+        [5.0, -5.0, 5.0, 0.0, 0.0, 4.0, 10.0],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1, 1, 0.0, 1, 0]],
     )
 end
 function optimize!_min_cached(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
-        [4.0, 0.0, 5.0, 0.0, 5.0, 5.0, -10.0],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[0.0, 1, 0, -1, 1]],
+        [5.0, 5.0, 5.0, 0.0, 0.0, 4.0, -10.0],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1, -1, 0.0, 1, 0]],
     )
 end
 for mock in [

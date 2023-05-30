@@ -67,5 +67,7 @@ function rearrangement_test(optimizer, config::MOI.Test.Config)
     @test length(ν.sub_moment_matrices) == 2
     @test ν.sub_moment_matrices[1].basis.monomials == [1, y, x]
     @test ν.sub_moment_matrices[2].basis.monomials == [1, z, y]
+
+    return model
 end
 sd_tests["rearrangement"] = rearrangement_test

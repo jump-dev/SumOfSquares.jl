@@ -157,6 +157,8 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
         @test moment_value(moments(μ)[5]) ≈ 0 atol = atol rtol = rtol
         @test monomial(moments(μ)[5]) == x * y
     end
+
+    return model
 end
 
 BPT12e399_rem_test(optimizer, config) = BPT12e399_test(optimizer, config, true)

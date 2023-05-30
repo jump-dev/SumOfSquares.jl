@@ -39,5 +39,7 @@ function chebyshev_test(optimizer, config::MOI.Test.Config)
         rtol = 4config.rtol,
     )
     @test isapprox(JuMP.value(γ), 128, atol = config.atol, rtol = config.rtol)
+
+    return model
 end
 sd_tests["chebyshev"] = chebyshev_test

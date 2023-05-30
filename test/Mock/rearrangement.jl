@@ -1,5 +1,5 @@
 config = MOI.Test.Config(atol = 1e-5, rtol = 1e-5)
-x = [1.0, -1.0, 1.0, 0.0, 0.0, 0.0]
+x = [0.0, 0.0, 1.0, 0.0, -1.0, 1.0]
 function optimize!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
