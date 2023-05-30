@@ -140,7 +140,7 @@ b = -√3/2
 import CSDP
 solver = CSDP.Optimizer
 model = Model(solver)
-MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.ZeroPolynomialBridge{Complex{Float64}})
+MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.Bridges.Constraint.ZeroPolynomialBridge{Complex{Float64}})
 MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{Complex{Float64}})
 @variable(model, t)
 @objective(model, Max, t)
