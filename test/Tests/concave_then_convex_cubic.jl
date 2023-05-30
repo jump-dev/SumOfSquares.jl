@@ -40,6 +40,8 @@ function concave_then_convex_cubic_test(
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 2
     end
+
+    return model
 end
 
 function sos_concave_then_convex_cubic_test(optimizer, config)
