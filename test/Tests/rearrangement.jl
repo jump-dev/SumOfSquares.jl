@@ -34,12 +34,18 @@ function rearrangement_test(optimizer, config::MOI.Test.Config)
     p = gram_matrix(cref)
     @test p isa SumOfSquares.SparseGramMatrix
     @test length(p.sub_gram_matrices) == 2
-    @test value_matrix(p.sub_gram_matrices[1]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol =
-        9atol rtol = 9rtol
-    @test p.sub_gram_matrices[1].basis.monomials == [y, z, 1]
-    @test value_matrix(p.sub_gram_matrices[2]) ≈ [1 -1 0; -1 1 0; 0 0 0] atol =
-        9atol rtol = 9rtol
-    @test p.sub_gram_matrices[2].basis.monomials == [x, y, 1]
+    @test value_matrix(p.sub_gram_matrices[1]) ≈ [
+        0  0  0
+        0  1 -1
+        0 -1  1
+    ] atol = 9atol rtol = 9rtol
+    @test p.sub_gram_matrices[1].basis.monomials == [1, y, x]
+    @test value_matrix(p.sub_gram_matrices[2]) ≈ [
+        0  0  0
+        0  1 -1
+        0 -1  1
+    ] atol = 9atol rtol = 9rtol
+    @test p.sub_gram_matrices[2].basis.monomials == [1, z, y]
 
     λ = lagrangian_multipliers(cref)
     @test length(λ) == 4
@@ -59,7 +65,7 @@ function rearrangement_test(optimizer, config::MOI.Test.Config)
     ν = moment_matrix(cref)
     @test ν isa SparseMomentMatrix
     @test length(ν.sub_moment_matrices) == 2
-    @test ν.sub_moment_matrices[1].basis.monomials == [y, z, 1]
-    @test ν.sub_moment_matrices[2].basis.monomials == [x, y, 1]
+    @test ν.sub_moment_matrices[1].basis.monomials == [1, y, x]
+    @test ν.sub_moment_matrices[2].basis.monomials == [1, z, y]
 end
 sd_tests["rearrangement"] = rearrangement_test
