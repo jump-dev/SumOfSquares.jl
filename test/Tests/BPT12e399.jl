@@ -53,9 +53,9 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
         @test p.basis.monomials == [1, y]
     else
         @test value_matrix(p) ≈ [
-             5 -5 0
-            -5  5 0
-             0  0 4
+            5 -5 0
+            -5 5 0
+            0 0 4
         ] atol = atol rtol = rtol
         @test p.basis.monomials == [1, y, x]
     end

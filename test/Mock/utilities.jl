@@ -102,7 +102,7 @@ function cheat(test, optimizer_constructor, args...)
     function constructor()
         model = MOI.Utilities.CachingOptimizer(
             MOI.Utilities.Model{Float64}(),
-            MOI.instantiate(optimizer_constructor, with_bridge_type=Float64),
+            MOI.instantiate(optimizer_constructor, with_bridge_type = Float64),
         )
         @show MOI.Utilities.state(model)
         # We attach to make sure the variables are added in the same order
@@ -112,5 +112,5 @@ function cheat(test, optimizer_constructor, args...)
         return model
     end
     model = test(constructor, args...)
-    Tests.inner_variable_value(model)
+    return Tests.inner_variable_value(model)
 end
