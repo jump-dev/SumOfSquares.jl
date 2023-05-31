@@ -1,33 +1,23 @@
-struct ImageBridge{
+struct GeometricBridge{
     T,
     F<:MOI.AbstractVectorFunction,
-    DT<:SemialgebraicSets.AbstractSemialgebraicSet,
-    UMCT<:Union{
-        Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
-        MOI.ConstraintIndex{MOI.VectorOfVariables},
-    },
-    UMST,
-    MCT,
-    GB<:Union{
-        Vector{<:Vector{<:MultivariateBases.AbstractPolynomialBasis}}, # Symmetry
-        Vector{<:MultivariateBases.AbstractPolynomialBasis},           # Sparsity
-        MultivariateBases.AbstractPolynomialBasis,                     # No reduction
-    },
-    ZB<:MultivariateBases.AbstractPolynomialBasis,
-    CT<:SOS.Certificate.AbstractIdealCertificate,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
+    CT<:SOS.Certificate.AbstractIdealCertificate,
 } <: MOI.Bridges.Constraint.AbstractBridge
     variables::Vector{MOI.VariableIndex}
     constraint::MOI.ConstraintIndex{F}
+    set::SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace,MT,MVT,CT}
+    gram_basis::MP.MonomialBasis{MT,MVT}
+    first::Vector{Int}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{GeometricBridge{T,F,DT,UMCT,UMST,MCT,GB,ZB,CT,MT,MVT}},
+    ::Type{GeometricBridge{T,F,MT,MVT,CT}},
     model::MOI.ModelLike,
     g::MOI.AbstractVectorFunction,
     s::SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace},
-) where {T,F,DT,UMCT,UMST,MCT,GB,ZB,CT,MT,MVT}
+) where {T,F,CT,MT,MVT}
     @assert MOI.output_dimension(g) == length(s.monomials)
     scalars = MOI.Utilities.eachscalar(g)
     gram_basis = SOS.Certificate.gram_basis(
@@ -38,7 +28,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(set))
     k = 0
     found = Dict{eltype(gram_basis.monomials),Int}()
-    used = falses(length(scalars))
+    first = Union{Nothing,Tuple{Int,Int}}[nothing for _ in eachindex(scalars)]
     for j in eachindex(gram_basis.monomials)
         for i in 1:j
             k += 1
@@ -52,47 +42,45 @@ function MOI.Bridges.Constraint.bridge_constraint(
                 found[mono] = k
                 t = MP.searchsortedfirst(s.monomials, mono, rev = true)
                 if t in eachindex(s.monomials) && s.monomials[t] == mono
-                    used[t] = true
+                    first[t] = (i, j)
                     MOI.Utilities.operate_output_index!(+, T, k, f, scalars[t])
                 end
             end
         end
     end
-    for i in eachindex(scalars)
-        if !used[i]
+    for t in eachindex(scalars)
+        if isnothing(first[t])
             error("Infeasible")
         end
     end
     constraint = MOI.add_constraint(model, f, set)
-    return GeometricBridge{T,F,DT,UMCT,UMST,MCT,GB,ZB,CT,MT,MVT}(
+    return GeometricBridge{T,F,MT,MVT,CT}(
         variables,
         constraint,
         gram_basis,
-        zero_constraint,
-        s.domain,
-        s.monomials,
-        s.certificate,
+        s,
+        first,
     )
 end
 
 function MOI.supports_constraint(
     ::Type{GeometricBridge{T}},
-    F::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace,M,MV,C}},
-) where {T}
-    return Certificate.gram_basis_type <: MB.MonomialBasis
+    ::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace,CT,MT,MVT}},
+) where {T,CT,MT,MVT}
+    return Certificate.gram_basis_type(CT) <: MB.MonomialBasis
 end
 
 function MOI.Bridges.added_constrained_variable_types(
-    ::Type{<:GeometricBridge{T,F,DT,UMCT,UMST,MCT}},
-) where {T,F,DT,UMCT,UMST,MCT}
-    return [MOI.Reals]
+    ::Type{<:GeometricBridge},
+)
+    return Tuple{Type}[(MOI.Reals,)]
 end
 
 function MOI.Bridges.added_constraint_types(
-    ::Type{GeometricBridge{T,F,G,CT}},
-) where {T,F,DT,UMCT,UMST,MCT,GB,ZB,CT,MT,MVT}
-    return [(F, CT)]
+    ::Type{GeometricBridge{T,F}},
+) where {T,F}
+    return Tuple{Type,Type}[(F, MOI.PositiveSemidefiniteConeTriangle)] # TODO
 end
 
 function MOI.Bridges.Constraint.concrete_bridge_type(
@@ -103,10 +91,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     F = MOI.Utilities.promote_operation(-, T, G, MOI.VectorOfVariables)
-    MCT = SOS.matrix_cone_type(CT)
-    UMST = union_set_types(MCT)
-    GB = SOS.Certificate.gram_basis_type(CT)
-    return GeometricBridge{T,G,DT,UMCT,UMST,MCT,GB}
+    return GeometricBridge{T,F,CT,MT,MVT}
 end
 
 # Attributes, Bridge acting as an model
@@ -157,23 +142,15 @@ end
 
 function MOI.get(
     model::MOI.ModelLike,
-    attr::MOI.ConstraintDual,
+    attr::Union{MOI.ConstraintDual,PolyJuMP.MomentsAttribute},
     bridge::GeometricBridge{T},
 ) where {T}
-    dual = MOI.get(model, attr, bridge.constraint)
+    dual = MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint)
     output = similar(dual, length(bridge.set.monomials))
     for i in eachindex(bridge.set.monomials)
         output[i] = dual[bridge.first[i]]
     end
     return output
-end
-
-function MOI.get(
-    model::MOI.ModelLike,
-    attr::PolyJuMP.MomentsAttribute,
-    bridge::GeometricBridge,
-)
-    return MOI.get(model, MOI.ConstraintDual(attr.N), bridge.constraint)
 end
 
 function MOI.get(
@@ -207,24 +184,18 @@ end
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.GramMatrixAttribute,
-    bridge::GeometricBridge{T,F,DT,UMCT,UMST,MCT},
+    bridge::GeometricBridge{T},
 ) where {T,F,DT,UMCT,UMST,MCT}
-    q = MOI.get(model, MOI.ConstraintPrimal(), model.constraint)
-    return SOS.build_gram_matrix(q, model.gram_basis, MCT, T)
+    q = MOI.get(model, MOI.ConstraintPrimal(attr.result_index), bridge.constraint)
+    return SOS.build_gram_matrix(q, model.gram_basis, MOI.PositiveSemidefiniteConeTriangle, T) # TODO
 end
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.MomentMatrixAttribute,
     bridge::GeometricBridge,
 )
-    if bridge.cQ isa Vector{<:MOI.ConstraintIndex}
-        return SOS.build_moment_matrix(bridge.gram_basis) do i
-            return MOI.get(model, MOI.ConstraintDual(attr.N), bridge.cQ[i])
-        end
-    else
-        return SOS.build_moment_matrix(
-            MOI.get(model, MOI.ConstraintDual(attr.N), bridge.cQ),
-            bridge.gram_basis,
-        )
-    end
+    return SOS.build_moment_matrix(
+        MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint),
+        bridge.gram_basis,
+    )
 end

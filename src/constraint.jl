@@ -314,7 +314,7 @@ function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}},
 )
-    return [Bridges.Constraint.SOSPolynomialBridge]
+    return [Bridges.Constraint.SOSPolynomialBridge, Bridges.Constraint.GeometricBridge]
 end
 
 function PolyJuMP.bridges(
