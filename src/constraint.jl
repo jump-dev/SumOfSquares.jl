@@ -485,7 +485,7 @@ const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 function JuMP.build_constraint(
     _error::Function,
-    P::AbstractMatrix{<:MP.APL},
+    P::AbstractMatrix{<:MP._APL},
     ::PSDMatrixInnerCone{MCT};
     newton_polytope::Tuple = tuple(),
     kws...,
@@ -531,7 +531,7 @@ const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 function JuMP.build_constraint(
     _error::Function,
-    p::MP.APL,
+    p::MP._APL,
     ::ConvexPolyInnerCone{MCT};
     kws...,
 ) where {MCT}
