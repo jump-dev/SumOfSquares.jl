@@ -117,12 +117,7 @@ end
 
 Represents a Sum-of-Squares decomposition on a basic semi-algebraic domain.
 """
-struct SOSDecompositionWithDomain{
-    T,
-    PT<:_APL{T},
-    U,
-    S<:AbstractSemialgebraicSet,
-}
+struct SOSDecompositionWithDomain{T,PT<:_APL{T},U,S<:AbstractSemialgebraicSet}
     sos::SOSDecomposition{T,PT,U}
     sosj::Vector{SOSDecomposition{T,PT,U}}
     domain::S
