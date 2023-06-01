@@ -62,7 +62,7 @@ using BenchmarkTools
 @btime let
     TypedPolynomials.@polyvar x y
     S = @set x^3 * y + x == 2x^2 * y^2 && 3x^4 == y
-    SemialgebraicSets.computegröbnerbasis!(S.I)
+    SemialgebraicSets.compute_gröbner_basis!(S.I)
 end
 
 # The time taken by DynamicPolynomials is as follows:
@@ -71,7 +71,7 @@ import DynamicPolynomials
 @btime let
     DynamicPolynomials.@polyvar x y
     S = @set x^3 * y + x == 2x^2 * y^2 && 3x^4 == y
-    SemialgebraicSets.computegröbnerbasis!(S.I)
+    SemialgebraicSets.compute_gröbner_basis!(S.I)
 end
 
 # We see that TypedPolynomials is faster.

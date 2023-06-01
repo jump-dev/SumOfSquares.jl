@@ -54,7 +54,7 @@ function SOSDecomposition(
     # it would be nice to have though
     ldlt =
         MultivariateMoments.low_rank_ldlt(Matrix(value_matrix(p)), dec, ranktol)
-    ps = [MP.polynomial(ldlt.L[:, i], p.basis) for i in axes(ldlt.L, 2)]
+    ps = [MP.polynomial(√ldlt.singular_values[i] * ldlt.L[:, i], p.basis) for i in axes(ldlt.L, 2)]
     return SOSDecomposition(ps)
 end
 # Without LDL^T, we need to do float(T)

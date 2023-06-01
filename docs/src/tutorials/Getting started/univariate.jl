@@ -108,7 +108,7 @@ cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
 # $-(2\cos(\theta) - 1) /2 + 2 \cos(\theta) + 5/2.$
 # Therefore, the coefficients in the Chebyshev basis is:
 
-cheby_coefs = [-1/2, 2, 5/2]
+cheby_coefs = [5/2, 2, -1/2]
 
 # We can indeed observe that we obtain the same matrix as `cheby_g.Q`
 
