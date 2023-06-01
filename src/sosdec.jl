@@ -5,14 +5,14 @@ export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
 Represents a Sum-of-Squares decomposition without domain.
 """
-struct SOSDecomposition{T,PT<:MP._APL{T},U} <: AbstractDecomposition{U}
+struct SOSDecomposition{T,PT<:_APL{T},U} <: AbstractDecomposition{U}
     ps::Vector{PT}
     function SOSDecomposition{T,PT,U}(ps::Vector{PT}) where {T,PT,U}
         return new(ps)
     end
 end
 
-function SOSDecomposition(ps::Vector{PT}) where {T,PT<:MP._APL{T}}
+function SOSDecomposition(ps::Vector{PT}) where {T,PT<:_APL{T}}
     return SOSDecomposition{T,PT,_promote_add_mul(T)}(ps)
 end
 function MP.polynomial_type(
@@ -93,7 +93,7 @@ end
 function Base.promote_rule(
     ::Type{SOSDecomposition{T1,PT1,U1}},
     ::Type{SOSDecomposition{T2,PT2,U2}},
-) where {T1,T2,PT1<:MP._APL{T1},PT2<:MP._APL{T2},U1,U2}
+) where {T1,T2,PT1<:_APL{T1},PT2<:_APL{T2},U1,U2}
     T = promote_type(T1, T2)
     return SOSDecomposition{T,promote_type(PT1, PT2),_promote_add_mul(T)}
 end
@@ -119,7 +119,7 @@ Represents a Sum-of-Squares decomposition on a basic semi-algebraic domain.
 """
 struct SOSDecompositionWithDomain{
     T,
-    PT<:MP._APL{T},
+    PT<:_APL{T},
     U,
     S<:AbstractSemialgebraicSet,
 }

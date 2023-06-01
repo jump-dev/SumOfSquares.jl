@@ -5,13 +5,13 @@ export gram_operate, value_matrix
 
 abstract type AbstractDecomposition{T} <: MP.AbstractPolynomialLike{T} end
 
-Base.:(+)(x::MP._APL, y::AbstractDecomposition) = x + MP.polynomial(y)
-Base.:(+)(x::AbstractDecomposition, y::MP._APL) = MP.polynomial(x) + y
+Base.:(+)(x::_APL, y::AbstractDecomposition) = x + MP.polynomial(y)
+Base.:(+)(x::AbstractDecomposition, y::_APL) = MP.polynomial(x) + y
 function Base.:(+)(x::AbstractDecomposition, y::AbstractDecomposition)
     return MP.polynomial(x) + MP.polynomial(y)
 end
-Base.:(-)(x::MP._APL, y::AbstractDecomposition) = x - MP.polynomial(y)
-Base.:(-)(x::AbstractDecomposition, y::MP._APL) = MP.polynomial(x) - y
+Base.:(-)(x::_APL, y::AbstractDecomposition) = x - MP.polynomial(y)
+Base.:(-)(x::AbstractDecomposition, y::_APL) = MP.polynomial(x) - y
 function Base.:(-)(x::AbstractDecomposition, y::AbstractDecomposition)
     return MP.polynomial(x) - MP.polynomial(y)
 end
@@ -34,7 +34,7 @@ function MP.polynomial_type(
     return MP.polynomial_type(B, U)
 end
 
-Base.:(==)(p::MP._APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
+Base.:(==)(p::_APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
 Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 
 """

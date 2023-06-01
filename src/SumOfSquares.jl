@@ -9,6 +9,7 @@ import MutableArithmetics as MA
 # MultivariatePolynomials extension
 
 import MultivariatePolynomials as MP
+const _APL = MP.AbstractPolynomialLike
 Reexport.@reexport using MultivariateBases
 # @set assumes that `SemialgebraicSets` is defined
 Reexport.@reexport using SemialgebraicSets
