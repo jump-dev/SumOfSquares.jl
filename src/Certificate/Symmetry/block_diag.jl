@@ -1,11 +1,21 @@
 import Combinatorics, DataStructures
 
 function ordered_block_diag(As, d)
+    @show d
+    for A in As
+        display(A)
+    end
     U = block_diag(As, d)
+    println("U")
+    display(U)
     U === nothing && return nothing
     iU = U'
     @assert iU ≈ inv(U)
     Bs = [iU * A * U for A in As]
+    println("Bs")
+    for B in Bs
+        display(B)
+    end
     @assert all(Bs) do B
         return isblockdim(B, d)
     end
@@ -43,8 +53,12 @@ function ordered_block_check(U, As, d)
 end
 
 function block_diag(As, d)
-    for A in As
+    for A in reverse(As)
         #T = LinearAlgebra.eigen(A).vectors
+        S = LinearAlgebra.schur(A)
+        display(S.vectors)
+        @show fieldnames(typeof(S))
+        @show S.values
         T = LinearAlgebra.schur(A).vectors
         iT = T'
         @assert iT ≈ inv(T)
