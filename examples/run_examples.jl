@@ -22,7 +22,7 @@ const _TUTORIAL_DIR = joinpath(@__DIR__, "..", "docs", "src", "tutorials")
                 continue
             end
             path = joinpath(_TUTORIAL_DIR, dir, filename)
-            @testset "filename" begin
+            @testset "$filename" begin
                 _include_sandbox(path)
             end
         end
