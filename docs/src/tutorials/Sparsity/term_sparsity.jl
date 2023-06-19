@@ -68,9 +68,9 @@ bound
 
 # However, this bound was obtained with an SDP with 4 matrices of size 3x3.
 
-@test length(ν.sub_moment_matrices) == 4                                  #src
-@test ν.sub_moment_matrices[1].basis.monomials == [x[2]*x[3], x[2], x[3]] #src
-@test ν.sub_moment_matrices[2].basis.monomials == [x[2]*x[3], x[2], 1]    #src
-@test ν.sub_moment_matrices[3].basis.monomials == [x[1], x[2], 1]         #src
-@test ν.sub_moment_matrices[4].basis.monomials == [x[1]*x[2], x[1], 1]    #src
+@test length(ν.sub_moment_matrices) == 4                                       #src
+@test ν.sub_moment_matrices[1].basis.monomials == [x[2], x[1], x[1]*x[2]]      #src
+@test ν.sub_moment_matrices[2].basis.monomials == [x[2], x[2]*x[3], x[1]*x[2]] #src
+@test ν.sub_moment_matrices[3].basis.monomials == [x[3], x[2], x[2]*x[3]]      #src
+@test ν.sub_moment_matrices[4].basis.monomials == [1, x[2]*x[3], x[1]*x[2]]    #src
 [sub.basis for sub in ν.sub_moment_matrices]

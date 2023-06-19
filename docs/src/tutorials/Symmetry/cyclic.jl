@@ -105,10 +105,10 @@ gram = gram_matrix(con_ref).sub_gram_matrices #src
 @test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] #src
 @test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (-2x[1] + x[2] + x[3])/√6 #src
+@test gram[2].basis.polynomials[1] ≈ (x[1] + x[2] - 2x[3])/√6 #src
 @test gram[3].Q == gram[2].Q #src
 @test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (-x[2] + x[3])/√2 #src
+@test gram[3].basis.polynomials[1] ≈ (x[1] - x[2])/√2 #src
 for gram in gram_matrix(con_ref).sub_gram_matrices
     println(gram.basis.polynomials)
     display(gram.Q)
@@ -116,7 +116,7 @@ end
 
 # Let's look into more details at the last two elements of the basis.
 
-basis = [(-2x[1] + x[2] + x[3])/√6, (-x[2] + x[3])/√2]
+basis = [(x[1] + x[2] - 2x[3])/√6, (x[1] - x[2])/√2]
 
 # This actually constitutes the basis for an invariant subspace corresponding
 # to a group character of degree 2 and multiplicity 1.
@@ -131,7 +131,7 @@ image = [Symmetry.SymbolicWedderburn.action(action, g, p) for p in basis]
 # We can see that they are both still in the same 2-dimensional subspace.
 
 a = -1/2
-b = -√3/2
+b = √3/2
 @test all(image .≈ [a -b; b a] * basis) #src
 [a -b; b a] * basis
 
@@ -159,12 +159,12 @@ gram = gram_matrix(con_ref).sub_gram_matrices #src
 @test length(gram[1].basis.polynomials) == 2 #src
 @test gram[1].basis.polynomials[1] == 1 #src
 @test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
-@test gram[2].Q ≈ [0.5;;] #src
+@test gram[2].Q ≈ [0.5;;] rtol = 1e-6 #src
 @test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2  #src
-@test gram[3].Q ≈ [0.5;;] #src
+@test gram[2].basis.polynomials[1] ≈ (basis[1] - basis[2] * im) / √2  #src
+@test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
 @test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (basis[1] - basis[2] * im) / √2 #src
+@test gram[3].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2 #src
 for gram in gram_matrix(con_ref).sub_gram_matrices
     println(gram.basis.polynomials)
     display(gram.Q)

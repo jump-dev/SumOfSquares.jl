@@ -21,5 +21,6 @@ con_ref = @constraint(model, p in cone)
 optimize!(model)
 dec = sos_decomposition(con_ref, 1e-6) #src
 @test length(dec.ps) == 1 #src
-@test sign(real(first(coefficients(dec.ps[1])))) * dec.ps[1] ≈ x - im * y atol=1e-6 rtol=1e-6 #src
+@test dec.ps[1]' * dec.ps[1] ≈ p atol=1e-6 rtol=1e-6 #src
+@test sign(real(first(coefficients(dec.ps[1])))) * dec.ps[1] ≈ y + im * x atol=1e-6 rtol=1e-6 #src
 sos_decomposition(con_ref, 1e-6)

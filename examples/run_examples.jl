@@ -15,17 +15,21 @@ end
 
 const _TUTORIAL_DIR = joinpath(@__DIR__, "..", "docs", "src", "tutorials")
 
+function run_examples(dir)
+    for filename in readdir(joinpath(_TUTORIAL_DIR, dir))
+        if filename[1] == '_'
+            continue
+        end
+        path = joinpath(_TUTORIAL_DIR, dir, filename)
+        @testset "$filename" begin
+            _include_sandbox(path)
+        end
+    end
+end
+
 @testset "run_examples.jl" begin
     @testset "$dir" for dir in readdir(_TUTORIAL_DIR)
-        for filename in readdir(joinpath(_TUTORIAL_DIR, dir))
-            if filename[1] == '_'
-                continue
-            end
-            path = joinpath(_TUTORIAL_DIR, dir, filename)
-            @testset "$filename" begin
-                _include_sandbox(path)
-            end
-        end
+        run_examples(dir)
     end
     @testset "Chordal" begin
         include("chordal_sparsity.jl")

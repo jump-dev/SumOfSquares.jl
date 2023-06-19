@@ -44,6 +44,9 @@ function GramMatrix(p::SOSDecomposition{T}) where {T}
     return GramMatrix(Q' * Q, X)
 end
 
+_lazy_adjoint(x::AbstractVector{<:Real}) = x
+_lazy_adjoint(x::AbstractVector) = adjoint.(x)
+
 function SOSDecomposition(
     p::GramMatrix,
     ranktol = 0.0,
@@ -54,8 +57,11 @@ function SOSDecomposition(
     # it would be nice to have though
     ldlt =
         MultivariateMoments.low_rank_ldlt(Matrix(value_matrix(p)), dec, ranktol)
+    # The Sum-of-Squares decomposition is
+    # ∑ adjoint(u_i) * u_i
+    # and we have `L` of the LDL* so we need to take the adjoint.
     ps = [
-        MP.polynomial(√ldlt.singular_values[i] * ldlt.L[:, i], p.basis) for
+        MP.polynomial(√ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]), p.basis) for
         i in axes(ldlt.L, 2)
     ]
     return SOSDecomposition(ps)
