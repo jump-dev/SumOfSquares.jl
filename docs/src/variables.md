@@ -135,11 +135,7 @@ For instance, creating an univariate cubic polynomial variable `p` using the
 Chebyshev basis can be done as follows:
 ```jldoctest variables
 julia> cheby_basis = FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])
-<<<<<<< HEAD
-FixedPolynomialBasis{Polynomial{true, Int64}, Vector{Polynomial{true, Int64}}}(Polynomial{true, Int64}[1, x, 2x² - 1, 4x³ - 3x])
-=======
 FixedPolynomialBasis{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}, Vector{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}}}(Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}[1, x, -1 + 2x², -3x + 4x³])
->>>>>>> 8678de2e (Fixes)
 
 julia> @variable(model, variable_type=Poly(cheby_basis))
 (_[219] - _[221]) + (_[220] - 3 _[222])x + (2 _[221])x² + (4 _[222])x³
@@ -154,11 +150,7 @@ julia> X = monomials([x, y], 2)
  x²
 
 julia> scaled_basis = ScaledMonomialBasis(X)
-<<<<<<< HEAD
-ScaledMonomialBasis{Monomial{true}, MonomialVector{true}}(Monomial{true}[x², xy, y²])
-=======
 ScaledMonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}(Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}[y², xy, x²])
->>>>>>> 8678de2e (Fixes)
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (_[223])y² + (1.4142135623730951 _[224])xy + (_[225])x²
@@ -166,11 +158,7 @@ julia> @variable(model, variable_type=Poly(scaled_basis))
 which is equivalent to
 ```jldoctest variables
 julia> scaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])
-<<<<<<< HEAD
-FixedPolynomialBasis{Term{true, Float64}, Vector{Term{true, Float64}}}(Term{true, Float64}[x², 1.4142135623730951xy, y²])
-=======
 FixedPolynomialBasis{MultivariatePolynomials.Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, Vector{MultivariatePolynomials.Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}}}(MultivariatePolynomials.Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}[x², 1.4142135623730951xy, y²])
->>>>>>> 8678de2e (Fixes)
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (_[228])y² + (1.4142135623730951 _[227])xy + (_[226])x²
