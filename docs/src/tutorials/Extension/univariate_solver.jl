@@ -27,7 +27,7 @@ function decompose(p::MP.AbstractPolynomial, tol=1e-6)
         error("$p is not univariate")
     end
     x = first(vars)
-    lead = MP.leadingcoefficient(p)
+    lead = MP.leading_coefficient(p)
     if !isone(lead)
         p = p / lead
     end

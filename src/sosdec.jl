@@ -61,8 +61,10 @@ function SOSDecomposition(
     # ∑ adjoint(u_i) * u_i
     # and we have `L` of the LDL* so we need to take the adjoint.
     ps = [
-        MP.polynomial(√ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]), p.basis) for
-        i in axes(ldlt.L, 2)
+        MP.polynomial(
+            √ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]),
+            p.basis,
+        ) for i in axes(ldlt.L, 2)
     ]
     return SOSDecomposition(ps)
 end
