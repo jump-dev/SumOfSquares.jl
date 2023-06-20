@@ -135,7 +135,7 @@ For instance, creating an univariate cubic polynomial variable `p` using the
 Chebyshev basis can be done as follows:
 ```jldoctest variables
 julia> cheby_basis = FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])
-FixedPolynomialBasis{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}, Vector{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}}}(Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}[1, x, -1 + 2x², -3x + 4x³])
+FixedPolynomialBasis{MultivariatePolynomials.Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, Vector{MultivariatePolynomials.Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}}}(MultivariatePolynomials.Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}[x², 1.4142135623730951xy, y²])
 
 julia> @variable(model, variable_type=Poly(cheby_basis))
 (_[219] - _[221]) + (_[220] - 3 _[222])x + (2 _[221])x² + (4 _[222])x³
