@@ -55,15 +55,15 @@ g = gram_matrix(con_ref).sub_gram_matrices    #src
 @test g[1].Q[1, 2] ≈ -1.0 atol=1e-6            #src
 @test g[1].Q[2, 2] ≈ 1.0 atol=1e-6            #src
 @test length(g[2].basis.polynomials) == 1     #src
-@test g[2].basis.polynomials[1] ≈ (x[3] - x[1]) / √2 #src
+@test g[2].basis.polynomials[1] ≈ (x[2] - x[4]) / √2 #src
 @test size(g[2].Q) == (1, 1)                  #src
 @test g[2].Q[1, 1] ≈ 1.0 atol=1e-6            #src
 @test length(g[3].basis.polynomials) == 1     #src
-@test g[3].basis.polynomials[1] ≈ (x[4] - x[2]) / √2 #src
+@test g[3].basis.polynomials[1] ≈ (x[1] - x[3]) / √2 #src
 @test size(g[3].Q) == (1, 1)                  #src
 @test g[3].Q[1, 1] ≈ 1.0 atol=1e-6            #src
 @test length(g[4].basis.polynomials) == 1     #src
-@test g[4].basis.polynomials[1] ≈ (-x[1] + x[2] - x[3] + x[4]) / 2 #src
+@test g[4].basis.polynomials[1] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
 @test size(g[4].Q) == (1, 1)                  #src
 @test g[4].Q[1, 1] ≈ 1.0 atol=1e-6            #src
 for g in gram_matrix(con_ref).sub_gram_matrices

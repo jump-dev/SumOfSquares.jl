@@ -11,7 +11,7 @@ function decompose(p::MP.AbstractPolynomial, tol=1e-6)
         error("$p is not univariate")
     end
     x = first(vars)
-    lead = MP.leadingcoefficient(p)
+    lead = MP.leading_coefficient(p)
     if !isone(lead)
         p = p / lead
     end
@@ -38,8 +38,8 @@ function decompose(p::MP.AbstractPolynomial, tol=1e-6)
         end
         i += 2
     end
-    q1 = MP.mapcoefficientsnz(real, q)
-    q2 = MP.mapcoefficientsnz(imag, q)
+    q1 = MP.map_coefficients(real, q)
+    q2 = MP.map_coefficients(imag, q)
     return SOS.SOSDecomposition([q1, q2])
 end
 

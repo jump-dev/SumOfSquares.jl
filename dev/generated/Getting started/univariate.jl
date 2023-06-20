@@ -18,7 +18,7 @@ sos_dec = sos_decomposition(cref, 1e-4)
 ν = moment_matrix(cref)
 ν.Q
 
-η = extractatoms(ν, 1e-4)
+η = atomic_measure(ν, 1e-4)
 minimizers = [η.atoms[1].center; η.atoms[2].center]
 
 η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), ν.basis.monomials)
@@ -46,7 +46,7 @@ cheby_g.Q
 
 cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
 
-cheby_coefs = [-1/2, 2, 5/2]
+cheby_coefs = [5/2, 2, -1/2]
 
 cheby_coefs * cheby_coefs'
 

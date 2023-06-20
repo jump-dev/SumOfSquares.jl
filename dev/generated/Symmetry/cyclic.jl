@@ -46,7 +46,7 @@ struct Action{V<:MP.AbstractVariable} <: Symmetry.OnMonomials
 end
 Symmetry.SymbolicWedderburn.coeff_type(::Action) = Float64
 function Symmetry.SymbolicWedderburn.action(a::Action, el::CyclicElem, mono::MP.AbstractMonomial)
-    return prod(MP.powers(mono), init=MP.constantmonomial(mono)) do (var, exp)
+    return prod(MP.powers(mono), init=MP.constant_monomial(mono)) do (var, exp)
         index = findfirst(isequal(var), a.variables)
         new_index = mod1(index + el.id, el.n)
         return a.variables[new_index]^exp
@@ -79,18 +79,18 @@ for gram in gram_matrix(con_ref).sub_gram_matrices
     display(gram.Q)
 end
 
-basis = [(-2x[1] + x[2] + x[3])/√6, (-x[2] + x[3])/√2]
+basis = [(x[1] + x[2] - 2x[3])/√6, (x[1] - x[2])/√2]
 
 image = [Symmetry.SymbolicWedderburn.action(action, g, p) for p in basis]
 
 a = -1/2
-b = -√3/2
+b = √3/2
 [a -b; b a] * basis
 
 import CSDP
 solver = CSDP.Optimizer
 model = Model(solver)
-MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.ZeroPolynomialBridge{Complex{Float64}})
+MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.Bridges.Constraint.ZeroPolynomialBridge{Complex{Float64}})
 MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{Complex{Float64}})
 @variable(model, t)
 @objective(model, Max, t)

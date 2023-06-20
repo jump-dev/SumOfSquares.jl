@@ -18,7 +18,7 @@ end
 bound, ν = sos_min(Sparsity.NoPattern())
 bound
 
-extractatoms(ν, 1e-6)
+atomic_measure(ν, 1e-6)
 
 ν.basis
 

@@ -24,7 +24,7 @@ model5 = solve(5)
 model7 = solve(7)
 
 ν7 = moment_matrix(model7[:c])
-η = extractatoms(ν7, 1e-3) # Returns nothing as the dual is not atomic
+η = atomic_measure(ν7, 1e-3) # Returns nothing as the dual is not atomic
 
 x_opt = η.atoms[1].center
 p(x_opt)

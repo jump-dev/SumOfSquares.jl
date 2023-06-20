@@ -47,7 +47,7 @@ expected = x^2 - 2x - 3 #src
 # This matrix is the convex combination of the moment matrices corresponding to two atomic measures at `-1` and `3`
 # which allows us to conclude that `-1` and `3` are global minimizers.
 
-η = extractatoms(ν, 1e-4)
+η = atomic_measure(ν, 1e-4)
 minimizers = [η.atoms[1].center; η.atoms[2].center]
 
 # Below are more details on what we mean by convex combination.
@@ -108,7 +108,7 @@ cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
 # $-(2\cos(\theta) - 1) /2 + 2 \cos(\theta) + 5/2.$
 # Therefore, the coefficients in the Chebyshev basis is:
 
-cheby_coefs = [-1/2, 2, 5/2]
+cheby_coefs = [5/2, 2, -1/2]
 
 # We can indeed observe that we obtain the same matrix as `cheby_g.Q`
 
