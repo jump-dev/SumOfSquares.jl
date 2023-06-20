@@ -351,3 +351,10 @@ SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_edge!
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_clique!
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.completion
 ```
+
+Bridges for polynomial optimization
+```@docs
+PolyJuMP.ScalarPolynomialFunction
+PolyJuMP.Bridges.Objective.ToPolynomialBridge
+PolyJuMP.Bridges.Constraint.ToPolynomialBridge
+```
