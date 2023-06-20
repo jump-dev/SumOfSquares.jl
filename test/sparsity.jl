@@ -32,7 +32,7 @@ function wml19()
         @polyvar x[1:3]
         f = 1 + x[1]^4 + x[2]^4 + x[3]^4 + prod(x) + x[2]
         expected_1_false = Set(
-            monovec.([
+            monomial_vector.([
                 [x[3]^2],
                 [x[1] * x[3], x[2]],
                 [x[2], 1],
@@ -43,7 +43,7 @@ function wml19()
             ]),
         )
         expected_2 = Set(
-            monovec.([
+            monomial_vector.([
                 [x[1]^2, x[2]^2, x[3]^2, 1],
                 [x[2], 1],
                 [x[2] * x[3], x[1]],
@@ -52,7 +52,7 @@ function wml19()
             ]),
         )
         cluster_expected_1_false = Set(
-            monovec.([
+            monomial_vector.([
                 [1, x[2], x[1] * x[3]],
                 [x[1]^2],
                 [x[2]^2],
@@ -62,14 +62,14 @@ function wml19()
             ]),
         )
         cluster_expected_1 = Set(
-            monovec.([
+            monomial_vector.([
                 [1, x[2], x[1]^2, x[2]^2, x[1] * x[3], x[3]^2],
                 [x[1], x[2] * x[3]],
                 [x[3], x[1] * x[2]],
             ]),
         )
         cluster_expected_2 = Set(
-            monovec.([
+            monomial_vector.([
                 [1, x[2], x[1]^2, x[2]^2, x[1] * x[3], x[3]^2],
                 [x[1], x[2] * x[3], x[3], x[1] * x[2]],
             ]),
@@ -102,7 +102,7 @@ function wml19()
             ) == expected
         end
         expected = Set(
-            monovec.([
+            monomial_vector.([
                 [x[1]^2, x[1] * x[3], x[2]^2, x[3]^2, x[2], 1],
                 [x[1] * x[2], x[2] * x[3], x[1], x[3]],
             ]),
@@ -141,13 +141,13 @@ function wml19()
                (!use_all_monomials || completion isa ChordalCompletion)
                 if use_all_monomials
                     @test set_monos(preorder_bases[1]) == Set(
-                        monovec.([
+                        monomial_vector.([
                             [x[1], x[2]],
-                            [constantmonomial(x[1] * x[2])],
+                            [constant_monomial(x[1] * x[2])],
                         ]),
                     )
                     @test set_monos(basis) == Set(
-                        monovec.([
+                        monomial_vector.([
                             [x[1], x[2]],
                             [x[1] * x[2], 1],
                             [x[1]^2, x[2]^2, 1],
@@ -155,9 +155,9 @@ function wml19()
                     )
                 else
                     @test set_monos(preorder_bases[1]) ==
-                          Set(monovec.([[x[1], x[2]]]))
+                          Set(monomial_vector.([[x[1], x[2]]]))
                     @test set_monos(basis) == Set(
-                        monovec.([
+                        monomial_vector.([
                             [x[1]^2],
                             [x[1] * x[2], 1],
                             [x[2]^2],
@@ -167,10 +167,16 @@ function wml19()
                 end
             else
                 @test set_monos(preorder_bases[1]) == Set(
-                    monovec.([[constantmonomial(x[1] * x[2])], [x[1], x[2]]]),
+                    monomial_vector.([
+                        [constant_monomial(x[1] * x[2])],
+                        [x[1], x[2]],
+                    ]),
                 )
                 @test set_monos(basis) == Set(
-                    monovec.([[x[1]^2, x[1] * x[2], x[2]^2, 1], [x[1], x[2]]]),
+                    monomial_vector.([
+                        [x[1]^2, x[1] * x[2], x[2]^2, 1],
+                        [x[1], x[2]],
+                    ]),
                 )
             end
         end
@@ -189,7 +195,7 @@ function wml19()
 
             expected = if completion isa ClusterCompletion
                 Set(
-                    monovec.([
+                    monomial_vector.([
                         [x[1]^2 * x[2]^2, x[1] * x[2]^2, 1],
                         [x[1] * x[2]],
                         [x[1]^2 * x[2]],
@@ -197,7 +203,7 @@ function wml19()
                 )
             else
                 Set(
-                    monovec.([
+                    monomial_vector.([
                         [x[1] * x[2]^2, 1],
                         [x[1]^2 * x[2]^2, 1],
                         [x[1] * x[2]],
@@ -216,7 +222,7 @@ function wml19()
         @test set_monos(
             Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
         ) == Set(
-            monovec.([
+            monomial_vector.([
                 [x[1]^2 * x[2]^2, x[1] * x[2]^2, 1],
                 [x[1]^2 * x[2], x[1] * x[2]],
             ]),
@@ -253,10 +259,10 @@ function l09()
             Certificate.NewtonFilter(newt),
         ) == [x[1]^2 * x[2], x[1] * x[2]^2, 1]
         expected = Set(
-            monovec.([
+            monomial_vector.([
                 [x[1]^2 * x[2]],
                 [x[1] * x[2]^2],
-                [constantmonomial(x[1] * x[2])],
+                [constant_monomial(x[1] * x[2])],
             ]),
         )
         for i in 0:2
@@ -291,7 +297,7 @@ function l09()
                             certificate,
                         ),
                     ) == Set(
-                        monovec.([
+                        monomial_vector.([
                             [x[1]^2, x[2]^2, 1],
                             [x[1], x[2]],
                             [x[1] * x[2], 1],
@@ -310,7 +316,7 @@ function l09()
                             certificate,
                         ),
                     ) == Set(
-                        monovec.([
+                        monomial_vector.([
                             [x[1]^2],
                             [x[2]^2],
                             [x[1], x[2]],
@@ -331,7 +337,7 @@ function l09()
                         certificate,
                     ),
                 ) == Set(
-                    monovec.([
+                    monomial_vector.([
                         [x[1], x[2]],
                         [x[3]],
                         [x[1]^2, x[2]^2, 1],
@@ -343,7 +349,11 @@ function l09()
         @test set_monos(
             Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
         ) == Set(
-            monovec.([[x[1], x[2]], [x[3]], [x[1]^2, x[1] * x[2], x[2]^2, 1]]),
+            monomial_vector.([
+                [x[1], x[2]],
+                [x[3]],
+                [x[1]^2, x[1] * x[2], x[2]^2, 1],
+            ]),
         )
     end
 end
@@ -364,11 +374,13 @@ function square_domain(ideal_certificate, d)
         )
         if k == 1
             if use_all_monomials
+                # [x, xy², x³], [1, y², x²],     [y, y³, x²y], [x, xy], [y, x², x²y], [1, x², x²y]
+                # [x, xy², x³], [1, y, x², x²y], [y, y³, x²y], [x, xy], [y, x², x²y], [1, x², x²y]
                 @test set_monos(basis) == Set(
-                    monovec.([
-                        [x^2 * y, y, 1],
+                    monomial_vector.([
+                        [x^2 * y, x^2, y],
                         [x^3, x * y^2, x],
-                        [x^2, y, 1],
+                        [x^2 * y, x^2, 1],
                         [x^2, y^2, 1],
                         [x^2 * y, y^3, y],
                         [x * y, x],
@@ -376,7 +388,7 @@ function square_domain(ideal_certificate, d)
                 )
             else
                 @test set_monos(basis) == Set(
-                    monovec.([
+                    monomial_vector.([
                         [x^2 * y, y^3],
                         [x^2, y],
                         [x^2 * y, 1],
@@ -387,7 +399,7 @@ function square_domain(ideal_certificate, d)
             end
         elseif k == 2
             @test set_monos(basis) == Set(
-                monovec.([
+                monomial_vector.([
                     [x^2 * y, x^2, y^2, 1],
                     [x^3, x * y^2, x * y, x],
                     [x^2 * y, x^2, y, 1],
@@ -396,7 +408,7 @@ function square_domain(ideal_certificate, d)
             )
         elseif k == 3
             @test set_monos(basis) == Set(
-                monovec.([
+                monomial_vector.([
                     [x^3, x * y^2, x * y, x],
                     [x^2 * y, x^2, y^2, y, 1],
                     [x^2 * y, y^3, x^2, y, 1],
@@ -404,41 +416,50 @@ function square_domain(ideal_certificate, d)
             )
         else
             @test set_monos(basis) == Set(
-                monovec.([
+                monomial_vector.([
                     [x^3, x * y^2, x * y, x],
                     [x^2 * y, y^3, x^2, y^2, y, 1],
                 ]),
             )
         end
-        expected = Set(monovec.([[x^2, y^2, y, 1], [x * y, x]]))
+        expected = Set(monomial_vector.([[x^2, y^2, y, 1], [x * y, x]]))
         if k == 1
             if use_all_monomials
-                @test set_monos(preorder_bases[1]) ==
-                      Set(monovec.([[x * y, x], [x^2, y, 1], [x^2, y^2, 1]]))
+                @test set_monos(preorder_bases[1]) == Set(
+                    monomial_vector.([[x * y, x], [x^2, y, 1], [x^2, y^2, 1]]),
+                )
             else
-                @test set_monos(preorder_bases[1]) ==
-                      Set(monovec.([[y, 1], [x * y, x], [x^2, y], [x^2, y^2]]))
+                @test set_monos(preorder_bases[1]) == Set(
+                    monomial_vector.([
+                        [y, 1],
+                        [x * y, x],
+                        [x^2, y],
+                        [x^2, y^2],
+                    ]),
+                )
             end
         else
             @test set_monos(preorder_bases[1]) == expected
         end
         if k == 1
             if use_all_monomials
-                @test set_monos(preorder_bases[2]) ==
-                      Set(monovec.([[x * y, x], [x^2, y], [x^2, y^2, 1]]))
+                @test set_monos(preorder_bases[2]) == Set(
+                    monomial_vector.([[x * y, x], [x^2, y], [x^2, y^2, 1]]),
+                )
             else
                 @test set_monos(preorder_bases[2]) == Set(
-                    monovec.([
+                    monomial_vector.([
                         [x * y, x],
                         [x^2, y],
                         [x^2, y^2],
-                        [constantmonomial(x * y)],
+                        [constant_monomial(x * y)],
                     ]),
                 )
             end
         elseif k == 2
-            @test set_monos(preorder_bases[2]) ==
-                  Set(monovec.([[x^2, y^2, 1], [x^2, y, 1], [x * y, x]]))
+            @test set_monos(preorder_bases[2]) == Set(
+                monomial_vector.([[x^2, y^2, 1], [x^2, y, 1], [x * y, x]]),
+            )
         else
             @test set_monos(preorder_bases[2]) == expected
         end
@@ -449,7 +470,11 @@ function sum_square(n)
         @polyvar x[1:(2n)]
         certificate = Certificate.Newton(SOSCone(), MB.MonomialBasis, tuple())
         f = sum((x[1:2:(2n-1)] .- x[2:2:(2n)]) .^ 2)
-        expected = Set(monovec.([monovec([x[(2i-1)], x[2i], 1]) for i in 1:n]))
+        expected = Set(
+            monomial_vector.([
+                monomial_vector([x[(2i-1)], x[2i], 1]) for i in 1:n
+            ]),
+        )
         @test set_monos(
             Certificate.Sparsity.sparsity(
                 f,
@@ -457,7 +482,7 @@ function sum_square(n)
                 Certificate.MaxDegree(SOSCone(), MB.MonomialBasis, 2),
             ),
         ) == expected
-        expected = Set(monovec.([[x[(2i-1)], x[2i]] for i in 1:n]))
+        expected = Set(monomial_vector.([[x[(2i-1)], x[2i]] for i in 1:n]))
         @test set_monos(
             Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
         ) == expected
@@ -472,9 +497,10 @@ function drop_monomials()
             use_all_monomials in [false, true]
             # The monomial `1˘ is dropped as it is useless.
             if use_all_monomials
-                expected = Set(monovec.([[x], [constantmonomial(x^2)]]))
+                expected =
+                    Set(monomial_vector.([[x], [constant_monomial(x^2)]]))
             else
-                expected = Set([monovec([x])])
+                expected = Set([monomial_vector([x])])
             end
             @test set_monos(
                 Certificate.Sparsity.sparsity(
@@ -514,30 +540,32 @@ function drop_monomials()
                 )
                 if ideal_certificate isa Certificate.Newton
                     if use_all_monomials
-                        @test set_monos(basis) == Set(monovec.([[x]]))
+                        @test set_monos(basis) == Set(monomial_vector.([[x]]))
                         @test set_monos(preorder_bases[1]) ==
-                              Set(monovec.([[x, 1]]))
+                              Set(monomial_vector.([[x, 1]]))
                     else
                         @test isempty(basis)
                         @test set_monos(preorder_bases[1]) ==
-                              Set(monovec.([[x]]))
+                              Set(monomial_vector.([[x]]))
                     end
                 else
                     if k == 1 && !use_all_monomials
-                        @test set_monos(basis) == Set(monovec.([[x^2, x]]))
+                        @test set_monos(basis) ==
+                              Set(monomial_vector.([[x^2, x]]))
                     elseif (k == 2 && !use_all_monomials) ||
                            (k == 1 && use_all_monomials)
                         @test set_monos(basis) ==
-                              Set(monovec.([[x^2, 1], [x^2, x]]))
+                              Set(monomial_vector.([[x^2, 1], [x^2, x]]))
                     else
-                        @test set_monos(basis) == Set(monovec.([[x^2, x, 1]]))
+                        @test set_monos(basis) ==
+                              Set(monomial_vector.([[x^2, x, 1]]))
                     end
                     if (k == 1 && !use_all_monomials)
                         @test set_monos(preorder_bases[1]) ==
-                              Set(monovec.([[x]]))
+                              Set(monomial_vector.([[x]]))
                     else
                         @test set_monos(preorder_bases[1]) ==
-                              Set(monovec.([[x, 1]]))
+                              Set(monomial_vector.([[x, 1]]))
                     end
                 end
             end

@@ -31,14 +31,14 @@ function quartic_constant_test(
 
     p = gram_matrix(cref)
     @test p isa SumOfSquares.GramMatrix
-    @test getmat(p) ≈ ones(1, 1) atol = atol rtol = rtol
+    @test value_matrix(p) ≈ ones(1, 1) atol = atol rtol = rtol
     @test p.basis isa FixedPolynomialBasis
     @test p.basis.polynomials == [x^2]
 
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        Monomial{true},
-        MonomialVector{true},
+        monomial_type(x),
+        monomial_vector_type(x),
         SumOfSquares.Certificate.FixedBasis{typeof(cone),typeof(p.basis)},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]

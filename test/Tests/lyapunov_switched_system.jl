@@ -74,10 +74,11 @@ function lyapunov_switched_system_test(
     if feasible
         @test JuMP.termination_status(model) == MOI.OPTIMAL
         @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-        @test all(eigvals(Matrix(getmat(JuMP.value(p0)))) .≥ -atol)
+        @test all(eigvals(Matrix(value_matrix(JuMP.value(p0)))) .≥ -atol)
         @test JuMP.value(p0).basis isa basis
-        @test getmat(JuMP.value(p)) ≈ getmat(gram_operate(+, q, JuMP.value(p0))) atol =
-            atol rtol = rtol
+        @test value_matrix(JuMP.value(p)) ≈
+              value_matrix(gram_operate(+, q, JuMP.value(p0))) atol = atol rtol =
+            rtol
         @test gram_matrix(c1).basis isa basis
         @test gram_matrix(c2).basis isa basis
     else

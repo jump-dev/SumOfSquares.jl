@@ -56,7 +56,7 @@ min_algebraic(S)
 
 # We can see that the Gröbner basis of `S` was computed
 
-@show S.I.gröbnerbasis
+@show S.I.gröbner_basis
 S.I.algo
 
 # The Gröbner basis is simple to compute in this case as the vector
@@ -74,7 +74,7 @@ struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
 end
 MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
-MP.changecoefficienttype(set::HypercubeSet, ::Type) = set
+Base.similar(set::HypercubeSet, ::Type) = set
 SS.ideal(set::HypercubeSet) = set.ideal
 function Base.rem(p, set::HypercubeIdeal)
     return MP.polynomial(map(MP.terms(p)) do term

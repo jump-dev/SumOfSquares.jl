@@ -126,9 +126,19 @@ end
                 Certificate.NewtonDegreeBounds((part2, part1)),
             ) == Y
         end
-        full_test(X, monovec([x^2, x * y, x * z, x, y, z]), [x], [y, z])
-        full_test(X, monovec([x^2, x * y, x * z, y * z, x, z]), [y], [x, z])
-        full_test(X, monovec([x^2, x * y, x * z, y * z, x, y]), [z], [x, y])
+        full_test(X, monomial_vector([x^2, x * y, x * z, x, y, z]), [x], [y, z])
+        full_test(
+            X,
+            monomial_vector([x^2, x * y, x * z, y * z, x, z]),
+            [y],
+            [x, z],
+        )
+        full_test(
+            X,
+            monomial_vector([x^2, x * y, x * z, y * z, x, y]),
+            [z],
+            [x, y],
+        )
         # FIXME: With recursive merging, it should give [x^2, x*y, x*z, x]
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z],
@@ -158,7 +168,7 @@ end
 function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
     @test basis isa basis_type
     if basis isa MB.AbstractMonomialBasis
-        # This fails if `basis` is `Vector{Monomial{true}}` instead of `MonomialVector{true}`
+        # This fails if `basis` is `Vector{<:Monomial}` instead of `MonomialVector`
         # for DynamicPolynomials. This is important as
         # `polynomial(::AbstractMatrix, ::MonomialVector, ::Type)` is implemented but
         # `polynomial(Q::AbstractMatrix, X::AbstractVector, ::Type)` falls back to
@@ -166,8 +176,8 @@ function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
         # which gives `Polynomial{true, Int}` which then tries to multiply a
         # `ScalarAffineFunction{Float64}` with an `Int`).
         monos = basis.monomials
-        @test typeof(monos) == typeof(monovec(monos))
-        @test issorted(monos, rev = true)
+        @test typeof(monos) == typeof(monomial_vector(monos))
+        @test issorted(monos)
     end
 end
 function _basis_check(basis, basis_type)
@@ -247,7 +257,7 @@ end
             certificate_api(Certificate.Sparsity.Preorder(sparsity, preorder))
         end
     end
-    basis = BT(monovec([x^2, x]))
+    basis = BT(monomial_vector([x^2, x]))
     @testset "$(typeof(certificate))" for certificate in [
         Certificate.MaxDegree(cone, BT, maxdegree),
         Certificate.FixedBasis(cone, basis),

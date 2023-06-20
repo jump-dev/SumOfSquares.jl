@@ -276,7 +276,10 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(domain, monos, certificate)
+    # For terms, `monomials` is `OneOrZeroElementVector`
+    # so we convert it with `monomial_vector`
+    # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
+    return SOSPolynomialSet(domain, MP.monomial_vector(monos), certificate)
 end
 
 function PolyJuMP.bridges(
@@ -391,7 +394,7 @@ Return the [`SOSDecompositionAttribute`](@ref) of `cref`.
 function sos_decomposition(
     cref::JuMP.ConstraintRef,
     ranktol::Real = 0.0,
-    dec::MultivariateMoments.LowRankChol = SVDChol(),
+    dec::MultivariateMoments.LowRankLDLTAlgorithm = SVDLDLT(),
 )
     return MOI.get(cref.model, SOSDecompositionAttribute(ranktol, dec), cref)
 end
@@ -482,7 +485,7 @@ const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 function JuMP.build_constraint(
     _error::Function,
-    P::AbstractMatrix{<:MP.APL},
+    P::AbstractMatrix{<:_APL},
     ::PSDMatrixInnerCone{MCT};
     newton_polytope::Tuple = tuple(),
     kws...,
@@ -491,7 +494,7 @@ function JuMP.build_constraint(
     if !issymmetric(P)
         _error("The polynomial matrix constrained to be SOS must be symmetric.")
     end
-    y = [MP.similarvariable(eltype(P), gensym()) for i in 1:n]
+    y = [MP.similar_variable(eltype(P), gensym()) for i in 1:n]
     p = dot(y, P * y)
     # TODO Newton_polytope=(y,) may not be the best idea if exact newton
     #      polytope computation is used.
@@ -528,7 +531,7 @@ const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
 function JuMP.build_constraint(
     _error::Function,
-    p::MP.APL,
+    p::_APL,
     ::ConvexPolyInnerCone{MCT};
     kws...,
 ) where {MCT}

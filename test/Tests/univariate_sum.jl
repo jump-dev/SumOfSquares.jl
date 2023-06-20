@@ -29,15 +29,17 @@ function univariate_sum_test(
     p = gram_matrix(cref)
     @test p isa SumOfSquares.SparseGramMatrix
     @test length(p.sub_gram_matrices) == 2
-    @test getmat(p.sub_gram_matrices[1]) ≈ ones(2, 2) atol = atol rtol = rtol
-    @test p.sub_gram_matrices[1].basis.monomials == [y, 1]
-    @test getmat(p.sub_gram_matrices[2]) ≈ [1 -1; -1 1] atol = atol rtol = rtol
-    @test p.sub_gram_matrices[2].basis.monomials == [x, 1]
+    @test value_matrix(p.sub_gram_matrices[1]) ≈ [1 -1; -1 1] atol = atol rtol =
+        rtol
+    @test p.sub_gram_matrices[1].basis.monomials == [1, x]
+    @test value_matrix(p.sub_gram_matrices[2]) ≈ ones(2, 2) atol = atol rtol =
+        rtol
+    @test p.sub_gram_matrices[2].basis.monomials == [1, y]
 
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        Monomial{true},
-        MonomialVector{true},
+        monomial_type(x),
+        monomial_vector_type(x),
         SumOfSquares.Certificate.Sparsity.Ideal{
             Sparsity.Variable,
             SumOfSquares.Certificate.MaxDegree{typeof(cone),MonomialBasis},

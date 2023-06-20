@@ -1,35 +1,40 @@
 export GramMatrix, SparseGramMatrix
 
-import MultivariateMoments: trimat, SymMatrix, getmat
-export gram_operate, getmat
+import MultivariateMoments: vectorized_symmetric_matrix, SymMatrix, value_matrix
+export gram_operate, value_matrix
 
 abstract type AbstractDecomposition{T} <: MP.AbstractPolynomialLike{T} end
 
-Base.:(+)(x::MP.APL, y::AbstractDecomposition) = x + MP.polynomial(y)
-Base.:(+)(x::AbstractDecomposition, y::MP.APL) = MP.polynomial(x) + y
+Base.:(+)(x::_APL, y::AbstractDecomposition) = x + MP.polynomial(y)
+Base.:(+)(x::AbstractDecomposition, y::_APL) = MP.polynomial(x) + y
 function Base.:(+)(x::AbstractDecomposition, y::AbstractDecomposition)
     return MP.polynomial(x) + MP.polynomial(y)
 end
-Base.:(-)(x::MP.APL, y::AbstractDecomposition) = x - MP.polynomial(y)
-Base.:(-)(x::AbstractDecomposition, y::MP.APL) = MP.polynomial(x) - y
+Base.:(-)(x::_APL, y::AbstractDecomposition) = x - MP.polynomial(y)
+Base.:(-)(x::AbstractDecomposition, y::_APL) = MP.polynomial(x) - y
 function Base.:(-)(x::AbstractDecomposition, y::AbstractDecomposition)
     return MP.polynomial(x) - MP.polynomial(y)
 end
 
 abstract type AbstractGramMatrix{T,B,U} <: AbstractDecomposition{U} end
 
-function MP.monomialtype(
+function MP.monomial_type(
     ::Union{AbstractGramMatrix{T,B},Type{<:AbstractGramMatrix{T,B}}},
 ) where {T,B}
-    return MP.monomialtype(B)
+    return MP.monomial_type(B)
 end
-function MP.polynomialtype(
+function MP.term_type(
+    p::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
+) where {T,B,U}
+    return MP.term_type(MP.polynomial_type(p))
+end
+function MP.polynomial_type(
     ::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
 ) where {T,B,U}
-    return MP.polynomialtype(B, U)
+    return MP.polynomial_type(B, U)
 end
 
-Base.:(==)(p::MP.APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
+Base.:(==)(p::_APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
 Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 
 """
@@ -55,7 +60,7 @@ function GramMatrix{T,B}(
     Q::AbstractMatrix{T},
     basis::B,
 ) where {T,B<:AbstractPolynomialBasis}
-    return GramMatrix{T,B,_promote_sum(eltype(Q))}(Q, basis)
+    return GramMatrix{T,B,_promote_sum(T)}(Q, basis)
 end
 function GramMatrix(
     # We don't use `AbstractMatrix` to avoid clash with method below with `σ`.
@@ -67,8 +72,18 @@ function GramMatrix(
 ) where {T}
     return GramMatrix{T,typeof(basis)}(Q, basis)
 end
+
+function MP.similar_type(
+    ::Type{GramMatrix{T,B,U,MT}},
+    ::Type{S},
+) where {T,B,U,MT,S}
+    US = _promote_sum(S)
+    MS = MP.similar_type(MT, S)
+    return GramMatrix{S,B,US,MS}
+end
+
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
-MP.constantmonomial(p::GramMatrix) = MP.constantmonomial(MP.monomialtype(p))
+MP.constant_monomial(p::GramMatrix) = MP.constant_monomial(MP.monomial_type(p))
 MP.variables(p::GramMatrix) = MP.variables(p.basis)
 MP.nvariables(p::GramMatrix) = MP.nvariables(p.basis)
 
@@ -83,17 +98,20 @@ Base.iszero(p::GramMatrix) = iszero(MP.polynomial(p))
 Base.getindex(p::GramMatrix, I...) = getindex(p.Q, I...)
 Base.copy(p::GramMatrix) = GramMatrix(copy(p.Q), copy(p.basis))
 
-MultivariateMoments.getmat(p::GramMatrix{T}) where {T} = p.Q
+MultivariateMoments.value_matrix(p::GramMatrix{T}) where {T} = p.Q
 
 function GramMatrix{T}(
     f::Function,
     basis::AbstractPolynomialBasis,
     σ = 1:length(basis),
 ) where {T}
-    return GramMatrix{T,typeof(basis)}(trimat(T, f, length(basis), σ), basis)
+    return GramMatrix{T,typeof(basis)}(
+        vectorized_symmetric_matrix(T, f, length(basis), σ),
+        basis,
+    )
 end
 function GramMatrix{T}(f::Function, monos::AbstractVector) where {T}
-    σ, sorted_monos = MP.sortmonovec(monos)
+    σ, sorted_monos = MP.sort_monomial_vector(monos)
     return GramMatrix{T}(f, MonomialBasis(sorted_monos), σ)
 end
 
@@ -105,19 +123,19 @@ function GramMatrix(
     return GramMatrix{T}((i, j) -> Q[σ[i], σ[j]], basis)
 end
 function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
-    σ, sorted_monos = MP.sortmonovec(monos)
+    σ, sorted_monos = MP.sort_monomial_vector(monos)
     return GramMatrix(Q, MonomialBasis(sorted_monos), σ)
 end
 
 #function Base.convert{T, PT <: AbstractPolynomial{T}}(::Type{PT}, p::GramMatrix)
-#    # coefficienttype(p) may be different than T and MP.polynomial(p) may be different than PT (different module)
+#    # coefficient_type(p) may be different than T and MP.polynomial(p) may be different than PT (different module)
 #    convert(PT, MP.polynomial(p))
 #end
 function MP.polynomial(p::GramMatrix{T,B,U}) where {T,B,U}
     return MP.polynomial(p, U)
 end
 function MP.polynomial(p::GramMatrix, ::Type{S}) where {S}
-    return MP.polynomial(getmat(p), p.basis, S)
+    return MP.polynomial(value_matrix(p), p.basis, S)
 end
 
 function change_basis(
@@ -198,6 +216,17 @@ struct SparseGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
     sub_gram_matrices::Vector{GramMatrix{T,B,U,MT}}
 end
 
+function _sparse_type(::Type{GramMatrix{T,B,U,MT}}) where {T,B,U,MT}
+    return SparseGramMatrix{T,B,U,MT}
+end
+
+function MP.similar_type(
+    ::Type{SparseGramMatrix{T,B,U,MT}},
+    ::Type{S},
+) where {T,B,U,MT,S}
+    return _sparse_type(MP.similar_type(GramMatrix{T,B,U,MT}, S))
+end
+
 function Base.zero(::Type{SparseGramMatrix{T,B,U,MT}}) where {T,B,U,MT}
     return SparseGramMatrix(GramMatrix{T,B,U,MT}[])
 end
@@ -206,6 +235,6 @@ function MP.polynomial(p::SparseGramMatrix)
         identity,
         MA.add!!,
         p.sub_gram_matrices,
-        init = zero(MP.polynomialtype(p)),
+        init = zero(MP.polynomial_type(p)),
     )
 end

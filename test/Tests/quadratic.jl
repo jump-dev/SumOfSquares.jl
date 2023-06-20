@@ -20,12 +20,12 @@ function quadratic_test(
     if bivariate
         @polyvar y
         poly = x^2 + α * x * y + y^2
-        cert_monos = [x, y]
-        monos = [x^2, x * y, y^2]
+        cert_monos = [y, x]
+        monos = [y^2, x * y, x^2]
     else
         poly = x^2 + α * x + 1
-        cert_monos = [x, 1]
-        monos = [x^2, x, 1]
+        cert_monos = [1, x]
+        monos = [1, x, x^2]
     end
     cref = @constraint(model, poly in cone, basis = basis)
 
@@ -50,7 +50,7 @@ function quadratic_test(
     test_constraint_primal(cref, value(poly))
 
     p = gram_matrix(cref)
-    @test getmat(p) ≈ ones(2, 2) atol = atol rtol = rtol
+    @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     if basis == ChebyshevBasis
         @test p.basis.polynomials == cert_monos
     else
@@ -70,7 +70,7 @@ function quadratic_test(
     end
 
     ν = moment_matrix(cref)
-    @test getmat(ν) ≈ [
+    @test value_matrix(ν) ≈ [
         a[1] a[2]
         a[2] a[3]
     ] atol = atol rtol = rtol
@@ -85,8 +85,8 @@ function quadratic_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        Monomial{true},
-        MonomialVector{true},
+        monomial_type(x),
+        monomial_vector_type(x),
         SumOfSquares.Certificate.Newton{typeof(cone),basis,N},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
@@ -102,8 +102,8 @@ function quadratic_test(
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     SumOfSquares.FullSpace,
                     basis,
-                    Monomial{true},
-                    MonomialVector{true},
+                    monomial_type(x),
+                    monomial_vector_type(x),
                 },
                 0,
             ),

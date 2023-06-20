@@ -29,11 +29,11 @@ primal_status(model)
 # We now inspect this solution:
 
 q = gram_matrix(con_ref)
-Q = getmat(q) #src
-@test isapprox(Q[1, 1], 2, rtol=1e-5) #src
-@test isapprox(Q[1, 2], 1, rtol=1e-5) #src
-@test isapprox(Q[3, 3], 5, rtol=1e-5) #src
-@test abs(Q[2, 3]) < 1e-5 #src
+Q = value_matrix(q) #src
+@test isapprox(Q[1, 1], 5, rtol=1e-5) #src
+@test isapprox(Q[3, 2], 1, rtol=1e-5) #src
+@test isapprox(Q[3, 3], 2, rtol=1e-5) #src
+@test abs(Q[2, 1]) < 1e-5 #src
 @test isapprox(Q[2, 2] + 2Q[1, 3], -1, rtol=1e-5) #src
 
 # We can get the SOS decomposition from the gram matrix as follows:

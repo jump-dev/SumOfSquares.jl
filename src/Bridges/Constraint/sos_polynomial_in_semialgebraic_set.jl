@@ -68,22 +68,19 @@ function MOI.Bridges.Constraint.bridge_constraint(
         push!(λ_constraints, λ_constraint)
         push!(λ_bases, λ_basis)
         # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
-        # need to call `changecoefficienttype`. This is critical since `T` is
+        # need to call `similar`. This is critical since `T` is
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
         g = Certificate.generator(set.certificate, index, preprocessed)
         # TODO replace with `MA.sub_mul` when it works.
-        p = MA.operate!!(
-            MA.add_mul,
-            p,
-            -one(T),
-            λ,
-            MP.changecoefficienttype(g, T),
-        )
+        p = MA.operate!!(MA.add_mul, p, -one(T), λ, similar(g, T))
     end
     new_set = SOS.SOSPolynomialSet(
         set.domain.V,
-        MP.monomials(p),
+        # For terms, `monomials` is `OneOrZeroElementVector`
+        # so we convert it with `monomial_vector`
+        # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
+        MP.monomial_vector(MP.monomials(p)),
         Certificate.ideal_certificate(set.certificate),
     )
     constraint = MOI.add_constraint(
@@ -277,7 +274,7 @@ function MOI.get(
             eachindex(bridge.lagrangian_bases)
     return map(
         i -> _gram(
-            Q -> MOI.get(model, MOI.VariablePrimal(attr.N), Q),
+            Q -> MOI.get(model, MOI.VariablePrimal(attr.result_index), Q),
             bridge.lagrangian_variables[i],
             bridge.lagrangian_bases[i],
             T,

@@ -63,4 +63,4 @@ JuMP.primal_status(model)
 # We can now obtain this feasible solution with:
 
 value(V)
-@test iszero(removemonomials(value(V), monos)) #src
+@test iszero(remove_monomials(value(V), monos)) #src

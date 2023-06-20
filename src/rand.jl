@@ -31,4 +31,4 @@ function _randsos(
     return GramMatrix(randpsd(n, r = r, eps = eps), x)
 end
 
-randsos(X::AbstractVector; kws...) = _randsos(MP.monovec(X); kws...)
+randsos(X::AbstractVector; kws...) = _randsos(MP.monomial_vector(X); kws...)

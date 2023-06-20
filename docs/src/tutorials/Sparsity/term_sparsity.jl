@@ -41,7 +41,7 @@ bound
 # We find the corresponding minimizer `(0, 0, 0)` by matching the moments
 # of the moment matrix with a dirac measure centered at this minimizer.
 
-extractatoms(ν, 1e-6)
+atomic_measure(ν, 1e-6)
 
 # We can see below that the basis contained 6 monomials hence we needed to use 6x6 PSD matrix variables.
 
@@ -68,9 +68,9 @@ bound
 
 # However, this bound was obtained with an SDP with 4 matrices of size 3x3.
 
-@test length(ν.sub_moment_matrices) == 4                                  #src
-@test ν.sub_moment_matrices[1].basis.monomials == [x[2]*x[3], x[2], x[3]] #src
-@test ν.sub_moment_matrices[2].basis.monomials == [x[2]*x[3], x[2], 1]    #src
-@test ν.sub_moment_matrices[3].basis.monomials == [x[1], x[2], 1]         #src
-@test ν.sub_moment_matrices[4].basis.monomials == [x[1]*x[2], x[1], 1]    #src
+@test length(ν.sub_moment_matrices) == 4                                       #src
+@test ν.sub_moment_matrices[1].basis.monomials == [x[2], x[1], x[1]*x[2]]      #src
+@test ν.sub_moment_matrices[2].basis.monomials == [x[2], x[2]*x[3], x[1]*x[2]] #src
+@test ν.sub_moment_matrices[3].basis.monomials == [x[3], x[2], x[2]*x[3]]      #src
+@test ν.sub_moment_matrices[4].basis.monomials == [1, x[2]*x[3], x[1]*x[2]]    #src
 [sub.basis for sub in ν.sub_moment_matrices]

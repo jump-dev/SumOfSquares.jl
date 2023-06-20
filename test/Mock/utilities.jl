@@ -92,3 +92,25 @@ end
 function mocks(args...; kws...)
     return [bridged_mock(args...; kws...), cached_mock(args...; kws...)]
 end
+
+function cheat(test, optimizer_constructor, args...)
+    # We add a first layer of bridges that will only apply the SumOfSquares bridges
+    # since the `JuMP.add_bridge`s will only apply to the first layer.
+    # That way, we know that after this first layer, it will be the same as the mock model.
+    # We add a `CachingOptimizer` inbetween as two layers of bridges might mess up with bridged variable
+    # indices as they both interpret negative indices as bridged variables that they have bridged
+    function constructor()
+        model = MOI.Utilities.CachingOptimizer(
+            MOI.Utilities.Model{Float64}(),
+            MOI.instantiate(optimizer_constructor, with_bridge_type = Float64),
+        )
+        @show MOI.Utilities.state(model)
+        # We attach to make sure the variables are added in the same order
+        # But the bridge costs attributes are still passed along so the order might still differ
+        MOI.Utilities.attach_optimizer(model)
+        @show MOI.Utilities.state(model)
+        return model
+    end
+    model = test(constructor, args...)
+    return Tests.inner_variable_value(model)
+end

@@ -1,6 +1,7 @@
 module Sparsity
 
 import MultivariatePolynomials as MP
+const _APL = MP.AbstractPolynomialLike
 import MultivariateBases as MB
 using SemialgebraicSets
 
