@@ -15,14 +15,14 @@ function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
     function permute!(i, j)
         swap = sparse([i, j], [j, i], ones(T, 2), n, n)
         S = swap' * S * swap
-        P *= swap
+        return P *= swap
     end
     while !sorted
         prev_i = nothing
         sorted = true
         i = 1
         while i <= n
-            if (i < n && !iszero(S[i+1,i]))
+            if (i < n && !iszero(S[i+1, i]))
                 #if S[i+1, i] < S[i, i+1]
                 #    permute!(i, i + 1)
                 #end
