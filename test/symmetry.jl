@@ -78,8 +78,8 @@ function test_orthogonal_transformation_to()
     ]
     _test_orthogonal_transformation_to(A1, A2)
     A1 = [
-         0 -1
-        -2  0
+        0 -1
+        -2 0
     ]
     A2 = [
         0 1
