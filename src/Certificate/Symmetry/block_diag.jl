@@ -1,4 +1,4 @@
-import Combinatorics, DataStructures
+import DataStructures
 
 """
     _permutation_quasi_upper_triangular(S)
