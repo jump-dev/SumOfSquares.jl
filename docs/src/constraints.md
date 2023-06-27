@@ -246,7 +246,7 @@ Springer Science & Business Media, **2013**.
 *DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*.
 ArXiv e-prints, **2017**.
 
-## Reference
+## API Reference
 
 Default choice for the `maxdegree` keyword:
 ```@docs
@@ -357,4 +357,11 @@ Bridges for polynomial optimization
 PolyJuMP.ScalarPolynomialFunction
 PolyJuMP.Bridges.Objective.ToPolynomialBridge
 PolyJuMP.Bridges.Constraint.ToPolynomialBridge
+```
+
+### Internal functions
+
+```@docs
+SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to
+SumOfSquares.Certificate.Symmetry._permutation_quasi_upper_triangular
 ```
