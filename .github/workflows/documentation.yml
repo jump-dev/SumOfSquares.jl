@@ -26,7 +26,7 @@ jobs:
               PackageSpec(url="https://github.com/blegat/HomotopyContinuation.jl", rev="solve"),
               PackageSpec(url="https://github.com/blegat/PolynomialTestSystems.jl", rev="fix"),
               PackageSpec(url="https://github.com/blegat/MixedSubdivisions.jl", rev="MP@v0.5"),
-              PackageSpec(url="https://github.com/blegat/ImplicitPlots.jl", rev="mp@v0.5"),
+              PackageSpec(url="https://github.com/blegat/ImplicitPlots.jl", rev="mpv0.5"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()

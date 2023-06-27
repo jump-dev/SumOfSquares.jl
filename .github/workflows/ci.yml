@@ -46,7 +46,6 @@ jobs:
           using Pkg
           Pkg.add([
               PackageSpec(name="PolyJuMP", rev="master"),
-              PackageSpec(url="https://github.com/blegat/HomotopyContinuation.jl", rev="solve"),
           ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
