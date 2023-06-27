@@ -41,7 +41,7 @@ end
 
 function _test_orthogonal_transformation_to(A, B)
     U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(A, B)
-    @test A ≈ U' * B * U
+    @test A == U' * B * U
 end
 
 function test_orthogonal_transformation_to()
@@ -54,7 +54,7 @@ function test_orthogonal_transformation_to()
         -1 0
     ]
     D = Diagonal([1, -1])
-    @test A1 ≈ D * A2 * D
+    @test A1 == D * A2 * D
     _test_orthogonal_transformation_to(A1, A2)
     B1 = [
         0 1
@@ -64,9 +64,9 @@ function test_orthogonal_transformation_to()
         0 -1
         -1 0
     ]
-    @test B1 ≈ D * B2 * D
+    @test B1 == D * B2 * D
     _test_orthogonal_transformation_to(B1, B2)
-    @test (A1 + B1) ≈ D * (A2 + B2) * D
+    @test (A1 + B1) == D * (A2 + B2) * D
     _test_orthogonal_transformation_to(A1 + B1, A2 + B2)
     A1 = [
         0 1
@@ -76,7 +76,17 @@ function test_orthogonal_transformation_to()
         0 -1
         2 0
     ]
-    return _test_orthogonal_transformation_to(A1, A2)
+    _test_orthogonal_transformation_to(A1, A2)
+    A1 = [
+         0 -1
+        -2  0
+    ]
+    A2 = [
+        0 1
+        2 0
+    ]
+    _test_orthogonal_transformation_to(A1, A2)
+    return
 end
 
 function test_block_diag()

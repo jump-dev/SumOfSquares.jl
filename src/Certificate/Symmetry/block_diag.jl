@@ -55,20 +55,19 @@ function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
     return P
 end
 
+# `A` and `B` may be not upper triangular because of the permutations
 function _sign_diag(A::AbstractMatrix{T}, B::AbstractMatrix{T}) where {T}
     n = LinearAlgebra.checksquare(A)
     d = ones(T, n)
     for i in 1:n
         minus = zero(T)
         not_minus = zero(T)
-        for j in 1:n
-            if i != j
-                I = min(i, j)
-                J = max(i, j)
+        for j in 1:(i-1)
+            for (I, J) in [(i, j), (j, i)]
                 a = A[I, J]
                 b = B[I, J]
                 minus = max(minus, abs(a + b))
-                not_minus = max(minus, abs(a - b))
+                not_minus = max(not_minus, abs(a - b))
             end
         end
         if minus < not_minus
@@ -78,6 +77,16 @@ function _sign_diag(A::AbstractMatrix{T}, B::AbstractMatrix{T}) where {T}
         end
     end
     return d
+end
+
+# Try to eliminate rounding error if it's easy
+# Should be the case for many groups
+function _try_integer!(A::Matrix)
+    if all(a -> round(a) ≈ a, A)
+        return round.(A)
+    else
+        return A
+    end
 end
 
 """
@@ -104,10 +113,7 @@ function orthogonal_transformation_to(A, B)
     Z_B = Bs.vectors
     P_B = _permutation_quasi_upper_triangular(T_B)
     d = _sign_diag(P_A' * T_A * P_A, P_B' * T_B * P_B)
-    U = Z_B * Z_A' * P_B * P_A' * LinearAlgebra.Diagonal(d)
-    V = U
-    V = Z_B * Z_A'
-    return Z_B * Z_A' * P_B * P_A' * LinearAlgebra.Diagonal(d)
+    return _try_integer!(Z_B * P_B * LinearAlgebra.Diagonal(d) * P_A' * Z_A')
 end
 
 function ordered_block_diag(As, d)
@@ -135,7 +141,12 @@ function ordered_block_diag(As, d)
         # 1997, 133-140
         R = sum(λ .* refs)
         C = sum(λ .* Cs)
-        U[:, I] = U[:, I] * orthogonal_transformation_to(R, C)
+        V = orthogonal_transformation_to(R, C)
+        @assert R ≈ V' * C * V
+        for i in eachindex(refs)
+            @assert refs[i] ≈ V' * Cs[i] * V
+        end
+        U[:, I] = U[:, I] * V
         offset += d
     end
     @assert ordered_block_check(U, As, d)

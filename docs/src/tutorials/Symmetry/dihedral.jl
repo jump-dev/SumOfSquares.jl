@@ -10,6 +10,8 @@
 
 
 using Test #src
+import Random #src
+Random.seed!(0) #src
 
 # We start by defining the Dihedral group of order 8.
 # This group is isomorphic to the following permutation group:
@@ -147,17 +149,17 @@ function solve(G)
 
     g = gram_matrix(con_ref).sub_gram_matrices #src
     @test length(g) == 5                       #src
-    @test g[1].basis.polynomials == [x*y^2, x, x^3] #src
-    @test g[2].basis.polynomials == [x^2*y, y, y^3] #src
+    @test g[1].basis.polynomials == [y^3, x^2*y, -y] #src
+    @test g[2].basis.polynomials == [-x^3, -x*y^2, x] #src
     for i in 1:2                        #src
         I = 3:-1:1                      #src
         Q = g[i].Q[I, I]                #src
         @test size(Q) == (3, 3)         #src
-        @test Q[1, 1] ≈  1    rtol=1e-2 #src
+        @test Q[2, 2] ≈  1    rtol=1e-2 #src
         @test Q[1, 2] ≈ -5/8  rtol=1e-2 #src
-        @test Q[1, 3] ≈ -1    rtol=1e-2 #src
-        @test Q[2, 2] ≈ 25/64 rtol=1e-2 #src
-        @test Q[2, 3] ≈  5/8  rtol=1e-2 #src
+        @test Q[2, 3] ≈ -1    rtol=1e-2 #src
+        @test Q[1, 1] ≈ 25/64 rtol=1e-2 #src
+        @test Q[1, 3] ≈  5/8  rtol=1e-2 #src
         @test Q[3, 3] ≈  1    rtol=1e-2 #src
     end #src
     @test length(g[3].basis.polynomials) == 2 #src
@@ -171,7 +173,7 @@ function solve(G)
     @test size(g[4].Q) == (1, 1)       #src
     @test g[4].Q[1, 1] ≈ 0   atol=1e-2 #src
     @test length(g[5].basis.polynomials) == 1 #src
-    @test g[5].basis.polynomials[1] ≈ -(√2/2)x^2 + (√2/2)y^2 #src
+    @test g[5].basis.polynomials[1] ≈ (√2/2)x^2 - (√2/2)y^2 #src
     @test size(g[5].Q) == (1, 1)       #src
     @test g[5].Q[1, 1] ≈ 0   atol=1e-2 #src
     for g in gram_matrix(con_ref).sub_gram_matrices
