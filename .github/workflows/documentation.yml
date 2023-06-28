@@ -22,14 +22,11 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="SemialgebraicSets", rev="master"),
-              PackageSpec(name="MultivariateBases", rev="master"),
-              PackageSpec(name="MultivariatePolynomials", rev="master"),
-              PackageSpec(name="DynamicPolynomials", rev="master"),
-              PackageSpec(name="TypedPolynomials", rev="master"),
-              PackageSpec(name="MultivariateMoments", rev="master"),
               PackageSpec(name="PolyJuMP", rev="master"),
               PackageSpec(url="https://github.com/blegat/HomotopyContinuation.jl", rev="solve"),
+              PackageSpec(url="https://github.com/blegat/PolynomialTestSystems.jl", rev="fix"),
+              PackageSpec(url="https://github.com/blegat/MixedSubdivisions.jl", rev="MP@v0.5"),
+              PackageSpec(url="https://github.com/blegat/ImplicitPlots.jl", rev="mpv0.5"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()
