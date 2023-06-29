@@ -48,6 +48,7 @@ end
         cref_fix = @constraint(
             model,
             a * x^2 >= 1,
+            SOSCone(),
             domain = (@set x >= 1),
             sparsity = sparsity
         )
