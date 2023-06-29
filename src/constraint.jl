@@ -328,6 +328,17 @@ function PolyJuMP.bridges(
     return [Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge]
 end
 
+# Syntax: `@constraint(model, a >= b, SOSCone())`
+function JuMP.build_constraint(
+    _error::Function,
+    f,
+    ::JuMP.Nonnegatives,
+    extra::SOSLikeCone;
+    kws...,
+)
+    return build_constraint(_error, f, extra; kws...)
+end
+
 function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
     coefs = PolyJuMP.non_constant_coefficients(p)
     monos = MP.monomials(p)
