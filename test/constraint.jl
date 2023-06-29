@@ -32,6 +32,7 @@ end
     @test sprint(show, MIME"text/latex"(), dref) ==
           "\$\$ (a)x^{2} \\text{ is DSOS} \$\$"
     model = Model()
+    @variable(model, a)
     for sparsity in [Sparsity.NoPattern(), Sparsity.Variable()]
         cref_fix = @constraint(
             model,
