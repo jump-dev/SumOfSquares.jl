@@ -329,9 +329,10 @@ function JuMP.build_constraint(
     _error::Function,
     f,
     ::JuMP.Nonnegatives,
-    extra::SOSLikeCone,
+    extra::SOSLikeCone;
+    kws...,
 )
-    return build_constraint(_error, f, extra)
+    return build_constraint(_error, f, extra; kws...)
 end
 
 function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
