@@ -97,7 +97,11 @@ function default_ideal_certificate(
     maxdegree,
     newton_polytope,
 )
-    return Certificate.Newton(cone, basis, newton_polytope)
+    if newton_polytope === nothing
+        return Certificate.MaxDegree(cone, basis, maxdegree)
+    else
+        return Certificate.Newton(cone, basis, newton_polytope)
+    end
 end
 
 function default_ideal_certificate(
@@ -251,7 +255,7 @@ function JuMP.moi_set(
     monos::AbstractVector{<:MP.AbstractMonomial};
     domain::AbstractSemialgebraicSet = FullSpace(),
     basis = MonomialBasis,
-    newton_polytope::Tuple = tuple(),
+    newton_polytope::Union{Nothing,Tuple} = tuple(),
     maxdegree::Union{Nothing,Int} = default_maxdegree(monos, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
