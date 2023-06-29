@@ -189,6 +189,7 @@ dual_ν4 = moment_matrix(dual_model4[:c])
 
 # Looking at the singular values, `4` seems to be a reasonable rank:
 
+using LinearAlgebra
 svdvals(Matrix(dual_ν4.Q))
 
 # The solution we extract is `(0.5, 0.5)` which is the solution found by Ipopt:
@@ -291,9 +292,9 @@ using HomotopyContinuation
 algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false)
 atoms4 = atomic_measure(ν4, FixedRank(3), Echelon(), algebraic_solver) #src
 @test length(atoms4.atoms) == 2 #src
-@test atoms7.atoms[1].weight + atoms7.atoms[2].weight ≈ 1.0 rtol=1e-2 #src
-@test atoms7.atoms[1].center[2:-1:1] ≈ atoms7.atoms[2].center[1:2] rtol=1e-2 #src
-atomic_measure(ν7, 1e-3, Echelon(), algebraic_solver)
+@test atoms4.atoms[1].weight + atoms4.atoms[2].weight ≈ 1.0 rtol=1e-1 #src
+@test atoms4.atoms[1].center[2:-1:1] ≈ atoms4.atoms[2].center[1:2] rtol=1e-1 #src
+atomic_measure(ν4, FixedRank(3), Echelon(), algebraic_solver)
 
 # As the system has 3 equations for 2 variables and the coefficients of the equations
 # are to be treated with tolerance since they originate from the solution of an SDP,
