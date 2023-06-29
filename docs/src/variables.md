@@ -103,8 +103,24 @@ sum-of-squares polynomial variables:
 ```jldoctest variables
 julia> @variable(model, [1:2], SOSPoly(X))
 2-element Vector{GramMatrix{VariableRef, MonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, AffExpr, SymMatrix{VariableRef}}}:
- GramMatrix{VariableRef, MonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[177] _[178] … _[187] _[192]; _[178] _[179] … _[188] _[193]; … ; _[187] _[188] … _[191] _[196]; _[192] _[193] … _[196] _[197]], MonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}(Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}[1, y, x, y², xy, x²]))
- GramMatrix{VariableRef, MonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, AffExpr, SymMatrix{VariableRef}}(VariableRef[_[198] _[199] … _[208] _[213]; _[199] _[200] … _[209] _[214]; … ; _[208] _[209] … _[212] _[217]; _[213] _[214] … _[217] _[218]], MonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}(Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}[1, y, x, y², xy, x²]))
+ GramMatrix with row/column basis:
+ MonomialBasis([1, y, x, y^2, x*y, x^2])
+And entries in a 6×6 SymMatrix{VariableRef}:
+ _[177]  _[178]  _[180]  _[183]  _[187]  _[192]
+ _[178]  _[179]  _[181]  _[184]  _[188]  _[193]
+ _[180]  _[181]  _[182]  _[185]  _[189]  _[194]
+ _[183]  _[184]  _[185]  _[186]  _[190]  _[195]
+ _[187]  _[188]  _[189]  _[190]  _[191]  _[196]
+ _[192]  _[193]  _[194]  _[195]  _[196]  _[197]
+ GramMatrix with row/column basis:
+ MonomialBasis([1, y, x, y^2, x*y, x^2])
+And entries in a 6×6 SymMatrix{VariableRef}:
+ _[198]  _[199]  _[201]  _[204]  _[208]  _[213]
+ _[199]  _[200]  _[202]  _[205]  _[209]  _[214]
+ _[201]  _[202]  _[203]  _[206]  _[210]  _[215]
+ _[204]  _[205]  _[206]  _[207]  _[211]  _[216]
+ _[208]  _[209]  _[210]  _[211]  _[212]  _[217]
+ _[213]  _[214]  _[215]  _[216]  _[217]  _[218]
 ```
 There is however an *important* difference between the meaning of the
 vector of monomials `X` between `Poly` and `SOSPoly`. For `SOSPoly`, it
@@ -135,7 +151,7 @@ For instance, creating an univariate cubic polynomial variable `p` using the
 Chebyshev basis can be done as follows:
 ```jldoctest variables
 julia> cheby_basis = FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])
-FixedPolynomialBasis{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}, Vector{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}}}(Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Int64}[1, x, -1 + 2x², -3x + 4x³])
+FixedPolynomialBasis([1, x, -1 + 2x², -3x + 4x³])
 
 julia> @variable(model, variable_type=Poly(cheby_basis))
 (_[219] - _[221]) + (_[220] - 3 _[222])x + (2 _[221])x² + (4 _[222])x³
@@ -150,7 +166,7 @@ julia> X = monomials([x, y], 2)
  x²
 
 julia> scaled_basis = ScaledMonomialBasis(X)
-ScaledMonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}(Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}[y², xy, x²])
+ScaledMonomialBasis([y², xy, x²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (_[223])y² + (1.4142135623730951 _[224])xy + (_[225])x²
@@ -158,7 +174,7 @@ julia> @variable(model, variable_type=Poly(scaled_basis))
 which is equivalent to
 ```jldoctest variables
 julia> scaled_basis = FixedPolynomialBasis([x^2, √2*x*y, y^2])
-FixedPolynomialBasis{Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, Vector{Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}}}(Term{Float64, Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}[x², 1.4142135623730951xy, y²])
+FixedPolynomialBasis([x², 1.4142135623730951xy, y²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (_[228])y² + (1.4142135623730951 _[227])xy + (_[226])x²
