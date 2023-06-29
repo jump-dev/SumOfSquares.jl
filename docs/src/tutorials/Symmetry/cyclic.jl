@@ -97,7 +97,7 @@ solution_summary(model)
 
 # Let's look at the symmetry adapted basis used.
 
-gram = gram_matrix(con_ref).sub_gram_matrices #src
+gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 3                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
 @test length(gram[1].basis.polynomials) == 2 #src
@@ -109,7 +109,7 @@ gram = gram_matrix(con_ref).sub_gram_matrices #src
 @test gram[3].Q == gram[2].Q #src
 @test length(gram[3].basis.polynomials) == 1 #src
 @test gram[3].basis.polynomials[1] ≈ (x[1] - x[2])/√2 #src
-for gram in gram_matrix(con_ref).sub_gram_matrices
+for gram in gram_matrix(con_ref).blocks
     println(gram.basis.polynomials)
     display(gram.Q)
 end
@@ -153,7 +153,7 @@ optimize!(model)
 @test objective_value(model) ≈ 0.0 atol=1e-4 #src
 solution_summary(model)
 
-gram = gram_matrix(con_ref).sub_gram_matrices #src
+gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 3                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
 @test length(gram[1].basis.polynomials) == 2 #src
@@ -165,7 +165,7 @@ gram = gram_matrix(con_ref).sub_gram_matrices #src
 @test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
 @test length(gram[3].basis.polynomials) == 1 #src
 @test gram[3].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2 #src
-for gram in gram_matrix(con_ref).sub_gram_matrices
+for gram in gram_matrix(con_ref).blocks
     println(gram.basis.polynomials)
     display(gram.Q)
 end

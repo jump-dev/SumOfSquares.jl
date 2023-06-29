@@ -13,7 +13,7 @@ using DynamicPolynomials
 @polyvar x y
 p = 2*x^4 + 2*x^3*y - x^2*y^2 + 5*y^4
 
-# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
 using SumOfSquares

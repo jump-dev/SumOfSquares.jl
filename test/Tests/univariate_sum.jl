@@ -27,14 +27,14 @@ function univariate_sum_test(
     @test primal_status(model) == MOI.FEASIBLE_POINT
 
     p = gram_matrix(cref)
-    @test p isa SumOfSquares.SparseGramMatrix
-    @test length(p.sub_gram_matrices) == 2
-    @test value_matrix(p.sub_gram_matrices[1]) ≈ [1 -1; -1 1] atol = atol rtol =
+    @test p isa SumOfSquares.BlockDiagonalGramMatrix
+    @test length(p.blocks) == 2
+    @test value_matrix(p.blocks[1]) ≈ [1 -1; -1 1] atol = atol rtol =
         rtol
-    @test p.sub_gram_matrices[1].basis.monomials == [1, x]
-    @test value_matrix(p.sub_gram_matrices[2]) ≈ ones(2, 2) atol = atol rtol =
+    @test p.blocks[1].basis.monomials == [1, x]
+    @test value_matrix(p.blocks[2]) ≈ ones(2, 2) atol = atol rtol =
         rtol
-    @test p.sub_gram_matrices[2].basis.monomials == [1, y]
+    @test p.blocks[2].basis.monomials == [1, y]
 
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,

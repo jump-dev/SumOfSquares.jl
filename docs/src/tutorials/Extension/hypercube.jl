@@ -32,7 +32,7 @@ using SumOfSquares
 S = algebraicset([xi^2 - 1 for xi in x])
 
 # We will now search for the minimum of `x` over `S` using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 
 import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
