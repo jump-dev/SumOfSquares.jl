@@ -38,7 +38,7 @@ g.basis.monomials
 # the polynomial to decompose the large positive semidefinite matrix into smaller ones.
 
 g = sos_check(Sparsity.SignSymmetry())
-monos = [sub.basis.monomials for sub in g.sub_gram_matrices]
+monos = [sub.basis.monomials for sub in g.blocks]
 @test length(monos) == 3 #src
 @test [x[1], x[2]] in monos #src
 @test [x[3]] in monos #src

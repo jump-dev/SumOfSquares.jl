@@ -1,4 +1,4 @@
-export GramMatrix, SparseGramMatrix
+export GramMatrix, BlockDiagonalGramMatrix
 
 import MultivariateMoments: vectorized_symmetric_matrix, SymMatrix, value_matrix
 export gram_operate, value_matrix
@@ -212,29 +212,40 @@ function Base.isapprox(p::GramMatrix, q::GramMatrix; kwargs...)
     return p.basis == q.basis && isapprox(p.Q, q.Q; kwargs...)
 end
 
-struct SparseGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
-    sub_gram_matrices::Vector{GramMatrix{T,B,U,MT}}
+function Base.show(io::IO, M::GramMatrix)
+    print(io, "GramMatrix")
+    return show_basis_indexed_matrix(io, M)
+end
+
+struct BlockDiagonalGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
+    blocks::Vector{GramMatrix{T,B,U,MT}}
 end
 
 function _sparse_type(::Type{GramMatrix{T,B,U,MT}}) where {T,B,U,MT}
-    return SparseGramMatrix{T,B,U,MT}
+    return BlockDiagonalGramMatrix{T,B,U,MT}
 end
 
 function MP.similar_type(
-    ::Type{SparseGramMatrix{T,B,U,MT}},
+    ::Type{BlockDiagonalGramMatrix{T,B,U,MT}},
     ::Type{S},
 ) where {T,B,U,MT,S}
     return _sparse_type(MP.similar_type(GramMatrix{T,B,U,MT}, S))
 end
 
-function Base.zero(::Type{SparseGramMatrix{T,B,U,MT}}) where {T,B,U,MT}
-    return SparseGramMatrix(GramMatrix{T,B,U,MT}[])
+function Base.zero(::Type{BlockDiagonalGramMatrix{T,B,U,MT}}) where {T,B,U,MT}
+    return BlockDiagonalGramMatrix(GramMatrix{T,B,U,MT}[])
 end
-function MP.polynomial(p::SparseGramMatrix)
+function MP.polynomial(p::BlockDiagonalGramMatrix)
     return mapreduce(
         identity,
         MA.add!!,
-        p.sub_gram_matrices,
+        p.blocks,
         init = zero(MP.polynomial_type(p)),
     )
+end
+
+function Base.show(io::IO, M::BlockDiagonalGramMatrix)
+    print(io, "BlockDiagonalGramMatrix")
+    MultivariateMoments.show_basis_indexed_blocks(io, M.blocks)
+    return
 end

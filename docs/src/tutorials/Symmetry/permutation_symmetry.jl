@@ -45,7 +45,7 @@ value(t)
 
 # We indeed find `-1`, let's verify that symmetry was exploited:
 
-g = gram_matrix(con_ref).sub_gram_matrices    #src
+g = gram_matrix(con_ref).blocks    #src
 @test length(g) == 4                          #src
 @test length(g[1].basis.polynomials) == 2     #src
 @test g[1].basis.polynomials[1] == 1.0        #src
@@ -66,6 +66,4 @@ g = gram_matrix(con_ref).sub_gram_matrices    #src
 @test g[4].basis.polynomials[1] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
 @test size(g[4].Q) == (1, 1)                  #src
 @test g[4].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-for g in gram_matrix(con_ref).sub_gram_matrices
-    println(g.basis.polynomials)
-end
+gram_matrix(con_ref).blocks

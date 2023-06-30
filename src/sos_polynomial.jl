@@ -91,7 +91,7 @@ function build_matrix(
 end
 
 function build_gram_matrix(Q::Function, bases::Vector, matrix_cone_type, T)
-    return SparseGramMatrix(
+    return BlockDiagonalGramMatrix(
         build_matrix(
             Q,
             bases,
@@ -101,7 +101,7 @@ function build_gram_matrix(Q::Function, bases::Vector, matrix_cone_type, T)
 end
 
 function build_moment_matrix(Q::Function, bases::Vector)
-    return MultivariateMoments.SparseMomentMatrix(
+    return MultivariateMoments.BlockDiagonalMomentMatrix(
         build_matrix(Q, bases, build_moment_matrix),
     )
 end
