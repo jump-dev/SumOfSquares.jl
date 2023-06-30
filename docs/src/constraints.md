@@ -206,7 +206,7 @@ So `p(x)` is constrained to be equal to
 `s(x) = s_0(x) + s_1(x) * q_1(x) + s_2(x) * q_2(x) + ...`
 where the `s_i(x)` polynomials are Sum-of-Squares.
 The dual of the equality constraint between `p(x)` and `s(x)` is given
-by [`SumOfSquares.PolyJuMP.moments`](@ref).
+by [`SumOfSquares.MultivariateMoments.moments`](@ref).
 ```julia
 μ = moments(cref)
 ```
