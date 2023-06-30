@@ -12,7 +12,7 @@ using SumOfSquares
 @polyvar x y
 S = @set x^2 + y^2 == 1
 
-# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 # The domain over which the nonnegativity of ``1 - y^2`` should be certified
 # is specified through the `domain` keyword argument.
 

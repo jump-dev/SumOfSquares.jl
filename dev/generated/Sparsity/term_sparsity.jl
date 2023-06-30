@@ -25,12 +25,12 @@ atomic_measure(ν, 1e-6)
 bound, ν = sos_min(Sparsity.Monomial())
 bound
 
-[sub.basis for sub in ν.sub_moment_matrices]
+[sub.basis for sub in ν.blocks]
 
 bound, ν = sos_min(Sparsity.Monomial(ChordalCompletion()))
 bound
 
-[sub.basis for sub in ν.sub_moment_matrices]
+[sub.basis for sub in ν.blocks]
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 

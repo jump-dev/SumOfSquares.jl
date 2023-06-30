@@ -147,7 +147,7 @@ function solve(G)
     @show value(t)
 
 
-    g = gram_matrix(con_ref).sub_gram_matrices #src
+    g = gram_matrix(con_ref).blocks #src
     @test length(g) == 5                       #src
     @test g[1].basis.polynomials == [y^3, x^2*y, -y] #src
     @test g[2].basis.polynomials == [-x^3, -x*y^2, x] #src
@@ -176,7 +176,7 @@ function solve(G)
     @test g[5].basis.polynomials[1] ≈ (√2/2)x^2 - (√2/2)y^2 #src
     @test size(g[5].Q) == (1, 1)       #src
     @test g[5].Q[1, 1] ≈ 0   atol=1e-2 #src
-    for g in gram_matrix(con_ref).sub_gram_matrices
+    for g in gram_matrix(con_ref).blocks
         println(g.basis.polynomials)
     end
 end

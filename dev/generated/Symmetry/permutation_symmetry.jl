@@ -22,9 +22,7 @@ con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 value(t)
 
-for g in gram_matrix(con_ref).sub_gram_matrices
-    println(g.basis.polynomials)
-end
+gram_matrix(con_ref).blocks
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 

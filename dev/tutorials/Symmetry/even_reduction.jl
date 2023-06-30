@@ -44,7 +44,7 @@ value(t)
 
 # We indeed find `-1`, let's verify that symmetry was exploited:
 
-@test length(gram_matrix(con_ref).sub_gram_matrices) == 2 #src
-@test gram_matrix(con_ref).sub_gram_matrices[1].basis.polynomials == [1, x^2] #src
-@test gram_matrix(con_ref).sub_gram_matrices[2].basis.polynomials == [x] #src
+@test length(gram_matrix(con_ref).blocks) == 2 #src
+@test gram_matrix(con_ref).blocks[1].basis.polynomials == [1, x^2] #src
+@test gram_matrix(con_ref).blocks[2].basis.polynomials == [x] #src
 gram_matrix(con_ref)

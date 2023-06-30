@@ -26,7 +26,7 @@ using SumOfSquares
 K = @set x[1] >= 0 && x[1] <= 3 && x[2] >= 0 && x[2] <= 4 && x[2] <= 2x[1]^4 - 8x[1]^3 + 8x[1]^2 + 2 && x[2] <= 4x[1]^4 - 32x[1]^3 + 88x[1]^2 - 96x[1] + 36
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 
 import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)

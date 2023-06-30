@@ -104,7 +104,7 @@ function solve(G)
     @show value(t)
 
 
-    for g in gram_matrix(con_ref).sub_gram_matrices
+    for g in gram_matrix(con_ref).blocks
         println(g.basis.polynomials)
     end
 end

@@ -74,7 +74,7 @@ con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 solution_summary(model)
 
-for gram in gram_matrix(con_ref).sub_gram_matrices
+for gram in gram_matrix(con_ref).blocks
     println(gram.basis.polynomials)
     display(gram.Q)
 end
@@ -101,7 +101,7 @@ con_ref = @constraint(model, pp in cone, symmetry = pattern)
 optimize!(model)
 solution_summary(model)
 
-for gram in gram_matrix(con_ref).sub_gram_matrices
+for gram in gram_matrix(con_ref).blocks
     println(gram.basis.polynomials)
     display(gram.Q)
 end
