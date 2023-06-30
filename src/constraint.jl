@@ -314,7 +314,9 @@ function PolyJuMP.bridges(
     return [(Bridges.Constraint.ScaledDiagonallyDominantBridge, Float64)]
 end
 
-function _bridge_coefficient_type(::Type{SOSPolynomialSet{S,M,MV,C}}) where {S,M,MV,C}
+function _bridge_coefficient_type(
+    ::Type{SOSPolynomialSet{S,M,MV,C}},
+) where {S,M,MV,C}
     return _complex(Float64, matrix_cone_type(C))
 end
 
@@ -322,14 +324,20 @@ function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     S::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}},
 )
-    return [(Bridges.Constraint.SOSPolynomialBridge, _bridge_coefficient_type(S))]
+    return [(
+        Bridges.Constraint.SOSPolynomialBridge,
+        _bridge_coefficient_type(S),
+    )]
 end
 
 function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     S::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}},
 )
-    return [(Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge, _bridge_coefficient_type(S))]
+    return [(
+        Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge,
+        _bridge_coefficient_type(S),
+    )]
 end
 
 # Syntax: `@constraint(model, a >= b, SOSCone())`
