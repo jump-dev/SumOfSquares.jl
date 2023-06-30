@@ -290,42 +290,46 @@ function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     ::Type{EmptyCone},
 )
-    return [Bridges.Constraint.EmptyBridge]
+    return [(Bridges.Constraint.EmptyBridge, Float64)]
 end
 
 function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     ::Type{PositiveSemidefinite2x2ConeTriangle},
 )
-    return [Bridges.Constraint.PositiveSemidefinite2x2Bridge]
+    return [(Bridges.Constraint.PositiveSemidefinite2x2Bridge, Float64)]
 end
 
 function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:DiagonallyDominantConeTriangle},
 )
-    return [Bridges.Constraint.DiagonallyDominantBridge]
+    return [(Bridges.Constraint.DiagonallyDominantBridge, Float64)]
 end
 
 function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:ScaledDiagonallyDominantConeTriangle},
 )
-    return [Bridges.Constraint.ScaledDiagonallyDominantBridge]
+    return [(Bridges.Constraint.ScaledDiagonallyDominantBridge, Float64)]
+end
+
+function _bridge_coefficient_type(::Type{SOSPolynomialSet{S,M,MV,C}}) where {S,M,MV,C}
+    return _complex(Float64, matrix_cone_type(C))
 end
 
 function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}},
+    S::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}},
 )
-    return [Bridges.Constraint.SOSPolynomialBridge]
+    return [(Bridges.Constraint.SOSPolynomialBridge, _bridge_coefficient_type(S))]
 end
 
 function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}},
+    S::Type{<:SOSPolynomialSet{<:BasicSemialgebraicSet}},
 )
-    return [Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge]
+    return [(Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge, _bridge_coefficient_type(S))]
 end
 
 # Syntax: `@constraint(model, a >= b, SOSCone())`
@@ -339,38 +343,22 @@ function JuMP.build_constraint(
     return build_constraint(_error, f, extra; kws...)
 end
 
+_promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
+_promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
+
 function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
-    coefs = PolyJuMP.non_constant_coefficients(p)
     monos = MP.monomials(p)
     set = JuMP.moi_set(cone, monos; kws...)
+    _coefs = PolyJuMP.non_constant_coefficients(p)
+    # If a polynomial with real coefficients is used with the Hermitian SOS
+    # cone, we want to promote the coefficients to complex
+    T = _bridge_coefficient_type(typeof(set))
+    coefs = convert(Vector{_promote_coef_type(eltype(_coefs), T)}, _coefs)
     shape = PolyJuMP.PolynomialShape(monos)
     return PolyJuMP.bridgeable(
         JuMP.VectorConstraint(coefs, set, shape),
         JuMP.moi_function_type(typeof(coefs)),
         typeof(set),
-    )
-end
-
-_non_constant(a::Vector{T}) where {T} = convert.(MOI.ScalarAffineFunction{T}, a)
-_non_constant(a::Vector{<:JuMP.AbstractJuMPScalar}) = moi_function.(a)
-_non_constant(a::Vector{<:MOI.AbstractFunction}) = a
-
-# Add constraint with `p` having coefficients being MOI functions.
-# This is needed as a workaround as JuMP does not support complex numbers yet.
-# We can remove it when https://github.com/jump-dev/JuMP.jl/pull/2391 is done
-# We overload `JuMP.add_constraint` to avoid clash with the name.
-function JuMP.add_constraint(model::MOI.ModelLike, p, cone::SOSLikeCone; kws...)
-    coefs = MOI.Utilities.vectorize(_non_constant(MP.coefficients(p)))
-    monos = MP.monomials(p)
-    set = JuMP.moi_set(cone, monos; kws...)
-    return MOI.add_constraint(model, coefs, set)
-end
-function JuMP.add_constraint(model::JuMP.Model, p, cone::SOSLikeCone; kws...)
-    ci = JuMP.add_constraint(JuMP.backend(model), p, cone; kws...)
-    return JuMP.ConstraintRef(
-        model,
-        ci,
-        PolyJuMP.PolynomialShape(MP.monomials(p)),
     )
 end
 
