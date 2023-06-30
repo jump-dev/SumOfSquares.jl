@@ -29,11 +29,9 @@ function univariate_sum_test(
     p = gram_matrix(cref)
     @test p isa SumOfSquares.BlockDiagonalGramMatrix
     @test length(p.blocks) == 2
-    @test value_matrix(p.blocks[1]) ≈ [1 -1; -1 1] atol = atol rtol =
-        rtol
+    @test value_matrix(p.blocks[1]) ≈ [1 -1; -1 1] atol = atol rtol = rtol
     @test p.blocks[1].basis.monomials == [1, x]
-    @test value_matrix(p.blocks[2]) ≈ ones(2, 2) atol = atol rtol =
-        rtol
+    @test value_matrix(p.blocks[2]) ≈ ones(2, 2) atol = atol rtol = rtol
     @test p.blocks[2].basis.monomials == [1, y]
 
     S = SumOfSquares.SOSPolynomialSet{

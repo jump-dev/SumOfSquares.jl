@@ -214,7 +214,7 @@ end
 
 function Base.show(io::IO, M::GramMatrix)
     print(io, "GramMatrix")
-    show_basis_indexed_matrix(io, M)
+    return show_basis_indexed_matrix(io, M)
 end
 
 struct BlockDiagonalGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
