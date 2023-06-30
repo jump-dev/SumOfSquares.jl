@@ -1,13 +1,13 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
 function PolyJuMP.bridges(::Type{<:PositiveSemidefinite2x2ConeTriangle})
-    return [Bridges.Variable.PositiveSemidefinite2x2Bridge]
+    return [(Bridges.Variable.PositiveSemidefinite2x2Bridge, Float64)]
 end
 function PolyJuMP.bridges(::Type{<:ScaledDiagonallyDominantConeTriangle})
-    return [Bridges.Variable.ScaledDiagonallyDominantBridge]
+    return [(Bridges.Variable.ScaledDiagonallyDominantBridge, Float64)]
 end
 function PolyJuMP.bridges(::Type{<:CopositiveInnerCone})
-    return [Bridges.Variable.CopositiveInnerBridge]
+    return [(Bridges.Variable.CopositiveInnerBridge, Float64)]
 end
 
 function JuMP.value(p::GramMatrix{<:JuMP.AbstractJuMPScalar})
