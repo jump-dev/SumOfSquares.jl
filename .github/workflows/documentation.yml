@@ -22,7 +22,6 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="PolyJuMP", rev="master"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()
