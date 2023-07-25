@@ -213,7 +213,11 @@ end
 # two different monomials of `monos` and `mono` is not in `X` then, the corresponding
 # diagonal entry of the Gram matrix will be zero hence the whole column and row
 # will be zero hence we can remove this monomial.
-# See [Theorem 2, L09] or [Section 2.4, BKP16].
+# See [Proposition 3.7, CLR95], [Theorem 2, L09] or [Section 2.4, BKP16].
+
+# [CLR95] Choi, M. D. and Lam, T. Y. and Reznick, B.
+# *Sum of Squares of Real Polynomials*.
+# Proceedings of Symposia in Pure mathematics (1995)
 #
 # [L09] Lofberg, Johan.
 # *Pre-and post-processing sum-of-squares programs in practice*.

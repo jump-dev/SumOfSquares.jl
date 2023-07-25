@@ -295,6 +295,7 @@ Types of sparsity
 SumOfSquares.Certificate.Sparsity.Variable
 SumOfSquares.Certificate.Sparsity.Monomial
 SumOfSquares.Certificate.Sparsity.SignSymmetry
+SumOfSquares.Certificate.Sparsity.XORSpace
 ```
 
 Ideal certificates:
