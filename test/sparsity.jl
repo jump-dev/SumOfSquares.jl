@@ -1,18 +1,30 @@
 using Test
+import Combinatorics
 using SumOfSquares
 import MultivariateBases as MB
 
+function _xor_complement_test(
+    exps,
+    expected,
+    n = maximum(ndigits(exp, base = 2) for exp in exps; init = 1),
+)
+    for e in Combinatorics.permutations(exps)
+        @test Certificate.Sparsity.xor_complement(e, n) == expected
+    end
+end
+
 function xor_complement_test()
-    @test Certificate.Sparsity.xor_complement([1], 1) == Int[]
-    @test Certificate.Sparsity.xor_complement(Int[], 1) == [1]
-    @test Certificate.Sparsity.xor_complement([1], 2) == [2]
-    @test Certificate.Sparsity.xor_complement([2], 2) == [1]
-    @test Certificate.Sparsity.xor_complement([1, 2], 2) == Int[]
-    @test Certificate.Sparsity.xor_complement([1, 3], 2) == Int[]
-    @test Certificate.Sparsity.xor_complement(Int[], 2) == [1, 2]
-    @test Certificate.Sparsity.xor_complement([7], 3) == [3, 5]
-    @test Certificate.Sparsity.xor_complement([5, 6, 3], 3) == [7]
-    @test Certificate.Sparsity.xor_complement([3], 3) == [3, 4]
+    _xor_complement_test([1], Int[])
+    _xor_complement_test(Int[], [1])
+    _xor_complement_test([1], [2], 2)
+    _xor_complement_test([2], [1])
+    _xor_complement_test([1, 2], Int[])
+    _xor_complement_test([1, 3], Int[])
+    _xor_complement_test(Int[], [1, 2], 2)
+    _xor_complement_test([7], [3, 5])
+    _xor_complement_test([5, 6, 3], [7])
+    _xor_complement_test([3], [3, 4], 3)
+    _xor_complement_test([32, 3, 24, 14, 21, 56], [7, 27])
 end
 
 function set_monos(bases::Vector{<:MB.MonomialBasis})
