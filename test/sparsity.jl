@@ -25,6 +25,7 @@ function xor_complement_test()
     _xor_complement_test([5, 6, 3], [7])
     _xor_complement_test([3], [3, 4], 3)
     _xor_complement_test([32, 3, 24, 14, 21, 56], [7, 27])
+    return
 end
 
 function set_monos(bases::Vector{<:MB.MonomialBasis})
