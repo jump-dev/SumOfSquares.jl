@@ -9,15 +9,19 @@
 using Test #src
 using SumOfSquares
 using DynamicPolynomials
-using MosekTools
 
 # Create *symbolic* variables (not JuMP *decision* variables)
 
 @polyvar x[1:2]
 
-# Create a Sum of Squares JuMP model with the Mosek solver
+# To use Sum of Squares Programming, we first need to pick an SDP solver,
+# see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 
-model = SOSModel(Mosek.Optimizer)
+import SCS
+scs = SCS.Optimizer
+import Dualization
+dual_scs = Dualization.dual_optimizer(scs)
+model = SOSModel(dual_scs)
 
 # Create a JuMP decision variable for the lower bound
 
