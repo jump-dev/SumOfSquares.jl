@@ -17,11 +17,9 @@ using DynamicPolynomials
 # To use Sum of Squares Programming, we first need to pick an SDP solver,
 # see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 
-import SCS
-scs = SCS.Optimizer
-import Dualization
-dual_scs = Dualization.dual_optimizer(scs)
-model = SOSModel(dual_scs)
+import Clarabel
+using Dualization
+model = SOSModel(dual_optimizer(Clarabel.Optimizer))
 
 # Create a JuMP decision variable for the lower bound
 
@@ -55,5 +53,37 @@ solution_summary(model)
 # *Sums of squares, moment matrices and optimization over polynomials.*
 # Emerging applications of algebraic geometry (2009): 157-270.
 
+ν = moment_matrix(con_ref)
 
-M = moment_matrix(con_ref)
+# Many entries of the matrix actually have the same moment.
+# We can obtain the following list of these moments without duplicates
+# (ignoring when difference of entries representing the same moments is below `1e-5`)
+
+μ = measure(ν, atol = 1e-5)
+
+# The truncated moment matrix can then be obtained as follows
+
+ν_truncated = moment_matrix(μ, monomials(x, 0:3))
+
+# Let's check if the flatness property is satisfied.
+# The rank of `ν_truncated` seems to be 1:
+
+using LinearAlgebra
+LinearAlgebra.svdvals(Matrix(ν_truncated.Q))
+LinearAlgebra.rank(Matrix(ν_truncated.Q), rtol = 1e-3)
+@test LinearAlgebra.rank(Matrix(ν_truncated.Q), rtol = 1e-3) == 1 #src
+svdvals(Matrix(ν_truncated.Q))
+
+# The rank of `ν` is clearly higher than 1, closer to 3:
+
+@test LinearAlgebra.rank(Matrix(ν.Q), rtol = 1e-3) == 3 #src
+svdvals(Matrix(ν.Q))
+
+# Even if the flatness property is not satisfied, we can
+# still try extracting the minimizer with a low rank decomposition of rank 3.
+# We find the optimal solution again doing so:
+
+atoms = atomic_measure(ν, FixedRank(3)) #src
+@test length(atoms.atoms) == 1 #src
+@test atoms.atoms[1].center ≈ [0, -1] rtol=1e-3 #src
+atomic_measure(ν, FixedRank(3))
