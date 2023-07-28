@@ -1,30 +1,55 @@
+# # Goldstein-price function
+
+#md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/goldstein_price.ipynb)
+#md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/goldstein_price.ipynb)
+# **Contributed by**: Benoît Legat
+
+# In this example, we consider the minimization of the [Goldstein-price function](https://en.wikipedia.org/wiki/Test_functions_for_optimization).
+
+using Test #src
 using SumOfSquares
 using DynamicPolynomials
 using MosekTools
 
-# Create symbolic variables (not JuMP decision variables)
-@polyvar x1 x2
+# Create *symbolic* variables (not JuMP *decision* variables)
+
+@polyvar x[1:2]
 
 # Create a Sum of Squares JuMP model with the Mosek solver
+
 model = SOSModel(Mosek.Optimizer)
 
 # Create a JuMP decision variable for the lower bound
+
 @variable(model, γ)
 
 # f(x) is the Goldstein-Price function
-f1 = x1+x2+1
-f2 = 19-14*x1+3*x1^2-14*x2+6*x1*x2+3*x2^2
-f3 = 2*x1-3*x2
-f4 = 18-32*x1+12*x1^2+48*x2-36*x1*x2+27*x2^2
 
-f = (1+f1^2*f2)*(30+f3^2*f4)
+f1 = x[1] + x[2] + 1
+f2 = 19 - 14*x[1] + 3*x[1]^2 - 14*x[2] + 6*x[1]*x[2] + 3*x[2]^2
+f3 = 2*x[1] - 3*x[2]
+f4 = 18 - 32*x[1] + 12*x[1]^2 + 48*x[2] - 36*x[1]*x[2] + 27*x[2]^2
+f = (1 + f1^2*f2) * (30 + f3^2*f4)
 
 # Constraints f(x) - γ to be sum of squares
-@constraint(model, f >= γ)
 
+con_ref = @constraint(model, f >= γ)
 @objective(model, Max, γ)
-
 optimize!(model)
 
 # The lower bound found is 3
-println(objective_value(model))
+
+@test objective_value(model) ≈ 3 rtol=1e-4 #src
+solution_summary(model)
+
+# The moment matrix is as follows, we can already see the global minimizer
+# `[0, -1]` from the entries `(2, 1)` and `(3, 1)`.
+# This heuristic way to obtain solutions to the polynomial optimization problem
+# is suggested in [L09, (6.15)].
+#
+# [L09] Laurent, Monique.
+# *Sums of squares, moment matrices and optimization over polynomials.*
+# Emerging applications of algebraic geometry (2009): 157-270.
+
+
+M = moment_matrix(con_ref)
