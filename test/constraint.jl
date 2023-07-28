@@ -58,3 +58,13 @@ end
               "\$\$ (-1) + (a)x^{2} \\text{ is SOS} \$\$"
     end
 end
+
+@testset "Hermitian" begin
+    @polyvar x y
+    p = (x + im * y) * (x - im * y)
+    model = Model()
+    cone = NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
+    @constraint(model, p in cone)
+    @test SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{ComplexF64} in model.bridge_types
+    @test PolyJuMP.Bridges.Constraint.ZeroPolynomialBridge{ComplexF64} in model.bridge_types
+end
