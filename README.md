@@ -34,6 +34,7 @@ for the in-development version of the documentation.
 Some presentations on, or using, SumOfSquares (see [blegat/SumOfSquaresSlides](https://github.com/blegat/SumOfSquaresSlides)
 for the source code of the presentations):
 
+  * Benoît Legat at [JuMP-dev 2023](https://pretalx.com/juliacon2023/talk/XLT8H3/) [[Slides](https://drive.google.com/file/d/1H-_Ot7tP2g7t95r0K_mTaXvGO1ChUPci/view?usp=drive_link)]
   * Benoît Legat, Marek Kaluba and Tillmann Weisser at INFORMS 2022 [[Slides](https://drive.google.com/file/d/1rlsIxgcnKWT436k4MNenjHfgH0UYRLAB/view?usp=share_link)]
   * Benoît Legat at [POEMA Learning Week 2](http://poema-network.eu/index.php/news-and-events/project-workshops/13-poema-learning-week-2)
   * Benoît Legat, Marek Kaluba and Tillmann Weisser at [JuMP-dev 2021](https://pretalx.com/juliacon2021/talk/L8DTE3/) [[Slides](https://drive.google.com/file/d/1HtArDFNMQ6IYUqRjSWR3JviJp9xLtSlB/view?usp=sharing)]
