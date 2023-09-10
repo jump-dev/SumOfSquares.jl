@@ -25,4 +25,3 @@ value(t)
 gram_matrix(con_ref).blocks
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

@@ -32,4 +32,3 @@ value(t)
 gram_matrix(con_ref)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

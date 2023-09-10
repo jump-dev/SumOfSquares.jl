@@ -30,4 +30,3 @@ x_opt = η.atoms[1].center
 p(x_opt)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

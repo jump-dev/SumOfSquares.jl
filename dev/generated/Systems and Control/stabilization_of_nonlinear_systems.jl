@@ -72,4 +72,3 @@ push!(X0, [ 4, -ε])
 phase_plot(f + g * u, 2000, 10.0, X0)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

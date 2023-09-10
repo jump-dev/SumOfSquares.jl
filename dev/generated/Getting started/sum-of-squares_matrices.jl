@@ -22,4 +22,3 @@ unipartite = Certificate.NewtonDegreeBounds(tuple())
 multipartite = Certificate.NewtonDegreeBounds(([x], y))
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

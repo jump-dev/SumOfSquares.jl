@@ -68,4 +68,3 @@ optimize!(model)
 solution_summary(model)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

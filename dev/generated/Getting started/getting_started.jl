@@ -24,4 +24,3 @@ primal_status(model)
 sos_decomposition(con_ref)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

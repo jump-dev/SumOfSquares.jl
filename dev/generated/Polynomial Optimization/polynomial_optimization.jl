@@ -120,4 +120,3 @@ res = HomotopyContinuation.solve(F, algebraic_solver.options...)
 path_results(res)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

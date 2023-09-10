@@ -51,4 +51,3 @@ cheby_coefs = [5/2, 2, -1/2]
 cheby_coefs * cheby_coefs'
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

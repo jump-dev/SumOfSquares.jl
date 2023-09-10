@@ -38,4 +38,3 @@ rem(dec - poly, S.I)
 rem(gram_matrix(con_ref) - poly, S.I)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

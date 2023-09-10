@@ -21,4 +21,3 @@ g = sos_check(Sparsity.SignSymmetry())
 monos = [sub.basis.monomials for sub in g.blocks]
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

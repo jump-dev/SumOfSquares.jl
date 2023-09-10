@@ -109,4 +109,3 @@ image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)
 (a + b * im) * complex_basis
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

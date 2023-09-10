@@ -102,4 +102,3 @@ solution_summary(model)
 julia_plot(value(model[:v]), c)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

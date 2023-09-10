@@ -124,4 +124,3 @@ dec = decompose(p, CSDP.Optimizer)
 polynomial(dec)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

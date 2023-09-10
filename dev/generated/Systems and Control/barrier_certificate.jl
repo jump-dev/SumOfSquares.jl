@@ -54,4 +54,3 @@ end
 phase_plot(f, value(B), g₁, h₁, 10, 30.0, [[x1, x2] for x1 in 1.2:0.2:1.7, x2 in -0.35:0.1:0.35])
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

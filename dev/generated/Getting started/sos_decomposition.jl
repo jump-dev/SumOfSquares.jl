@@ -19,4 +19,3 @@ gram = gram_matrix(cref)
 gram.basis.monomials' * gram.Q * gram.basis.monomials
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

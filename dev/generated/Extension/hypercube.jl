@@ -66,4 +66,3 @@ min_algebraic_rational(H, 0)
 min_algebraic_rational(H, 1)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-
