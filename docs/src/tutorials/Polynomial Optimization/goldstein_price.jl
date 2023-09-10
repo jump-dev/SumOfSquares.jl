@@ -14,7 +14,7 @@ using DynamicPolynomials
 
 @polyvar x[1:2]
 
-# To use Sum of Squares Programming, we first need to pick an SDP solver,
+# To use Sum-of-Squares Programming, we first need to pick an SDP solver,
 # see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 
 import Clarabel
@@ -25,7 +25,7 @@ model = SOSModel(dual_optimizer(Clarabel.Optimizer))
 
 @variable(model, γ)
 
-# f(x) is the Goldstein-Price function
+# `f(x)` is the Goldstein-Price function
 
 f1 = x[1] + x[2] + 1
 f2 = 19 - 14*x[1] + 3*x[1]^2 - 14*x[2] + 6*x[1]*x[2] + 3*x[2]^2
@@ -33,7 +33,7 @@ f3 = 2*x[1] - 3*x[2]
 f4 = 18 - 32*x[1] + 12*x[1]^2 + 48*x[2] - 36*x[1]*x[2] + 27*x[2]^2
 f = (1 + f1^2*f2) * (30 + f3^2*f4)
 
-# Constraints f(x) - γ to be sum of squares
+# Constraints `f(x) - γ` to be a sum of squares
 
 con_ref = @constraint(model, f >= γ)
 @objective(model, Max, γ)
