@@ -59,7 +59,7 @@ end
     end
 end
 
-@testset "Hermitian" begin
+@testset "Bridges with complex numbers" begin
     @polyvar x y
     p = (x + im * y) * (x - im * y)
     model = Model()
