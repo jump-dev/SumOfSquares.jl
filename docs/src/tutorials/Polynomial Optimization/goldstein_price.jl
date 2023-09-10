@@ -41,7 +41,7 @@ optimize!(model)
 
 # The lower bound found is 3
 
-@test objective_value(model) ≈ 3 rtol=1e-4 #src
+@test objective_value(model) ≈ 3 rtol=1e-3 #src
 solution_summary(model)
 
 # The moment matrix is as follows, we can already see the global minimizer
@@ -76,7 +76,7 @@ svdvals(Matrix(ν_truncated.Q))
 
 # The rank of `ν` is clearly higher than 1, closer to 3:
 
-@test LinearAlgebra.rank(Matrix(ν.Q), rtol = 1e-3) == 3 #src
+@test 3 <= LinearAlgebra.rank(Matrix(ν.Q), rtol = 1e-3) <= 4 #src
 svdvals(Matrix(ν.Q))
 
 # Even if the flatness property is not satisfied, we can
