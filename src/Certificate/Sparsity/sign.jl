@@ -9,8 +9,8 @@ such that `dot(r, e)` is even for all exponent `e`.
 Let `o(e)` be the binary vector of `{0, 1}^n` for which the `i`th bit is `i`
 iff the `i`th entry of `e` is odd.
 Let `O` be the set of `o(e)` for exponents of `e`.
-The sign symmetry of `r` is then equivalent to its orthogonality
-with all elements of `O`.
+A binary vector `r` is a sign-symmetry if an only if it is orthogonal
+to all the elements of `O`.
 
 Since we are only interested in the orthogonal subspace, say `R`, of `O`,
 even if `O` is not a linear subspace (i.e., it is not invariant under `xor`),
