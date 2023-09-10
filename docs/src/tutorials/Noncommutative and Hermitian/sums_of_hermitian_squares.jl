@@ -12,8 +12,10 @@ using DynamicPolynomials
 @ncpolyvar x y
 p = (x + im * y) * (x - im * y)
 
-import CSDP
-model = Model(CSDP.Optimizer)
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+
+import Clarabel
+model = Model(Clarabel.Optimizer)
 cone = NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
 con_ref = @constraint(model, p in cone)
 optimize!(model)
