@@ -93,6 +93,36 @@ solution_summary(gmodel)
 @test value(b) ≈ 0.5 rtol=1e-5 #src
 value(a), value(b)
 
+# ## QCQP approach
+
+import Alpine, HiGHS, Pavito
+ipopt = optimizer_with_attributes(
+    Ipopt.Optimizer,
+    MOI.Silent() => true,
+    #"sb" => "yes",
+    #"max_iter" => 9999,
+)
+highs = optimizer_with_attributes(
+    HiGHS.Optimizer,
+    "presolve" => "on",
+    "log_to_console" => false,
+)
+pavito = optimizer_with_attributes(
+    Pavito.Optimizer,
+    MOI.Silent() => true,
+    "mip_solver" => highs,
+    "cont_solver" => ipopt,
+    "mip_solver_drives" => false,
+)
+alpine = optimizer_with_attributes(
+    Alpine.Optimizer,
+    "nlp_solver" => ipopt,
+    "mip_solver" => pavito,
+)
+set_optimizer(model, () -> PolyJuMP.QCQP.Optimizer(alpine))
+@NLobjective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
+optimize!(model)
+
 # ## Sum-of-Squares approach
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
