@@ -33,4 +33,4 @@ SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 TypedPolynomials = "afbbf031-7a57-5f58-a1b9-b774a0fad08d"
 
 [compat]
-Documenter = "~0.27"
+Documenter = "1"
