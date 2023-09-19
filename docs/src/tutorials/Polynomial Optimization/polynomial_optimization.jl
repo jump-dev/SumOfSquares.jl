@@ -32,10 +32,10 @@ p(x=>1, y=>0), p(x=>1//2, y=>1//2), p(x=>0, y=>1)
 
 import Ipopt
 model = Model(Ipopt.Optimizer)
-@variable(model, a >= 0)
-@variable(model, b >= 0)
+@variable(model, 0 <= a)
+@variable(model, 0 <= b)
 @constraint(model, a + b >= 1)
-@NLobjective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
+@objective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
 optimize!(model)
 
 # As we can see below, the termination status is `LOCALLY_SOLVED` and not of `OPTIMAL`
@@ -95,7 +95,7 @@ value(a), value(b)
 
 # ## QCQP approach
 
-import Alpine, HiGHS, Pavito
+import Alpine, HiGHS, Ipopt, Pavito
 ipopt = optimizer_with_attributes(
     Ipopt.Optimizer,
     MOI.Silent() => true,
@@ -120,8 +120,15 @@ alpine = optimizer_with_attributes(
     "mip_solver" => pavito,
 )
 set_optimizer(model, () -> PolyJuMP.QCQP.Optimizer(alpine))
-@NLobjective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
 optimize!(model)
+
+# We can see the summary here:
+
+solution_summary(m)
+
+# It found the optimal solution
+
+value(a), value(b)
 
 # ## Sum-of-Squares approach
 
