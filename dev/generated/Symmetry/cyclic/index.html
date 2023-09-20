@@ -78,11 +78,11 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
 * Candidate solution (result #1)
   Primal status      : FEASIBLE_POINT
   Dual status        : FEASIBLE_POINT
-  Objective value    : 0.00000e+00
-  Dual objective value : -4.61598e-10
+  Objective value    : 2.22045e-16
+  Dual objective value : -2.20229e-10
 
 * Work counters
-  Solve time (sec)   : 1.51396e-03
+  Solve time (sec)   : 1.71590e-03
 </code></pre><p>Let&#39;s look at the symmetry adapted basis used.</p><pre><code class="language-julia hljs">for gram in gram_matrix(con_ref).blocks
     println(gram.basis.polynomials)
     display(gram.Q)
@@ -110,28 +110,28 @@ solution_summary(model)
 for gram in gram_matrix(con_ref).blocks
     println(gram.basis.polynomials)
     display(gram.Q)
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iter:  8 Ap: 1.00e+00 Pobj:  0.0000000e+00 Ad: 1.00e+00 Dobj: -4.6159801e-10
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iter:  8 Ap: 1.00e+00 Pobj:  2.2204460e-16 Ad: 9.00e-01 Dobj: -2.2022945e-10
 Success: SDP solved
-Primal objective value: 0.0000000e+00
-Dual objective value: -4.6159801e-10
-Relative primal infeasibility: 6.02e-16
-Relative dual infeasibility: 9.50e-11
-Real Relative Gap: -4.62e-10
-XZ Relative Gap: 1.63e-10
-DIMACS error measures: 1.04e-15 0.00e+00 1.96e-10 0.00e+00 -4.62e-10 1.63e-10
+Primal objective value: 2.2204460e-16
+Dual objective value: -2.2022945e-10
+Relative primal infeasibility: 8.86e-16
+Relative dual infeasibility: 3.82e-10
+Real Relative Gap: -2.20e-10
+XZ Relative Gap: 2.29e-09
+DIMACS error measures: 1.53e-15 0.00e+00 7.89e-10 0.00e+00 -2.20e-10 2.29e-09
 CSDP 6.2.0
 Iter:  0 Ap: 0.00e+00 Pobj:  0.0000000e+00 Ad: 0.00e+00 Dobj:  0.0000000e+00
 Iter:  1 Ap: 1.00e+00 Pobj: -8.9892401e+00 Ad: 9.07e-01 Dobj:  4.8627163e+01
 Iter:  2 Ap: 1.00e+00 Pobj: -5.4165963e+00 Ad: 9.18e-01 Dobj:  1.0591774e+01
-Iter:  3 Ap: 1.00e+00 Pobj: -6.3167032e-01 Ad: 8.98e-01 Dobj:  3.0288655e+00
-Iter:  4 Ap: 1.00e+00 Pobj: -4.2564224e-02 Ad: 9.09e-01 Dobj:  3.9201918e-01
-Iter:  5 Ap: 1.00e+00 Pobj: -4.3455144e-03 Ad: 9.28e-01 Dobj:  4.0461235e-02
-Iter:  6 Ap: 1.00e+00 Pobj: -4.2815532e-04 Ad: 9.34e-01 Dobj:  3.8633142e-03
-Iter:  7 Ap: 1.00e+00 Pobj: -4.3920304e-05 Ad: 9.88e-01 Dobj:  1.7392334e-04
-Iter:  8 Ap: 1.00e+00 Pobj: -2.3698702e-06 Ad: 9.99e-01 Dobj:  4.5447445e-06
-Iter:  9 Ap: 1.00e+00 Pobj: -9.4705344e-08 Ad: 1.00e+00 Dobj: -2.3966133e-06
-Iter: 10 Ap: 1.00e+00 Pobj: -4.0174517e-09 Ad: 9.69e-01 Dobj: -9.9536623e-08
+Iter:  3 Ap: 1.00e+00 Pobj: -6.3166907e-01 Ad: 8.98e-01 Dobj:  3.0288603e+00
+Iter:  4 Ap: 1.00e+00 Pobj: -4.2564141e-02 Ad: 9.09e-01 Dobj:  3.9201832e-01
+Iter:  5 Ap: 1.00e+00 Pobj: -4.3454962e-03 Ad: 9.28e-01 Dobj:  4.0461107e-02
+Iter:  6 Ap: 1.00e+00 Pobj: -4.2815474e-04 Ad: 9.34e-01 Dobj:  3.8633036e-03
+Iter:  7 Ap: 1.00e+00 Pobj: -4.3920196e-05 Ad: 9.88e-01 Dobj:  1.7392285e-04
+Iter:  8 Ap: 1.00e+00 Pobj: -2.3698636e-06 Ad: 9.99e-01 Dobj:  4.5447245e-06
+Iter:  9 Ap: 1.00e+00 Pobj: -9.4705116e-08 Ad: 1.00e+00 Dobj: -2.3966141e-06
+Iter: 10 Ap: 1.00e+00 Pobj: -4.0174413e-09 Ad: 9.69e-01 Dobj: -9.9538646e-08
 DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, ComplexF64}[(1.0 - 0.0im), (-0.5773502691896257 - 0.0im)x₃ + (-0.5773502691896257 - 0.0im)x₂ + (-0.5773502691896257 - 0.0im)x₁]
 DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, ComplexF64}[(-0.577350269189626 - 0.0im)x₃ + (0.2886751345948128 + 0.5000000000000001im)x₂ + (0.28867513459481314 - 0.49999999999999994im)x₁]
 DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, ComplexF64}[(-0.577350269189626 - 0.0im)x₃ + (0.28867513459481314 - 0.49999999999999994im)x₂ + (0.2886751345948128 + 0.5000000000000001im)x₁]</code></pre><p>We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:</p><pre><code class="language-julia hljs">complex_basis = basis[1] + im * basis[2]
-image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)</code></pre><p class="math-container">\[ (0.4082482904638631 - 0.7071067811865475im)x_{3} + (0.4082482904638631 + 0.7071067811865475im)x_{2} + (-0.8164965809277261 + 0.0im)x_{1} \]</p><p>And there is a direct correspondance between the representation of the real and complex versions:</p><pre><code class="language-julia hljs">(a + b * im) * complex_basis</code></pre><p class="math-container">\[ (0.4082482904638631 - 0.7071067811865476im)x_{3} + (0.4082482904638629 + 0.7071067811865475im)x_{2} + (-0.816496580927726 + 5.551115123125783e-17im)x_{1} \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../dihedral/">Dihedral symmetry of the Robinson form »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.0.1 on <span class="colophon-date" title="Wednesday 20 September 2023 11:39">Wednesday 20 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)</code></pre><p class="math-container">\[ (0.4082482904638631 - 0.7071067811865475im)x_{3} + (0.4082482904638631 + 0.7071067811865475im)x_{2} + (-0.8164965809277261 + 0.0im)x_{1} \]</p><p>And there is a direct correspondance between the representation of the real and complex versions:</p><pre><code class="language-julia hljs">(a + b * im) * complex_basis</code></pre><p class="math-container">\[ (0.4082482904638631 - 0.7071067811865476im)x_{3} + (0.4082482904638629 + 0.7071067811865475im)x_{2} + (-0.816496580927726 + 5.551115123125783e-17im)x_{1} \]</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../dihedral/">Dihedral symmetry of the Robinson form »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.0.1 on <span class="colophon-date" title="Wednesday 20 September 2023 11:46">Wednesday 20 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
