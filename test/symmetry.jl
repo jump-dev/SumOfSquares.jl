@@ -41,26 +41,26 @@ end
 
 function _test_orthogonal_transformation_to(A, B)
     U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(A, B)
-    @test A == U' * B * U
+    @test A ≈ U' * B * U
 end
 
-function test_orthogonal_transformation_to()
-    A1 = [
+function _test_orthogonal_transformation_to(T::Type)
+    A1 = T[
         0 -1
         1 0
     ]
-    A2 = [
+    A2 = T[
         0 1
         -1 0
     ]
-    D = Diagonal([1, -1])
+    D = Diagonal(T[1, -1])
     @test A1 == D * A2 * D
     _test_orthogonal_transformation_to(A1, A2)
-    B1 = [
+    B1 = T[
         0 1
         1 0
     ]
-    B2 = [
+    B2 = T[
         0 -1
         -1 0
     ]
@@ -68,25 +68,53 @@ function test_orthogonal_transformation_to()
     _test_orthogonal_transformation_to(B1, B2)
     @test (A1 + B1) == D * (A2 + B2) * D
     _test_orthogonal_transformation_to(A1 + B1, A2 + B2)
-    A1 = [
+    A1 = T[
         0 1
         -2 0
     ]
-    A2 = [
+    A2 = T[
         0 -1
         2 0
     ]
     _test_orthogonal_transformation_to(A1, A2)
-    A1 = [
+    A1 = T[
         0 -1
         -2 0
     ]
-    A2 = [
+    A2 = T[
         0 1
         2 0
+    ]
+    _test_orthogonal_transformation_to(A1, A2)
+    A1 = T[
+        0 0 1
+        1 0 0
+        0 1 0
+    ]
+    A2 = T[
+        0 1 0
+        0 0 1
+        1 0 0
+    ]
+    _test_orthogonal_transformation_to(A1, A2)
+    A1 = T[
+        1  0  0
+        0 -1  0
+        0  0 -1
+    ]
+    A2 = T[
+        -1  0 0
+         0 -1 0
+         0  0 1
     ]
     _test_orthogonal_transformation_to(A1, A2)
     return
+end
+
+function test_orthogonal_transformation_to()
+    @testset "$T" for T in [Int, Float64, ComplexF64]
+        _test_orthogonal_transformation_to(T)
+    end
 end
 
 function test_block_diag()

@@ -6,6 +6,12 @@ import DataStructures
 Given a (quasi) upper triangular matrix `S`
 returns the permutation `P` so that
 `P' * S * P` has its eigenvalues in increasing order.
+
+By (quasi), we mean that if `S` is a `Matrix{<:Real}`,
+then there may be nonzero entries in `S[i+1,i]` representing
+complex conjugates.
+In that case, the complex conjugate are permuted together.
+If `S` is a `Matrix{<:Complex}`, then `S` is triangular.
 """
 function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
     n = LinearAlgebra.checksquare(S)
@@ -13,20 +19,26 @@ function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
     sorted = false
     P = SparseArrays.sparse(one(T) * LinearAlgebra.I, n, n)
     function permute!(i, j)
-        swap = sparse([i, j], [j, i], ones(T, 2), n, n)
+        I = collect(1:n)
+        J = copy(I)
+        J[i] = j
+        J[j] = i
+        swap = sparse(I, J, ones(T, n), n, n)
         S = swap' * S * swap
-        return P *= swap
+        P *= swap
+        return
     end
     while !sorted
         prev_i = nothing
         sorted = true
         i = 1
         while i <= n
-            if (i < n && !iszero(S[i+1, i]))
+            permute = !isnothing(prev_i) && (real(S[i, i]), imag(S[i, i])) < (real(S[prev_i, prev_i]), imag(S[prev_i, prev_i]))
+            if (T <: Real) && i < n && !iszero(S[i+1, i])
                 #if S[i+1, i] < S[i, i+1]
                 #    permute!(i, i + 1)
                 #end
-                if !isnothing(prev_i) && S[i, i] < S[prev_i, prev_i]
+                if permute
                     if i - prev_i == 2
                         permute!(prev_i, i)
                         permute!(prev_i + 1, i + 1)
@@ -40,7 +52,7 @@ function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
                 prev_i = i
                 i += 2
             else
-                if !isnothing(prev_i) && S[i, i] < S[prev_i, prev_i]
+                if permute
                     permute!(prev_i, i)
                     if i - prev_i == 2
                         permute!(i - 1, i)
@@ -60,8 +72,8 @@ function _sign_diag(A::AbstractMatrix{T}, B::AbstractMatrix{T}) where {T}
     n = LinearAlgebra.checksquare(A)
     d = ones(T, n)
     for i in 1:n
-        minus = zero(T)
-        not_minus = zero(T)
+        minus = zero(real(T))
+        not_minus = zero(real(T))
         for j in 1:(i-1)
             for (I, J) in [(i, j), (j, i)]
                 a = A[I, J]
