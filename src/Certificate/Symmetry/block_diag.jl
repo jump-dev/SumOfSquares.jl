@@ -33,7 +33,10 @@ function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
         sorted = true
         i = 1
         while i <= n
-            permute = !isnothing(prev_i) && (real(S[i, i]), imag(S[i, i])) < (real(S[prev_i, prev_i]), imag(S[prev_i, prev_i]))
+            permute =
+                !isnothing(prev_i) &&
+                (real(S[i, i]), imag(S[i, i])) <
+                (real(S[prev_i, prev_i]), imag(S[prev_i, prev_i]))
             if (T <: Real) && i < n && !iszero(S[i+1, i])
                 #if S[i+1, i] < S[i, i+1]
                 #    permute!(i, i + 1)
