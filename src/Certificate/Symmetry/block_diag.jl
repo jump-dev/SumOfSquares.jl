@@ -25,7 +25,7 @@ function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
         J[j] = i
         swap = sparse(I, J, ones(T, n), n, n)
         S = swap' * S * swap
-        P *= swap
+        P = swap * P
         return
     end
     while !sorted
@@ -120,14 +120,22 @@ to order the eigenvalues:
 """
 function orthogonal_transformation_to(A, B)
     As = LinearAlgebra.schur(A)
+    display(As)
     T_A = As.Schur
     Z_A = As.vectors
     P_A = _permutation_quasi_upper_triangular(T_A)
+    display(P_A)
     Bs = LinearAlgebra.schur(B)
+    display(Bs)
     T_B = Bs.Schur
     Z_B = Bs.vectors
     P_B = _permutation_quasi_upper_triangular(T_B)
+    display(P_B)
     d = _sign_diag(P_A' * T_A * P_A, P_B' * T_B * P_B)
+    display(d)
+    display(Z_B' * B * Z_B)
+    display(P_B' * Z_B' * B * Z_B * P_B)
+    display(P_A' * LinearAlgebra.Diagonal(d) * P_B' * Z_B' * B * Z_B * P_B * LinearAlgebra.Diagonal(d) * P_A)
     return _try_integer!(Z_B * P_B * LinearAlgebra.Diagonal(d) * P_A' * Z_A')
 end
 
@@ -157,6 +165,9 @@ function ordered_block_diag(As, d)
         R = sum(λ .* refs)
         C = sum(λ .* Cs)
         V = orthogonal_transformation_to(R, C)
+        display(R)
+        display(C)
+        display(V)
         @assert R ≈ V' * C * V
         for i in eachindex(refs)
             @assert refs[i] ≈ V' * Cs[i] * V

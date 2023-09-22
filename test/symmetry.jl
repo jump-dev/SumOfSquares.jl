@@ -108,6 +108,18 @@ function _test_orthogonal_transformation_to(T::Type)
         0 0 1
     ]
     _test_orthogonal_transformation_to(A1, A2)
+    _test_orthogonal_transformation_to(A1, A2)
+    A1 = T[
+        -1 0  1
+        1  1  0
+        0  1 -1
+    ]
+    A2 = T[
+        -1 1  0
+         0 1  1
+         1 0 -1
+    ]
+    _test_orthogonal_transformation_to(A1, A2)
     return
 end
 
@@ -155,3 +167,107 @@ end
 end
 
 TestSymmetry.runtests()
+
+
+#A1 = [
+# 1.0+0.0im  0.0+0.0im  0.0+0.0im
+# 0.0+0.0im  1.0+0.0im  0.0+0.0im
+# 0.0+0.0im  0.0+0.0im  1.0+0.0im
+#]
+#B1 = [
+# 1.0+0.0im  0.0+0.0im  0.0+0.0im
+# 0.0+0.0im  1.0+0.0im  0.0+0.0im
+# 0.0+0.0im  0.0+0.0im  1.0+0.0im
+#]
+#A2 = [
+# 0.0+0.0im  1.0+0.0im  0.0+0.0im
+# 1.0+0.0im  0.0+0.0im  0.0+0.0im
+# 0.0+0.0im  0.0+0.0im  1.0+0.0im
+#]
+#B2 = [
+# 1.0+0.0im  0.0+0.0im  0.0+0.0im
+# 0.0+0.0im  0.0+0.0im  1.0+0.0im
+# 0.0+0.0im  1.0+0.0im  0.0+0.0im
+#]
+#A3 = [
+# 0.0+0.0im  0.0+0.0im  1.0+0.0im
+# 1.0+0.0im  0.0+0.0im  0.0+0.0im
+# 0.0+0.0im  1.0+0.0im  0.0+0.0im
+#]
+#B3 = [
+# 0.0+0.0im  1.0+0.0im  0.0+0.0im
+# 0.0+0.0im  0.0+0.0im  1.0+0.0im
+# 1.0+0.0im  0.0+0.0im  0.0+0.0im
+#]
+#A4 = [
+# 1.0+0.0im   0.0+0.0im   0.0+0.0im
+# 0.0+0.0im  -1.0+0.0im   0.0+0.0im
+# 0.0+0.0im   0.0+0.0im  -1.0+0.0im
+#]
+#B4 = [
+# -1.0+0.0im   0.0+0.0im  0.0+0.0im
+#  0.0+0.0im  -1.0+0.0im  0.0+0.0im
+#  0.0+0.0im   0.0+0.0im  1.0+0.0im
+#]
+#A5 = [
+# -1.0+0.0im  0.0+0.0im   0.0+0.0im
+#  0.0+0.0im  1.0+0.0im   0.0+0.0im
+#  0.0+0.0im  0.0+0.0im  -1.0+0.0im
+#]
+#B5 = [
+# -1.0+0.0im  0.0+0.0im   0.0+0.0im
+#  0.0+0.0im  1.0+0.0im   0.0+0.0im
+#  0.0+0.0im  0.0+0.0im  -1.0+0.0im
+#]
+#  
+#refs = [A1, A2, A3, A4, A5]
+#Cs = [B1, B2, B3, B4, B5]
+#
+#λ = rand(length(Cs))
+#λ = [1, 0, 0, 0, 0]
+#λ = [0, 1, 0, 0, 0]
+#λ = [0, 0, 1, 0, 0]
+#λ = [0, 0, 0, 1, 0]
+#λ = [0, 0, 0, 0, 1]
+#λ = [0, 0, 1, 0, 1]
+#R = sum(λ .* refs)
+#C = sum(λ .* Cs)
+#V = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(R, C)
+#display(V)
+#@assert R ≈ V' * C * V
+#
+#A1 = [
+#    1  0  0
+#    0 -1  0
+#    0  0 -1
+#]
+#A2 = [
+#    -1  0 0
+#     0 -1 0
+#     0  0 1
+#]
+#
+#A1 = ComplexF64[
+#    0 0 1
+#    1 0 0
+#    0 1 0
+#]
+#A2 = ComplexF64[
+#    0 1 0
+#    0 0 1
+#    1 0 0
+#]
+#
+#TestSymmetry._test_orthogonal_transformation_to(A1, A2)
+
+A1 = [
+    -1 0  1
+    1  1  0
+    0  1 -1
+]
+A2 = [
+    -1 1  0
+    0 1  1
+    1 0 -1
+]
+TestSymmetry._test_orthogonal_transformation_to(A1, A2)
