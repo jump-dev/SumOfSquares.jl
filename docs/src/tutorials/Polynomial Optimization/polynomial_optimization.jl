@@ -32,8 +32,8 @@ p(x=>1, y=>0), p(x=>1//2, y=>1//2), p(x=>0, y=>1)
 
 import Ipopt
 model = Model(Ipopt.Optimizer)
-@variable(model, 0 <= a)
-@variable(model, 0 <= b)
+@variable(model, a >= 0)
+@variable(model, b >= 0)
 @constraint(model, a + b >= 1)
 @objective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
 optimize!(model)
@@ -99,8 +99,6 @@ import Alpine, HiGHS, Ipopt, Pavito
 ipopt = optimizer_with_attributes(
     Ipopt.Optimizer,
     MOI.Silent() => true,
-    #"sb" => "yes",
-    #"max_iter" => 9999,
 )
 highs = optimizer_with_attributes(
     HiGHS.Optimizer,
@@ -119,16 +117,12 @@ alpine = optimizer_with_attributes(
     "nlp_solver" => ipopt,
     "mip_solver" => pavito,
 )
-set_optimizer(model, () -> PolyJuMP.QCQP.Optimizer(alpine))
+set_optimizer(model, () -> PolyJuMP.QCQP.Optimizer(MOI.instantiate(alpine)))
 optimize!(model)
 
-# We can see the summary here:
+# We can see that it found the optimal solution
 
-solution_summary(m)
-
-# It found the optimal solution
-
-value(a), value(b)
+termination_status(model), value(a), value(b)
 
 # ## Sum-of-Squares approach
 
