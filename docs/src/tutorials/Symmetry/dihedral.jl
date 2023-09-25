@@ -134,9 +134,9 @@ end
 
 # We can exploit this symmetry for reducing the problem using the `SymmetricIdeal` certificate as follows:
 
-import CSDP
+import Clarabel
 function solve(G)
-    solver = CSDP.Optimizer
+    solver = Clarabel.Optimizer
     model = Model(solver)
     @variable(model, t)
     @objective(model, Max, t)
@@ -149,8 +149,8 @@ function solve(G)
 
     g = gram_matrix(con_ref).blocks #src
     @test length(g) == 5                       #src
-    @test g[1].basis.polynomials == [y^3, x^2*y, -y] #src
-    @test g[2].basis.polynomials == [-x^3, -x*y^2, x] #src
+    @test g[1].basis.polynomials == [y^3, x^2*y, y] #src
+    @test g[2].basis.polynomials == [-x^3, -x*y^2, -x] #src
     for i in 1:2                        #src
         I = 3:-1:1                      #src
         Q = g[i].Q[I, I]                #src
