@@ -109,14 +109,25 @@ function _test_orthogonal_transformation_to(T::Type)
     ]
     _test_orthogonal_transformation_to(A1, A2)
     A1 = T[
-        -1 0 1
-        1 1 0
-        0 1 -1
+        -1 0  1
+        1  1  0
+        0  1 -1
     ]
     A2 = T[
-        -1 1 0
-        0 1 1
-        1 0 -1
+        -1 1  0
+         0 1  1
+         1 0 -1
+    ]
+    _test_orthogonal_transformation_to(A1, A2)
+    A1 = T[
+        -1  1  1
+        2  1  0
+        0  1  0
+    ]
+    A2 = T[
+        0  1   0
+        0  1   2
+        1  1  -1
     ]
     _test_orthogonal_transformation_to(A1, A2)
     return

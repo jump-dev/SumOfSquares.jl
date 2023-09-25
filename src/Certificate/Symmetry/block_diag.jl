@@ -77,14 +77,13 @@ function _sign_diag(
             if abs(B[i, j]) <= tol
                 continue
             end
-            rot = B[i, j] / A[i, j]
+            rot = A[i, j] / B[i, j]
             # It should be unitary but there might be small numerical errors
             # so let's normalize
             rot /= abs(rot)
-            rot = conj(rot)
             d[j] = rot
             B[:, j] *= rot
-            B[j, :] *= rot
+            B[j, :] *= conj(rot)
         end
     end
     return d
@@ -158,7 +157,7 @@ Return an orthogonal transformation `U` such that
 Given Schur decompositions
 `A = Z_A * S_A * Z_A'`
 `B = Z_B * S_B * Z_B'`
-Since `P' * S_A * P = S_B`, we have
+Since `P' * S_A * P = D' * S_B * D`, we have
 `A = Z_A * P * Z_B' * B * Z_B * P' * Z_A'`
 """
 function orthogonal_transformation_to(A, B)
@@ -173,8 +172,9 @@ function orthogonal_transformation_to(A, B)
     Z_B = Bs.vectors
     P = _rotate_complex(T_A, T_B)
     T_A = P' * T_A * P
-    d = _sign_diag(T_A, T_B)
-    return _try_integer!(Z_B * LinearAlgebra.Diagonal(d) * P' * Z_A')
+    d = _sign_diag(T_A, copy(T_B))
+    D = LinearAlgebra.Diagonal(d)
+    return _try_integer!(Z_B * D * P' * Z_A')
 end
 
 function ordered_block_diag(As, d)
