@@ -54,8 +54,12 @@ JuMP.primal_status(model)
 # Plot the phase plot with the 0-level set of the barrier function, and the boundary of the initial and unsafe sets
 import DifferentialEquations, Plots, ImplicitPlots
 function phase_plot(f, B, g₁, h₁, quiver_scaling, Δt, X0, solver = DifferentialEquations.Tsit5())
-    p = ImplicitPlots.implicit_plot(B*g₁*h₁; xlims=(-2, 3), ylims=(-2.5, 2.5), resolution = 1000, label="")
-    Plots.plot(p)
+    X₀plot = ImplicitPlots.implicit_plot(h₁; xlims=(-2, 3), ylims=(-2.5, 2.5), resolution = 1000, label="X₀", linecolor=:blue)
+    Xᵤplot = ImplicitPlots.implicit_plot!(g₁; xlims=(-2, 3), ylims=(-2.5, 2.5), resolution = 1000, label="Xᵤ", linecolor=:teal)
+    Bplot  = ImplicitPlots.implicit_plot!(B; xlims=(-2, 3), ylims=(-2.5, 2.5), resolution = 1000, label="B = 0", linecolor=:red)
+    Plots.plot(X₀plot)
+    Plots.plot!(Xᵤplot)
+    Plots.plot!(Bplot)
     ∇(vx, vy) = [fi(x[1] => vx, x[2] => vy) for fi in f]
     ∇pt(v, p, t) = ∇(v[1], v[2])
     function traj(v0)
