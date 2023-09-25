@@ -1,38 +1,5 @@
 import DataStructures
 
-function _givens(θ::T, i, j, n) where {T<:Number}
-    c = cos(θ)
-    s = sin(θ)
-    if T <: Complex
-        r = sqrt(c * conj(c) + s * conj(s))
-        c /= r
-        s /= r
-    end
-    I = collect(1:n)
-    J = copy(I)
-    V = ones(T, n)
-    V[i] = c
-    V[j] = conj(c)
-    push!(I, i)
-    push!(J, j)
-    push!(V, -conj(s))
-    push!(I, j)
-    push!(J, i)
-    push!(V, s)
-    return SparseArrays.sparse(I, J, V, n, n)
-end
-
-"""
-    _permutation_quasi_upper_triangular(S)
-
-Given a matrix such that `S[i, j]` is zero, return a Given rotation `G` such
-that `(G' * S * G)[j, i]` is zero.
-"""
-function _givens(A::AbstractMatrix, i, j)
-    n = LinearAlgebra.checksquare(A)
-    return _givens(atan(A[j, i] / (A[i, i] - A[j, j])), i, j, n)
-end
-
 """
     _reorder!(F::LinearAlgebra.Schur{T}) where {T}
 
@@ -130,16 +97,19 @@ function _try_integer!(A::Matrix)
 end
 
 """
-    _rotate_complex(A, B)
+    _rotate_complex(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.rtoldefault(real(T))) where {T}
 
 Given (quasi) upper triangular matrix `A` and `B` that have the eigenvalues in
 the same order except the complex pairs which may need to be (signed) permuted,
-returns an othogonal matrix `P` such that `P' * A * P = B`.
+returns an othogonal matrix `P` such that `P' * A * P` and `B` have matching
+low triangular part.
+The upper triangular part will be dealt with by `_sign_diag`.
 
 By (quasi), we mean that if `S` is a `Matrix{<:Real}`,
 then there may be nonzero entries in `S[i+1,i]` representing
 complex conjugates.
-If `S` is a `Matrix{<:Complex}`, then `S` is triangular.
+If `S` is a `Matrix{<:Complex}`, then `S` is upper triangular so there is
+nothing to do.
 """
 function _rotate_complex(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.rtoldefault(real(T))) where {T}
     n = LinearAlgebra.checksquare(A)
@@ -153,30 +123,8 @@ function _rotate_complex(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.
         end
         pair = abs(A[i + 1, i]) > tol
         if pair
-            #if T <: Complex
-#                a = A[i, i + 1]
-#                b = B[i, i + 1]
-#            else
                 a = (A[i + 1, i], A[i, i + 1])
                 b = (B[i + 1, i], B[i, i + 1])
-#            end
-#            rot = b / a
-#            @assert abs(rot) ≈ 1
-#            if T <: Complex
-#                V[i] = conj(rot)
-#            else
-#                θ = atan(imag(rot) / real(rot))
-#                c = cos(θ)
-#                s = sin(θ)
-#                V[i] = c
-#                V[j] = c
-#                push!(I, i)
-#                push!(J, j)
-#                push!(V, -s)
-#                push!(I, j)
-#                push!(J, i)
-#                push!(V, s)
-#            end
             c = a[2:-1:1]
             if LinearAlgebra.norm(abs.(a) .- abs.(b)) > LinearAlgebra.norm(abs.(c) .- abs.(b))
                 a = c
