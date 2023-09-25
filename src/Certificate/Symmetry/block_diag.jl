@@ -1,24 +1,40 @@
 import DataStructures
 
-function _givens(θ::Real)
+function _givens(θ::T, i, j, n) where {T<:Number}
     c = cos(θ)
     s = sin(θ)
-    return [
-        c -s
-        s c
-    ]
+    if T <: Complex
+        r = sqrt(c * conj(c) + s * conj(s))
+        c /= r
+        s /= r
+    end
+    I = collect(1:n)
+    J = copy(I)
+    V = ones(T, n)
+    V[i] = c
+    V[j] = conj(c)
+    push!(I, i)
+    push!(J, j)
+    push!(V, -conj(s))
+    push!(I, j)
+    push!(J, i)
+    push!(V, s)
+    return SparseArrays.sparse(I, J, V, n, n)
 end
 
 """
     _permutation_quasi_upper_triangular(S)
 
-Given a 2x2 lower triangular matrix, return a Given rotation
-`G` such that `G' * S * G` is a upper triangular matrix.
+Given a matrix such that `S[i, j]` is zero, return a Given rotation `G` such
+that `(G' * S * G)[j, i]` is zero.
 """
-_givens(A::AbstractMatrix) = _givens(A[1, 1] / (A[2, 2] - A[2, 1]))
+function _givens(A::AbstractMatrix, i, j)
+    n = LinearAlgebra.checksquare(A)
+    return _givens(atan(A[j, i] / (A[i, i] - A[j, j])), i, j, n)
+end
 
 """
-    _permutation_quasi_upper_triangular(S)
+    _reorder!(F::LinearAlgebra.Schur{T}) where {T}
 
 Given a (quasi) upper triangular matrix `S` returns an othogonal
 matrix `P` such that `P' * S * P` is still quasi upper triangular
@@ -34,82 +50,70 @@ complex conjugates.
 In that case, the complex conjugate are permuted together.
 If `S` is a `Matrix{<:Complex}`, then `S` is triangular.
 """
-function _permutation_quasi_upper_triangular(S::AbstractMatrix{T}) where {T}
-    n = LinearAlgebra.checksquare(S)
+function _reorder!(F::LinearAlgebra.Schur{T}) where {T}
+    n = length(F.values)
     # Bubble sort
     sorted = false
-    P = SparseArrays.sparse(one(T) * LinearAlgebra.I, n, n)
-    function permute!(i, j)
-        I = collect(1:n)
-        J = copy(I)
-        J[i] = j
-        J[j] = i
-        swap = sparse(I, J, ones(T, n), n, n)
-        S = swap' * S * swap
-        P = swap * P
-        return
-    end
     while !sorted
         prev_i = nothing
         sorted = true
         i = 1
         while i <= n
-            permute =
-                !isnothing(prev_i) &&
+            S = F.Schur
+            if (T <: Real) && i < n && !iszero(S[i+1, i])
+                # complex pair
+                next_i = i + 2
+            else
+                next_i = i + 1
+            end
+            if !isnothing(prev_i) &&
                 (real(S[i, i]), imag(S[i, i])) <
                 (real(S[prev_i, prev_i]), imag(S[prev_i, prev_i]))
-            if (T <: Real) && i < n && !iszero(S[i+1, i])
-                #if S[i+1, i] < S[i, i+1]
-                #    permute!(i, i + 1)
-                #end
-                if permute
-                    if i - prev_i == 2
-                        permute!(prev_i, i)
-                        permute!(prev_i + 1, i + 1)
-                    else
-                        permute!(prev_i, i)
-                        permute!(i, i + 1)
-                    end
-                    sorted = false
-                end
-                # complex
-                prev_i = i
-                i += 2
-            else
-                if permute
-                    permute!(prev_i, i)
-                    if i - prev_i == 2
-                        permute!(i - 1, i)
-                    end
-                    sorted = false
-                end
-                prev_i = i
-                i += 1
+                select = trues(n)
+                select[prev_i:(i-1)] .= false
+                select[next_i:end] .= false
+                LinearAlgebra.ordschur!(F, select)
+                sorted = false
             end
+            prev_i = i
+            i = next_i
         end
     end
-    return P
 end
 
-# `A` and `B` may be not upper triangular because of the permutations
-function _sign_diag(A::AbstractMatrix{T}, B::AbstractMatrix{T}) where {T}
+# We can multiply by `Diagonal(d)` if `d[i] * conj(d[i]) = 1`.
+# So in the real case, `d = ±1` but in the complex case, we have more freedom.
+function _sign_diag(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.rtoldefault(real(T))) where {T}
     n = LinearAlgebra.checksquare(A)
     d = ones(T, n)
-    for i in 1:n
-        minus = zero(real(T))
-        not_minus = zero(real(T))
-        for j in 1:(i-1)
-            for (I, J) in [(i, j), (j, i)]
-                a = A[I, J]
-                b = B[I, J]
+    for j in 2:n
+        if T <: Real
+            minus = zero(real(T))
+            not_minus = zero(real(T))
+            for i in 1:(j-1)
+                a = A[i, j]
+                b = B[i, j]
                 minus = max(minus, abs(a + b))
                 not_minus = max(not_minus, abs(a - b))
             end
-        end
-        if minus < not_minus
-            d[i] = -one(T)
-            B[:, i] = -B[:, i]
-            B[i, :] = -B[i, :]
+            if minus < not_minus
+                d[j] = -one(T)
+                B[:, j] = -B[:, j]
+                B[j, :] = -B[j, :]
+            end
+        else
+            i = argmax(abs.(B[1:(j-1), j]))
+            if abs(B[i, j]) <= tol
+                continue
+            end
+            rot = B[i, j] / A[i, j]
+            # It should be unitary but there might be small numerical errors
+            # so let's normalize
+            rot /= abs(rot)
+            rot = conj(rot)
+            d[j] = rot
+            B[:, j] *= rot
+            B[j, :] *= rot
         end
     end
     return d
@@ -126,6 +130,69 @@ function _try_integer!(A::Matrix)
 end
 
 """
+    _rotate_complex(A, B)
+
+Given (quasi) upper triangular matrix `A` and `B` that have the eigenvalues in
+the same order except the complex pairs which may need to be (signed) permuted,
+returns an othogonal matrix `P` such that `P' * A * P = B`.
+
+By (quasi), we mean that if `S` is a `Matrix{<:Real}`,
+then there may be nonzero entries in `S[i+1,i]` representing
+complex conjugates.
+If `S` is a `Matrix{<:Complex}`, then `S` is triangular.
+"""
+function _rotate_complex(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.rtoldefault(real(T))) where {T}
+    n = LinearAlgebra.checksquare(A)
+    I = collect(1:n)
+    J = copy(I)
+    V = ones(T, n)
+    pair = false
+    for i in 1:n
+        if pair || i == n
+            continue
+        end
+        pair = abs(A[i + 1, i]) > tol
+        if pair
+            #if T <: Complex
+#                a = A[i, i + 1]
+#                b = B[i, i + 1]
+#            else
+                a = (A[i + 1, i], A[i, i + 1])
+                b = (B[i + 1, i], B[i, i + 1])
+#            end
+#            rot = b / a
+#            @assert abs(rot) ≈ 1
+#            if T <: Complex
+#                V[i] = conj(rot)
+#            else
+#                θ = atan(imag(rot) / real(rot))
+#                c = cos(θ)
+#                s = sin(θ)
+#                V[i] = c
+#                V[j] = c
+#                push!(I, i)
+#                push!(J, j)
+#                push!(V, -s)
+#                push!(I, j)
+#                push!(J, i)
+#                push!(V, s)
+#            end
+            c = a[2:-1:1]
+            if LinearAlgebra.norm(abs.(a) .- abs.(b)) > LinearAlgebra.norm(abs.(c) .- abs.(b))
+                a = c
+                J[i] = i + 1
+                J[i + 1] = i
+            end
+            c = (-).(a)
+            if LinearAlgebra.norm(a .- b) > LinearAlgebra.norm(c .- b)
+                V[i + 1] = -V[i]
+            end
+        end
+    end
+    return SparseArrays.sparse(I, J, V, n, n)
+end
+
+"""
     orthogonal_transformation_to(A, B)
 
 Return an orthogonal transformation `U` such that
@@ -134,30 +201,23 @@ Return an orthogonal transformation `U` such that
 Given Schur decompositions
 `A = Z_A * S_A * Z_A'`
 `B = Z_B * S_B * Z_B'`
-We further decompose the triangular matrices `S_A`, `S_B`
-to order the eigenvalues:
-`S_A = P_A * T_A * P_A'`
-`S_B = P_B * T_B * P_B'`
+Since `P' * S_A * P = S_B`, we have
+`A = Z_A * P * Z_B' * B * Z_B * P' * Z_A'`
 """
 function orthogonal_transformation_to(A, B)
+    n = LinearAlgebra.checksquare(A)
     As = LinearAlgebra.schur(A)
-    display(As)
+    _reorder!(As)
     T_A = As.Schur
     Z_A = As.vectors
-    P_A = _permutation_quasi_upper_triangular(T_A)
-    display(P_A)
     Bs = LinearAlgebra.schur(B)
-    display(Bs)
+    _reorder!(Bs)
     T_B = Bs.Schur
     Z_B = Bs.vectors
-    P_B = _permutation_quasi_upper_triangular(T_B)
-    display(P_B)
-    d = _sign_diag(P_A' * T_A * P_A, P_B' * T_B * P_B)
-    display(d)
-    display(Z_B' * B * Z_B)
-    display(P_B' * Z_B' * B * Z_B * P_B)
-    display(P_A' * LinearAlgebra.Diagonal(d) * P_B' * Z_B' * B * Z_B * P_B * LinearAlgebra.Diagonal(d) * P_A)
-    return _try_integer!(Z_B * P_B * LinearAlgebra.Diagonal(d) * P_A' * Z_A')
+    P = _rotate_complex(T_A, T_B)
+    T_A = P' * T_A * P
+    d = _sign_diag(T_A, T_B)
+    return _try_integer!(Z_B * LinearAlgebra.Diagonal(d) * P' * Z_A')
 end
 
 function ordered_block_diag(As, d)
@@ -186,9 +246,6 @@ function ordered_block_diag(As, d)
         R = sum(λ .* refs)
         C = sum(λ .* Cs)
         V = orthogonal_transformation_to(R, C)
-        display(R)
-        display(C)
-        display(V)
         @assert R ≈ V' * C * V
         for i in eachindex(refs)
             @assert refs[i] ≈ V' * Cs[i] * V

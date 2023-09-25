@@ -3,6 +3,46 @@ module TestSymmetry
 using LinearAlgebra, SparseArrays, Test
 using SumOfSquares
 
+function _test_givens(A)
+    @test A[1, 2] ≈ 0 atol = 1e-10
+    G = Symmetry._givens(A, 1, 2)
+    @test G * G' ≈ I
+    @test G' * G ≈ I
+    B = G' * A * G
+    @test B[2, 1] ≈ 0 atol = 1e-10
+end
+
+function _test_givens(A1, A2)
+    _test_givens(A1)
+    _test_givens(A2)
+    _test_givens(A1 + A2 * im)
+    _test_givens(A2 + A1 * im)
+end
+
+function _test_givens(T::Type)
+    A1 = T[
+        1 0
+        2 -1
+    ]
+    A2 = T[
+        -2 0
+        -1 -3
+    ]
+    A3 = T[
+        -2 0
+        1 3
+    ]
+    _test_givens(A1, A2)
+    _test_givens(A2, A3)
+    _test_givens(A3, A1)
+end
+
+function test_givens()
+    for T in [Int, Float64]
+        _test_givens(T)
+    end
+end
+
 function test_linsolve()
     x = [1, 2]
     for A in [
@@ -107,7 +147,6 @@ function _test_orthogonal_transformation_to(T::Type)
         0 -1 0
         0 0 1
     ]
-    _test_orthogonal_transformation_to(A1, A2)
     _test_orthogonal_transformation_to(A1, A2)
     A1 = T[
         -1 0  1
