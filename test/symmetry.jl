@@ -109,14 +109,14 @@ function _test_orthogonal_transformation_to(T::Type)
     ]
     _test_orthogonal_transformation_to(A1, A2)
     A1 = T[
-        -1 0  1
-        1  1  0
-        0  1 -1
+        -1 0 1
+        1 1 0
+        0 1 -1
     ]
     A2 = T[
-        -1 1  0
-         0 1  1
-         1 0 -1
+        -1 1 0
+        0 1 1
+        1 0 -1
     ]
     _test_orthogonal_transformation_to(A1, A2)
     return
@@ -166,7 +166,6 @@ end
 end
 
 TestSymmetry.runtests()
-
 
 #A1 = [
 # 1.0+0.0im  0.0+0.0im  0.0+0.0im
@@ -260,13 +259,13 @@ TestSymmetry.runtests()
 #TestSymmetry._test_orthogonal_transformation_to(A1, A2)
 
 A1 = [
-    -1 0  1
-    1  1  0
-    0  1 -1
+    -1 0 1
+    1 1 0
+    0 1 -1
 ]
 A2 = [
-    -1 1  0
-    0 1  1
+    -1 1 0
+    0 1 1
     1 0 -1
 ]
 TestSymmetry._test_orthogonal_transformation_to(A1, A2)

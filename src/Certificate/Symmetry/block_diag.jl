@@ -34,8 +34,8 @@ function _reorder!(F::LinearAlgebra.Schur{T}) where {T}
                 next_i = i + 1
             end
             if !isnothing(prev_i) &&
-                (real(S[i, i]), imag(S[i, i])) <
-                (real(S[prev_i, prev_i]), imag(S[prev_i, prev_i]))
+               (real(S[i, i]), imag(S[i, i])) <
+               (real(S[prev_i, prev_i]), imag(S[prev_i, prev_i]))
                 select = trues(n)
                 select[prev_i:(i-1)] .= false
                 select[next_i:end] .= false
@@ -50,7 +50,11 @@ end
 
 # We can multiply by `Diagonal(d)` if `d[i] * conj(d[i]) = 1`.
 # So in the real case, `d = ±1` but in the complex case, we have more freedom.
-function _sign_diag(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.rtoldefault(real(T))) where {T}
+function _sign_diag(
+    A::AbstractMatrix{T},
+    B::AbstractMatrix{T};
+    tol = Base.rtoldefault(real(T)),
+) where {T}
     n = LinearAlgebra.checksquare(A)
     d = ones(T, n)
     for j in 2:n
@@ -111,7 +115,11 @@ complex conjugates.
 If `S` is a `Matrix{<:Complex}`, then `S` is upper triangular so there is
 nothing to do.
 """
-function _rotate_complex(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.rtoldefault(real(T))) where {T}
+function _rotate_complex(
+    A::AbstractMatrix{T},
+    B::AbstractMatrix{T};
+    tol = Base.rtoldefault(real(T)),
+) where {T}
     n = LinearAlgebra.checksquare(A)
     I = collect(1:n)
     J = copy(I)
@@ -121,19 +129,20 @@ function _rotate_complex(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tol = Base.
         if pair || i == n
             continue
         end
-        pair = abs(A[i + 1, i]) > tol
+        pair = abs(A[i+1, i]) > tol
         if pair
-                a = (A[i + 1, i], A[i, i + 1])
-                b = (B[i + 1, i], B[i, i + 1])
+            a = (A[i+1, i], A[i, i+1])
+            b = (B[i+1, i], B[i, i+1])
             c = a[2:-1:1]
-            if LinearAlgebra.norm(abs.(a) .- abs.(b)) > LinearAlgebra.norm(abs.(c) .- abs.(b))
+            if LinearAlgebra.norm(abs.(a) .- abs.(b)) >
+               LinearAlgebra.norm(abs.(c) .- abs.(b))
                 a = c
                 J[i] = i + 1
-                J[i + 1] = i
+                J[i+1] = i
             end
             c = (-).(a)
             if LinearAlgebra.norm(a .- b) > LinearAlgebra.norm(c .- b)
-                V[i + 1] = -V[i]
+                V[i+1] = -V[i]
             end
         end
     end
