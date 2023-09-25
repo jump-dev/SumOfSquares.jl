@@ -1,11 +1,32 @@
 import DataStructures
 
+function _givens(θ::Real)
+    c = cos(θ)
+    s = sin(θ)
+    return [
+        c -s
+        s c
+    ]
+end
+
 """
     _permutation_quasi_upper_triangular(S)
 
-Given a (quasi) upper triangular matrix `S`
-returns the permutation `P` so that
-`P' * S * P` has its eigenvalues in increasing order.
+Given a 2x2 lower triangular matrix, return a Given rotation
+`G` such that `G' * S * G` is a upper triangular matrix.
+"""
+_givens(A::AbstractMatrix) = _givens(A[1, 1] / (A[2, 2] - A[2, 1]))
+
+"""
+    _permutation_quasi_upper_triangular(S)
+
+Given a (quasi) upper triangular matrix `S` returns an othogonal
+matrix `P` such that `P' * S * P` is still quasi upper triangular
+but has its eigenvalues in increasing order.
+
+The matrix `P` is a product of permutation matrices
+(to reorder the eigenvalues) and
+Givens rotation (to keep it upper triangular after reordering).
 
 By (quasi), we mean that if `S` is a `Matrix{<:Real}`,
 then there may be nonzero entries in `S[i+1,i]` representing
