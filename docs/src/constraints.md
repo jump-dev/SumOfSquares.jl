@@ -364,5 +364,6 @@ PolyJuMP.Bridges.Constraint.ToPolynomialBridge
 
 ```@docs
 SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to
-SumOfSquares.Certificate.Symmetry._permutation_quasi_upper_triangular
+SumOfSquares.Certificate.Symmetry._reorder!
+SumOfSquares.Certificate.Symmetry._rotate_complex
 ```
