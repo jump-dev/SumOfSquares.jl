@@ -149,17 +149,17 @@ function solve(G)
 
     g = gram_matrix(con_ref).blocks #src
     @test length(g) == 5                       #src
-    @test g[1].basis.polynomials == [y^3, x^2*y, -y] #src
-    @test g[2].basis.polynomials == [-x^3, -x*y^2, x] #src
+    @test g[1].basis.polynomials == [y^3, x^2*y, y] #src
+    @test g[2].basis.polynomials == [-x^3, -x*y^2, -x] #src
     for i in 1:2                        #src
         I = 3:-1:1                      #src
         Q = g[i].Q[I, I]                #src
         @test size(Q) == (3, 3)         #src
         @test Q[2, 2] ≈  1    rtol=1e-2 #src
-        @test Q[1, 2] ≈ -5/8  rtol=1e-2 #src
+        @test Q[1, 2] ≈  5/8  rtol=1e-2 #src
         @test Q[2, 3] ≈ -1    rtol=1e-2 #src
         @test Q[1, 1] ≈ 25/64 rtol=1e-2 #src
-        @test Q[1, 3] ≈  5/8  rtol=1e-2 #src
+        @test Q[1, 3] ≈ -5/8  rtol=1e-2 #src
         @test Q[3, 3] ≈  1    rtol=1e-2 #src
     end #src
     @test length(g[3].basis.polynomials) == 2 #src
