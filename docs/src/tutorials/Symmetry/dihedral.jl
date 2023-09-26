@@ -143,7 +143,7 @@ function solve(G)
     pattern = Symmetry.Pattern(G, DihedralAction())
     con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
     optimize!(model)
-    @test value(t) ≈ -3825/4096 rtol=5e-2 #src
+    @test value(t) ≈ -3825/4096 rtol=1e-2 #src
     @show value(t)
 
 
@@ -155,27 +155,27 @@ function solve(G)
         I = 3:-1:1                      #src
         Q = g[i].Q[I, I]                #src
         @test size(Q) == (3, 3)         #src
-        @test Q[2, 2] ≈  1    rtol=5e-2 #src
-        @test Q[1, 2] ≈ -5/8  rtol=5e-2 #src
-        @test Q[2, 3] ≈ -1    rtol=5e-2 #src
-        @test Q[1, 1] ≈ 25/64 rtol=5e-2 #src
-        @test Q[1, 3] ≈  5/8  rtol=5e-2 #src
-        @test Q[3, 3] ≈  1    rtol=5e-2 #src
+        @test Q[2, 2] ≈  1    rtol=1e-2 #src
+        @test Q[1, 2] ≈  5/8  rtol=1e-2 #src
+        @test Q[2, 3] ≈ -1    rtol=1e-2 #src
+        @test Q[1, 1] ≈ 25/64 rtol=1e-2 #src
+        @test Q[1, 3] ≈ -5/8  rtol=1e-2 #src
+        @test Q[3, 3] ≈  1    rtol=1e-2 #src
     end #src
     @test length(g[3].basis.polynomials) == 2 #src
     @test g[3].basis.polynomials[1] == 1.0 #src
     @test g[3].basis.polynomials[2] ≈ -(√2/2)x^2 - (√2/2)y^2 #src
     @test size(g[3].Q) == (2, 2)             #src
-    @test g[3].Q[1, 1] ≈ 7921/4096 rtol=5e-2 #src
-    @test g[3].Q[1, 2] ≈ 0.983 rtol=5e-2  #src
-    @test g[3].Q[2, 2] ≈ 1/2 rtol=5e-2 #src
+    @test g[3].Q[1, 1] ≈ 7921/4096 rtol=1e-2 #src
+    @test g[3].Q[1, 2] ≈ 0.983 rtol=1e-2  #src
+    @test g[3].Q[2, 2] ≈ 1/2 rtol=1e-2 #src
     @test g[4].basis.polynomials == [x * y] #src
     @test size(g[4].Q) == (1, 1)       #src
-    @test g[4].Q[1, 1] ≈ 0   atol=5e-2 #src
+    @test g[4].Q[1, 1] ≈ 0   atol=1e-2 #src
     @test length(g[5].basis.polynomials) == 1 #src
     @test g[5].basis.polynomials[1] ≈ (√2/2)x^2 - (√2/2)y^2 #src
     @test size(g[5].Q) == (1, 1)       #src
-    @test g[5].Q[1, 1] ≈ 0   atol=5e-2 #src
+    @test g[5].Q[1, 1] ≈ 0   atol=1e-2 #src
     for g in gram_matrix(con_ref).blocks
         println(g.basis.polynomials)
     end

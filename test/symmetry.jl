@@ -16,26 +16,15 @@ function test_linsolve()
         ],
     ]
         b = A' * x
-        @test Certificate.Symmetry._linsolve(
-            A,
-            b,
-            Symmetry._RowEchelonMatrix(),
-        ) ≈ x
+        @test Certificate.Symmetry._linsolve(A, b, Symmetry._RowEchelonMatrix()) ≈ x
         B = float.(A)
         for i in axes(B, 1)
             B[i, :] = normalize(B[i, :])
         end
         b = B' * x
-        @test Certificate.Symmetry.__linsolve(
-            B,
-            b,
-            Symmetry._OrthogonalMatrix(),
-        ) ≈ x
-        @test Certificate.Symmetry.__linsolve(
-            sparse(B),
-            b,
-            Symmetry._OrthogonalMatrix(),
-        ) ≈ x
+        @test Certificate.Symmetry.__linsolve(B, b, Symmetry._OrthogonalMatrix()) ≈ x
+        @test Certificate.Symmetry.__linsolve(sparse(B), b, Symmetry._OrthogonalMatrix()) ≈
+              x
     end
 end
 
@@ -128,6 +117,28 @@ function _test_orthogonal_transformation_to(T::Type)
         0 1 0
         0 1 2
         1 1 -1
+    ]
+    _test_orthogonal_transformation_to(A1, A2)
+    A1 = T[
+        0 1 1
+        2 0 0
+        0 1 -1
+    ]
+    A2 = T[
+        -1 1 0
+        0 0 2
+        1 1 0
+    ]
+    _test_orthogonal_transformation_to(A1, A2)
+    A1 = ComplexF64[
+        0 1 1
+        2 0 0
+        0 1 -1
+    ]
+    A2 = ComplexF64[
+        -1 1 0
+        0 0 2
+        1 1 0
     ]
     _test_orthogonal_transformation_to(A1, A2)
     return

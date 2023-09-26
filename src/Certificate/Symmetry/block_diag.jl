@@ -1,21 +1,25 @@
 import DataStructures
 
+_isapproxless(a::Real, b::Real) = a < b
+function _isapproxless(a::Complex, b::Complex)
+    if real(a) ≈ real(b)
+        return isless(imag(a), imag(b))
+    else
+        return isless(real(a), real(b))
+    end
+end
+
 """
     _reorder!(F::LinearAlgebra.Schur{T}) where {T}
 
-Given a (quasi) upper triangular matrix `S` returns an othogonal
-matrix `P` such that `P' * S * P` is still quasi upper triangular
-but has its eigenvalues in increasing order.
+Given a Schur decomposition of a, reorder it so that its
+eigenvalues are in in increasing order.
 
-The matrix `P` is a product of permutation matrices
-(to reorder the eigenvalues) and
-Givens rotation (to keep it upper triangular after reordering).
-
-By (quasi), we mean that if `S` is a `Matrix{<:Real}`,
-then there may be nonzero entries in `S[i+1,i]` representing
+Note that if `T<:Real`, `F.Schur` is quasi upper triangular.
+By (quasi), we mean that there may be nonzero entries in `S[i+1,i]` representing
 complex conjugates.
 In that case, the complex conjugate are permuted together.
-If `S` is a `Matrix{<:Complex}`, then `S` is triangular.
+If `T<:Complex`, then `S` is triangular.
 """
 function _reorder!(F::LinearAlgebra.Schur{T}) where {T}
     n = length(F.values)
@@ -34,8 +38,7 @@ function _reorder!(F::LinearAlgebra.Schur{T}) where {T}
                 next_i = i + 1
             end
             if !isnothing(prev_i) &&
-               (real(S[i, i]), imag(S[i, i])) <
-               (real(S[prev_i, prev_i]), imag(S[prev_i, prev_i]))
+                _isapproxless(S[i, i], S[prev_i, prev_i])
                 select = trues(n)
                 select[prev_i:(i-1)] .= false
                 select[next_i:end] .= false
@@ -161,7 +164,6 @@ Since `P' * S_A * P = D' * S_B * D`, we have
 `A = Z_A * P * Z_B' * B * Z_B * P' * Z_A'`
 """
 function orthogonal_transformation_to(A, B)
-    n = LinearAlgebra.checksquare(A)
     As = LinearAlgebra.schur(A)
     _reorder!(As)
     T_A = As.Schur
@@ -172,7 +174,7 @@ function orthogonal_transformation_to(A, B)
     Z_B = Bs.vectors
     P = _rotate_complex(T_A, T_B)
     T_A = P' * T_A * P
-    d = _sign_diag(T_A, copy(T_B))
+    d = _sign_diag(T_A, T_B)
     D = LinearAlgebra.Diagonal(d)
     return _try_integer!(Z_B * D * P' * Z_A')
 end
