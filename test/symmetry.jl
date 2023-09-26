@@ -16,15 +16,26 @@ function test_linsolve()
         ],
     ]
         b = A' * x
-        @test Certificate.Symmetry._linsolve(A, b, Symmetry._RowEchelonMatrix()) ≈ x
+        @test Certificate.Symmetry._linsolve(
+            A,
+            b,
+            Symmetry._RowEchelonMatrix(),
+        ) ≈ x
         B = float.(A)
         for i in axes(B, 1)
             B[i, :] = normalize(B[i, :])
         end
         b = B' * x
-        @test Certificate.Symmetry.__linsolve(B, b, Symmetry._OrthogonalMatrix()) ≈ x
-        @test Certificate.Symmetry.__linsolve(sparse(B), b, Symmetry._OrthogonalMatrix()) ≈
-              x
+        @test Certificate.Symmetry.__linsolve(
+            B,
+            b,
+            Symmetry._OrthogonalMatrix(),
+        ) ≈ x
+        @test Certificate.Symmetry.__linsolve(
+            sparse(B),
+            b,
+            Symmetry._OrthogonalMatrix(),
+        ) ≈ x
     end
 end
 

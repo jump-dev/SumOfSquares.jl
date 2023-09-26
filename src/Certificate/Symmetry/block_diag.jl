@@ -37,8 +37,7 @@ function _reorder!(F::LinearAlgebra.Schur{T}) where {T}
             else
                 next_i = i + 1
             end
-            if !isnothing(prev_i) &&
-                _isapproxless(S[i, i], S[prev_i, prev_i])
+            if !isnothing(prev_i) && _isapproxless(S[i, i], S[prev_i, prev_i])
                 select = trues(n)
                 select[prev_i:(i-1)] .= false
                 select[next_i:end] .= false
