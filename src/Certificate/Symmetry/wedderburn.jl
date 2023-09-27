@@ -185,13 +185,13 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
         if d > 1
             if m > 1
                 U = ordered_block_diag(S, d)
+                if isnothing(U)
+                    error(
+                        "Could not simultaneously block-diagonalize into $m identical $dx$d blocks",
+                    )
+                end
             else
                 U = Matrix{T}(LinearAlgebra.I, N, N)
-            end
-            if U === nothing
-                error(
-                    "Could not simultaneously block-diagonalize into $m identical $dx$d blocks",
-                )
             end
             # From Example 1.7.3 of
             # Sagan, The symmetric group, Springer Science & Business Media, 2001

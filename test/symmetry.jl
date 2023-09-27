@@ -184,6 +184,29 @@ function test_block_diag()
     d = 2
     U = SumOfSquares.Certificate.Symmetry.ordered_block_diag(A, d)
     @test SumOfSquares.Certificate.Symmetry.ordered_block_check(U, A, d)
+    α = 0.75
+    A = [
+        Matrix{Int}(I, 6, 6),
+        [
+            1 0 0 0 0 0
+            0 -1 0 0 0 0
+            0 0 0 0 1 0
+            0 0 0 0 0 -1
+            0 0 1 0 0 0
+            0 0 0 -1 0 0
+        ],
+        [
+            -0.5 α 0 0 0 0
+            -α -0.5 0 0 0 0
+            0 0 -0.5 α 0 0
+            0 0 -α -0.5 0 0
+            0 0 0 0 -0.5 α
+            0 0 0 0 -α -0.5
+        ],
+    ]
+    d = 2
+    U = SumOfSquares.Certificate.Symmetry.ordered_block_diag(A, d)
+    @test SumOfSquares.Certificate.Symmetry.ordered_block_check(U, A, d)
 end
 
 function runtests()
