@@ -83,25 +83,25 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 6.02400e+00
 
 * Work counters
-  Solve time (sec)   : 5.16779e-02
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="d9f7c0bf.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
+  Solve time (sec)   : 1.47834e-01
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="70ac0802.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : CSDP
 
 * Status
   Result count       : 1
-  Termination status : ALMOST_OPTIMAL
+  Termination status : OPTIMAL
   Message from the solver:
-  &quot;Problem solved to near optimality.&quot;
+  &quot;Problem solved to optimality.&quot;
 
 * Candidate solution (result #1)
-  Primal status      : NEARLY_FEASIBLE_POINT
-  Dual status        : NEARLY_FEASIBLE_POINT
-  Objective value    : 5.03036e+00
+  Primal status      : FEASIBLE_POINT
+  Dual status        : FEASIBLE_POINT
+  Objective value    : 5.03037e+00
   Dual objective value : 5.03038e+00
 
 * Work counters
-  Solve time (sec)   : 1.35379e+00
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="46905e2b.svg" alt="Example block output"/><p>Let&#39;s now use the value of <code>c</code> corresponding to the right image of [KHJ14, Figure 3] and with degree 2.</p><pre><code class="language-julia hljs">c = -0.9 + 0.2im
+  Solve time (sec)   : 4.44898e+00
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="2f92880e.svg" alt="Example block output"/><p>Let&#39;s now use the value of <code>c</code> corresponding to the right image of [KHJ14, Figure 3] and with degree 2.</p><pre><code class="language-julia hljs">c = -0.9 + 0.2im
 model = outer_approximation(solver, 2, c)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : CSDP
 
@@ -118,8 +118,8 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 6.57446e+00
 
 * Work counters
-  Solve time (sec)   : 1.81512e-01
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="8fd2eefd.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
+  Solve time (sec)   : 1.45221e-01
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="69eaa7a5.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : CSDP
 
 * Status
@@ -131,9 +131,9 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
 * Candidate solution (result #1)
   Primal status      : NEARLY_FEASIBLE_POINT
   Dual status        : NEARLY_FEASIBLE_POINT
-  Objective value    : 5.03922e+00
+  Objective value    : 5.03929e+00
   Dual objective value : 5.04106e+00
 
 * Work counters
-  Solve time (sec)   : 2.12913e+00
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="e7323026.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../barrier_certificate/">« Barrier certificates for collision avoidance</a><a class="docs-footer-nextpage" href="../lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.0.1 on <span class="colophon-date" title="Wednesday 27 September 2023 15:06">Wednesday 27 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 8.10209e+00
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="cff0c9b8.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../barrier_certificate/">« Barrier certificates for collision avoidance</a><a class="docs-footer-nextpage" href="../lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.0.1 on <span class="colophon-date" title="Wednesday 27 September 2023 15:14">Wednesday 27 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
