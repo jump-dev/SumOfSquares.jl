@@ -180,7 +180,7 @@ end
 
 function ordered_block_diag(As, d)
     U = block_diag(As, d)
-    U === nothing && return nothing
+    isnothing(U) && return nothing
     iU = U'
     @assert iU ≈ inv(U)
     Bs = [iU * A * U for A in As]
@@ -199,7 +199,8 @@ function ordered_block_diag(As, d)
         # should work, this trick is similar to [CGT97].
         #
         # [CGT97] Corless, R. M.; Gianni, P. M. & Trager, B. M.
-        # A reordered Schur factorization method for zero-dimensional polynomial systems with multiple roots Proceedings of the 1997 international symposium on Symbolic and algebraic computation,
+        # A reordered Schur factorization method for zero-dimensional polynomial systems with multiple roots
+        # Proceedings of the 1997 international symposium on Symbolic and algebraic computation,
         # 1997, 133-140
         R = sum(λ .* refs)
         C = sum(λ .* Cs)
@@ -247,13 +248,14 @@ function block_diag(As, d)
             offset = 0
             for v in values(blocks)
                 @assert iszero(length(v) % d)
-                if length(v) == d
-                    V = Z[:, v]
-                else
+                V = Z[:, v]
+                if length(v) != d
                     Cs = [B[v, v] for B in Bs]
-                    V = block_diag(Cs, d)
-                    V === nothing && break
-                    V *= transpose(Z[:, v])
+                    _V = block_diag(Cs, d)
+                    if isnothing(_V)
+                        break
+                    end
+                    V *= _V
                 end
                 U[:, offset.+eachindex(v)] = V
                 offset += length(v)
