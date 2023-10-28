@@ -23,6 +23,7 @@ GramMatrixAttribute() = GramMatrixAttribute(1)
     struct SOSDecompositionAttribute
         ranktol::Real
         dec::MultivariateMoments.LowRankLDLTAlgorithm
+        result_index::Int
     end
 
 A constraint attribute for the [`SOSDecomposition`](@ref) of a constraint.
