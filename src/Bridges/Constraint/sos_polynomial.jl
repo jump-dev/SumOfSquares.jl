@@ -44,7 +44,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
     # need to call `similar`. This is critical since `T` is
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
-    # `set.domain.V` is `FullSpace` or `FixedPolynomialsSet`.
+    # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     r = SOS.Certificate.reduced_polynomial(
         s.certificate,
