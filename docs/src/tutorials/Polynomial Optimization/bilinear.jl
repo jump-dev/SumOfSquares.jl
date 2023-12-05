@@ -57,9 +57,6 @@ end
 
 # The first level of the hierarchy gives a lower bound of `2100`
 
-using MosekTools
-solver = Mosek.Optimizer
-
 model2 = solve(2)
 @test objective_value(model2) ≈ 2100 rtol=1e-4 #src
 @test termination_status(model2) == MOI.OPTIMAL #src
