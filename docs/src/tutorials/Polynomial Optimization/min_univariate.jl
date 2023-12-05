@@ -2,7 +2,7 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/min_univariate.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/min_univariate.ipynb)
-# **Adapted from**: Section 4.10, Test Problem 9 of [F99], Example 6.23 of [L09] and Table 5.1 of [Las09]
+# **Adapted from**: Section 4.10 of [F99], Example 6.23 of [L09] and Table 5.1 of [Las09]
 #
 # [F99] Floudas, Christodoulos A. et al.
 # *Handbook of Test Problems in Local and Global Optimization.*
@@ -18,7 +18,7 @@
 
 # ## Introduction
 
-# Consider the polynomial optimization problem [F99, Section 4.10, Test Problem 9]
+# Consider the polynomial optimization problem [F99, Section 4.10]
 # of minimizing the linear function $-x_1 - x_2$
 # over the basic semialgebraic set defined by the inequalities
 # $x_2 \le 2x_1^4 - 8x_1^3 + 8x_1^2 + 2$,
