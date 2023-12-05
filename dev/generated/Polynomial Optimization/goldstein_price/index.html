@@ -7,7 +7,7 @@ Feasibility problem with:
 Variables: 0
 Model mode: AUTOMATIC
 CachingOptimizer state: EMPTY_OPTIMIZER
-Solver name: Dual model with Clarabel attached</code></pre><p>Create a JuMP decision variable for the lower bound</p><pre><code class="language-julia hljs">@variable(model, γ)</code></pre><p>$ γ $</p><p><code>f(x)</code> is the Goldstein-Price function</p><pre><code class="language-julia hljs">f1 = x[1] + x[2] + 1
+Solver name: Dual model with Clarabel attached</code></pre><p>Create a JuMP decision variable for the lower bound</p><pre><code class="language-julia hljs">@variable(model, γ)</code></pre><p class="math-container">\[ γ \]</p><p><code>f(x)</code> is the Goldstein-Price function</p><pre><code class="language-julia hljs">f1 = x[1] + x[2] + 1
 f2 = 19 - 14*x[1] + 3*x[1]^2 - 14*x[2] + 6*x[1]*x[2] + 3*x[2]^2
 f3 = 2*x[1] - 3*x[2]
 f4 = 18 - 32*x[1] + 12*x[1]^2 + 48*x[2] - 36*x[1]*x[2] + 27*x[2]^2
@@ -51,25 +51,16 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   7   4.1810e+00   4.5446e+00  8.70e-02  1.90e-05  2.68e-05  3.64e-01  6.80e-01  8.09e-01
   8   3.4403e+00   3.5518e+00  3.24e-02  6.41e-06  8.82e-06  1.12e-01  2.39e-01  7.54e-01
   9   3.0921e+00   3.1107e+00  6.02e-03  1.22e-06  1.64e-06  1.86e-02  4.73e-02  9.05e-01
- 10   3.0507e+00   3.0623e+00  3.79e-03  9.90e-07  9.38e-07  1.16e-02  2.75e-02  5.97e-01
- 11   3.0083e+00   3.0101e+00  5.87e-04  2.86e-07  1.50e-07  1.77e-03  4.46e-03  8.80e-01
- 12   3.0049e+00   3.0059e+00  3.41e-04  5.46e-07  8.70e-08  1.02e-03  2.58e-03  5.38e-01
- 13   3.0009e+00   3.0011e+00  7.63e-05  4.75e-07  1.68e-08  2.29e-04  7.26e-04  9.20e-01
- 14   3.0008e+00   3.0011e+00  7.36e-05  3.34e-06  1.61e-08  2.21e-04  6.34e-04  5.82e-02
- 15   3.0005e+00   3.0007e+00  5.06e-05  2.22e-06  1.06e-08  1.52e-04  4.21e-04  4.65e-01
- 16   3.0005e+00   3.0006e+00  4.41e-05  1.87e-06  9.11e-09  1.32e-04  3.66e-04  2.14e-01
- 17   3.0003e+00   3.0004e+00  3.21e-05  1.34e-06  6.44e-09  9.65e-05  2.69e-04  4.25e-01
- 18   3.0003e+00   3.0004e+00  2.75e-05  1.68e-06  5.50e-09  8.25e-05  2.03e-04  1.54e-01
- 19   3.0002e+00   3.0003e+00  2.17e-05  1.46e-06  4.32e-09  6.51e-05  1.60e-04  2.99e-01
- 20   3.0002e+00   3.0002e+00  1.90e-05  1.24e-06  3.79e-09  5.71e-05  1.36e-04  1.28e-01
- 21   3.0002e+00   3.0002e+00  1.87e-05  1.17e-06  3.71e-09  5.60e-05  1.34e-04  5.42e-02
- 22   3.0000e+00   3.0000e+00  1.86e-06  1.17e-07  3.70e-10  5.58e-06  1.39e-05  9.07e-01
- 23   3.0000e+00   3.0000e+00  4.70e-07  3.92e-07  9.18e-11  1.41e-06  3.68e-06  8.25e-01
- 24   3.0000e+00   3.0000e+00  2.04e-07  1.54e-07  3.86e-11  6.11e-07  1.52e-06  7.04e-01
- 25   3.0000e+00   3.0000e+00  2.04e-07  1.54e-07  3.86e-11  6.11e-07  1.52e-06  0.00e+00
+ 10   3.0531e+00   3.0642e+00  3.64e-03  8.85e-07  9.56e-07  1.11e-02  2.73e-02  5.76e-01
+ 11   3.0065e+00   3.0087e+00  7.22e-04  6.12e-07  1.38e-07  2.17e-03  4.48e-03  9.05e-01
+ 12   3.0037e+00   3.0049e+00  3.99e-04  4.87e-07  7.62e-08  1.20e-03  2.48e-03  6.15e-01
+ 13   3.0009e+00   3.0012e+00  9.46e-05  1.27e-07  1.82e-08  2.84e-04  6.17e-04  8.42e-01
+ 14   3.0003e+00   3.0004e+00  3.35e-05  8.47e-08  6.35e-09  1.01e-04  2.15e-04  7.57e-01
+ 15   3.0000e+00   3.0001e+00  4.74e-06  5.73e-08  8.82e-10  1.42e-05  3.25e-05  9.28e-01
+ 16   3.0000e+00   3.0001e+00  4.74e-06  5.73e-08  8.82e-10  1.42e-05  3.25e-05  0.00e+00
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved (reduced accuracy)
-solve time =  265ms</code></pre><p>The lower bound found is 3</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with Clarabel attached
+solve time =  172ms</code></pre><p>The lower bound found is 3</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with Clarabel attached
 
 * Status
   Result count       : 1
@@ -80,68 +71,68 @@ solve time =  265ms</code></pre><p>The lower bound found is 3</p><pre><code clas
 * Candidate solution (result #1)
   Primal status      : NEARLY_FEASIBLE_POINT
   Dual status        : NEARLY_FEASIBLE_POINT
-  Objective value    : 3.00000e+00
-  Dual objective value : 3.00000e+00
+  Objective value    : 3.00006e+00
+  Dual objective value : 3.00004e+00
 
 * Work counters
-  Solve time (sec)   : 2.64676e-01
-  Barrier iterations : 25
+  Solve time (sec)   : 1.71730e-01
+  Barrier iterations : 16
 </code></pre><p>The moment matrix is as follows, we can already see the global minimizer <code>[0, -1]</code> from the entries <code>(2, 1)</code> and <code>(3, 1)</code>. This heuristic way to obtain solutions to the polynomial optimization problem is suggested in [L09, (6.15)].</p><p>[L09] Laurent, Monique. <em>Sums of squares, moment matrices and optimization over polynomials.</em> Emerging applications of algebraic geometry (2009): 157-270.</p><pre><code class="language-julia hljs">ν = moment_matrix(con_ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
  MonomialBasis([1, x[2], x[1], x[2]^2, x[1]*x[2], x[1]^2, x[2]^3, x[1]*x[2]^2, x[1]^2*x[2], x[1]^3, x[2]^4, x[1]*x[2]^3, x[1]^2*x[2]^2, x[1]^3*x[2], x[1]^4])
 And entries in a 15×15 SymMatrix{Float64}:
-  1.0000000017942992     -0.999989143710501      …   1.7053053568112501e-7
- -0.999989143710501       0.9999783243534897         6.797989423469114e-8
-  1.580102593106209e-5   -1.5771972745812904e-5      2.79696701840826e-7
-  0.9999783072999893     -0.9999674674920328         4.647622407969194e-5
- -1.5786666526493362e-5   1.5803029613779264e-5      4.876404311575872e-5
-  1.1323687290922323e-7  -3.750689669898932e-8   …   9.450720417176097e-5
- -0.9999674117632373      0.9999566722211841        -0.0006788961387083221
-  1.5800448377331057e-5  -1.579995109911538e-5      -0.0010861136843415642
-  7.342911073028707e-9    1.4323043649043317e-7     -0.001443038296573526
-  8.20862258382363e-8     6.51535261135398e-8       -0.0021945096989402974
-  0.9999566700632712     -0.9999458226585068     …   0.715987679666811
- -1.578574352355621e-5    1.5761546673647885e-5     -0.0410781652118392
-  7.323462890186348e-8   -6.420239773375324e-8       1.0505421700738642
-  6.801985355837143e-8   -5.194381992715694e-9       0.46168908097995054
-  1.7053053568112501e-7   6.797989423469114e-8       1.8018743040423588</code></pre><p>Many entries of the matrix actually have the same moment. We can obtain the following list of these moments without duplicates (ignoring when difference of entries representing the same moments is below <code>1e-5</code>)</p><pre><code class="language-julia hljs">μ = measure(ν, atol = 1e-5)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Measure{Float64, DynamicPolynomials.Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}, DynamicPolynomials.MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}}([1.0000000017942992, -0.999989143710501, 1.580102593106209e-5, 0.9999783072999893, -1.5786666526493362e-5, 1.1323687290922323e-7, -0.9999674117632373, 1.5800448377331057e-5, 7.342911073028707e-9, 8.20862258382363e-8  …  -0.0021945096989402974, 1.5012396326670379, -0.3664568576392168, 0.5672190390117505, -0.26573151069000334, 0.715987679666811, -0.0410781652118392, 1.0505421700738642, 0.46168908097995054, 1.8018743040423588], DynamicPolynomials.Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}[1, x₂, x₁, x₂², x₁x₂, x₁², x₂³, x₁x₂², x₁²x₂, x₁³  …  x₁⁷, x₂⁸, x₁x₂⁷, x₁²x₂⁶, x₁³x₂⁵, x₁⁴x₂⁴, x₁⁵x₂³, x₁⁶x₂², x₁⁷x₂, x₁⁸])</code></pre><p>The truncated moment matrix can then be obtained as follows</p><pre><code class="language-julia hljs">ν_truncated = moment_matrix(μ, monomials(x, 0:3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
+  1.0000000018198698     -0.9999904338316166     …   3.4104034285866996e-6
+ -0.9999904338316166      0.9999813837943897         1.7043839977191587e-6
+  1.401293336357993e-5   -1.3799592446004206e-5      7.451483754417287e-6
+  0.9999813860035811     -0.9999722309458006         0.0002711976680818313
+ -1.3823074641574693e-5   1.4109607254594264e-5      0.00028496583206889375
+  8.140490999870537e-7    2.3020192377404057e-7  …   0.0005630993629247136
+ -0.9999722273334571      0.9999633200853798        -0.00013925168205436442
+  1.4102740426892929e-5  -1.3953042571734061e-5      2.2983476463909564e-6
+  2.287994538559344e-7    3.914539624501102e-7       0.0005027103259083649
+  1.14756778339497e-6     9.527302713889533e-7       0.0011791392891342552
+  0.9999633103973404     -0.999954406161818      …   0.6372092054366799
+ -1.3906964660954489e-5   1.38684805592237e-5       -0.1551786920868488
+  3.931301909082682e-7   -2.020302007611492e-7       0.8777398620413609
+  9.574747243383608e-7    2.4810748752536637e-7      0.2059975266673279
+  3.4104034285866996e-6   1.7043839977191587e-6      1.422084768180202</code></pre><p>Many entries of the matrix actually have the same moment. We can obtain the following list of these moments without duplicates (ignoring when difference of entries representing the same moments is below <code>1e-5</code>)</p><pre><code class="language-julia hljs">μ = measure(ν, atol = 1e-5)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Measure{Float64, DynamicPolynomials.Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}, DynamicPolynomials.MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}}([1.0000000018198698, -0.9999904338316166, 1.401293336357993e-5, 0.9999813860035811, -1.3823074641574693e-5, 8.140490999870537e-7, -0.9999722273334571, 1.4102740426892929e-5, 2.287994538559344e-7, 1.14756778339497e-6  …  0.0011791392891342552, 1.4837695259617898, -0.38704799673282014, 0.5307619036335185, -0.3153797748347552, 0.6372092054366799, -0.1551786920868488, 0.8777398620413609, 0.2059975266673279, 1.422084768180202], DynamicPolynomials.Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}[1, x₂, x₁, x₂², x₁x₂, x₁², x₂³, x₁x₂², x₁²x₂, x₁³  …  x₁⁷, x₂⁸, x₁x₂⁷, x₁²x₂⁶, x₁³x₂⁵, x₁⁴x₂⁴, x₁⁵x₂³, x₁⁶x₂², x₁⁷x₂, x₁⁸])</code></pre><p>The truncated moment matrix can then be obtained as follows</p><pre><code class="language-julia hljs">ν_truncated = moment_matrix(μ, monomials(x, 0:3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
  MonomialBasis([1, x[2], x[1], x[2]^2, x[1]*x[2], x[1]^2, x[2]^3, x[1]*x[2]^2, x[1]^2*x[2], x[1]^3])
 And entries in a 10×10 SymMatrix{Float64}:
-  1.0000000017942992     -0.999989143710501      …   8.20862258382363e-8
- -0.999989143710501       0.9999783072999893         6.801985355837143e-8
-  1.580102593106209e-5   -1.5786666526493362e-5      1.7053053568112501e-7
-  0.9999783072999893     -0.9999674117632373        -5.194381992715694e-9
- -1.5786666526493362e-5   1.5800448377331057e-5      6.797989423469114e-8
-  1.1323687290922323e-7   7.342911073028707e-9   …   2.79696701840826e-7
- -0.9999674117632373      0.9999566700632712         1.7057184431936546e-5
-  1.5800448377331057e-5  -1.578574352355621e-5       4.647622407969194e-5
-  7.342911073028707e-9    7.323462890186348e-8       4.876404311575872e-5
-  8.20862258382363e-8     6.801985355837143e-8       9.450720417176097e-5</code></pre><p>Let&#39;s check if the flatness property is satisfied. The rank of <code>ν_truncated</code> seems to be 1:</p><pre><code class="language-julia hljs">using LinearAlgebra
+  1.0000000018198698     -0.9999904338316166     …  1.14756778339497e-6
+ -0.9999904338316166      0.9999813860035811        9.574747243383608e-7
+  1.401293336357993e-5   -1.3823074641574693e-5     3.4104034285866996e-6
+  0.9999813860035811     -0.9999722273334571        2.4810748752536637e-7
+ -1.3823074641574693e-5   1.4102740426892929e-5     1.7043839977191587e-6
+  8.140490999870537e-7    2.287994538559344e-7   …  7.451483754417287e-6
+ -0.9999722273334571      0.9999633103973404        9.773522078850986e-5
+  1.4102740426892929e-5  -1.3906964660954489e-5     0.0002711976680818313
+  2.287994538559344e-7    3.931301909082682e-7      0.00028496583206889375
+  1.14756778339497e-6     9.574747243383608e-7      0.0005630993629247136</code></pre><p>Let&#39;s check if the flatness property is satisfied. The rank of <code>ν_truncated</code> seems to be 1:</p><pre><code class="language-julia hljs">using LinearAlgebra
 LinearAlgebra.svdvals(Matrix(ν_truncated.Q))
 LinearAlgebra.rank(Matrix(ν_truncated.Q), rtol = 1e-3)
 svdvals(Matrix(ν_truncated.Q))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10-element Vector{Float64}:
- 3.9998738488272467
- 0.00014858202106434175
- 2.9538170321778437e-5
- 3.9445311450139666e-7
- 1.298822750570064e-7
- 7.383992070844883e-8
- 7.137853776215193e-8
- 5.6548076457455015e-8
- 2.2012043333595885e-8
- 3.365360038791725e-9</code></pre><p>The rank of <code>ν</code> is clearly higher than 1, closer to 3:</p><pre><code class="language-julia hljs">svdvals(Matrix(ν.Q))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">15-element Vector{Float64}:
- 5.196427254487122
- 2.7012010863685187
- 1.738742316554198
- 0.00038475922885237426
- 0.00010800491691338999
- 2.7579831986545214e-5
- 2.3799442037633358e-5
- 4.5451574756198407e-7
- 1.4168137174886528e-7
- 2.9359880377630318e-8
- 1.0751169947369091e-8
- 1.4669490520969313e-9
- 5.433360224336174e-10
- 2.399183381207747e-11
- 1.8344496494568505e-11</code></pre><p>Even if the flatness property is not satisfied, we can still try extracting the minimizer with a low rank decomposition of rank 3. We find the optimal solution again doing so:</p><pre><code class="language-julia hljs">atomic_measure(ν, FixedRank(3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x[1], x[2] with 1 atoms:
- at [1.581694412093348e-5, -0.9999891631593412] with weight 1.033433351536792</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../extracting_minimizers/">« Extracting minimizers</a><a class="docs-footer-nextpage" href="../polynomial_optimization/">Polynomial Optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.0.1 on <span class="colophon-date" title="Wednesday 27 September 2023 15:14">Wednesday 27 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 3.9999129595584804
+ 0.0008735448885684927
+ 0.00017574267052825453
+ 7.615603475243653e-6
+ 6.052439999404675e-7
+ 3.320433002738225e-7
+ 1.1346221574951914e-7
+ 7.16763637145575e-8
+ 3.140108856202916e-8
+ 4.238028226828164e-9</code></pre><p>The rank of <code>ν</code> is clearly higher than 1, closer to 3:</p><pre><code class="language-julia hljs">svdvals(Matrix(ν.Q))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">15-element Vector{Float64}:
+ 5.17674761577772
+ 2.3189470566744617
+ 1.453558648851051
+ 0.0023462616989670462
+ 0.0006350998616532194
+ 0.00015172127913365465
+ 0.0001398235480826501
+ 9.002841822263696e-6
+ 6.652718664350959e-7
+ 2.7408971775687256e-7
+ 7.656812574907482e-8
+ 6.435800433409038e-8
+ 1.0665802363009165e-8
+ 6.706830024591651e-9
+ 3.6941439018433997e-10</code></pre><p>Even if the flatness property is not satisfied, we can still try extracting the minimizer with a low rank decomposition of rank 3. We find the optimal solution again doing so:</p><pre><code class="language-julia hljs">atomic_measure(ν, FixedRank(3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x[1], x[2] with 1 atoms:
+ at [1.4273511730133842e-5, -0.9999906623763443] with weight 1.032287146482791</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../extracting_minimizers/">« Extracting minimizers</a><a class="docs-footer-nextpage" href="../polynomial_optimization/">Polynomial Optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Tuesday 5 December 2023 20:18">Tuesday 5 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
