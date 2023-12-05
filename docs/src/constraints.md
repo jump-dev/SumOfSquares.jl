@@ -360,6 +360,24 @@ PolyJuMP.Bridges.Objective.ToPolynomialBridge
 PolyJuMP.Bridges.Constraint.ToPolynomialBridge
 ```
 
+### SAGE extension
+
+To use the SAGE cone in place of the Sum-of-Squares cone for an inequality constraints
+between polynomials, use the following:
+```julia
+import PolyJuMP
+PolyJuMP.setpolymodule!(model, PolyJuMP.SAGE)
+```
+
+```@docs
+SumOfSquares.PolyJuMP.SAGE.Polynomials
+SumOfSquares.PolyJuMP.SAGE.Decomposition
+SumOfSquares.PolyJuMP.SAGE.Signomials
+SumOfSquares.PolyJuMP.SAGE.DecompositionAttribute
+SumOfSquares.PolyJuMP.SAGE.SignomialsBridge
+SumOfSquares.PolyJuMP.SAGE.AGEBridge
+```
+
 ### Internal functions
 
 ```@docs
