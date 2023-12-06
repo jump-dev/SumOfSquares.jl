@@ -18,9 +18,10 @@ jobs:
           - version: '1'
             os: ubuntu-latest
             arch: x64
-          - version: '1'
-            os: ubuntu-latest
-            arch: x86
+# # See https://github.com/jump-dev/SumOfSquares.jl/pull/331
+#          - version: 'nightly'
+#            os: ubuntu-latest
+#            arch: x86
 #          - version: 'nightly'
 #            os: ubuntu-latest
 #            arch: x64
