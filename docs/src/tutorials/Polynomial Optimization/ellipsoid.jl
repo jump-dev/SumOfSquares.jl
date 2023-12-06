@@ -21,9 +21,8 @@ A = [
      0 -1  0
     -2  1 -1
 ]
-b = [3, 0, -4]
+bz = [3, 0, -4] - [0, -1, -6]
 y = [1.5, -0.5, -5]
-z = [0, -1, -6]
 
 using Test #src
 using DynamicPolynomials
@@ -31,7 +30,7 @@ using DynamicPolynomials
 p = -2x[1] + x[2] - x[3]
 using SumOfSquares
 e = A * x - y
-f = e' * e - norm(b - z)^2 / 4
+f = e'e - bz'bz / 4
 K = @set sum(x) <= 4 && 3x[2] + x[3] <= 6 && f >= 0 && 0 <= x[1] && x[1] <= 2 && 0 <= x[2] && 0 <= x[3] && x[3] <= 3
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
