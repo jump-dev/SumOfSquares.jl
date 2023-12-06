@@ -30,5 +30,6 @@ model2 = solve(2)
 nothing # hide
 
 model3 = solve(3)
+nothing # hide
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl

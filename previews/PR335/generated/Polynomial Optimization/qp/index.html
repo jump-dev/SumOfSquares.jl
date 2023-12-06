@@ -71,7 +71,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   5   1.8390e+10   2.0786e+10  1.30e-01  2.05e-07  2.78e-08  2.40e+09  3.71e-05  9.86e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = primal infeasible
-solve time = 1.52ms
+solve time = 1.53ms
 * Solver : Clarabel
 
 * Status
@@ -87,13 +87,64 @@ solve time = 1.52ms
   Dual objective value : -2.07856e+10
 
 * Work counters
-  Solve time (sec)   : 1.51521e-03
-  Barrier iterations : 5</code></pre><p>The second level gives a lower bound of <code>-22</code></p><pre><code class="language-julia hljs">model3 = solve(3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">A JuMP Model
-Maximization problem with:
-Variable: 1
-Objective function type: VariableRef
-`Vector{AffExpr}`-in-`SumOfSquares.SOSPolynomialSet{BasicSemialgebraicSet{Int64, DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Int64}, FullSpace}, DynamicPolynomials.Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}, DynamicPolynomials.MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}, SumOfSquares.Certificate.Putinar{SumOfSquares.Certificate.Newton{SOSCone, MonomialBasis, SumOfSquares.Certificate.NewtonFilter{SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}}}}, SumOfSquares.Certificate.Newton{SOSCone, MonomialBasis, SumOfSquares.Certificate.NewtonFilter{SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}}}}}}`: 1 constraint
-Model mode: AUTOMATIC
-CachingOptimizer state: ATTACHED_OPTIMIZER
-Solver name: Clarabel
-Names registered in the model: c, α</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../polynomial_optimization/">« Polynomial Optimization</a><a class="docs-footer-nextpage" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Wednesday 6 December 2023 18:37">Wednesday 6 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 1.52942e-03
+  Barrier iterations : 5</code></pre><p>The second level gives a lower bound of <code>-22</code></p><pre><code class="language-julia hljs">model3 = solve(3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
+           Clarabel.jl v0.6.0  -  Clever Acronym
+                   (c) Paul Goulart
+                University of Oxford, 2022
+-------------------------------------------------------------
+
+problem:
+  variables     = 253
+  constraints   = 308
+  nnz(P)        = 0
+  nnz(A)        = 715
+  cones (total) = 13
+    : Zero        = 1,  numel = 56
+    : PSDTriangle = 12,  numel = (21,21,21,21,...,21)
+
+settings:
+  linear algebra: direct / qdldl, precision: Float64
+  max iter = 200, time limit = Inf,  max step = 0.990
+  tol_feas = 1.0e-08, tol_gap_abs = 1.0e-08, tol_gap_rel = 1.0e-08,
+  static reg : on, ϵ1 = 1.0e-08, ϵ2 = 4.9e-32
+  dynamic reg: on, ϵ = 1.0e-13, δ = 2.0e-07
+  iter refine: on, reltol = 1.0e-13, abstol = 1.0e-12,
+               max iter = 10, stop ratio = 5.0
+  equilibrate: on, min_scale = 1.0e-04, max_scale = 1.0e+04
+               max iter = 10
+
+iter    pcost        dcost       gap       pres      dres      k/t        μ       step
+---------------------------------------------------------------------------------------------
+  0  -1.3991e+01  -1.3991e+01  6.35e-16  3.32e-01  9.13e-02  1.00e+00  9.46e+00   ------
+  1   2.4255e+02   2.4996e+02  3.06e-02  1.45e-01  3.32e-02  8.38e+00  2.67e+00  9.00e-01
+  2   7.3705e+01   7.9821e+01  8.30e-02  5.20e-02  1.50e-02  6.48e+00  1.52e+00  6.49e-01
+  3   3.6450e+01   3.8243e+01  4.92e-02  1.15e-02  3.41e-03  1.86e+00  4.41e-01  7.97e-01
+  4   3.1397e+01   3.2740e+01  4.28e-02  6.37e-03  1.91e-03  1.39e+00  2.70e-01  6.34e-01
+  5   2.1768e+01   2.2034e+01  1.22e-02  1.23e-03  3.40e-04  2.75e-01  5.65e-02  8.06e-01
+  6   2.2259e+01   2.2326e+01  2.99e-03  4.09e-04  1.03e-04  6.95e-02  1.91e-02  8.17e-01
+  7   2.1905e+01   2.1925e+01  9.14e-04  1.28e-04  3.24e-05  2.10e-02  6.08e-03  7.38e-01
+  8   2.1973e+01   2.1978e+01  1.91e-04  4.09e-05  1.02e-05  4.52e-03  1.97e-03  9.90e-01
+  9   2.2000e+01   2.2000e+01  2.57e-06  5.82e-07  1.41e-07  6.11e-05  2.82e-05  9.90e-01
+ 10   2.2000e+01   2.2000e+01  2.82e-08  6.39e-09  1.55e-09  6.70e-07  3.09e-07  9.89e-01
+ 11   2.2000e+01   2.2000e+01  3.49e-10  7.90e-11  1.92e-11  8.30e-09  3.83e-09  9.88e-01
+---------------------------------------------------------------------------------------------
+Terminated with status = solved
+solve time = 12.9ms
+* Solver : Clarabel
+
+* Status
+  Result count       : 1
+  Termination status : OPTIMAL
+  Message from the solver:
+  &quot;SOLVED&quot;
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : FEASIBLE_POINT
+  Objective value    : -2.20000e+01
+  Dual objective value : -2.20000e+01
+
+* Work counters
+  Solve time (sec)   : 1.29142e-02
+  Barrier iterations : 11</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../polynomial_optimization/">« Polynomial Optimization</a><a class="docs-footer-nextpage" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Wednesday 6 December 2023 21:53">Wednesday 6 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
