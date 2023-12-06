@@ -2,7 +2,7 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/ellipsoid.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/ellipsoid.ipynb)
-# **Adapted from**: Section 3.5 of [F99], Example 6.23 of [L09] and Table 5.1 of [Las09]
+# **Adapted from**: Section 3.5 of [F99] and Table 5.1 of [Las09]
 #
 # [F99] Floudas, Christodoulos A. et al.
 # *Handbook of Test Problems in Local and Global Optimization.*
