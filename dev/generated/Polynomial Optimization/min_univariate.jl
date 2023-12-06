@@ -26,10 +26,13 @@ function solve(d)
 end
 
 model4 = solve(4)
+nothing # hide
 
 model5 = solve(5)
+nothing # hide
 
 model7 = solve(7)
+nothing # hide
 
 ν7 = moment_matrix(model7[:c])
 η = atomic_measure(ν7, 1e-3) # Returns nothing as the dual is not atomic
