@@ -31,5 +31,6 @@ function solve(d)
 end
 
 model2 = solve(2)
+nothing # hide
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
