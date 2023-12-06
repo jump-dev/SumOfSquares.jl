@@ -28,11 +28,15 @@ function solve(d)
 end
 
 model2 = solve(2)
+nothing # hide
 
-model3 = solve(4)
+model4 = solve(4)
+nothing # hide
 
 model6 = solve(6)
+nothing # hide
 
 model8 = solve(8)
+nothing # hide
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
