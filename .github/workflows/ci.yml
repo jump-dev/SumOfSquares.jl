@@ -18,7 +18,7 @@ jobs:
           - version: '1'
             os: ubuntu-latest
             arch: x64
-          - version: '1.10'
+          - version: 'nightly'
             os: ubuntu-latest
             arch: x86
 #          - version: 'nightly'
