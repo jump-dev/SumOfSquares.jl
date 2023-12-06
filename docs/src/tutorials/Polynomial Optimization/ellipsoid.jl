@@ -55,23 +55,27 @@ end
 # The first level of the hierarchy gives a lower bound of `-7``
 
 model2 = solve(2)
+nothing # hide
 @test objective_value(model2) ≈ -6 rtol=1e-4 #src
 @test termination_status(model2) == MOI.OPTIMAL #src
 
 # The second level improves the lower bound
 
-model3 = solve(4)
-@test objective_value(model5) ≈ -74/13 rtol=1e-4 #src
-@test termination_status(model5) == MOI.OPTIMAL #src
+model4 = solve(4)
+nothing # hide
+@test objective_value(model4) ≈ -74/13 rtol=1e-4 #src
+@test termination_status(model4) == MOI.OPTIMAL #src
 
 # The third level improves it even further
 
 model6 = solve(6)
+nothing # hide
 @test objective_value(model6) ≈ -4.06848 rtol=1e-4 #src
 @test termination_status(model6) == MOI.OPTIMAL #src
 
 # The fourth level finds the optimal objective value as lower bound.
 
 model8 = solve(8)
+nothing # hide
 @test objective_value(model8) ≈ -4 rtol=1e-4 #src
 @test termination_status(model8) == MOI.OPTIMAL #src
