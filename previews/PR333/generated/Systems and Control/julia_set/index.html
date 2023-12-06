@@ -83,8 +83,8 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 6.02400e+00
 
 * Work counters
-  Solve time (sec)   : 4.23761e+00
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="a9222663.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
+  Solve time (sec)   : 2.85113e+00
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="3d847b88.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : CSDP
 
 * Status
@@ -100,8 +100,8 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 5.03038e+00
 
 * Work counters
-  Solve time (sec)   : 1.15969e+01
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="e094b834.svg" alt="Example block output"/><p>Let&#39;s now use the value of <code>c</code> corresponding to the right image of [KHJ14, Figure 3] and with degree 2.</p><pre><code class="language-julia hljs">c = -0.9 + 0.2im
+  Solve time (sec)   : 1.12338e+01
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="1691cc93.svg" alt="Example block output"/><p>Let&#39;s now use the value of <code>c</code> corresponding to the right image of [KHJ14, Figure 3] and with degree 2.</p><pre><code class="language-julia hljs">c = -0.9 + 0.2im
 model = outer_approximation(solver, 2, c)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : CSDP
 
@@ -118,8 +118,8 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 6.57446e+00
 
 * Work counters
-  Solve time (sec)   : 4.01505e+00
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="33ef6679.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
+  Solve time (sec)   : 3.71286e+00
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="288c9f18.svg" alt="Example block output"/><p>Let&#39;s now look at degree 4.</p><pre><code class="language-julia hljs">model = outer_approximation(solver, 4, c)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : CSDP
 
 * Status
@@ -135,5 +135,5 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 5.04116e+00
 
 * Work counters
-  Solve time (sec)   : 2.01043e+01
-</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="ffe95c12.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../barrier_certificate/">« Barrier certificates for collision avoidance</a><a class="docs-footer-nextpage" href="../lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Wednesday 6 December 2023 08:42">Wednesday 6 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 2.12598e+01
+</code></pre><p>We visualize below:</p><pre><code class="language-julia hljs">julia_plot(value(model[:v]), c)</code></pre><img src="ddd0f7b2.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../barrier_certificate/">« Barrier certificates for collision avoidance</a><a class="docs-footer-nextpage" href="../lyapunov_function_search/">Lyapunov Function Search »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Wednesday 6 December 2023 10:03">Wednesday 6 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

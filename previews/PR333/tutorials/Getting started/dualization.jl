@@ -9,26 +9,27 @@ using SumOfSquares
 
 # Sum-of-Squares programs are usually solved by SemiDefinite Programming solvers (SDPs).
 # These programs can be represented into two different formats:
-# Either the *standard conic form* or *kernel form*:
+# Either the *standard conic form*, also known as *kernel form*:
 # ```math
 # \begin{aligned}
-#   \min\limits_{Q \in \mathbb{S}_n} & \la C, Q \ra\\
-#   \text{subject to:} & \la A_i, Q \ra = b_i, \quad i=1,2,\ldots,m\\
+#   \min\limits_{Q \in \mathbb{S}_n} & \langle C, Q \rangle\\
+#   \text{subject to:} & \langle A_i, Q \rangle = b_i, \quad i=1,2,\ldots,m\\
 #                       & Q \succeq 0,
 # \end{aligned}
 # ```
-# Either the *geometric conic form* or *image form*:
+# or the *geometric conic form*, also known as *image form*:
 # ```math
 # \begin{aligned}
-#   \max\limits_{y \in \mathbb{R}^m} & \la b, y \ra\\
+#   \max\limits_{y \in \mathbb{R}^m} & \langle b, y \rangle\\
 #   \text{subject to:} & C \succeq \sum_{i=1}^m A_i y_i\\
 #                      & y\ \mathsf{free},
+# \end{aligned}
 # ```
 
 # In this tutorial, we investigate in which of these two forms a Sum-of-Squares
 # constraint should be written into.
-# Consider the simple example of trying to see whether the following univariate
-# polynomial is Sum-of-Squares:
+# Consider the simple example of trying to determine whether the following univariate
+# polynomial is a Sum-of-Squares:
 
 import SCS
 @polyvar x
@@ -49,9 +50,38 @@ optimize!(model_dual_scs)
 
 # This time, SCS reports `5` variables and `6` constraints.
 
+# ## Bridges operating behind the scenes
+#
+# The difference comes from the fact that, when designing the JuMP interface of
+# SCS, it was decided that the model would be read in the image form.
+# SCS therefore declares that it only supports free variables, represented in
+# JuMP as variables in `MOI.Reals` and affine semidefinite constraints,
+# represented in JuMP as
+# `MOI.VectorAffineFunction`-in-`MOI.PositiveSemidefiniteConeTriangle`
+# constraints.
+# On the other hand, SumOfSquares gave the model in kernel form so the
+# positive semidefinite (PSD) variables were reformulated as free variables
+# constrained to be PSD using an affine PSD constraints.
+#
+# This transformation is done transparently without warning but it can be
+# inspected using `print_active_bridges`.
+# As shown below, we can see
+# `Unsupported variable: MOI.PositiveSemidefiniteConeTriangle` and
+# `adding as constraint`
+# indicating that PSD variables are not supported and they are added as free
+# variables.
+# Then we have `Unsupported constraint: MOI.VectorOfVariables-in-MOI.PositiveSemidefiniteConeTriangle`
+# indicating that SCS does not support constraining variables in the PSD cone
+# so it will just convert it into affine expressions in the PSD cone.
+# Of course, this is equivalent but it means that SCS will not exploit this
+# particular structure of the problem hence solving might be less efficient.
+
 print_active_bridges(model_scs)
 
-# This time, we had 
+# With the dual version, we can see that variables in the PSD cone are supported
+# directly hence we don't need that extra conversion.
+
+print_active_bridges(model_dual_scs)
 
 # ## In more details
 #
@@ -63,7 +93,7 @@ print_active_bridges(model_scs)
 # ```math
 # \mathcal{A}_\alpha = \{\,(\beta, \gamma) \in b(x)^2 \mid x^\beta x^\gamma = x^\alpha\,\}
 # ```
-# The constraint that there exists a PSD matrix `Q` such that `p(x) = b(x)' * Q * b(x)`
+# The constraint encoding the existence of a PSD matrix `Q` such that `p(x) = b(x)' * Q * b(x)`
 # can be written in standard conic form as follows:
 # ```math
 # \begin{aligned}
@@ -84,9 +114,10 @@ print_active_bridges(model_scs)
 # \end{aligned}
 # ```
 #
-# ## Which one do I choose ?
+# ## Should I dualize or not ?
 #
-# Let's pick two extreme examples and then try to extrapolate from these.
+# Let's study the evolution of the dimensions `m` and `n` of the semidefinite
+# program in two extreme examples and then try to extrapolate from these.
 #
 # ### Univariate case 
 #

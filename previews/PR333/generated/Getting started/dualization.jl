@@ -16,4 +16,6 @@ optimize!(model_dual_scs)
 
 print_active_bridges(model_scs)
 
+print_active_bridges(model_dual_scs)
+
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
