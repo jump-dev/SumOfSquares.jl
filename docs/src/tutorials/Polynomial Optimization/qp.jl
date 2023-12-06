@@ -64,5 +64,6 @@ nothing # hide
 # The second level gives a lower bound of `-22`
 
 model3 = solve(3)
+nothing # hide
 @test objective_value(model3) ≈ -22 rtol=1e-4 #src
 @test termination_status(model3) == MOI.OPTIMAL #src
