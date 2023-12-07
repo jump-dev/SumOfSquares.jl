@@ -2,19 +2,11 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/min_univariate.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/min_univariate.ipynb)
-# **Adapted from**: Section 4.10 of [F99], Example 6.23 of [L09] and Table 5.1 of [Las09]
+# **Adapted from**: Section 4.10 of [F99], [Laurent2008; Example 6.23](@cite) and [Lasserre2009; Table 5.1](@cite)
 #
 # [F99] Floudas, Christodoulos A. et al.
 # *Handbook of Test Problems in Local and Global Optimization.*
 # Nonconvex Optimization and Its Applications (NOIA, volume 33).
-#
-# [L09] Laurent, Monique.
-# *Sums of squares, moment matrices and optimization over polynomials.*
-# Emerging applications of algebraic geometry (2009): 157-270.
-#
-# [Las09] Lasserre, J. B.
-# *Moments, positive polynomials and their applications*
-# World Scientific, **2009**.
 
 # ## Introduction
 

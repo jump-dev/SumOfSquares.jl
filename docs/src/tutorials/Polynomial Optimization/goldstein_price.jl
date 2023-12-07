@@ -47,11 +47,7 @@ solution_summary(model)
 # The moment matrix is as follows, we can already see the global minimizer
 # `[0, -1]` from the entries `(2, 1)` and `(3, 1)`.
 # This heuristic way to obtain solutions to the polynomial optimization problem
-# is suggested in [L09, (6.15)].
-#
-# [L09] Laurent, Monique.
-# *Sums of squares, moment matrices and optimization over polynomials.*
-# Emerging applications of algebraic geometry (2009): 157-270.
+# is suggested in [Laurent2008, (6.15)](@cite).
 
 ν = moment_matrix(con_ref)
 

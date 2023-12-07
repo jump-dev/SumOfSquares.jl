@@ -2,6 +2,7 @@
 
 using SumOfSquares
 using Documenter, Literate
+import DocumenterCitations
 
 const _TUTORIAL_DIR = joinpath(@__DIR__, "src", "tutorials")
 const _OUTPUT_DIR   = joinpath(@__DIR__, "src", "generated")
@@ -51,10 +52,18 @@ makedocs(
                 ),
             _TUTORIAL_SUBDIR,
         ),
+        "Bibliography" => "bibliography.md",
     ],
     # The following ensures that we only include the docstrings from
     # this module for functions define in Base that we overwrite.
-    modules = [SumOfSquares, PolyJuMP]
+    modules = [SumOfSquares, PolyJuMP],
+    assets = ["assets/citations.css"],
+    plugins = [
+        DocumenterCitations.CitationBibliography(
+            joinpath(@__DIR__, "src", "references.bib");
+            style = :authoryear,
+        ),
+    ],
 )
 
 deploydocs(

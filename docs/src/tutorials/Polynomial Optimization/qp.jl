@@ -2,15 +2,11 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/qp.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/qp.ipynb)
-# **Adapted from**: Section 2.2 of [F99], Table 5.1 of [Las09]
+# **Adapted from**: Section 2.2 of [F99], [Lasserre2009; Table 5.1](@cite)
 #
 # [F99] Floudas, Christodoulos A. et al.
 # *Handbook of Test Problems in Local and Global Optimization.*
 # Nonconvex Optimization and Its Applications (NOIA, volume 33).
-#
-# [Las09] Lasserre, J. B.
-# *Moments, positive polynomials and their applications*
-# World Scientific, **2009**.
 
 # ## Introduction
 
