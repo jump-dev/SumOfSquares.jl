@@ -2,19 +2,11 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/qp.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/qp.ipynb)
-# **Adapted from**: Section 2.2 of [F99], Table 5.1 of [Las09]
-#
-# [F99] Floudas, Christodoulos A. et al.
-# *Handbook of Test Problems in Local and Global Optimization.*
-# Nonconvex Optimization and Its Applications (NOIA, volume 33).
-#
-# [Las09] Lasserre, J. B.
-# *Moments, positive polynomials and their applications*
-# World Scientific, **2009**.
+# **Adapted from**:  of [Floudas1999; Section 2.2](@cite), [Lasserre2009; Table 5.1](@cite)
 
 # ## Introduction
 
-# Consider the nonconvex Quadratic Program (QP) [F99, Section 2.2]
+# Consider the nonconvex Quadratic Program (QP) from [Floudas1999; Section 2.2](@cite)
 # that minimizes the *concave* function $c^\top x - x^\top Qx / 2$
 # over the polyhedron obtained by intersecting the hypercube $[0, 1]^5$
 # with the halfspace $10x_1 + 12x_2 + 11x_3 + 7x_4 + 4x_5 \le 40$.

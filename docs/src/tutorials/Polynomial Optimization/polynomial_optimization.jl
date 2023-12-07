@@ -6,13 +6,9 @@
 
 # ## Introduction
 
-# Consider the polynomial optimization problem [L09, Example 2.2] of
+# Consider the polynomial optimization problem [Lasserre2009; Example 2.2](@cite) of
 # minimizing the polynomial $x^3 - x^2 + 2xy - y^2 + y^3$
 # over the polyhedron defined by the inequalities $x \ge 0, y \ge 0$ and $x + y \geq 1$.
-
-# [L09] Lasserre, J. B.
-# *Moments, positive polynomials and their applications*.
-# World Scientific, **2009**.
 
 using Test #src
 using DynamicPolynomials

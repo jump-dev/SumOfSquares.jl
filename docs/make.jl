@@ -2,6 +2,7 @@
 
 using SumOfSquares
 using Documenter, Literate
+import DocumenterCitations
 
 const _TUTORIAL_DIR = joinpath(@__DIR__, "src", "tutorials")
 const _OUTPUT_DIR   = joinpath(@__DIR__, "src", "generated")
@@ -34,7 +35,10 @@ literate_directory.(_TUTORIAL_SUBDIR)
 makedocs(
     sitename = "SumOfSquares",
     # See https://github.com/JuliaDocs/Documenter.jl/issues/868
-    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
+    format = Documenter.HTML(
+        prettyurls = get(ENV, "CI", nothing) == "true",
+        assets = ["assets/citations.css"],
+    ),
     pages = [
         "Index" => "index.md",
         "Sum-of-Squares Programming" => "sumofsquares.md",
@@ -51,10 +55,17 @@ makedocs(
                 ),
             _TUTORIAL_SUBDIR,
         ),
+        "Bibliography" => "bibliography.md",
     ],
     # The following ensures that we only include the docstrings from
     # this module for functions define in Base that we overwrite.
-    modules = [SumOfSquares, PolyJuMP]
+    modules = [SumOfSquares, PolyJuMP],
+    plugins = [
+        DocumenterCitations.CitationBibliography(
+            joinpath(@__DIR__, "src", "references.bib");
+            style = :authoryear,
+        ),
+    ],
 )
 
 deploydocs(

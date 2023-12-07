@@ -52,10 +52,6 @@ These facts can be verified numerically using this package as detailed in the [m
 *Semidefinite Optimization and Convex Algebraic Geometry*.
 Society for Industrial and Applied Mathematics, **2012**.
 
-[Las09] Lasserre, J. B.
-*Moments, positive polynomials and their applications*
-World Scientific, **2009**.
-
 [Lau09] Laurent, M.
 *Sums of squares, moment matrices and optimization over polynomials*
 Emerging applications of algebraic geometry, Springer, **2009**, 157-270.
