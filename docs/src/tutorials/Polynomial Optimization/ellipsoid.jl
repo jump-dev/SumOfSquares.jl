@@ -6,7 +6,7 @@
 
 # ## Introduction
 
-# Consider the polynomial optimization problem from [Floudas1999, Section 3.5](@cite)
+# Consider the polynomial optimization problem from [Floudas1999; Section 3.5](@cite)
 
 A = [
      0  0  1

@@ -6,7 +6,7 @@
 
 # ## Introduction
 
-# Consider the nonconvex Quadratic Program (QP) from [Floudas1999, Section 2.2](@cite)
+# Consider the nonconvex Quadratic Program (QP) from [Floudas1999; Section 2.2](@cite)
 # that minimizes the *concave* function $c^\top x - x^\top Qx / 2$
 # over the polyhedron obtained by intersecting the hypercube $[0, 1]^5$
 # with the halfspace $10x_1 + 12x_2 + 11x_3 + 7x_4 + 4x_5 \le 40$.

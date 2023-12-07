@@ -6,7 +6,7 @@
 
 # ## Introduction
 
-# Consider the polynomial optimization problem from [Floudas1999, Section 3.1](@cite).
+# Consider the polynomial optimization problem from [Floudas1999; Section 3.1](@cite).
 
 using Test #src
 using DynamicPolynomials

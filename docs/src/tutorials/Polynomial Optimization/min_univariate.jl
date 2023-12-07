@@ -6,7 +6,7 @@
 
 # ## Introduction
 
-# Consider the polynomial optimization problem from [Floudas1999, Section 4.10](@cite)
+# Consider the polynomial optimization problem from [Floudas1999; Section 4.10](@cite)
 # of minimizing the linear function $-x_1 - x_2$
 # over the basic semialgebraic set defined by the inequalities
 # $x_2 \le 2x_1^4 - 8x_1^3 + 8x_1^2 + 2$,
