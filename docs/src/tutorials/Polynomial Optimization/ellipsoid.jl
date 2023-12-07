@@ -2,15 +2,11 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Polynomial Optimization/ellipsoid.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Polynomial Optimization/ellipsoid.ipynb)
-# **Adapted from**: Section 3.5 of [F99] and [Lasserre2009; Table 5.1](@cite)
-#
-# [F99] Floudas, Christodoulos A. et al.
-# *Handbook of Test Problems in Local and Global Optimization.*
-# Nonconvex Optimization and Its Applications (NOIA, volume 33).
+# **Adapted from**: [Floudas1999; Section 3.5](@cite) and [Lasserre2009; Table 5.1](@cite)
 
 # ## Introduction
 
-# Consider the polynomial optimization problem [F99, Section 3.5]
+# Consider the polynomial optimization problem from [Floudas1999, Section 3.5](@cite)
 
 A = [
      0  0  1
