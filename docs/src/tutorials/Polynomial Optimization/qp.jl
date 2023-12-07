@@ -61,7 +61,13 @@ model2 = solve(2)
 nothing # hide
 @test termination_status(model2) == MOI.INFEASIBLE #src
 
-# The second level gives a lower bound of `-22`
+# Indeed, as the constraints have degree 1 and their multipliers are SOS
+# so they have an even degree, with `maxdegree` 2 we can only use degree 0
+# multipliers hence constants. The terms of maximal degree in resulting
+# sum will therefore only be in `-x' * Q * x/2` hence it is not SOS whatever
+# is the value of the multipliers. Let's try with `maxdegree` 3 so that the
+# multipliers can be quadratic.
+# This second level is now feasible and gives a lower bound of `-22`.
 
 model3 = solve(3)
 nothing # hide
