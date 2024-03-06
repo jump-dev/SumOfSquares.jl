@@ -364,7 +364,7 @@ end
 
 _sign(a::Number) = sign(a)
 # Can be for instance a JuMP or MOI function so the sign can be anything
-_sign(a) = missing
+_sign(_) = missing
 
 function deg_sign(deg, p, d)
     sgn = nothing
@@ -394,6 +394,12 @@ function _interval(a, b)
     end
 end
 
+"""
+    deg_range(deg, p, gs, gram_deg, truncation)
+
+Assuming that `p - ∑ gs[i] s[i]` is zero above `truncation`,
+check that it can be nonzero at `truncation`.
+"""
 function deg_range(deg, p, gs, gram_deg, truncation)
     d_max = min(deg(p), truncation)
     sign = deg_sign(deg, p, d_max)
@@ -416,12 +422,10 @@ function deg_range(deg, p, gs, gram_deg, truncation)
         if isnothing(sign)
             d_max = d
             sign = sign_g
-        elseif d_max <= d
-            if d_max == d
-                sign = _combine_sign(sign, sign_g)
-            else
-                sign = sign_g
-            end
+        elseif d_max == d
+            sign = _combine_sign(sign, sign_g)
+        elseif d_max < d
+            sign = sign_g
             d_max = d
         end
     end
