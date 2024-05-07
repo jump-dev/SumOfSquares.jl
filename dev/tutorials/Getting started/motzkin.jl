@@ -2,11 +2,7 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Getting started/motzkin.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Getting started/motzkin.ipynb)
-# **Adapted from**: (3.6) and (3.19) of [BPT12]
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
+# **Adapted from**: [Blekherman2012; (3.6) and (3.19)](@cite)
 
 # The first explicit example of nonnegative polynomial that is not a sum of squares was found by Motzkin in 1967. By the [Arithmetic-geometric mean](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean),
 # $$ \frac{x^4y^2 + x^2y^4 + 1}{3} \ge \sqrt[3]{x^4y^2 \cdot x^2y^4 \cdot 1} = x^2y^2 $$
