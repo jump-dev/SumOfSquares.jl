@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Dihedral symmetry of the Robinson form · SumOfSquares</title><meta name="title" content="Dihedral symmetry of the Robinson form · SumOfSquares"/><meta property="og:title" content="Dihedral symmetry of the Robinson form · SumOfSquares"/><meta property="twitter:title" content="Dihedral symmetry of the Robinson form · SumOfSquares"/><meta name="description" content="Documentation for SumOfSquares."/><meta property="og:description" content="Documentation for SumOfSquares."/><meta property="twitter:description" content="Documentation for SumOfSquares."/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/citations.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../../../reference/standard_form/">Standard form</a></li><li><a class="tocitem" href="../../../reference/constraints/">Constraints</a></li><li><a class="tocitem" href="../../../reference/certificate/">Certificate</a></li><li><a class="tocitem" href="../../../reference/internal/">Internal functions</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-6-1" type="checkbox"/><label class="tocitem" for="menuitem-6-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/circle/">Nonnegative over a variety</a></li><li><a class="tocitem" href="../../Getting started/dualization/">On the importance of Dualization</a></li><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li><li><a class="tocitem" href="../../Getting started/univariate/">Minimization of a univariate polynomial</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-2" type="checkbox"/><label class="tocitem" for="menuitem-6-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Polynomial Optimization/bilinear/">Bilinear terms</a></li><li><a class="tocitem" href="../../Polynomial Optimization/bound_on_global_extremum/">Bound on Global Extremum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/ellipsoid/">Exterior of ellipsoid</a></li><li><a class="tocitem" href="../../Polynomial Optimization/goldstein_price/">Goldstein-price function</a></li><li><a class="tocitem" href="../../Polynomial Optimization/min_univariate/">Maximizing as minimum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/polynomial_optimization/">Polynomial Optimization</a></li><li><a class="tocitem" href="../../Polynomial Optimization/qcqp/">Nonconvex quadratically constrained quadratic programs</a></li><li><a class="tocitem" href="../../Polynomial Optimization/qp/">Nonconvex QP</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-3" type="checkbox"/><label class="tocitem" for="menuitem-6-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance</a></li><li><a class="tocitem" href="../../Systems and Control/julia_set/">Outer approximation of Julia set</a></li><li><a class="tocitem" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../../Systems and Control/stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-4" type="checkbox"/><label class="tocitem" for="menuitem-6-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Other Applications/bounds_in_probability/">Bounds in Probability</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-5" type="checkbox"/><label class="tocitem" for="menuitem-6-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-6" type="checkbox"/><label class="tocitem" for="menuitem-6-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/sign_symmetry/">Sign symmetry</a></li><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-7" type="checkbox" checked/><label class="tocitem" for="menuitem-6-7"><span class="docs-label">Symmetry</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../cyclic/">Cyclic symmetry for Sums of Hermitian Squares</a></li><li class="is-active"><a class="tocitem" href>Dihedral symmetry of the Robinson form</a></li><li><a class="tocitem" href="../even_reduction/">Even reduction</a></li><li><a class="tocitem" href="../permutation_symmetry/">Symmetry reduction</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-8" type="checkbox"/><label class="tocitem" for="menuitem-6-8"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Extension/certificate/">Certificate</a></li><li><a class="tocitem" href="../../Extension/hypercube/">Hypercube</a></li><li><a class="tocitem" href="../../Extension/typed/">Multivariate polynomials implementations</a></li><li><a class="tocitem" href="../../Extension/univariate_solver/">Univariate Solver</a></li></ul></li></ul></li><li><a class="tocitem" href="../../../bibliography/">Bibliography</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Symmetry</a></li><li class="is-active"><a href>Dihedral symmetry of the Robinson form</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Dihedral symmetry of the Robinson form</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/master/docs/src/tutorials/Symmetry/dihedral.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Dihedral-symmetry-of-the-Robinson-form"><a class="docs-heading-anchor" href="#Dihedral-symmetry-of-the-Robinson-form">Dihedral symmetry of the Robinson form</a><a id="Dihedral-symmetry-of-the-Robinson-form-1"></a><a class="docs-heading-anchor-permalink" href="#Dihedral-symmetry-of-the-Robinson-form" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR348/generated/Symmetry/dihedral_symmetry_of_the_robinson_form.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR348/generated/Symmetry/dihedral_symmetry_of_the_robinson_form.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Adapted from</strong>: Example 5.4 of [GP04]</p><p>[GP04] Gatermann, Karin and Parrilo, Pablo A. <em>Symmetry groups, semidefinite programs, and sums of squares</em>. Journal of Pure and Applied Algebra 192.1-3 (2004): 95-128.</p><p>We start by defining the Dihedral group of order 8. This group is isomorphic to the following permutation group:</p><pre><code class="language-julia hljs">using PermutationGroups
+d = perm&quot;(1, 2, 3, 4)&quot;
+c = perm&quot;(1, 3)&quot;
+G = PermGroup([c, d])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Permutation group on 2 generators generated by
+ (1,3)
+ (1,2,3,4)</code></pre><p>We could rely on this isomorphism to define this group. However, in order to illustrate how to do symmetry reduction with a custom group, we show in this example what should be implemented to define a new group.</p><pre><code class="language-julia hljs">import GroupsCore
+
+struct DihedralGroup &lt;: GroupsCore.Group
+    n::Int
+end
+
+struct DihedralElement &lt;: GroupsCore.GroupElement
+    n::Int
+    reflection::Bool
+    id::Int
+end</code></pre><p>Implementing GroupsCore API:</p><pre><code class="language-julia hljs">Base.one(G::DihedralGroup) = DihedralElement(G.n, false, 0)
+
+Base.eltype(::Type{DihedralGroup}) = DihedralElement
+Base.IteratorSize(::Type{DihedralGroup}) = Base.HasLength()
+
+function Base.iterate(G::DihedralGroup, prev::DihedralElement=DihedralElement(G.n, false, -1))
+    if prev.id + 1 &gt;= G.n
+        if prev.reflection
+            return nothing
+        else
+            next = DihedralElement(G.n, true, 0)
+        end
+    else
+        next = DihedralElement(G.n, prev.reflection, prev.id + 1)
+    end
+    return next, next
+end
+
+GroupsCore.order(::Type{T}, G::DihedralGroup) where {T} = convert(T, 2G.n)
+GroupsCore.gens(G::DihedralGroup) = [DihedralElement(G.n, false, 1), DihedralElement(G.n, true, 0)]</code></pre><p>Base.rand not needed for our purposes here</p><pre><code class="language-julia hljs">Base.parent(g::DihedralElement) = DihedralGroup(g.n)
+function Base.:(==)(g::DihedralElement, h::DihedralElement)
+    return g.n == h.n &amp;&amp; g.reflection == h.reflection &amp;&amp; g.id == h.id
+end
+
+function Base.inv(el::DihedralElement)
+    if el.reflection || iszero(el.id)
+        return el
+    else
+        return DihedralElement(el.n, false, el.n - el.id)
+    end
+end
+function Base.:*(a::DihedralElement, b::DihedralElement)
+    a.n == b.n || error(&quot;Cannot multiply elements from different Dihedral groups&quot;)
+    id = mod(a.reflection ? a.id - b.id : a.id + b.id, a.n)
+    return DihedralElement(a.n, a.reflection != b.reflection, id)
+end
+
+Base.copy(a::DihedralElement) = DihedralElement(a.n, a.reflection, a.id)</code></pre><p>optional functions:</p><pre><code class="language-julia hljs">function GroupsCore.order(el::DihedralElement)
+    if el.reflection
+        return 2
+    else
+        if iszero(el.id)
+            return 1
+        else
+            return div(el.n, gcd(el.n, el.id))
+        end
+    end
+end</code></pre><p>The Robinson form is invariant under the following action of the Dihedral group on monomials: The action of each element of the groups is to map the variables <code>x, y</code> to:</p><table><tr><th style="text-align: right">id</th><th style="text-align: right">rotation</th><th style="text-align: right">reflection</th></tr><tr><td style="text-align: right">0</td><td style="text-align: right">x, y</td><td style="text-align: right">y, x</td></tr><tr><td style="text-align: right">1</td><td style="text-align: right">-y, x</td><td style="text-align: right">-x, y</td></tr><tr><td style="text-align: right">2</td><td style="text-align: right">-x, -y</td><td style="text-align: right">-y, -x</td></tr><tr><td style="text-align: right">3</td><td style="text-align: right">y, -x</td><td style="text-align: right">x, -y</td></tr></table><pre><code class="language-julia hljs">using SumOfSquares
+using DynamicPolynomials
+@polyvar x y
+struct DihedralAction &lt;: Symmetry.OnMonomials end
+import SymbolicWedderburn
+SymbolicWedderburn.coeff_type(::DihedralAction) = Float64
+function SymbolicWedderburn.action(::DihedralAction, el::DihedralElement, mono::AbstractMonomial)
+    if iseven(el.reflection + el.id)
+        var_x, var_y = x, y
+    else
+        var_x, var_y = y, x
+    end
+    sign_x = 1 &lt;= el.id &lt;= 2 ? -1 : 1
+    sign_y = 2 &lt;= el.id ? -1 : 1
+    return mono([x, y] =&gt; [sign_x * var_x, sign_y * var_y])
+end
+
+poly = x^6 + y^6 - x^4 * y^2 - y^4 * x^2 - x^4 - y^4 - x^2 - y^2 + 3x^2 * y^2 + 1</code></pre><p class="math-container">\[ 1 - y^{2} - x^{2} - y^{4} + 3x^{2}y^{2} - x^{4} + y^{6} - x^{2}y^{4} - x^{4}y^{2} + x^{6} \]</p><p>We can verify that <code>poly</code> is indeed invariant under the action of each element of the group as follows.</p><pre><code class="language-julia hljs">G = DihedralGroup(4)
+for g in G
+    @show SymbolicWedderburn.action(DihedralAction(), g, poly)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶
+SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶
+SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶
+SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶
+SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶
+SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶
+SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶
+SymbolicWedderburn.action(DihedralAction(), g, poly) = 1 - y² - x² - y⁴ + 3x²y² - x⁴ + y⁶ - x²y⁴ - x⁴y² + x⁶</code></pre><p>We can exploit this symmetry for reducing the problem using the <code>SymmetricIdeal</code> certificate as follows:</p><pre><code class="language-julia hljs">import CSDP
+function solve(G)
+    solver = CSDP.Optimizer
+    model = Model(solver)
+    @variable(model, t)
+    @objective(model, Max, t)
+    pattern = Symmetry.Pattern(G, DihedralAction())
+    con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
+    optimize!(model)
+    @show value(t)
+
+
+    for g in gram_matrix(con_ref).blocks
+        println(g.basis.polynomials)
+    end
+end
+solve(G)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iter: 11 Ap: 9.58e-01 Pobj: -1.6774514e-10 Ad: 9.58e-01 Dobj: -4.5554076e-09
+Success: SDP solved
+Primal objective value: -1.6774514e-10
+Dual objective value: -4.5554076e-09
+Relative primal infeasibility: 1.10e-14
+Relative dual infeasibility: 1.18e-09
+Real Relative Gap: -4.39e-09
+XZ Relative Gap: 1.22e-09
+DIMACS error measures: 1.89e-14 0.00e+00 2.82e-09 0.00e+00 -4.39e-09 1.22e-09
+CSDP 6.2.0
+Iter:  0 Ap: 0.00e+00 Pobj:  0.0000000e+00 Ad: 0.00e+00 Dobj:  0.0000000e+00
+Iter:  1 Ap: 7.31e-01 Pobj: -5.9540730e+00 Ad: 8.42e-01 Dobj:  3.0671681e-01
+Iter:  2 Ap: 8.67e-01 Pobj: -1.6845198e+01 Ad: 8.68e-01 Dobj:  7.9208056e+00
+Iter:  3 Ap: 8.41e-01 Pobj: -6.5167134e+00 Ad: 6.91e-01 Dobj:  4.6340995e+00
+Iter:  4 Ap: 7.89e-01 Pobj: -3.0718725e+00 Ad: 8.67e-01 Dobj:  8.7844427e-01
+Iter:  5 Ap: 8.59e-01 Pobj: -1.8420731e+00 Ad: 8.47e-01 Dobj: -3.3091073e-01
+Iter:  6 Ap: 7.40e-01 Pobj: -1.2180543e+00 Ad: 8.00e-01 Dobj: -6.8726801e-01
+Iter:  7 Ap: 8.82e-01 Pobj: -1.0523759e+00 Ad: 6.48e-01 Dobj: -8.1732010e-01
+Iter:  8 Ap: 6.75e-01 Pobj: -9.8406190e-01 Ad: 7.70e-01 Dobj: -8.8525802e-01
+Iter:  9 Ap: 8.70e-01 Pobj: -9.5552035e-01 Ad: 7.26e-01 Dobj: -9.1517421e-01
+Iter: 10 Ap: 1.00e+00 Pobj: -9.2933412e-01 Ad: 8.92e-01 Dobj: -9.2629286e-01
+Iter: 11 Ap: 8.61e-01 Pobj: -9.2914325e-01 Ad: 9.11e-01 Dobj: -9.3036068e-01
+Iter: 12 Ap: 1.00e+00 Pobj: -9.2898054e-01 Ad: 1.00e+00 Dobj: -9.3115787e-01
+Iter: 13 Ap: 7.19e-01 Pobj: -9.2961473e-01 Ad: 5.76e-01 Dobj: -9.3155210e-01
+Iter: 14 Ap: 1.00e+00 Pobj: -9.2967228e-01 Ad: 3.55e-01 Dobj: -9.3180771e-01
+Iter: 15 Ap: 4.26e-01 Pobj: -9.3065963e-01 Ad: 1.00e+00 Dobj: -9.3175040e-01
+Iter: 16 Ap: 1.00e+00 Pobj: -9.3042297e-01 Ad: 1.00e+00 Dobj: -9.3211446e-01
+Iter: 17 Ap: 5.06e-01 Pobj: -9.3106101e-01 Ad: 6.25e-01 Dobj: -9.3240546e-01
+Iter: 18 Ap: 7.18e-01 Pobj: -9.3146998e-01 Ad: 4.44e-01 Dobj: -9.3257853e-01
+Iter: 19 Ap: 1.00e+00 Pobj: -9.3128112e-01 Ad: 3.48e-01 Dobj: -9.3271014e-01
+Iter: 20 Ap: 4.85e-01 Pobj: -9.3206037e-01 Ad: 1.00e+00 Dobj: -9.3257740e-01
+Iter: 21 Ap: 1.00e+00 Pobj: -9.3178232e-01 Ad: 1.00e+00 Dobj: -9.3276737e-01
+Iter: 22 Ap: 7.26e-01 Pobj: -9.3197870e-01 Ad: 7.39e-01 Dobj: -9.3290369e-01
+Iter: 23 Ap: 4.04e-01 Pobj: -9.3208730e-01 Ad: 4.06e-01 Dobj: -9.3295435e-01
+Iter: 24 Ap: 1.00e+00 Pobj: -9.3209505e-01 Ad: 1.00e+00 Dobj: -9.3296372e-01
+Iter: 25 Ap: 7.03e-01 Pobj: -9.3212572e-01 Ad: 7.08e-01 Dobj: -9.3298098e-01
+Iter: 26 Ap: 9.98e-01 Pobj: -9.3212657e-01 Ad: 9.95e-01 Dobj: -9.3298156e-01
+value(t) = -0.9321266534577521
+DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Float64}[y³, x²y, y]
+DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Float64}[-x³, -xy², -x]
+DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Float64}[1.0, -0.7071067811865472y² - 0.7071067811865475x²]
+DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Float64}[xy]
+DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Float64}[-0.7071067811865472y² + 0.7071067811865475x²]</code></pre><p>We notice that we indeed find <code>-3825/4096</code> and that symmetry was exploited.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cyclic/">« Cyclic symmetry for Sums of Hermitian Squares</a><a class="docs-footer-nextpage" href="../even_reduction/">Even reduction »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Tuesday 7 May 2024 13:08">Tuesday 7 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
