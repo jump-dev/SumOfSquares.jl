@@ -47,8 +47,7 @@ Reexport.@reexport using PolyJuMP
 
 include("sets.jl")
 include("attributes.jl")
-include("diagonally_dominant.jl")
-include("sos_polynomial.jl")
+include("build_matrix.jl")
 include("copositive_inner.jl")
 
 # Bridges

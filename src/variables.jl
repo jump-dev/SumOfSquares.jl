@@ -35,7 +35,7 @@ function moi_add_variable(
     binary::Bool,
     integer::Bool,
 )
-    Q, con_Q = MOI.add_constrained_variables(model, set)
+    Q, _ = MOI.add_constrained_variables(model, set)
     if binary
         for q in Q
             MOI.add_constraint(model, q, MOI.ZeroOne())
@@ -52,7 +52,7 @@ end
 function JuMP.add_variable(
     model::JuMP.AbstractModel,
     v::PolyJuMP.Variable{<:PosPoly},
-    name::String = "",
+    ::String = "",
 )
     MCT = matrix_cone_type(v.p)
     set = matrix_cone(MCT, length(v.p.polynomial_basis))
