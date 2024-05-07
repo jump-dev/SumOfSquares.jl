@@ -44,6 +44,12 @@ makedocs(
         "Sum-of-Squares Programming" => "sumofsquares.md",
         "Variables" => "variables.md",
         "Constraints" => "constraints.md",
+        "API Reference" => [
+            "reference/standard_form.md",
+            "reference/constraints.md",
+            "reference/certificate.md",
+            "reference/internal.md",
+        ],
         "Tutorials" => map(
             subdir ->
                 subdir => map(
