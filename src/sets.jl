@@ -108,14 +108,40 @@ function Base.copy(
     return set
 end
 
+"""
+    struct WeightedSOSCone{B,G,W}
+        basis::B
+        gram_bases::Vector{G}
+        weights::Vector{W}
+    end
+
+The weighted sum-of-squares cone is the set of vectors of coefficients `a` in `basis`
+that are the sum of `weights[i]` multiplied by a gram matrix with basis `gram_bases[i]`.
+
+See [Papp2017; Section 1.1](@cite) and [Kapelevich2023; Section 1](@cite).
+"""
+struct WeightedSOSCone{
+    M,
+    B<:MB.AbstractPolynomialBasis,
+    G<:MB.AbstractPolynomialBasis,
+    W<:MP.AbstractPolynomialLike,
+} <: MOI.AbstractVectorSet
+    basis::B
+    gram_bases::Vector{G}
+    weights::Vector{W}
+end
+MOI.dimension(set::WeightedSOSCone) = length(set.basis)
+Base.copy(set::WeightedSOSCone) = set
+
 struct SOSPolynomialSet{
     DT<:AbstractSemialgebraicSet,
+    B<:MB.AbstractPolynomialBasis,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
     CT<:Certificate.AbstractCertificate,
 } <: MOI.AbstractVectorSet
     domain::DT
-    monomials::MVT
+    basis::B
     certificate::CT
 end
 MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)
