@@ -34,7 +34,7 @@ function MOI.Bridges.added_constrained_variable_types(
     return [(S,), (MOI.Nonnegatives,)]
 end
 function MOI.Bridges.added_constraint_types(::Type{<:CopositiveInnerBridge})
-    return Tuple{DataType,DataType}[]
+    return Tuple{Type,Type}[]
 end
 function MOI.Bridges.Variable.concrete_bridge_type(
     ::Type{<:CopositiveInnerBridge{T}},

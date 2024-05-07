@@ -19,10 +19,10 @@ function MOI.supports_constraint(
     return true
 end
 function MOI.Bridges.added_constrained_variable_types(::Type{<:EmptyBridge})
-    return Tuple{DataType}[]
+    return Tuple{Type}[]
 end
 function MOI.Bridges.added_constraint_types(::Type{<:EmptyBridge})
-    return Tuple{DataType,DataType}[]
+    return Tuple{Type,Type}[]
 end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:EmptyBridge{T}},

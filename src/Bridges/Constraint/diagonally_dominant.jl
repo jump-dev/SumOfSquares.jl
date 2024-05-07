@@ -73,7 +73,7 @@ end
 function MOI.Bridges.added_constrained_variable_types(
     ::Type{<:DiagonallyDominantBridge},
 )
-    return Tuple{DataType}[]
+    return Tuple{Type}[]
 end
 function MOI.Bridges.added_constraint_types(
     ::Type{<:DiagonallyDominantBridge{T,F}},

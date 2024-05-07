@@ -72,7 +72,7 @@ end
 function MOI.Bridges.added_constraint_types(
     ::Type{<:ScaledDiagonallyDominantBridge},
 )
-    return Tuple{DataType,DataType}[]
+    return Tuple{Type,Type}[]
 end
 
 # Attributes, Bridge acting as a model
