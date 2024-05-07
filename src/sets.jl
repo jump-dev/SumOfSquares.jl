@@ -122,8 +122,8 @@ See [Papp2017; Section 1.1](@cite) and [Kapelevich2023; Section 1](@cite).
 """
 struct WeightedSOSCone{
     M,
-    B<:MB.AbstractPolynomialBasis,
-    G<:MB.AbstractPolynomialBasis,
+    B<:AbstractPolynomialBasis,
+    G<:AbstractPolynomialBasis,
     W<:MP.AbstractPolynomialLike,
 } <: MOI.AbstractVectorSet
     basis::B
@@ -135,7 +135,7 @@ Base.copy(set::WeightedSOSCone) = set
 
 struct SOSPolynomialSet{
     DT<:AbstractSemialgebraicSet,
-    B<:MB.AbstractPolynomialBasis,
+    B<:AbstractPolynomialBasis,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
     CT<:Certificate.AbstractCertificate,

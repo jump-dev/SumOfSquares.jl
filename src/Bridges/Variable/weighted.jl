@@ -1,4 +1,5 @@
 struct KernelBridge{T,M} <: MOI.Bridges.Variable.AbstractBridge
+    affine::Vector{MOI.ScalarAffineFunction{T}}
     variables::Vector{Vector{MOI.VariableIndex}}
     constraints::Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}
 end
@@ -17,7 +18,8 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
         push!(constraints, con)
         acc = MA.add_mul!!(acc, weight, gram)
     end
-    return KernelBridge{T}(variables, constraints)
+    affine = MB.coefficients(acc, set.basis)
+    return KernelBridge{T}(affine, variables, constraints)
 end
 
 function MOI.Bridges.Variable.supports_constrained_variable(
@@ -26,11 +28,13 @@ function MOI.Bridges.Variable.supports_constrained_variable(
 )
     return true
 end
+
 function MOI.Bridges.added_constrained_variable_types(
     ::Type{KernelBridge{T,M}},
 ) where {T,M}
     return constrained_variable_types(M)
 end
+
 function MOI.Bridges.added_constraint_types(
     ::Type{PositiveSemidefinite2x2Bridge{T}},
 ) where {T}
@@ -88,18 +92,7 @@ function MOI.get(
     attr::MOI.ConstraintPrimal,
     bridge::KernelBridge,
 )
-    value = MOI.get(model, attr, bridge.rsoc)
-    return [value[1], value[3] / √2, value[2]]
-end
-
-function MOI.get(
-    model::MOI.ModelLike,
-    attr::MOI.ConstraintDual,
-    bridge::KernelBridge,
-)
-    dual = MOI.get(model, attr, bridge.rsoc)
-    # / 2 (because of different scalar product) * √2 (because of A^{-*} = 1 / √2
-    return [dual[1], dual[3] / √2, dual[2]]
+    return [MOI.get(model, MOI.VariablePrimal(attr.result_index), bridge, MOI.Bridges.IndexInVector(i)) for i in eachindex(bridge.affine)]
 end
 
 function MOI.get(
@@ -108,21 +101,14 @@ function MOI.get(
     bridge::KernelBridge,
     i::MOI.Bridges.IndexInVector,
 )
-    value = MOI.get(model, attr, _variable(bridge, i))
-    if i.value == 2
-        value /= √2
+    return MOI.Utilities.eval_variable(bridge.affine[i.value]) do
+        vi -> MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
     end
-    return value
 end
 
 function MOI.Bridges.bridged_function(
-    bridge::KernelBridge{T},
+    bridge::KernelBridge,
     i::MOI.Bridges.IndexInVector,
-) where {T}
-    func = _variable(bridge, i)
-    if i.value == 2
-        return MOI.Utilities.operate(/, T, func, convert(T, √2))
-    else
-        return convert(MOI.ScalarAffineFunction{T}, func)
-    end
+)
+    return bridge.affine[i.value]
 end
