@@ -7,11 +7,7 @@ using SemialgebraicSets
 # SOSDEMO4 --- Matrix Copositivity
 # Section 3.4 of SOSTOOLS User's Manual
 #
-# See also (3.41) of [BPT12].
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
+# See also [Blekherman2012; (3.41)](@cite).
 
 function horn_test(
     optimizer,

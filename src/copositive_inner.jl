@@ -12,7 +12,7 @@ vector ``x`` in the nonnegative orthant. Checking copositivity is a
 co-NP-complete problem [MK87] and this cone is only the inner approximation of
 the cone of copositive symmetric matrices given by Minknowski sum of `psd_inner`
 and the cone of symmetric matrices with nonnegative entries (the diagonal
-entries can be chosen to be zero) [Lemma 3.164, BPT12].
+entries can be chosen to be zero) [Blekherman2012; Lemma 3.164](@cite).
 
 The matrix with nonnegative entries can be interpreted as lagrangian
 multipliers. For instance,
@@ -49,10 +49,6 @@ As an important difference with its equivalent forms, the
 `Q` while for the equivalent form using the  domain` keyword, the value
 of the attribute would correspond to the the gram matrix in the `psd_inner`
 cone, i.e. which should be equal to `Q - Λ`.
-
-[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-*Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, **2012**.
 
 [MK87] K. G. Murty and S. N. Kabadi.
 *Some NP-complete problems in quadratic and nonlinear programming*.

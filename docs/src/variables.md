@@ -130,12 +130,12 @@ of degree 2, then all the monomials of `p` will have degree 4 (i.e. `p` will be
 a quartic form).
 
 Similarly, to create diagonally-dominant-sum-of-squares polynomial variables
-(see [Definition 3.1, AM17]), use `DSOSPoly(X)`. This creates a diagonally
+(see [Ahmadi2017; Definition 3.1](@cite)), use `DSOSPoly(X)`. This creates a diagonally
 dominant matrix of variables `Q` and sets the polynomial variables as the value
 of `X' * Q * X`.
 
 Finally, to create scaled-diagonally-dominant-sum-of-squares polynomial
-variables (see [Definition 3.2, AM17]), use `SDSOSPoly(X)`. This creates a
+variables (see [Ahmadi2017; Definition 3.2](@cite)), use `SDSOSPoly(X)`. This creates a
 scaled diagonally dominant matrix of variables `Q` and sets the polynomial
 variables as the value of `X' * Q * X`.
 
@@ -145,7 +145,7 @@ In the previous section, we show how to create polynomial variables from a
 monomial basis. However, the monomial basis is only a particular case of
 polynomial basis and while using a different basis of the same space of
 polynomial is would give an equivalent program, it might be more stable
-numerically (see [Section 3.1.5, BPT12]).
+numerically (see [Blekherman2012; Section 3.1.5](@cite)).
 
 For instance, creating an univariate cubic polynomial variable `p` using the
 Chebyshev basis can be done as follows:
@@ -157,7 +157,7 @@ julia> @variable(model, variable_type=Poly(cheby_basis))
 (_[219] - _[221]) + (_[220] - 3 _[222])x + (2 _[221])x² + (4 _[222])x³
 ```
 and to create a quadratic form variable `q` using the *scaled monomial* basis
-(see [Section 3.1.5, BPT12]), use the following:
+(see [Blekherman2012; Section 3.1.5](@cite)), use the following:
 ```jldoctest variables
 julia> X = monomials([x, y], 2)
 3-element MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}:
@@ -178,25 +178,4 @@ FixedPolynomialBasis([x², 1.4142135623730951xy, y²])
 
 julia> @variable(model, variable_type=Poly(scaled_basis))
 (_[228])y² + (1.4142135623730951 _[227])xy + (_[226])x²
-```
-
-### References
-
-[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-*Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, **2012**.
-
-[AM17] Ahmadi, A. A. & Majumdar, A.
-*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
-ArXiv e-prints, **2017**.
-
-## Reference
-
-```@docs
-SumOfSquares.PolyJuMP.Poly
-```
-
-Variable bridges:
-```@docs
-SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge
 ```

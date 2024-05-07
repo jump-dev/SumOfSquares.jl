@@ -1,6 +1,6 @@
 # Sum-of-Squares Programming
 
-This section contains a brief introduction to Sum-of-Squares Programming. For more details, see [BPT12, Las09, Lau09].
+This section contains a brief introduction to Sum-of-Squares Programming. For more details, see [Blekherman2012, Lasserre2009, Laurent2008](@cite).
 
 ## Quadratic forms and Semidefinite programming
 
@@ -45,13 +45,3 @@ x_1^4x_2^2 + x_1^2x_2^4 + 1 - 3x_1^2x_2^2 \geq 0 \quad \forall x
 ```
 While it is not a sum of squares, it can still be certified to be nonnegative using sum-of-squares programming by identifying it with a rational sum-of-squares decomposition.
 These facts can be verified numerically using this package as detailed in the [Motzkin](@ref) example.
-
-### References
-
-[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-*Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, **2012**.
-
-[Lau09] Laurent, M.
-*Sums of squares, moment matrices and optimization over polynomials*
-Emerging applications of algebraic geometry, Springer, **2009**, 157-270.

@@ -3,11 +3,7 @@
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Getting started/sos_decomposition.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Getting started/sos_decomposition.ipynb)
 # **Contributed by**: votroto
-# **Adapted from**: Examples 3.25 of [BPT12]
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
+# **Adapted from**: [Blekherman2012; Examples 3.25](@cite)
 
 using Test #src
 using DynamicPolynomials

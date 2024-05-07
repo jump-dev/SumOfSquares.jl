@@ -1,11 +1,6 @@
 # SPOT example from file doc/examples/sdsos_example.m
 # of https://github.com/anirudhamajumdar/spotless/tree/spotless_isos
-# See Section 4.1 of [AM17].
-#
-# [AM17] Section 4.1 of
-# A. A. Ahmadi, and A. Majumdar
-# DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization
-# 2017
+# See [Ahmadi2017; Section 4.1](@cite).
 
 using Test
 using SumOfSquares

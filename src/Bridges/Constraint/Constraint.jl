@@ -7,7 +7,7 @@ import MutableArithmetics as MA
 import MathOptInterface as MOI
 
 import MultivariatePolynomials as MP
-import MultivariateBases
+import MultivariateBases as MB
 import SemialgebraicSets
 import MultivariateMoments
 import PolyJuMP

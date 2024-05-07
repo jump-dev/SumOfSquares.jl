@@ -9,11 +9,11 @@ struct SOSPolynomialBridge{
     UMST,
     MCT,
     GB<:Union{
-        Vector{<:Vector{<:MultivariateBases.AbstractPolynomialBasis}}, # Symmetry
-        Vector{<:MultivariateBases.AbstractPolynomialBasis},           # Sparsity
-        MultivariateBases.AbstractPolynomialBasis,                     # No reduction
+        Vector{<:Vector{<:MB.AbstractPolynomialBasis}}, # Symmetry
+        Vector{<:MB.AbstractPolynomialBasis},           # Sparsity
+        MB.AbstractPolynomialBasis,                     # No reduction
     },
-    ZB<:MultivariateBases.AbstractPolynomialBasis,
+    ZB<:MB.AbstractPolynomialBasis,
     CT<:SOS.Certificate.AbstractIdealCertificate,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
@@ -92,7 +92,7 @@ end
 function MOI.Bridges.added_constraint_types(
     ::Type{SOSPolynomialBridge{T,F,DT,UMCT,UMST,MCT,GB,ZB,CT,MT,MVT}},
 ) where {T,F,DT,UMCT,UMST,MCT,GB,ZB,CT,MT,MVT}
-    return [(F, PolyJuMP.ZeroPolynomialSet{DT,ZB,MT,MVT})]
+    return Tuple{Type,Type}[(F, PolyJuMP.ZeroPolynomialSet{DT,ZB,MT,MVT})]
 end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialBridge{T}},

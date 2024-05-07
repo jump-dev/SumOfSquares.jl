@@ -110,7 +110,7 @@ This approach adds the flexibility to choose the default cone for
   which is the cone given as default to `PolyJuMP.NonNegPolyMatrix`.
 
 For instance, to use the diagonally-dominant-sum-of-squares cone (see
-[Definition 2, AM17]) for the first type of contraints, do
+[Ahmadi2017; Definition 2](@cite)) for the first type of contraints, do
 ```jldoctest constraint-pq
 julia> PolyJuMP.setdefault!(model, PolyJuMP.NonNegPoly, DSOSCone)
 DSOSCone (alias for NonnegPolyInnerCone{SumOfSquares.DiagonallyDominantConeTriangle})
@@ -151,7 +151,7 @@ julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y)
 ```
 where `α` and `β` are JuMP decision variables and `x` and `y` are polynomial
 variables. Since the polynomial is a quadratic form, the sum-of-squares
-certificate is also a quadratic form (see [Section~3.3.4, BPT12]). Hence the
+certificate is also a quadratic form (see [Blekherman2012; Section~3.3.4](@cite)). Hence the
 default polynomial basis used for the [Nonnegative polynomial variables]
 certificate is `MonomialBasis([x, y])`, that is, we search for a positive
 semidefinite matrix `Q` such that
@@ -215,7 +215,7 @@ the output of `dual` only contains the moments corresponding to monomials of `p`
 while the output of `moments` may give the  moments of other monomials if `s(x)`
 has more monomials than `p(x)`. Besides, if the domain contains polynomial,
 equalities, only the  remainder of `p(x) - s(x)` modulo the ideal is constrained
-to be zero, see Corollary 2 of [CLO13]. In that case, the output `moments` is
+to be zero, see Corollary 2 of [Cox2015](@cite). In that case, the output `moments` is
 the dual of the constraint on the remainder so some monomials may have different
 moments with `dual` or `moments`.
 
@@ -232,134 +232,6 @@ a sum of Dirac measures) that has the moments given in the the moment matrix
 or stability analysis (see
 [this notebook](https://github.com/blegat/SwitchOnSafety.jl/blob/master/examples/LPJ17e43.ipynb)).
 
-### References
-
-[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-*Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, **2012**.
-
-[CLO13] Cox, D., Little, J., & OShea, D.
-*Ideals, varieties, and algorithms: an introduction to computational algebraic geometry and commutative algebra*.
-Springer Science & Business Media, **2013**.
-
-[AM17] Ahmadi, A. A. & Majumdar, A.
-*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*.
-ArXiv e-prints, **2017**.
-
-## API Reference
-
-Default choice for the `maxdegree` keyword:
-```@docs
-SumOfSquares.default_maxdegree
-```
-
-Special case that is second-order cone representable:
-```@docs
-SumOfSquares.PositiveSemidefinite2x2ConeTriangle
-```
-
-Inner approximations of the PSD cone that do not require semidefinite
-programming:
-```@docs
-SumOfSquares.DiagonallyDominantConeTriangle
-SumOfSquares.ScaledDiagonallyDominantConeTriangle
-```
-
-Approximations of the cone of nonnegative polynomials:
-```@docs
-SumOfSquares.NonnegPolyInnerCone
-SumOfSquares.SOSCone
-SumOfSquares.SDSOSCone
-SumOfSquares.DSOSCone
-```
-
-Approximations of the cone of positive semidefinite polynomial matrices:
-```@docs
-SumOfSquares.PSDMatrixInnerCone
-SumOfSquares.SOSMatrixCone
-```
-
-Approximations of the cone of convex polynomials:
-```@docs
-SumOfSquares.ConvexPolyInnerCone
-SumOfSquares.SOSConvexCone
-```
-
-Approximations of the cone of copositive matrices:
-```@docs
-SumOfSquares.CopositiveInner
-```
-
-Types of sparsity
-```@docs
-SumOfSquares.Certificate.Sparsity.Variable
-SumOfSquares.Certificate.Sparsity.Monomial
-SumOfSquares.Certificate.Sparsity.SignSymmetry
-SumOfSquares.Certificate.Sparsity.XORSpace
-```
-
-Ideal certificates:
-```@docs
-SumOfSquares.Certificate.MaxDegree
-SumOfSquares.Certificate.FixedBasis
-SumOfSquares.Certificate.Newton
-SumOfSquares.Certificate.Remainder
-SumOfSquares.Certificate.Sparsity.Ideal
-SumOfSquares.Certificate.Symmetry.Ideal
-```
-
-Preorder certificates:
-```@docs
-SumOfSquares.Certificate.Putinar
-SumOfSquares.Certificate.Sparsity.Preorder
-```
-
-Attributes
-```@docs
-SumOfSquares.PolyJuMP.MomentsAttribute
-SumOfSquares.MultivariateMoments.moments(::SumOfSquares.JuMP.ConstraintRef)
-GramMatrix
-SumOfSquares.GramMatrixAttribute
-gram_matrix
-gram_operate
-SumOfSquares.MomentMatrixAttribute
-moment_matrix
-SumOfSquares.CertificateBasis
-certificate_basis
-certificate_monomials
-SumOfSquares.LagrangianMultipliers
-lagrangian_multipliers
-SOSDecomposition
-SOSDecompositionWithDomain
-SumOfSquares.SOSDecompositionAttribute
-sos_decomposition
-```
-
-Bridges are automatically added using the following utilities:
-```@docs
-SumOfSquares.PolyJuMP.bridgeable
-SumOfSquares.PolyJuMP.bridges
-```
-
-Chordal extension:
-```@docs
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.neighbors
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.fill_in
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.is_clique
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.LabelledGraph
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_node!
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_edge!
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_clique!
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.completion
-```
-
-Bridges for polynomial optimization
-```@docs
-PolyJuMP.ScalarPolynomialFunction
-PolyJuMP.Bridges.Objective.ToPolynomialBridge
-PolyJuMP.Bridges.Constraint.ToPolynomialBridge
-```
-
 ### SAGE extension
 
 To use the SAGE cone in place of the Sum-of-Squares cone for an inequality constraints
@@ -367,22 +239,4 @@ between polynomials, use the following:
 ```julia
 import PolyJuMP
 PolyJuMP.setpolymodule!(model, PolyJuMP.SAGE)
-```
-
-```@docs
-SumOfSquares.PolyJuMP.SAGE.Polynomials
-SumOfSquares.PolyJuMP.SAGE.Decomposition
-SumOfSquares.PolyJuMP.SAGE.Signomials
-SumOfSquares.PolyJuMP.SAGE.DecompositionAttribute
-SumOfSquares.PolyJuMP.SAGE.SignomialsBridge
-SumOfSquares.PolyJuMP.SAGE.AGEBridge
-```
-
-### Internal functions
-
-```@docs
-SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to
-SumOfSquares.Certificate.Symmetry._reorder!
-SumOfSquares.Certificate.Symmetry._rotate_complex
-PolyJuMP.QCQP._subs_ensure_moi_order
 ```

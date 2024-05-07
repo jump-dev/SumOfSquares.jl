@@ -130,11 +130,7 @@ function decompose(p, solver)
 end
 
 # We consider the following univariate polynomial from
-# Example 3.35 of [BPT12].
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
+# [Blekherman2012; Example 3.35](@cite).
 
 # Using our solver we find the following decomposition in two squares.
 

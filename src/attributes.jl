@@ -7,7 +7,7 @@ A constraint attribute for the basis indexing the
 struct CertificateBasis <: MOI.AbstractConstraintAttribute end
 
 """
-    GramMatrixAttribute(N)
+    GramMatrixAttribute(result_index)
     GramMatrixAttribute()
 
 A constraint attribute for the [`GramMatrix`](@ref) of a constraint, that is,
