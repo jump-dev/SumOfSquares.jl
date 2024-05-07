@@ -45,8 +45,8 @@ import MathOptInterface as MOI
 
 Reexport.@reexport using PolyJuMP
 
+include("sets.jl")
 include("attributes.jl")
-include("psd2x2.jl")
 include("diagonally_dominant.jl")
 include("sos_polynomial.jl")
 include("copositive_inner.jl")
@@ -59,8 +59,8 @@ include("Bridges/Bridges.jl")
 Reexport.@reexport using JuMP
 
 include("utilities.jl")
-include("variable.jl")
-include("constraint.jl")
+include("constraints.jl")
+include("variables.jl")
 
 function setdefaults!(data::PolyJuMP.Data)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPoly, SOSCone)
