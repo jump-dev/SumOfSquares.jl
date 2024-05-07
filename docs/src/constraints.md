@@ -253,8 +253,9 @@ Default choice for the `maxdegree` keyword:
 SumOfSquares.default_maxdegree
 ```
 
-Special case that is second-order cone representable:
+Special cases of positive semidefinite cones:
 ```@docs
+SumOfSquares.EmptyCone
 SumOfSquares.PositiveSemidefinite2x2ConeTriangle
 ```
 

@@ -7,7 +7,7 @@ import MutableArithmetics as MA
 import MathOptInterface as MOI
 
 import MultivariatePolynomials as MP
-import MultivariateBases
+import MultivariateBases as MB
 import SemialgebraicSets
 import MultivariateMoments
 import PolyJuMP
@@ -22,6 +22,7 @@ include("scaled_diagonally_dominant.jl")
 
 # SOS polynomial bridges
 include("utilities.jl")
+include("image.jl")
 include("sos_polynomial.jl")
 include("sos_polynomial_in_semialgebraic_set.jl")
 
