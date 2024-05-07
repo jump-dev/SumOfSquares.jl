@@ -34,7 +34,6 @@ function build_gram_matrix(
     matrix_cone_type,
     T::Type,
 )
-    n = length(basis)
     Q = vectorized_matrix(q, length(basis), matrix_cone_type, T)
     U = _promote_sum(eltype(Q), T)
     #    N = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(n))

@@ -182,7 +182,7 @@ end
 
 # Attributes, Bridge acting as a constraint
 function MOI.get(
-    model::MOI.ModelLike,
+    ::MOI.ModelLike,
     ::MOI.ConstraintSet,
     bridge::SOSPolynomialBridge,
 )
