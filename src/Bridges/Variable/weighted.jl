@@ -45,10 +45,7 @@ end
 function MOI.get(bridge::KernelBridge, ::MOI.NumberOfVariables)
     return sum(length, bridge.variables)
 end
-function MOI.get(
-    bridge::KernelBridge,
-    ::MOI.ListOfVariableIndices,
-)
+function MOI.get(bridge::KernelBridge, ::MOI.ListOfVariableIndices)
     return reduce(vcat, bridge.variables)
 end
 function MOI.get(
@@ -56,17 +53,17 @@ function MOI.get(
     ::MOI.NumberOfConstraints{MOI.VectorOfVariables,S},
 ) where {S<:MOI.AbstractVectorSet}
     return count(bridge.constraints) do ci
-        ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}
+        return ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}
     end
 end
 function MOI.get(
     bridge::KernelBridge,
-    ::MOI.ListOfConstraintIndices{
-        MOI.VectorOfVariables,
-        S,
-    },
+    ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables,S},
 )
-    return [ci for ci in bridge.constraints if ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}]
+    return [
+        ci for ci in bridge.constraints if
+        ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}
+    ]
 end
 
 # Indices
@@ -92,7 +89,14 @@ function MOI.get(
     attr::MOI.ConstraintPrimal,
     bridge::KernelBridge,
 )
-    return [MOI.get(model, MOI.VariablePrimal(attr.result_index), bridge, MOI.Bridges.IndexInVector(i)) for i in eachindex(bridge.affine)]
+    return [
+        MOI.get(
+            model,
+            MOI.VariablePrimal(attr.result_index),
+            bridge,
+            MOI.Bridges.IndexInVector(i),
+        ) for i in eachindex(bridge.affine)
+    ]
 end
 
 function MOI.get(
@@ -102,7 +106,7 @@ function MOI.get(
     i::MOI.Bridges.IndexInVector,
 )
     return MOI.Utilities.eval_variable(bridge.affine[i.value]) do
-        vi -> MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
+        return vi -> MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
     end
 end
 
