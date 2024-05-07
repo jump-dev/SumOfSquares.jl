@@ -27,6 +27,10 @@ function vectorized_matrix(
     )
 end
 
+function gram_matrix_type(B::Type, matrix_cone_type, T::Type)
+    return GramMatrix{T,B,T}
+end
+
 # Need these two methods to avoid ambiguity
 function build_gram_matrix(
     q::Vector,
@@ -70,21 +74,28 @@ end
 #    return build_gram_matrix(C, basis, T, SymmetricVectorized())
 #end
 
+# Need to annotate the element type in case `bases`
+# is empty
+function _build_matrix_eltype(::Type{T}, bases, f) where {T}
+    return Base._return_type(f, Tuple{Vector{T},eltype(bases)})
+end
+
 function build_matrix(
     Q::Function,
     bases::Vector{<:AbstractPolynomialBasis},
     f::Function,
-)
-    return map(eachindex(bases)) do i
-        return f(Q(i), bases[i])
-    end
+    ::Type{T},
+) where {T}
+    @show T
+    return T[f(Q(i), bases[i]) for i in eachindex(bases)]
 end
 function build_matrix(
     Q::Function,
     bases::Vector{<:Vector{<:AbstractPolynomialBasis}},
     f::Function,
-)
-    return [
+    ::Type{T},
+) where {T}
+    return T[
         f(Q(i), bases[i][j]) for i in eachindex(bases) for
         j in eachindex(bases[i])
     ]
@@ -96,13 +107,14 @@ function build_gram_matrix(Q::Function, bases::Vector, matrix_cone_type, T)
             Q,
             bases,
             (Q, b) -> build_gram_matrix(Q, b, matrix_cone_type, T),
+            gram_matrix_type(eltype(bases), matrix_cone_type, T),
         ),
     )
 end
 
 function build_moment_matrix(Q::Function, bases::Vector)
     return MultivariateMoments.BlockDiagonalMomentMatrix(
-        build_matrix(Q, bases, build_moment_matrix),
+        build_matrix(Q, bases, build_moment_matrix, T),
     )
 end
 
@@ -132,10 +144,10 @@ _first(b::AbstractPolynomialBasis) = b
 _first(b::Vector) = first(b)
 function add_gram_matrix(
     model::MOI.ModelLike,
-    matrix_cone_type::Type,
+    ::Type{matrix_cone_type},
     bases::Vector,
-    T::Type,
-)
+    ::Type{T},
+) where {matrix_cone_type,T}
     Qs = Vector{Vector{MOI.VariableIndex}}(undef, length(bases))
     cQs = Vector{union_constraint_indices_types(matrix_cone_type)}(
         undef,
