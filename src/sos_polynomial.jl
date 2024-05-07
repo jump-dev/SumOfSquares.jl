@@ -162,16 +162,3 @@ end
 function build_moment_matrix(q::Vector, basis::AbstractPolynomialBasis)
     return MomentMatrix(MultivariateMoments.SymMatrix(q, length(basis)), basis)
 end
-
-struct SOSPolynomialSet{
-    DT<:AbstractSemialgebraicSet,
-    MT<:MP.AbstractMonomial,
-    MVT<:AbstractVector{MT},
-    CT<:Certificate.AbstractCertificate,
-} <: MOI.AbstractVectorSet
-    domain::DT
-    monomials::MVT
-    certificate::CT
-end
-MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)
-Base.copy(set::SOSPolynomialSet) = set
