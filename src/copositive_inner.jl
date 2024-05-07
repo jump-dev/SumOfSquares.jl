@@ -9,7 +9,7 @@ export CopositiveInner
 
 A symmetric matrix ``Q`` is copositive if ``x^{\\top} Q x \\ge 0`` for all
 vector ``x`` in the nonnegative orthant. Checking copositivity is a
-co-NP-complete problem [MK87] and this cone is only the inner approximation of
+co-NP-complete problem [Murty1987](@cite) and this cone is only the inner approximation of
 the cone of copositive symmetric matrices given by Minknowski sum of `psd_inner`
 and the cone of symmetric matrices with nonnegative entries (the diagonal
 entries can be chosen to be zero) [Blekherman2012; Lemma 3.164](@cite).
@@ -46,13 +46,9 @@ which is the same as, using the `domain` keyword,
 
 As an important difference with its equivalent forms, the
 [`GramMatrixAttribute`](@ref) for the copositive constraint is given by matrix
-`Q` while for the equivalent form using the  domain` keyword, the value
+`Q` while for the equivalent form using the `domain` keyword, the value
 of the attribute would correspond to the the gram matrix in the `psd_inner`
 cone, i.e. which should be equal to `Q - Λ`.
-
-[MK87] K. G. Murty and S. N. Kabadi.
-*Some NP-complete problems in quadratic and nonlinear programming*.
-Mathematical programming, 39:117–129, **1987**.
 """
 struct CopositiveInner{S} <: SOSLikeCone
     psd_inner::S
