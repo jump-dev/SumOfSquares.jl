@@ -7,13 +7,9 @@
     end
 
 A matrix is SDD iff it is the sum of psd matrices Mij that are zero except
-for entries ii, ij and jj [Lemma 9, AM17]. This bridge substitute the
+for entries ii, ij and jj [Ahmadi2017; Lemma 9](@cite). This bridge substitute the
 constrained variables in [`SOS.ScaledDiagonallyDominantConeTriangle`](@ref)
 into a sum of constrained variables in [`SOS.PositiveSemidefinite2x2ConeTriangle`](@ref).
-
-[AM17] Ahmadi, A. A. & Majumdar, A.
-*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
-ArXiv e-prints, **2017**.
 """
 struct ScaledDiagonallyDominantBridge{T} <: MOI.Bridges.Variable.AbstractBridge
     side_dimension::Int

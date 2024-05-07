@@ -8,13 +8,9 @@
 # abstract interface. [DynamicPolynomials](https://github.com/JuliaAlgebra/DynamicPolynomials.jl/)
 # is an implementation of this abstract interface so it can be used with
 # SumOfSquares. Moreover, any other implementation can be used as well. To
-# illustrate, we solve Examples 3.38 of [BPT12] with
+# illustrate, we solve of [Blekherman2012; Examples 3.38](@cite) with
 # [TypedPolynomials](https://github.com/JuliaAlgebra/TypedPolynomials.jl),
 # another implementation of [MultivariatePolynomials](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl).
-#
-# [BPT12] Blekherman, G. & Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
 
 using Test #src
 import TypedPolynomials

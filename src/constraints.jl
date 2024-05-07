@@ -35,12 +35,8 @@ end
 """
     const SDSOSCone = NonnegPolyInnerCone{ScaledDiagonallyDominantConeTriangle}
 
-Scaled-diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
+Scaled-diagonally-dominant-sum-of-squares cone; see [Ahmadi2017; Definition 2](@cite) and
 [`NonnegPolyInnerCone`](@ref).
-
-[AM17] Ahmadi, A. A. & Majumdar, A.
-*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
-ArXiv e-prints, **2017**.
 """
 const SDSOSCone = NonnegPolyInnerCone{ScaledDiagonallyDominantConeTriangle}
 function JuMP.in_set_string(print_mode::MIME, ::SDSOSCone)
@@ -50,12 +46,8 @@ end
 """
     const DSOSCone = NonnegPolyInnerCone{DiagonallyDominantConeTriangle}
 
-Diagonally-dominant-sum-of-squares cone; see [Definition 2, AM17] and
+Diagonally-dominant-sum-of-squares cone; see [Ahmadi2017; Definition 2](@cite) and
 [`NonnegPolyInnerCone`](@ref).
-
-[AM17] Ahmadi, A. A. & Majumdar, A.
-*DSOS and SDSOS Optimization: More Tractable Alternatives to Sum of Squares and Semidefinite Optimization*
-ArXiv e-prints, **2017**.
 """
 const DSOSCone = NonnegPolyInnerCone{DiagonallyDominantConeTriangle}
 function JuMP.in_set_string(print_mode::MIME, ::DSOSCone)
@@ -485,12 +477,8 @@ struct PSDMatrixInnerCone{MCT<:MOI.AbstractVectorSet} <: PolyJuMP.PolynomialSet 
 """
     const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-Sum-of-squares matrices cone; see [Section 3.3.2, BPT12] and
+Sum-of-squares matrices cone; see [Blekherman2012; Section 3.3.2](@cite) and
 [`PSDMatrixInnerCone`](@ref).
-
-[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-*Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, 2012.
 """
 const SOSMatrixCone = PSDMatrixInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
@@ -531,12 +519,8 @@ struct ConvexPolyInnerCone{MCT} <: PolyJuMP.PolynomialSet end
 """
     const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
-Sum-of-squares convex polynomials cone; see [Section 3.3.3, BPT12] and
+Sum-of-squares convex polynomials cone; see [Blekherman2012; Section 3.3.3](@cite) and
 [`ConvexPolyInnerCone`](@ref).
-
-[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-*Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, 2012.
 """
 const SOSConvexCone = ConvexPolyInnerCone{MOI.PositiveSemidefiniteConeTriangle}
 
