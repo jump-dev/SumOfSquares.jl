@@ -140,7 +140,7 @@ struct SOSPolynomialSet{
     CT<:Certificate.AbstractCertificate,
 } <: MOI.AbstractVectorSet
     domain::DT
-    basis::MVT
+    monomials::MVT
     certificate::CT
 end
 MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)
