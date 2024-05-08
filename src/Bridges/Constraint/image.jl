@@ -81,8 +81,6 @@ function MOI.Bridges.Constraint.bridge_constraint(
         s.certificate,
         SOS.Certificate.with_variables(p, s.domain),
     )
-    @show s.monomials
-    @show gram_basis
     MCT = SOS.matrix_cone_type(CT)
     set = SOS.matrix_cone(MCT, length(gram_basis))
     f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(set))
@@ -94,33 +92,37 @@ function MOI.Bridges.Constraint.bridge_constraint(
         for i in 1:j
             k += 1
             mono = gram_basis.monomials[i] * gram_basis.monomials[j]
-            @show i, j, k, mono, haskey(found, mono)
+            is_diag = i == j
             if haskey(found, mono)
                 var = MOI.add_variable(model)
                 push!(variables, var)
-                MOI.Utilities.operate_output_index!(+, T, found[mono], f, var)
+                is_diag_found = MOI.Utilities.is_diagonal_vectorized_index(found[mono])
+                if is_diag == is_diag_found
+                    MOI.Utilities.operate_output_index!(+, T, found[mono], f, var)
+                else
+                    coef = is_diag ? inv(T(2)) : T(2)
+                    MOI.Utilities.operate_output_index!(+, T, found[mono], f, coef * var)
+                end
                 MOI.Utilities.operate_output_index!(-, T, k, f, var)
             else
                 found[mono] = k
                 t = MP.searchsortedfirst(s.monomials, mono)
                 if t in eachindex(s.monomials) && s.monomials[t] == mono
                     first[t] = k
-                    MOI.Utilities.operate_output_index!(+, T, k, f, scalars[t])
+                    if is_diag
+                        MOI.Utilities.operate_output_index!(+, T, k, f, scalars[t])
+                    else
+                        MOI.Utilities.operate_output_index!(+, T, k, f, inv(T(2)) * scalars[t])
+                    end
                 end
             end
         end
     end
-    display(scalars)
-    display(gram_basis.monomials * gram_basis.monomials')
-    @show first
-    @show found
     for t in eachindex(scalars)
         if isnothing(first[t])
             error("Infeasible")
         end
     end
-    @show variables
-    display(f)
     constraint = MOI.add_constraint(model, f, set)
     return GeometricBridge{T,F,MT,MVT,CT}(
         variables,
