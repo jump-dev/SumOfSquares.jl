@@ -135,13 +135,12 @@ Base.copy(set::WeightedSOSCone) = set
 
 struct SOSPolynomialSet{
     DT<:AbstractSemialgebraicSet,
-    B<:AbstractPolynomialBasis,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
     CT<:Certificate.AbstractCertificate,
 } <: MOI.AbstractVectorSet
     domain::DT
-    basis::B
+    basis::MVT
     certificate::CT
 end
 MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)
