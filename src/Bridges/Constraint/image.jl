@@ -96,12 +96,25 @@ function MOI.Bridges.Constraint.bridge_constraint(
             if haskey(found, mono)
                 var = MOI.add_variable(model)
                 push!(variables, var)
-                is_diag_found = MOI.Utilities.is_diagonal_vectorized_index(found[mono])
+                is_diag_found =
+                    MOI.Utilities.is_diagonal_vectorized_index(found[mono])
                 if is_diag == is_diag_found
-                    MOI.Utilities.operate_output_index!(+, T, found[mono], f, var)
+                    MOI.Utilities.operate_output_index!(
+                        +,
+                        T,
+                        found[mono],
+                        f,
+                        var,
+                    )
                 else
                     coef = is_diag ? inv(T(2)) : T(2)
-                    MOI.Utilities.operate_output_index!(+, T, found[mono], f, coef * var)
+                    MOI.Utilities.operate_output_index!(
+                        +,
+                        T,
+                        found[mono],
+                        f,
+                        coef * var,
+                    )
                 end
                 MOI.Utilities.operate_output_index!(-, T, k, f, var)
             else
@@ -110,9 +123,21 @@ function MOI.Bridges.Constraint.bridge_constraint(
                 if t in eachindex(s.monomials) && s.monomials[t] == mono
                     first[t] = k
                     if is_diag
-                        MOI.Utilities.operate_output_index!(+, T, k, f, scalars[t])
+                        MOI.Utilities.operate_output_index!(
+                            +,
+                            T,
+                            k,
+                            f,
+                            scalars[t],
+                        )
                     else
-                        MOI.Utilities.operate_output_index!(+, T, k, f, inv(T(2)) * scalars[t])
+                        MOI.Utilities.operate_output_index!(
+                            +,
+                            T,
+                            k,
+                            f,
+                            inv(T(2)) * scalars[t],
+                        )
                     end
                 end
             end

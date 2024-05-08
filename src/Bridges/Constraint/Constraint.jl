@@ -31,7 +31,11 @@ include("sos_polynomial_in_semialgebraic_set.jl")
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.SOSDecompositionAttribute,
-    bridge::Union{GeometricBridge,SOSPolynomialBridge,SOSPolynomialInSemialgebraicSetBridge},
+    bridge::Union{
+        GeometricBridge,
+        SOSPolynomialBridge,
+        SOSPolynomialInSemialgebraicSetBridge,
+    },
 )
     gram = MOI.get(model, SOS.GramMatrixAttribute(attr.result_index), bridge)
     return SOS.SOSDecomposition(gram, attr.ranktol, attr.dec)
