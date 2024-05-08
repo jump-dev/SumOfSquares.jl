@@ -153,7 +153,11 @@ function MOI.Bridges.Constraint.bridge_constraint(
     constraint = MOI.add_constraint(model, f, set)
     if any(isnothing, first)
         z = findall(isnothing, first)
-        zero_constraint = MOI.add_constraint(model, MOI.Utilities.vectorize(scalars[z]), MOI.Zeros(length(z)))
+        zero_constraint = MOI.add_constraint(
+            model,
+            MOI.Utilities.vectorize(scalars[z]),
+            MOI.Zeros(length(z)),
+        )
     else
         zero_constraint = nothing
     end
@@ -182,7 +186,10 @@ end
 function MOI.Bridges.added_constraint_types(
     ::Type{<:GeometricBridge{T,F,G}},
 ) where {T,F,G}
-    return Tuple{Type,Type}[(F, MOI.PositiveSemidefiniteConeTriangle), (G, MOI.Zeros)] # TODO
+    return Tuple{Type,Type}[
+        (F, MOI.PositiveSemidefiniteConeTriangle),
+        (G, MOI.Zeros),
+    ] # TODO
 end
 
 function MOI.Bridges.Constraint.concrete_bridge_type(
@@ -237,7 +244,6 @@ function MOI.get(
         return [bridge.zero_constraint]
     end
 end
-
 
 # Indices
 function MOI.delete(model::MOI.ModelLike, bridge::GeometricBridge)
