@@ -1,5 +1,5 @@
 """
-    GeometricBridge{T,F,MT,MVT,CT} <: Bridges.Constraint.AbstractBridge
+    GeometricBridge{T,F,G,MT,MVT,CT} <: Bridges.Constraint.AbstractBridge
 
 `GeometricBridge` implements a reformulation from `SOSPolynomialSet{SemialgebraicSets.FullSpace}`
 into [`MOI.PositiveSemidefiniteConeTriangle`](@ref).
@@ -53,27 +53,34 @@ The gram matrix is therefore:
   * `F` in [`PositiveSemidefinite2x2ConeTriangle`](@ref), for gram basis of length 2
   * `F` in `MOI.Nonnegatives`, for gram basis of length 1
   * `F` in `EmptyCone`, for empty gram basis
+
+in addition to
+
+  * a constraint `G` in `MOI.Zeros` in case there is a monomial in `s.monomials`
+    that cannot be obtained as product of elements in a gram basis.
 """
 struct GeometricBridge{
     T,
     F<:MOI.AbstractVectorFunction,
+    G<:MOI.AbstractVectorFunction,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
     CT<:SOS.Certificate.AbstractIdealCertificate,
 } <: MOI.Bridges.Constraint.AbstractBridge
     variables::Vector{MOI.VariableIndex}
     constraint::MOI.ConstraintIndex{F}
+    zero_constraint::Union{Nothing,MOI.ConstraintIndex{G,MOI.Zeros}}
     set::SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace,MT,MVT,CT}
     gram_basis::MB.MonomialBasis{MT,MVT}
-    first::Vector{Int}
+    first::Vector{Union{Nothing,Int}}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{GeometricBridge{T,F,MT,MVT,CT}},
+    ::Type{GeometricBridge{T,F,G,MT,MVT,CT}},
     model::MOI.ModelLike,
     g::MOI.AbstractVectorFunction,
     s::SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace},
-) where {T,F,CT,MT,MVT}
+) where {T,F,G,CT,MT,MVT}
     @assert MOI.output_dimension(g) == length(s.monomials)
     scalars = MOI.Utilities.scalarize(g)
     p = MP.polynomial(scalars, copy(s.monomials))
@@ -143,15 +150,17 @@ function MOI.Bridges.Constraint.bridge_constraint(
             end
         end
     end
-    for t in eachindex(scalars)
-        if isnothing(first[t])
-            error("Infeasible")
-        end
-    end
     constraint = MOI.add_constraint(model, f, set)
-    return GeometricBridge{T,F,MT,MVT,CT}(
+    if any(isnothing, first)
+        z = findall(isnothing, first)
+        zero_constraint = MOI.add_constraint(model, MOI.Utilities.vectorize(scalars[z]), MOI.Zeros(length(z)))
+    else
+        zero_constraint = nothing
+    end
+    return GeometricBridge{T,F,G,MT,MVT,CT}(
         variables,
         constraint,
+        zero_constraint,
         s,
         gram_basis,
         first,
@@ -171,9 +180,9 @@ function MOI.Bridges.added_constrained_variable_types(::Type{<:GeometricBridge})
 end
 
 function MOI.Bridges.added_constraint_types(
-    ::Type{<:GeometricBridge{T,F}},
-) where {T,F}
-    return Tuple{Type,Type}[(F, MOI.PositiveSemidefiniteConeTriangle)] # TODO
+    ::Type{<:GeometricBridge{T,F,G}},
+) where {T,F,G}
+    return Tuple{Type,Type}[(F, MOI.PositiveSemidefiniteConeTriangle), (G, MOI.Zeros)] # TODO
 end
 
 function MOI.Bridges.Constraint.concrete_bridge_type(
@@ -184,7 +193,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     F = MOI.Utilities.promote_operation(-, T, G, MOI.VectorOfVariables)
-    return GeometricBridge{T,F,MT,MVT,CT}
+    return GeometricBridge{T,F,G,MT,MVT,CT}
 end
 
 # Attributes, Bridge acting as an model
@@ -200,6 +209,12 @@ function MOI.get(
 ) where {T,F,S}
     return bridge.constraint isa MOI.ConstraintIndex{F,S} ? 1 : 0
 end
+function MOI.get(
+    bridge::GeometricBridge{T,F,G},
+    ::MOI.NumberOfConstraints{G,MOI.Zeros},
+) where {T,F,G}
+    return isnothing(bridge.zero_constraint) ? 0 : 1
+end
 
 function MOI.get(
     bridge::GeometricBridge{T,F},
@@ -212,8 +227,23 @@ function MOI.get(
     end
 end
 
+function MOI.get(
+    bridge::GeometricBridge{T,F,G},
+    ::MOI.ListOfConstraintIndices{G,MOI.Zeros},
+) where {T,F,G}
+    if isnothing(bridge.zero_constraint)
+        return MOI.ConstraintIndex{G,MOI.Zeros}[]
+    else
+        return [bridge.zero_constraint]
+    end
+end
+
+
 # Indices
 function MOI.delete(model::MOI.ModelLike, bridge::GeometricBridge)
+    if !isempty(bridge.zero_constraint)
+        MOI.delete(model, bridge.zero_constraint)
+    end
     MOI.delete(model, bridge.constraint)
     if !isempty(bridge.variables)
         MOI.delete(model, bridge.variables)
@@ -254,8 +284,8 @@ end
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.GramMatrixAttribute,
-    bridge::GeometricBridge{T,F,MT,MVT,CT},
-) where {T,F,MT,MVT,CT}
+    bridge::GeometricBridge{T,F,G,MT,MVT,CT},
+) where {T,F,G,MT,MVT,CT}
     q = MOI.get(
         model,
         MOI.ConstraintPrimal(attr.result_index),
