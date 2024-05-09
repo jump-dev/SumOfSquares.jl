@@ -124,7 +124,7 @@ The weighted sum-of-squares cone is the set of vectors of coefficients `a` in `b
 that are the sum of `weights[i]` multiplied by a gram matrix with basis `gram_bases[i]`.
 The matrix cone type `M` is used to decide in which cone the gram matrix is constrained,
 e.g., `MOI.PositiveSemidefiniteConeTriangle` or
-[`SumOfSquares.ScaledDiagonallyDominantConeTriangle`](@cite).
+[`SumOfSquares.ScaledDiagonallyDominantConeTriangle`](@ref).
 
 See [Papp2017; Section 1.1](@cite) and [Kapelevich2023; Section 1](@cite).
 """
