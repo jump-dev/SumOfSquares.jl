@@ -69,7 +69,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   6   6.0000e+00   6.0000e+00  3.18e-11  2.67e-10  9.32e-11  6.56e-10  1.82e-09  9.90e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 1.11ms
+solve time = 1.02ms
 * Solver : Clarabel
 
 * Status
@@ -85,7 +85,7 @@ solve time = 1.11ms
   Dual objective value : -6.00000e+00
 
 * Work counters
-  Solve time (sec)   : 1.10642e-03
+  Solve time (sec)   : 1.01527e-03
   Barrier iterations : 6</code></pre><p>The second level improves the lower bound</p><pre><code class="language-julia hljs">model4 = solve(4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.7.1  -  Clever Acronym
                    (c) Paul Goulart
@@ -128,7 +128,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  10   5.6923e+00   5.6923e+00  2.66e-10  3.80e-10  1.21e-10  2.33e-09  1.25e-09  9.78e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 5.02ms
+solve time = 32.4ms
 * Solver : Clarabel
 
 * Status
@@ -144,7 +144,7 @@ solve time = 5.02ms
   Dual objective value : -5.69231e+00
 
 * Work counters
-  Solve time (sec)   : 5.02031e-03
+  Solve time (sec)   : 3.23615e-02
   Barrier iterations : 10</code></pre><p>The third level improves it even further</p><pre><code class="language-julia hljs">model6 = solve(6)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.7.1  -  Clever Acronym
                    (c) Paul Goulart
@@ -193,7 +193,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  17   4.0685e+00   4.0685e+00  6.90e-09  5.14e-10  6.73e-11  3.12e-08  6.67e-10  9.80e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 45.8ms
+solve time = 45.4ms
 * Solver : Clarabel
 
 * Status
@@ -209,7 +209,7 @@ solve time = 45.8ms
   Dual objective value : -4.06848e+00
 
 * Work counters
-  Solve time (sec)   : 4.58450e-02
+  Solve time (sec)   : 4.53681e-02
   Barrier iterations : 17</code></pre><p>The fourth level finds the optimal objective value as lower bound.</p><pre><code class="language-julia hljs">model8 = solve(8)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.7.1  -  Clever Acronym
                    (c) Paul Goulart
@@ -259,7 +259,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  18   4.0000e+00   4.0000e+00  2.70e-09  3.35e-10  3.91e-11  1.26e-08  4.19e-10  8.51e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time =  848ms
+solve time =  811ms
 * Solver : Clarabel
 
 * Status
@@ -275,5 +275,5 @@ solve time =  848ms
   Dual objective value : -4.00000e+00
 
 * Work counters
-  Solve time (sec)   : 8.47749e-01
-  Barrier iterations : 18</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../goldstein_price/">Goldstein-price function »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 9 May 2024 17:20">Thursday 9 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 8.11126e-01
+  Barrier iterations : 18</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../goldstein_price/">Goldstein-price function »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 9 May 2024 20:05">Thursday 9 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
