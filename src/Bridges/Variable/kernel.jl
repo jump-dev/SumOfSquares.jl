@@ -36,9 +36,7 @@ function MOI.Bridges.added_constrained_variable_types(
     return SOS.Bridges.Constraint.constrained_variable_types(M)
 end
 
-function MOI.Bridges.added_constraint_types(
-    ::Type{<:KernelBridge},
-)
+function MOI.Bridges.added_constraint_types(::Type{<:KernelBridge})
     return Tuple{Type,Type}[]
 end
 
@@ -80,11 +78,7 @@ end
 
 # Attributes, Bridge acting as a constraint
 
-function MOI.get(
-    ::MOI.ModelLike,
-    ::MOI.ConstraintSet,
-    bridge::KernelBridge,
-)
+function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet, bridge::KernelBridge)
     return bridge.set
 end
 

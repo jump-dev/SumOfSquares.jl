@@ -22,7 +22,9 @@ function test_runtests()
         model -> begin
             MOI.add_constrained_variables(
                 model,
-                SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
+                SumOfSquares.WeightedSOSCone{
+                    MOI.PositiveSemidefiniteConeTriangle,
+                }(
                     MonomialBasis([x^4, x^3 * y, x^2 * y^2, y^4]),
                     [MonomialBasis([x^2, y^2, x * y])],
                     [1.0 * x^0 * y^0],

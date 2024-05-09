@@ -148,7 +148,9 @@ end
 MOI.dimension(set::WeightedSOSCone) = length(set.basis)
 Base.copy(set::WeightedSOSCone) = set
 function Base.:(==)(a::WeightedSOSCone, b::WeightedSOSCone)
-    return a.basis == b.basis && a.gram_bases == b.gram_bases && a.weights == b.weights
+    return a.basis == b.basis &&
+           a.gram_bases == b.gram_bases &&
+           a.weights == b.weights
 end
 
 """
