@@ -138,8 +138,18 @@ struct WeightedSOSCone{
     gram_bases::Vector{G}
     weights::Vector{W}
 end
+function WeightedSOSCone{M}(
+    basis::AbstractPolynomialBasis,
+    gram_bases::Vector{G},
+    weights::Vector{W},
+) where {M,G<:AbstractPolynomialBasis,W<:MP.AbstractPolynomialLike}
+    return WeightedSOSCone{M,typeof(basis),G,W}(basis, gram_bases, weights)
+end
 MOI.dimension(set::WeightedSOSCone) = length(set.basis)
 Base.copy(set::WeightedSOSCone) = set
+function Base.:(==)(a::WeightedSOSCone, b::WeightedSOSCone)
+    return a.basis == b.basis && a.gram_bases == b.gram_bases && a.weights == b.weights
+end
 
 """
     struct SOSPolynomialSet{

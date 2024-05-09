@@ -14,7 +14,7 @@ function union_set_types(MCT)
     }
 end
 function constrained_variable_types(MCT)
-    return [
+    return Tuple{Type}[
         (typeof(SOS.matrix_cone(MCT, 0)),),
         (typeof(SOS.matrix_cone(MCT, 1)),),
         (typeof(SOS.matrix_cone(MCT, 2)),),

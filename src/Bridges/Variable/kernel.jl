@@ -2,13 +2,14 @@ struct KernelBridge{T,M} <: MOI.Bridges.Variable.AbstractBridge
     affine::Vector{MOI.ScalarAffineFunction{T}}
     variables::Vector{Vector{MOI.VariableIndex}}
     constraints::Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}
+    set::SOS.WeightedSOSCone{M}
 end
 
 function MOI.Bridges.Variable.bridge_constrained_variable(
     ::Type{KernelBridge{T}},
     model::MOI.ModelLike,
-    set::SOS.WeightedSOSCone,
-) where {T}
+    set::SOS.WeightedSOSCone{M},
+) where {T,M}
     variables = Vector{MOI.VariableIndex}[]
     constraints = MOI.ConstraintIndex{MOI.VectorOfVariables}[]
     acc = MA.Zero()
@@ -18,8 +19,8 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
         push!(constraints, con)
         acc = MA.add_mul!!(acc, weight, gram)
     end
-    affine = MB.coefficients(acc, set.basis)
-    return KernelBridge{T}(affine, variables, constraints)
+    affine = MP.coefficients(acc, set.basis)
+    return KernelBridge{T,M}(affine, variables, constraints, set)
 end
 
 function MOI.Bridges.Variable.supports_constrained_variable(
@@ -32,12 +33,12 @@ end
 function MOI.Bridges.added_constrained_variable_types(
     ::Type{KernelBridge{T,M}},
 ) where {T,M}
-    return constrained_variable_types(M)
+    return SOS.Bridges.Constraint.constrained_variable_types(M)
 end
 
 function MOI.Bridges.added_constraint_types(
-    ::Type{PositiveSemidefinite2x2Bridge{T}},
-) where {T}
+    ::Type{<:KernelBridge},
+)
     return Tuple{Type,Type}[]
 end
 
@@ -45,21 +46,24 @@ end
 function MOI.get(bridge::KernelBridge, ::MOI.NumberOfVariables)
     return sum(length, bridge.variables)
 end
+
 function MOI.get(bridge::KernelBridge, ::MOI.ListOfVariableIndices)
     return reduce(vcat, bridge.variables)
 end
+
 function MOI.get(
-    ::KernelBridge,
+    bridge::KernelBridge,
     ::MOI.NumberOfConstraints{MOI.VectorOfVariables,S},
 ) where {S<:MOI.AbstractVectorSet}
     return count(bridge.constraints) do ci
         return ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}
     end
 end
+
 function MOI.get(
     bridge::KernelBridge,
     ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables,S},
-)
+) where {S}
     return [
         ci for ci in bridge.constraints if
         ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}
@@ -76,13 +80,13 @@ end
 
 # Attributes, Bridge acting as a constraint
 
-#function MOI.get(
-#    ::MOI.ModelLike,
-#    ::MOI.ConstraintSet,
-#    ::KernelBridge,
-#)
-#    return SOS.WeightedSOSCone()
-#end
+function MOI.get(
+    ::MOI.ModelLike,
+    ::MOI.ConstraintSet,
+    bridge::KernelBridge,
+)
+    return bridge.set
+end
 
 function MOI.get(
     model::MOI.ModelLike,
@@ -115,4 +119,13 @@ function MOI.Bridges.bridged_function(
     i::MOI.Bridges.IndexInVector,
 )
     return bridge.affine[i.value]
+end
+
+function MOI.Bridges.Variable.unbridged_map(
+    bridge::KernelBridge{T},
+    coefs::Vector{MOI.VariableIndex},
+) where {T}
+    F = MOI.ScalarAffineFunction{T}
+    map = Pair{MOI.VariableIndex,F}[]
+    return nothing
 end
