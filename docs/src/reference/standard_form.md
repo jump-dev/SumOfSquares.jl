@@ -44,7 +44,7 @@ SumOfSquares.PolyJuMP.SAGE.AGEBridge
 ## MOI Sets
 
 Sum-of-Squares cones:
-```julia
+```@docs
 SumOfSquares.SOSPolynomialSet
 SumOfSquares.WeightedSOSCone
 ```
