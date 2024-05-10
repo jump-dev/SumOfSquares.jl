@@ -108,6 +108,66 @@ function Base.copy(
     return set
 end
 
+"""
+    struct WeightedSOSCone{
+        M,
+        B<:AbstractPolynomialBasis,
+        G<:AbstractPolynomialBasis,
+        W<:MP.AbstractPolynomialLike,
+    } <: MOI.AbstractVectorSet
+        basis::B
+        gram_bases::Vector{G}
+        weights::Vector{W}
+    end
+
+The weighted sum-of-squares cone is the set of vectors of coefficients `a` in `basis`
+that are the sum of `weights[i]` multiplied by a gram matrix with basis `gram_bases[i]`.
+The matrix cone type `M` is used to decide in which cone the gram matrix is constrained,
+e.g., `MOI.PositiveSemidefiniteConeTriangle` or
+[`SumOfSquares.ScaledDiagonallyDominantConeTriangle`](@ref).
+
+See [Papp2017; Section 1.1](@cite) and [Kapelevich2023; Section 1](@cite).
+"""
+struct WeightedSOSCone{
+    M,
+    B<:AbstractPolynomialBasis,
+    G<:AbstractPolynomialBasis,
+    W<:MP.AbstractPolynomialLike,
+} <: MOI.AbstractVectorSet
+    basis::B
+    gram_bases::Vector{G}
+    weights::Vector{W}
+end
+function WeightedSOSCone{M}(
+    basis::AbstractPolynomialBasis,
+    gram_bases::Vector{G},
+    weights::Vector{W},
+) where {M,G<:AbstractPolynomialBasis,W<:MP.AbstractPolynomialLike}
+    return WeightedSOSCone{M,typeof(basis),G,W}(basis, gram_bases, weights)
+end
+MOI.dimension(set::WeightedSOSCone) = length(set.basis)
+Base.copy(set::WeightedSOSCone) = set
+function Base.:(==)(a::WeightedSOSCone, b::WeightedSOSCone)
+    return a.basis == b.basis &&
+           a.gram_bases == b.gram_bases &&
+           a.weights == b.weights
+end
+
+"""
+    struct SOSPolynomialSet{
+        DT<:AbstractSemialgebraicSet,
+        MT<:MP.AbstractMonomial,
+        MVT<:AbstractVector{MT},
+        CT<:Certificate.AbstractCertificate,
+    } <: MOI.AbstractVectorSet
+        domain::DT
+        monomials::MVT
+        certificate::CT
+    end
+
+The sum-of-squares cone is the set of vectors of coefficients `a` for monomials `monomials`
+for which the polynomial is a sum-of-squares `certificate` over `domain`.
+"""
 struct SOSPolynomialSet{
     DT<:AbstractSemialgebraicSet,
     MT<:MP.AbstractMonomial,

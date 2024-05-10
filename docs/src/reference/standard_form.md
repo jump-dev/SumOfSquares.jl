@@ -43,6 +43,12 @@ SumOfSquares.PolyJuMP.SAGE.AGEBridge
 
 ## MOI Sets
 
+Sum-of-Squares cones:
+```@docs
+SumOfSquares.SOSPolynomialSet
+SumOfSquares.WeightedSOSCone
+```
+
 Special cases of positive semidefinite cones:
 ```@docs
 SumOfSquares.EmptyCone

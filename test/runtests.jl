@@ -32,6 +32,7 @@ include("gram_matrix.jl")
 
 include("variable.jl")
 include("constraint.jl")
+include("Bridges/Bridges.jl")
 
 include("Mock/mock_tests.jl")
 
