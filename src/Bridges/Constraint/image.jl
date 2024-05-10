@@ -1,7 +1,7 @@
 """
-    GeometricBridge{T,F,G,MT,MVT,CT} <: Bridges.Constraint.AbstractBridge
+    ImageBridge{T,F,G,MT,MVT,CT} <: Bridges.Constraint.AbstractBridge
 
-`GeometricBridge` implements a reformulation from `SOSPolynomialSet{SemialgebraicSets.FullSpace}`
+`ImageBridge` implements a reformulation from `SOSPolynomialSet{SemialgebraicSets.FullSpace}`
 into [`MOI.PositiveSemidefiniteConeTriangle`](@ref).
 
 Let `Σ` be the SOS cone of polynomials of degree 2d and `S` be the PSD cone.
@@ -41,13 +41,13 @@ The gram matrix is therefore:
 
 ## Source node
 
-`GeometricBridge` supports:
+`ImageBridge` supports:
 
   * `H` in `SOSPolynomialSet{SemialgebraicSets.FullSpace}`
 
 ## Target nodes
 
-`GeometricBridge` creates one of the following, depending on the length of the gram basis:
+`ImageBridge` creates one of the following, depending on the length of the gram basis:
 
   * `F` in `MOI.PositiveSemidefiniteConeTriangle`, for gram basis of length at least 3
   * `F` in [`PositiveSemidefinite2x2ConeTriangle`](@ref), for gram basis of length 2
@@ -59,98 +59,92 @@ in addition to
   * a constraint `G` in `MOI.Zeros` in case there is a monomial in `s.monomials`
     that cannot be obtained as product of elements in a gram basis.
 """
-struct GeometricBridge{
+struct ImageBridge{
     T,
     F<:MOI.AbstractVectorFunction,
     G<:MOI.AbstractVectorFunction,
-    MT<:MP.AbstractMonomial,
-    MVT<:AbstractVector{MT},
-    CT<:SOS.Certificate.AbstractIdealCertificate,
+    M,
 } <: MOI.Bridges.Constraint.AbstractBridge
     variables::Vector{MOI.VariableIndex}
-    constraint::MOI.ConstraintIndex{F}
+    constraints::Vector{MOI.ConstraintIndex{F}}
     zero_constraint::Union{Nothing,MOI.ConstraintIndex{G,MOI.Zeros}}
-    set::SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace,MT,MVT,CT}
-    gram_basis::MB.MonomialBasis{MT,MVT}
+    set::SOS.WeightedSOSCone{M}
     first::Vector{Union{Nothing,Int}}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{GeometricBridge{T,F,G,MT,MVT,CT}},
+    ::Type{ImageBridge{T,F,G,M}},
     model::MOI.ModelLike,
     g::MOI.AbstractVectorFunction,
-    s::SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace},
-) where {T,F,G,CT,MT,MVT}
-    @assert MOI.output_dimension(g) == length(s.monomials)
+    set::SOS.WeightedSOSCone{M},
+) where {T,F,G,M}
+    @assert MOI.output_dimension(g) == length(set.basis)
     scalars = MOI.Utilities.scalarize(g)
-    p = MP.polynomial(scalars, copy(s.monomials))
-    gram_basis = SOS.Certificate.gram_basis(
-        s.certificate,
-        SOS.Certificate.with_variables(p, s.domain),
-    )
-    MCT = SOS.matrix_cone_type(CT)
-    set = SOS.matrix_cone(MCT, length(gram_basis))
-    f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(set))
     k = 0
-    found = Dict{eltype(gram_basis.monomials),Int}()
+    found = Dict{eltype(set.basis.monomials),Int}()
     first = Union{Nothing,Int}[nothing for _ in eachindex(scalars)]
     variables = MOI.VariableIndex[]
-    for j in eachindex(gram_basis.monomials)
-        for i in 1:j
-            k += 1
-            mono = gram_basis.monomials[i] * gram_basis.monomials[j]
-            is_diag = i == j
-            if haskey(found, mono)
-                var = MOI.add_variable(model)
-                push!(variables, var)
-                is_diag_found =
-                    MOI.Utilities.is_diagonal_vectorized_index(found[mono])
-                if is_diag == is_diag_found
-                    MOI.Utilities.operate_output_index!(
-                        +,
-                        T,
-                        found[mono],
-                        f,
-                        var,
-                    )
-                else
-                    coef = is_diag ? inv(T(2)) : T(2)
-                    MOI.Utilities.operate_output_index!(
-                        +,
-                        T,
-                        found[mono],
-                        f,
-                        coef * var,
-                    )
-                end
-                MOI.Utilities.operate_output_index!(-, T, k, f, var)
-            else
-                found[mono] = k
-                t = MP.searchsortedfirst(s.monomials, mono)
-                if t in eachindex(s.monomials) && s.monomials[t] == mono
-                    first[t] = k
-                    if is_diag
+    constraints = MOI.ConstraintIndex{F}[]
+    for (gram_basis, weight) in zip(set.gram_bases, set.weights)
+        cone = SOS.matrix_cone(M, length(gram_basis))
+        f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(cone))
+        for j in eachindex(gram_basis.monomials)
+            for i in 1:j
+                k += 1
+                mono = gram_basis.monomials[i] * gram_basis.monomials[j]
+                is_diag = i == j
+                if haskey(found, mono)
+                    var = MOI.add_variable(model)
+                    push!(variables, var)
+                    is_diag_found =
+                        MOI.Utilities.is_diagonal_vectorized_index(found[mono])
+                    if is_diag == is_diag_found
                         MOI.Utilities.operate_output_index!(
                             +,
                             T,
-                            k,
+                            found[mono],
                             f,
-                            scalars[t],
+                            var,
                         )
                     else
+                        coef = is_diag ? inv(T(2)) : T(2)
                         MOI.Utilities.operate_output_index!(
                             +,
                             T,
-                            k,
+                            found[mono],
                             f,
-                            inv(T(2)) * scalars[t],
+                            coef * var,
                         )
+                    end
+                    MOI.Utilities.operate_output_index!(-, T, k, f, var)
+                else
+                    found[mono] = k
+                    t = MP.searchsortedfirst(set.basis.monomials, mono)
+                    if t in eachindex(set.basis.monomials) && set.basis.monomials[t] == mono
+                        first[t] = k
+                        if is_diag
+                            MOI.Utilities.operate_output_index!(
+                                +,
+                                T,
+                                k,
+                                f,
+                                scalars[t],
+                            )
+                        else
+                            MOI.Utilities.operate_output_index!(
+                                +,
+                                T,
+                                k,
+                                f,
+                                inv(T(2)) * scalars[t],
+                            )
+                        end
                     end
                 end
             end
         end
+        push!(constraints, MOI.add_constraint(model, f, cone))
     end
-    constraint = MOI.add_constraint(model, f, set)
     if any(isnothing, first)
         z = findall(isnothing, first)
         zero_constraint = MOI.add_constraint(
@@ -161,30 +155,29 @@ function MOI.Bridges.Constraint.bridge_constraint(
     else
         zero_constraint = nothing
     end
-    return GeometricBridge{T,F,G,MT,MVT,CT}(
+    return ImageBridge{T,F,G,M}(
         variables,
-        constraint,
+        constraints,
         zero_constraint,
-        s,
-        gram_basis,
+        set,
         first,
     )
 end
 
 function MOI.supports_constraint(
-    ::Type{GeometricBridge{T}},
+    ::Type{ImageBridge{T}},
     ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace,MT,MVT,CT}},
-) where {T,CT,MT,MVT}
-    return Certificate.gram_basis_type(CT) <: MB.MonomialBasis
+    ::Type{<:SOS.WeightedSOSCone{M,<:MB.MonomialBasis,<:MB.MonomialBasis}},
+) where {T,M}
+    return true
 end
 
-function MOI.Bridges.added_constrained_variable_types(::Type{<:GeometricBridge})
+function MOI.Bridges.added_constrained_variable_types(::Type{<:ImageBridge})
     return Tuple{Type}[(MOI.Reals,)]
 end
 
 function MOI.Bridges.added_constraint_types(
-    ::Type{<:GeometricBridge{T,F,G}},
+    ::Type{<:ImageBridge{T,F,G}},
 ) where {T,F,G}
     return Tuple{Type,Type}[
         (F, MOI.PositiveSemidefiniteConeTriangle),
@@ -193,49 +186,50 @@ function MOI.Bridges.added_constraint_types(
 end
 
 function MOI.Bridges.Constraint.concrete_bridge_type(
-    ::Type{<:GeometricBridge{T}},
+    ::Type{<:ImageBridge{T}},
     G::Type{<:MOI.AbstractVectorFunction},
-    ::Type{SOS.SOSPolynomialSet{SemialgebraicSets.FullSpace,MT,MVT,CT}},
-) where {T,MT,MVT,CT}
+    ::Type{<:SOS.WeightedSOSCone{M}},
+) where {T,M}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     F = MOI.Utilities.promote_operation(-, T, G, MOI.VectorOfVariables)
-    return GeometricBridge{T,F,G,MT,MVT,CT}
+    return ImageBridge{T,F,G,M}
 end
 
 # Attributes, Bridge acting as an model
-function MOI.get(bridge::GeometricBridge, ::MOI.NumberOfVariables)
+function MOI.get(bridge::ImageBridge, ::MOI.NumberOfVariables)
     return length(bridge.variables)
 end
-function MOI.get(bridge::GeometricBridge, ::MOI.ListOfVariableIndices)
+function MOI.get(bridge::ImageBridge, ::MOI.ListOfVariableIndices)
     return bridge.variables
 end
 function MOI.get(
-    bridge::GeometricBridge{T,F},
+    bridge::ImageBridge{T,F,G},
     ::MOI.NumberOfConstraints{F,S},
-) where {T,F,S}
-    return bridge.constraint isa MOI.ConstraintIndex{F,S} ? 1 : 0
+) where {T,F,G,S}
+    return count(bridge.constraints) do ci
+        ci isa MOI.ConstraintIndex{F,S}
+    end
 end
 function MOI.get(
-    bridge::GeometricBridge{T,F,G},
+    bridge::ImageBridge{T,F,G},
     ::MOI.NumberOfConstraints{G,MOI.Zeros},
 ) where {T,F,G}
     return isnothing(bridge.zero_constraint) ? 0 : 1
 end
 
 function MOI.get(
-    bridge::GeometricBridge{T,F},
+    bridge::ImageBridge{T,F,G},
     ::MOI.ListOfConstraintIndices{F,S},
-) where {T,F,S}
-    if bridge.constraint isa MOI.ConstraintIndex{F,S}
-        return [bridge.constraint]
-    else
-        return MOI.ConstraintIndex{F,S}[]
-    end
+) where {T,F,G,S}
+    return MOI.ConstraintIndex{F,S}[
+        ci for ci in bridge.constraints
+        if ci isa MOI.ConstraintIndex{F,S}
+    ]
 end
 
 function MOI.get(
-    bridge::GeometricBridge{T,F,G},
+    bridge::ImageBridge{T,F,G},
     ::MOI.ListOfConstraintIndices{G,MOI.Zeros},
 ) where {T,F,G}
     if isnothing(bridge.zero_constraint)
@@ -246,11 +240,11 @@ function MOI.get(
 end
 
 # Indices
-function MOI.delete(model::MOI.ModelLike, bridge::GeometricBridge)
-    if !isempty(bridge.zero_constraint)
+function MOI.delete(model::MOI.ModelLike, bridge::ImageBridge)
+    if !isnothing(bridge.zero_constraint)
         MOI.delete(model, bridge.zero_constraint)
     end
-    MOI.delete(model, bridge.constraint)
+    MOI.delete(model, bridge.constraints)
     if !isempty(bridge.variables)
         MOI.delete(model, bridge.variables)
     end
@@ -258,17 +252,41 @@ function MOI.delete(model::MOI.ModelLike, bridge::GeometricBridge)
 end
 
 # Attributes, Bridge acting as a constraint
-function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet, bridge::GeometricBridge)
+function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet, bridge::ImageBridge)
     return bridge.set
 end
-function MOI.get(::MOI.ModelLike, ::MOI.ConstraintPrimal, ::GeometricBridge)
+
+function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintFunction, bridge::ImageBridge{T}) where {T}
+    if !isnothing(bridge.zero_constraint)
+        z = MOI.Utilities.eachscalar(MOI.get(model, attr, bridge.zero_constraint))
+    end
+    funcs = MOI.Utilities.eachscalar.(MOI.get.(model, MOI.ConstraintFunction(), bridge.constraints))
+    z_idx = 0
+    return MOI.Utilities.vectorize(map(eachindex(bridge.first)) do i
+        if isnothing(bridge.first[i])
+            z_idx += 1
+            return z[z_idx]
+        else
+            f = MOI.Utilities.filter_variables(
+                !Base.Fix2(in, bridge.variables),
+                funcs[1][bridge.first[i]], # FIXME
+            )
+            if !MOI.Utilities.is_diagonal_vectorized_index(bridge.first[i])
+                f = T(2) * f
+            end
+            return f
+        end
+    end)
+end
+
+function MOI.get(::MOI.ModelLike, ::MOI.ConstraintPrimal, ::ImageBridge)
     throw(SOS.ValueNotSupported())
 end
 
 function MOI.get(
     model::MOI.ModelLike,
     attr::Union{MOI.ConstraintDual,PolyJuMP.MomentsAttribute},
-    bridge::GeometricBridge{T},
+    bridge::ImageBridge{T},
 ) where {T}
     dual =
         MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint)
@@ -282,7 +300,7 @@ end
 function MOI.get(
     ::MOI.ModelLike,
     ::SOS.CertificateBasis,
-    bridge::GeometricBridge,
+    bridge::ImageBridge,
 )
     return bridge.gram_basis
 end
@@ -290,8 +308,9 @@ end
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.GramMatrixAttribute,
-    bridge::GeometricBridge{T,F,G,MT,MVT,CT},
-) where {T,F,G,MT,MVT,CT}
+    bridge::ImageBridge{T,F,G,M},
+) where {T,F,G,M}
+    # TODO there are several ones
     q = MOI.get(
         model,
         MOI.ConstraintPrimal(attr.result_index),
@@ -300,15 +319,16 @@ function MOI.get(
     return SOS.build_gram_matrix(
         q,
         bridge.gram_basis,
-        SOS.matrix_cone_type(CT),
+        M,
         T,
     )
 end
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.MomentMatrixAttribute,
-    bridge::GeometricBridge,
+    bridge::ImageBridge,
 )
+    # TODO there are several ones
     return SOS.build_moment_matrix(
         MOI.get(
             model,

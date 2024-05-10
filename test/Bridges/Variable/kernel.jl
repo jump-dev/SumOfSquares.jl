@@ -15,6 +15,7 @@ function runtests()
     return
 end
 
+# [Parrilo2003, Example 3.5]
 function test_runtests()
     @polyvar x y
     MOI.Bridges.runtests(

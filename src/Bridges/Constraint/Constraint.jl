@@ -32,7 +32,7 @@ function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.SOSDecompositionAttribute,
     bridge::Union{
-        GeometricBridge,
+        ImageBridge,
         SOSPolynomialBridge,
         SOSPolynomialInSemialgebraicSetBridge,
     },
