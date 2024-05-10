@@ -24,7 +24,10 @@ function test_runtests()
         model -> begin
             MOI.add_constraint(
                 model,
-                MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[5, -1, 2, 2]),
+                MOI.VectorAffineFunction{T}(
+                    MOI.VectorAffineTerm{T}[],
+                    T[5, -1, 2, 2],
+                ),
                 SumOfSquares.WeightedSOSCone{
                     MOI.PositiveSemidefiniteConeTriangle,
                 }(

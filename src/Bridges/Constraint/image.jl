@@ -120,7 +120,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
                 else
                     found[mono] = k
                     t = MP.searchsortedfirst(set.basis.monomials, mono)
-                    if t in eachindex(set.basis.monomials) && set.basis.monomials[t] == mono
+                    if t in eachindex(set.basis.monomials) &&
+                       set.basis.monomials[t] == mono
                         first[t] = k
                         if is_diag
                             MOI.Utilities.operate_output_index!(
@@ -208,7 +209,7 @@ function MOI.get(
     ::MOI.NumberOfConstraints{F,S},
 ) where {T,F,G,S}
     return count(bridge.constraints) do ci
-        ci isa MOI.ConstraintIndex{F,S}
+        return ci isa MOI.ConstraintIndex{F,S}
     end
 end
 function MOI.get(
@@ -223,8 +224,7 @@ function MOI.get(
     ::MOI.ListOfConstraintIndices{F,S},
 ) where {T,F,G,S}
     return MOI.ConstraintIndex{F,S}[
-        ci for ci in bridge.constraints
-        if ci isa MOI.ConstraintIndex{F,S}
+        ci for ci in bridge.constraints if ci isa MOI.ConstraintIndex{F,S}
     ]
 end
 
@@ -256,27 +256,38 @@ function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet, bridge::ImageBridge)
     return bridge.set
 end
 
-function MOI.get(model::MOI.ModelLike, attr::MOI.ConstraintFunction, bridge::ImageBridge{T}) where {T}
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::MOI.ConstraintFunction,
+    bridge::ImageBridge{T},
+) where {T}
     if !isnothing(bridge.zero_constraint)
-        z = MOI.Utilities.eachscalar(MOI.get(model, attr, bridge.zero_constraint))
+        z = MOI.Utilities.eachscalar(
+            MOI.get(model, attr, bridge.zero_constraint),
+        )
     end
-    funcs = MOI.Utilities.eachscalar.(MOI.get.(model, MOI.ConstraintFunction(), bridge.constraints))
+    funcs =
+        MOI.Utilities.eachscalar.(
+            MOI.get.(model, MOI.ConstraintFunction(), bridge.constraints)
+        )
     z_idx = 0
-    return MOI.Utilities.vectorize(map(eachindex(bridge.first)) do i
-        if isnothing(bridge.first[i])
-            z_idx += 1
-            return z[z_idx]
-        else
-            f = MOI.Utilities.filter_variables(
-                !Base.Fix2(in, bridge.variables),
-                funcs[1][bridge.first[i]], # FIXME
-            )
-            if !MOI.Utilities.is_diagonal_vectorized_index(bridge.first[i])
-                f = T(2) * f
+    return MOI.Utilities.vectorize(
+        map(eachindex(bridge.first)) do i
+            if isnothing(bridge.first[i])
+                z_idx += 1
+                return z[z_idx]
+            else
+                f = MOI.Utilities.filter_variables(
+                    !Base.Fix2(in, bridge.variables),
+                    funcs[1][bridge.first[i]], # FIXME
+                )
+                if !MOI.Utilities.is_diagonal_vectorized_index(bridge.first[i])
+                    f = T(2) * f
+                end
+                return f
             end
-            return f
-        end
-    end)
+        end,
+    )
 end
 
 function MOI.get(::MOI.ModelLike, ::MOI.ConstraintPrimal, ::ImageBridge)
@@ -297,11 +308,7 @@ function MOI.get(
     return output
 end
 
-function MOI.get(
-    ::MOI.ModelLike,
-    ::SOS.CertificateBasis,
-    bridge::ImageBridge,
-)
+function MOI.get(::MOI.ModelLike, ::SOS.CertificateBasis, bridge::ImageBridge)
     return bridge.gram_basis
 end
 
@@ -316,12 +323,7 @@ function MOI.get(
         MOI.ConstraintPrimal(attr.result_index),
         bridge.constraint,
     )
-    return SOS.build_gram_matrix(
-        q,
-        bridge.gram_basis,
-        M,
-        T,
-    )
+    return SOS.build_gram_matrix(q, bridge.gram_basis, M, T)
 end
 function MOI.get(
     model::MOI.ModelLike,
