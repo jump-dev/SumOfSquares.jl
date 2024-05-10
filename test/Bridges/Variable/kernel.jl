@@ -22,7 +22,7 @@ function test_runtests()
     MOI.Bridges.runtests(
         SumOfSquares.Bridges.Variable.KernelBridge,
         model -> begin
-            MOI.add_constrained_variables(
+            p, _ = MOI.add_constrained_variables(
                 model,
                 SumOfSquares.WeightedSOSCone{
                     MOI.PositiveSemidefiniteConeTriangle,
@@ -38,13 +38,18 @@ function test_runtests()
                     [MB.algebra_element(1.0 * x^0 * y^0)],
                 ),
             )
+            a = float.(1:length(p))
+            MOI.add_constraint(model, MOI.Utilities.vectorize([a' * p]), MOI.Zeros(1))
         end,
         model -> begin
-            Q, _ = MOI.add_constrained_variables(
+            q, _ = MOI.add_constrained_variables(
                 model,
                 MOI.PositiveSemidefiniteConeTriangle(3),
             )
-        end,
+            a = float.(1:length(q))
+            MOI.add_constraint(model, MOI.Utilities.vectorize([1.0 * q[1] + 2.0 * q[3] + 4.0 * (1.0q[4] + 1.0q[6]) + 6.0 * q[5]]), MOI.Zeros(1))
+        end;
+        allow_outer_constraint_function_error = true,
     )
     return
 end
