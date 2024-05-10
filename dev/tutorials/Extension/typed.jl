@@ -20,6 +20,7 @@ import CSDP
 model = SOSModel(CSDP.Optimizer)
 con_ref = @constraint(model, 2x^4 + 5y^4 - x^2*y^2 >= -2(x^3*y + x + 1))
 optimize!(model)
+@test is_solved_and_feasible(model) #src
 solution_summary(model)
 
 # We see that the problem is feasible. The Sum-of-Squares decomposition can be
