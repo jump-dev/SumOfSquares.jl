@@ -314,17 +314,12 @@ end
 
 function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
-    S::Type{<:SOSPolynomialSet{ST}},
-) where {ST<:AbstractAlgebraicSet}
-    T = _bridge_coefficient_type(S)
-    list = Tuple{Type,Type}[(Bridges.Constraint.SOSPolynomialBridge, T)]
-    if ST === SemialgebraicSets.FullSpace
-        push!(
-            list,
-            (Bridges.Constraint.GeometricBridge, _bridge_coefficient_type(S)),
-        )
-    end
-    return list
+    S::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}},
+)
+    return Tuple{Type,Type}[(
+        Bridges.Constraint.SOSPolynomialBridge,
+        _bridge_coefficient_type(S),
+    )]
 end
 
 function PolyJuMP.bridges(
