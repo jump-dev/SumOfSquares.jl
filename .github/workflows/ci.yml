@@ -38,7 +38,7 @@ jobs:
           using Pkg
           Pkg.add([
               PackageSpec(name="MultivariateBases", rev="master"),
-              PackageSpec(name="MathOptInterface", rev="bl/bridge_runtest_func"),
+              PackageSpec(name="MathOptInterface", rev="master"),
           ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
