@@ -60,7 +60,6 @@ programming:
 ```@docs
 SumOfSquares.DiagonallyDominantConeTriangle
 SumOfSquares.ScaledDiagonallyDominantConeTriangle
-SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge
 ```
 
 ## Bridges
@@ -76,4 +75,14 @@ Bridges for polynomial optimization
 PolyJuMP.ScalarPolynomialFunction
 PolyJuMP.Bridges.Objective.ToPolynomialBridge
 PolyJuMP.Bridges.Constraint.ToPolynomialBridge
+```
+
+Sum-of-Squares bridges
+```@docs
+SumOfSquares.Bridges.Constraint.ImageBridge
+```
+
+Bridges for PSD cone approximations
+```@docs
+SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge
 ```
