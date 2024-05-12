@@ -50,7 +50,7 @@ The gram matrix is therefore:
 `ImageBridge` creates one of the following, depending on the length of the gram basis:
 
   * `F` in `MOI.PositiveSemidefiniteConeTriangle`, for gram basis of length at least 3
-  * `F` in [`PositiveSemidefinite2x2ConeTriangle`](@ref), for gram basis of length 2
+  * `F` in [`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref), for gram basis of length 2
   * `F` in `MOI.Nonnegatives`, for gram basis of length 1
   * `F` in `EmptyCone`, for empty gram basis
 
