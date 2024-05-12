@@ -2,7 +2,7 @@
     ImageBridge{T,F,G,MT,MVT,CT} <: Bridges.Constraint.AbstractBridge
 
 `ImageBridge` implements a reformulation from `SOSPolynomialSet{SemialgebraicSets.FullSpace}`
-into [`MOI.PositiveSemidefiniteConeTriangle`](@ref).
+into the positive semidefinite cone.
 
 Let `Σ` be the SOS cone of polynomials of degree 2d and `S` be the PSD cone.
 There is a linear relation `Σ = A(S)`.
