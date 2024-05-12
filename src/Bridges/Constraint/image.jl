@@ -52,7 +52,7 @@ The gram matrix is therefore:
   * `F` in `MOI.PositiveSemidefiniteConeTriangle`, for gram basis of length at least 3
   * `F` in [`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref), for gram basis of length 2
   * `F` in `MOI.Nonnegatives`, for gram basis of length 1
-  * `F` in `EmptyCone`, for empty gram basis
+  * `F` in [`SumOfSquares.EmptyCone`](@ref), for empty gram basis
 
 in addition to
 
