@@ -316,7 +316,7 @@ function PolyJuMP.bridges(
     ::Type{<:MOI.AbstractVectorFunction},
     S::Type{<:SOSPolynomialSet{<:AbstractAlgebraicSet}},
 )
-    return [(
+    return Tuple{Type,Type}[(
         Bridges.Constraint.SOSPolynomialBridge,
         _bridge_coefficient_type(S),
     )]

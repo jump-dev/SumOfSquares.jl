@@ -22,6 +22,7 @@ include("scaled_diagonally_dominant.jl")
 
 # SOS polynomial bridges
 include("utilities.jl")
+include("image.jl")
 include("sos_polynomial.jl")
 include("sos_polynomial_in_semialgebraic_set.jl")
 
@@ -30,7 +31,11 @@ include("sos_polynomial_in_semialgebraic_set.jl")
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.SOSDecompositionAttribute,
-    bridge::Union{SOSPolynomialBridge,SOSPolynomialInSemialgebraicSetBridge},
+    bridge::Union{
+        ImageBridge,
+        SOSPolynomialBridge,
+        SOSPolynomialInSemialgebraicSetBridge,
+    },
 )
     gram = MOI.get(model, SOS.GramMatrixAttribute(attr.result_index), bridge)
     return SOS.SOSDecomposition(gram, attr.ranktol, attr.dec)

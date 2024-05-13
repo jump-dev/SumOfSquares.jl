@@ -1,6 +1,6 @@
 using Test
 
-@testset "$(dir)" for dir in ["Variable"]
+@testset "$(dir)" for dir in ["Variable", "Constraint"]
     @testset "$(file)" for file in readdir(joinpath(@__DIR__, dir))
         if !endswith(file, ".jl")
             continue
