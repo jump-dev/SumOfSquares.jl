@@ -115,14 +115,17 @@ function MOI.get(
     end
 end
 
+_attr(attr::SOS.GramMatrixAttribute) = MOI.ConstraintPrimal(attr.result_index)
+_attr(attr::SOS.MomentMatrixAttribute) = MOI.ConstraintDual(attr.result_index)
+
 function MOI.get(
     model::MOI.ModelLike,
-    attr::SOS.GramMatrixAttribute,
+    attr::Union{SOS.GramMatrixAttribute,SOS.MomentMatrixAttribute},
     bridge::KernelBridge{T,M},
 ) where {T,M}
     SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
     return SOS.build_gram_matrix(
-        convert(Vector{T}, MOI.get(model, MOI.VariablePrimal(), bridge.variables[attr.multiplier_index])),
+        convert(Vector{T}, MOI.get(model, _attr(attr), bridge.constraints[attr.multiplier_index])),
         bridge.set.gram_bases[attr.multiplier_index],
         M,
         T,

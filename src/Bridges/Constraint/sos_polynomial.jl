@@ -75,6 +75,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
 end
 
 MOI.Bridges.inverse_map_function(::Type{<:SOSPolynomialBridge}, f) = f
+MOI.Bridges.adjoint_map_function(::Type{<:SOSPolynomialBridge}, f) = f
 
 # Attributes, Bridge acting as a constraint
 function MOI.get(
@@ -90,7 +91,10 @@ function MOI.get(
     attr::PolyJuMP.MomentsAttribute,
     bridge::SOSPolynomialBridge,
 )
-    return MOI.get(model, attr, bridge.constraint)
+    return MultivariateMoments.Measure(
+        MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint),
+        bridge.set.monomials,
+    )
 end
 
 function MOI.get(

@@ -117,32 +117,34 @@ struct LagrangianMultipliers <: MOI.AbstractConstraintAttribute
 end
 LagrangianMultipliers() = LagrangianMultipliers(1)
 
+const _Attributes = Union{
+    CertificateBasis,
+    GramMatrixAttribute,
+    SOSDecompositionAttribute,
+    MomentMatrixAttribute,
+    LagrangianMultipliers,
+}
+
 # Needs to declare it set by optimize that it is not queried in the Caching
-# optimize, even of `CertificateBasis` which is set befor optimize.
-function MOI.is_set_by_optimize(
-    ::Union{
-        CertificateBasis,
-        GramMatrixAttribute,
-        SOSDecompositionAttribute,
-        MomentMatrixAttribute,
-        LagrangianMultipliers,
-    },
-)
-    return true
-end
+# optimize, even of `CertificateBasis` which is set before optimize.
+MOI.is_set_by_optimize(::_Attributes) = true
 
 # If a variable is bridged, the `VectorOfVariables`-in-`SOSPolynomialSet` is
 # bridged by `MOI.Bridges.Constraint.VectorFunctionizeBridge` and it has
 # to pass the constraint to the SOS bridge.
-function MOI.Bridges.Constraint.invariant_under_function_conversion(
-    ::Union{
-        CertificateBasis,
-        GramMatrixAttribute,
-        MomentMatrixAttribute,
-        LagrangianMultipliers,
+MOI.Bridges.Constraint.invariant_under_function_conversion(::_Attributes) = true
+
+# They do not contain any variable so `substitute_variables` would be the identity.
+# We cannot just implement `substitute_variables` since it some variables cannot
+# be unbridged.
+function MOI.Bridges.unbridged_function(
+    ::MOI.Bridges.AbstractBridgeOptimizer,
+    value::Union{
+        GramMatrix{T},
+        MultivariateMoments.Measure{T},
     },
-)
-    return true
+) where {T<:Number}
+    return value
 end
 
 # This is type piracy but we tolerate it.
