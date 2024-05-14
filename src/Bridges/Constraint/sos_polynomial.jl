@@ -74,6 +74,8 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     return SOSPolynomialBridge{T,F,DT,M,G,CT,MT,MVT,W}
 end
 
+MOI.Bridges.inverse_map_function(::Type{<:SOSPolynomialBridge}, f) = f
+
 # Attributes, Bridge acting as a constraint
 function MOI.get(
     ::MOI.ModelLike,

@@ -110,17 +110,23 @@ function MOI.get(
     bridge::KernelBridge,
     i::MOI.Bridges.IndexInVector,
 )
-    return MOI.Utilities.eval_variable(bridge.affine[i.value]) do
-        return vi -> MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
+    return MOI.Utilities.eval_variables(bridge.affine[i.value]) do vi
+        return MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
     end
 end
 
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.GramMatrixAttribute,
-    bridge::KernelBridge,
-)
+    bridge::KernelBridge{T,M},
+) where {T,M}
     SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
+    return SOS.build_gram_matrix(
+        convert(Vector{T}, MOI.get(model, MOI.VariablePrimal(), bridge.variables[attr.multiplier_index])),
+        bridge.set.gram_bases[attr.multiplier_index],
+        M,
+        T,
+    )
 end
 
 function MOI.Bridges.bridged_function(
