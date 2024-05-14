@@ -307,9 +307,34 @@ function PolyJuMP.bridges(
 end
 
 function _bridge_coefficient_type(
+    ::Type{<:WeightedSOSCone{M}},
+) where {M}
+    return _complex(Float64, M)
+end
+
+function _bridge_coefficient_type(
     ::Type{SOSPolynomialSet{S,M,MV,C}},
 ) where {S,M,MV,C}
     return _complex(Float64, matrix_cone_type(C))
+end
+
+function PolyJuMP.bridges(
+    S::Type{<:WeightedSOSCone},
+)
+    return Tuple{Type,Type}[(
+        Bridges.Variable.KernelBridge,
+        _bridge_coefficient_type(S),
+    )]
+end
+
+function PolyJuMP.bridges(
+    F::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:WeightedSOSCone},
+) # Needed so that `KernelBridge` is added as well
+    return Tuple{Type,Type}[(
+        MOI.Bridges.Constraint.VectorSlackBridge,
+        PolyJuMP._coef_type(F),
+    )]
 end
 
 function PolyJuMP.bridges(

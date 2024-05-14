@@ -142,7 +142,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # for most use cases
     G = MOI.Utilities.promote_operation(-, T, F, MOI.VectorOfVariables)
     MCT = SOS.matrix_cone_type(CT)
-    B = Certificate.multiplier_basis_type(CT)
+    B = Certificate.multiplier_basis_type(CT, MT)
     UMCT = union_constraint_types(MCT)
     UMST = union_set_types(MCT)
     IC = Certificate.ideal_certificate(CT)

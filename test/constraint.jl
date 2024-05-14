@@ -67,6 +67,6 @@ end
     @constraint(model, p in cone)
     @test SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{ComplexF64} in
           model.bridge_types
-    @test PolyJuMP.Bridges.Constraint.ZeroPolynomialBridge{ComplexF64} in
+    @test SumOfSquares.Bridges.Variable.KernelBridge{ComplexF64} in
           model.bridge_types
 end

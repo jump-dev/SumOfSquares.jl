@@ -47,8 +47,8 @@ function gram_basis(certificate::MaxDegree, poly)
         certificate.maxdegree,
     )
 end
-function gram_basis_type(::Type{MaxDegree{CT,BT}}) where {CT,BT}
-    return BT
+function gram_basis_type(::Type{MaxDegree{CT,BT}}, ::Type{M}) where {CT,BT,M}
+    return MB.similar_type(BT, M)
 end
 
 """
@@ -73,8 +73,8 @@ end
 function gram_basis(certificate::FixedBasis, poly)
     return certificate.basis
 end
-function gram_basis_type(::Type{FixedBasis{CT,BT}}) where {CT,BT}
-    return BT
+function gram_basis_type(::Type{FixedBasis{CT,BT}}, ::Type{M}) where {CT,BT,M}
+    return MB.similar_type(BT, M)
 end
 
 """
@@ -117,8 +117,9 @@ function gram_basis(certificate::Newton{CT,B}, poly) where {CT,B}
         monomials_half_newton_polytope(MP.monomials(poly), certificate.newton),
     )
 end
-function gram_basis_type(::Type{<:Newton{CT,BT}}) where {CT,BT}
-    return BT
+
+function gram_basis_type(::Type{<:Newton{CT,BT}}, ::Type{M}) where {CT,BT,M}
+    return MB.similar_type(BT, M)
 end
 
 """
@@ -148,8 +149,9 @@ end
 function gram_basis(certificate::Remainder, poly)
     return gram_basis(certificate.gram_certificate, poly)
 end
-function gram_basis_type(::Type{Remainder{GCT}}) where {GCT}
-    return gram_basis_type(GCT)
+
+function gram_basis_type(::Type{Remainder{GCT}}, ::Type{M}) where {GCT,M}
+    return gram_basis_type(GCT, M)
 end
 
 cone(certificate::Remainder) = cone(certificate.gram_certificate)

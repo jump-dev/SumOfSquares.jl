@@ -6,7 +6,7 @@ struct KernelBridge{T,M} <: MOI.Bridges.Variable.AbstractBridge
 end
 
 function MOI.Bridges.Variable.bridge_constrained_variable(
-    ::Type{KernelBridge{T}},
+    ::Type{KernelBridge{T,M}},
     model::MOI.ModelLike,
     set::SOS.WeightedSOSCone{M},
 ) where {T,M}
@@ -38,6 +38,13 @@ end
 
 function MOI.Bridges.added_constraint_types(::Type{<:KernelBridge})
     return Tuple{Type,Type}[]
+end
+
+function MOI.Bridges.Variable.concrete_bridge_type(
+    ::Type{<:KernelBridge{T}},
+    ::Type{<:SOS.WeightedSOSCone{M}},
+) where {T,M}
+    return KernelBridge{T,M}
 end
 
 # Attributes, Bridge acting as a model
@@ -108,6 +115,14 @@ function MOI.get(
     end
 end
 
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::SOS.GramMatrixAttribute,
+    bridge::KernelBridge,
+)
+    SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
+end
+
 function MOI.Bridges.bridged_function(
     bridge::KernelBridge,
     i::MOI.Bridges.IndexInVector,
@@ -116,10 +131,8 @@ function MOI.Bridges.bridged_function(
 end
 
 function MOI.Bridges.Variable.unbridged_map(
-    bridge::KernelBridge{T},
-    coefs::Vector{MOI.VariableIndex},
+    ::KernelBridge{T},
+    ::Vector{MOI.VariableIndex},
 ) where {T}
-    F = MOI.ScalarAffineFunction{T}
-    map = Pair{MOI.VariableIndex,F}[]
     return nothing
 end

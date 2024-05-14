@@ -204,7 +204,7 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
           MP.AbstractPolynomial
     _basis_check(
         Certificate.gram_basis(certificate, poly),
-        Certificate.gram_basis_type(typeof(certificate)),
+        Certificate.gram_basis_type(typeof(certificate), MP.monomial_type(x)),
     )
     zbasis = Certificate.zero_basis(certificate)
     @test zbasis <: MB.AbstractPolynomialBasis
@@ -220,7 +220,7 @@ function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
     for idx in Certificate.preorder_indices(certificate, processed)
         _basis_check(
             Certificate.multiplier_basis(certificate, idx, processed),
-            Certificate.multiplier_basis_type(typeof(certificate)),
+            Certificate.multiplier_basis_type(typeof(certificate), MP.monomial_type(x)),
         )
         @test Certificate.generator(certificate, idx, processed) isa
               MP.AbstractPolynomial

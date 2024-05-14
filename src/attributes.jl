@@ -7,20 +7,28 @@ A constraint attribute for the basis indexing the
 struct CertificateBasis <: MOI.AbstractConstraintAttribute end
 
 """
-    GramMatrixAttribute(result_index)
-    GramMatrixAttribute()
+    GramMatrixAttribute(
+        multiplier_index::Int = 0,
+        result_index::Int = 1,
+    )
 
-A constraint attribute for the [`GramMatrix`](@ref) of a constraint, that is,
-the positive semidefinite matrix `Q` indexed by the monomials in the vector `X`
-such that ``X^\\top Q X`` is the sum-of-squares certificate of the constraint.
+A constraint attribute for the [`GramMatrix`](@ref) of the `multiplier_index`th
+Sum-of-Squares polynomial ``s_i(x)`` where ``i`` is `multiplier_index` of the certificate:
+```math
+p(x) = s_0(x) + w_1(x) s_1(x) + \\cdots + w_m(x) s_m(x)
+```
+The gram matrix of a Sum-of-Squares polynomial ``s_i(x)`` is the
+the positive semidefinite matrix ``Q`` such that ``s_i(x) = b_i(x)^\\top Q b_i(x)``
+where ``b_i(x)`` is the gram basis.
 """
-struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute
-    result_index::Int
+@kwdef struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute
+    multiplier_index::Int = 0
+    result_index::Int = 1
 end
-GramMatrixAttribute() = GramMatrixAttribute(1)
 
 """
-    struct SOSDecompositionAttribute
+    @kwdef struct SOSDecompositionAttribute
+        multiplier_index::Int = 0
         ranktol::Real
         dec::MultivariateMoments.LowRankLDLTAlgorithm
         result_index::Int
@@ -31,16 +39,11 @@ By default, it is computed using
 `SOSDecomposition(gram, ranktol, dec)` where `gram` is the value of the
 [`GramMatrixAttribute`](@ref).
 """
-struct SOSDecompositionAttribute <: MOI.AbstractConstraintAttribute
+@kwdef struct SOSDecompositionAttribute <: MOI.AbstractConstraintAttribute
+    multiplier_index::Int = 0
     ranktol::Real
     dec::MultivariateMoments.LowRankLDLTAlgorithm
-    result_index::Int
-end
-function SOSDecompositionAttribute(
-    ranktol::Real,
-    dec::MultivariateMoments.LowRankLDLTAlgorithm,
-)
-    return SOSDecompositionAttribute(ranktol, dec, 1)
+    result_index::Int = 1
 end
 
 function MOI.get_fallback(
@@ -53,18 +56,54 @@ function MOI.get_fallback(
 end
 
 """
-    MomentMatrixAttribute(N)
-    MomentMatrixAttribute()
+    MomentMatrixAttribute(
+        multiplier_index::Int = 0,
+        result_index::Int = 1,
+    )
 
-A constraint attribute fot the `MomentMatrix` of a constraint.
+A constraint attribute for the `MomentMatrix` of the `multiplier_index`th
+Sum-of-Squares polynomial ``s_i(x)`` where ``i`` is `multiplier_index` of the certificate:
+```math
+p(x) = s_0(x) + w_1(x) s_1(x) + \\cdots + w_m(x) s_m(x)
+```
+It corresponds to the dual of the Sum-of-Squares constraint for the constraint
+for ``s_i(x)`` to be a Sum-of-Squares.
 """
-struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
-    result_index::Int
+@kwdef struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
+    multiplier_index::Int = 0
+    result_index::Int = 1
 end
-MomentMatrixAttribute() = MomentMatrixAttribute(1)
 
 """
-    LagrangianMultipliers(N)
+    struct MultiplierIndexBoundsError{AttrType} <: Exception
+        attr::AttrType
+        range::UnitRange{Int}
+    end
+
+An error indicating that the requested attribute `attr` could not be retrieved,
+because the multiplier index is out of the range of valid indices.
+"""
+struct MultiplierIndexBoundsError{AttrType} <: Exception
+    attr::AttrType
+    range::UnitRange{Int}
+end
+
+function check_multiplier_index_bounds(attr, range)
+    if !(attr.multiplier_index in range)
+        throw(MultiplierIndexBoundsError(attr, range))
+    end
+end
+
+function Base.showerror(io::IO, err::MultiplierIndexBoundsError)
+    return print(
+        io,
+        "Multiplier index of attribute $(err.attr) out of bounds. The index " *
+        "must be in the range $(err.range).",
+    )
+end
+
+"""
+    LagrangianMultipliers(result_index::Int)
     LagrangianMultipliers()
 
 A constraint attribute fot the `LagrangianMultipliers` associated to the

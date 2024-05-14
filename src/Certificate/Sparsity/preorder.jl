@@ -63,8 +63,9 @@ function SumOfSquares.Certificate.multiplier_basis(
 end
 function SumOfSquares.Certificate.multiplier_basis_type(
     ::Type{Preorder{S,C}},
-) where {S,C}
-    return Vector{SumOfSquares.Certificate.multiplier_basis_type(C)}
+    ::Type{M},
+) where {S,C,M}
+    return Vector{SumOfSquares.Certificate.multiplier_basis_type(C, M)}
 end
 
 function SumOfSquares.Certificate.generator(

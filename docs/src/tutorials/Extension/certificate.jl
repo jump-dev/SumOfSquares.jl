@@ -78,8 +78,8 @@ function SOSC.multiplier_basis(certificate::Schmüdgen, index::SOSC.PreorderInde
     q = SOSC.generator(certificate, index, domain)
     return SOSC.maxdegree_gram_basis(certificate.basis, variables(domain), SOSC.multiplier_maxdegree(certificate.maxdegree, q))
 end
-function SOSC.multiplier_basis_type(::Type{Schmüdgen{IC, CT, BT}}) where {IC, CT, BT}
-    return BT
+function SOSC.multiplier_basis_type(::Type{Schmüdgen{IC, CT, BT}}, ::Type{M}) where {IC,CT,BT,M}
+    return MB.similar_type(BT, M)
 end
 
 function SOSC.generator(::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.WithVariables)
