@@ -9,10 +9,10 @@ There is a linear relation `Σ = A(S)`.
 The linear relation reads: `p` belongs to `Σ` iff there exists `q` in `S` such that `A(q) = p`.
 This allows defining a variable bridge that would create variables `p` and substitute `A(q)` for `p` but this is not the purpose of this bridge.
 This bridge exploit the following alternative read:
-`p` belongs to `Σ` iff there exists `q` in `S` such that ``q in A^{-1}(p)`` where `A^{-1}` is the preimage of `p`.
-This preimage can be obtained as `A^\\dagger p + \\mathrm{ker}(A)` where `A^\\dagger` is the pseudo-inverse of `A`.
+`p` belongs to `Σ` iff there exists `q` in `S` such that ``q \\in A^{-1}(p)`` where ``A^{-1}`` is the preimage of `p`.
+This preimage can be obtained as ``A^\\dagger p + \\mathrm{ker}(A)`` where ``A^\\dagger`` is the pseudo-inverse of `A`.
 It turns out that for polynomial bases indexed by monomials, `A` is close to row echelon form so
-`A^\\dagger` and `\\mathrm{ker}(A)` can easily be obtained.
+``A^\\dagger`` and ``\\mathrm{ker}(A)`` can easily be obtained.
 
 This is best described in an example.
 Consider the SOS constraint for the polynomial `p = 2x^4 + 2x^3 * y - x^2 * y^2 + 5y^4`
