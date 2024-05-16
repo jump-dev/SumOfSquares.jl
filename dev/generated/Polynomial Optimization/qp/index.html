@@ -71,7 +71,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   5   1.8390e+10   2.0786e+10  1.30e-01  2.05e-07  2.78e-08  2.40e+09  3.71e-05  9.86e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = primal infeasible
-solve time = 1.78ms
+solve time = 1.46ms
 * Solver : Clarabel
 
 * Status
@@ -87,7 +87,7 @@ solve time = 1.78ms
   Dual objective value : -2.07856e+10
 
 * Work counters
-  Solve time (sec)   : 1.77817e-03
+  Solve time (sec)   : 1.45918e-03
   Barrier iterations : 5</code></pre><p>Indeed, as the constraints have degree 1 and their multipliers are SOS so they have an even degree, with <code>maxdegree</code> 2 we can only use degree 0 multipliers hence constants. The terms of maximal degree in resulting sum will therefore only be in <code>-x&#39; * Q * x/2</code> hence it is not SOS whatever is the value of the multipliers. Let&#39;s try with <code>maxdegree</code> 3 so that the multipliers can be quadratic. This second level is now feasible and gives a lower bound of <code>-22</code>.</p><pre><code class="language-julia hljs">model3 = solve(3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.7.1  -  Clever Acronym
                    (c) Paul Goulart
@@ -130,7 +130,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  11   2.2000e+01   2.2000e+01  3.49e-10  7.90e-11  1.92e-11  8.30e-09  3.83e-09  9.88e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 13.3ms
+solve time = 12.7ms
 * Solver : Clarabel
 
 * Status
@@ -146,5 +146,5 @@ solve time = 13.3ms
   Dual objective value : -2.20000e+01
 
 * Work counters
-  Solve time (sec)   : 1.32533e-02
-  Barrier iterations : 11</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../qcqp/">« Nonconvex quadratically constrained quadratic programs</a><a class="docs-footer-nextpage" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 16 May 2024 09:02">Thursday 16 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 1.27148e-02
+  Barrier iterations : 11</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../qcqp/">« Nonconvex quadratically constrained quadratic programs</a><a class="docs-footer-nextpage" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 16 May 2024 09:06">Thursday 16 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
