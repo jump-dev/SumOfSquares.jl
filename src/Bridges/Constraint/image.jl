@@ -20,8 +20,8 @@ with gram basis `b = [x^2, y^2, x * y]` of [Parrilo2003; Example 6.1](@cite).
 The product `b * b'` is
 ```math
 \\begin{bmatrix}
-x^4 & x^2 y^2 & x^3 y\\
-x^2 y^2 & y^4 & x y^3\\
+x^4 & x^2 y^2 & x^3 y\\\\
+x^2 y^2 & y^4 & x y^3\\\\
 x^3 y & x y^3 & x^2 y^2
 \\end{bmatrix}
 ```
@@ -33,8 +33,8 @@ the corresponding coefficient in `p`, i.e., `-1`.
 The gram matrix is therefore:
 ```math
 \\begin{bmatrix}
-2 & -\\lambda & 1\\
--\\lambda & 5 & 0\\
+2 & -\\lambda & 1\\\\
+-\\lambda & 5 & 0\\\\
 1 & 0 & 2\\lambda - 1
 \\end{bmatrix}
 ```
