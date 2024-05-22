@@ -53,13 +53,13 @@ end
 function GramMatrix{T,B,U}(
     Q::AbstractMatrix{T},
     basis::B,
-) where {T,B<:AbstractPolynomialBasis,U}
+) where {T,B<:SA.ExplicitBasis,U}
     return GramMatrix{T,B,U,typeof(Q)}(Q, basis)
 end
 function GramMatrix{T,B}(
     Q::AbstractMatrix{T},
     basis::B,
-) where {T,B<:AbstractPolynomialBasis}
+) where {T,B<:SA.ExplicitBasis}
     return GramMatrix{T,B,_promote_sum(T)}(Q, basis)
 end
 function GramMatrix(
@@ -68,7 +68,7 @@ function GramMatrix(
         MultivariateMoments.SymMatrix{T},
         MultivariateMoments.VectorizedHermitianMatrix{T},
     },
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
 ) where {T}
     return GramMatrix{T,typeof(basis)}(Q, basis)
 end
@@ -102,7 +102,7 @@ MultivariateMoments.value_matrix(p::GramMatrix{T}) where {T} = p.Q
 
 function GramMatrix{T}(
     f::Function,
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     σ = 1:length(basis),
 ) where {T}
     return GramMatrix{T,typeof(basis)}(
@@ -112,19 +112,19 @@ function GramMatrix{T}(
 end
 function GramMatrix{T}(f::Function, monos::AbstractVector) where {T}
     σ, sorted_monos = MP.sort_monomial_vector(monos)
-    return GramMatrix{T}(f, MonomialBasis(sorted_monos), σ)
+    return GramMatrix{T}(f, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
 function GramMatrix(
     Q::AbstractMatrix{T},
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     σ = 1:length(basis),
 ) where {T}
     return GramMatrix{T}((i, j) -> Q[σ[i], σ[j]], basis)
 end
 function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
     σ, sorted_monos = MP.sort_monomial_vector(monos)
-    return GramMatrix(Q, MonomialBasis(sorted_monos), σ)
+    return GramMatrix(Q, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
 #function Base.convert{T, PT <: AbstractPolynomial{T}}(::Type{PT}, p::GramMatrix)
@@ -141,11 +141,11 @@ end
 function change_basis(
     p::GramMatrix{T,B},
     ::Type{B},
-) where {T,B<:AbstractPolynomialBasis}
+) where {T,B<:SA.ExplicitBasis}
     return p
 end
-function change_basis(p::GramMatrix, B::Type{<:AbstractPolynomialBasis})
-    return GramMatrix(MultivariateBases.change_basis(p.Q, p.basis, B)...)
+function change_basis(p::GramMatrix, basis::SA.AbstractBasis)
+    return GramMatrix(MultivariateBases.change_basis(p.Q, p.basis, basis)...)
 end
 
 """

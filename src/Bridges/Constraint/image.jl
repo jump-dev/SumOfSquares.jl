@@ -119,9 +119,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
                     MOI.Utilities.operate_output_index!(-, T, k, f, var)
                 else
                     found[mono] = k
-                    t = MP.searchsortedfirst(set.basis.monomials, mono)
-                    if t in eachindex(set.basis.monomials) &&
-                       set.basis.monomials[t] == mono
+                    t = MB.monomial_index(set.basis, mono)
+                    if !isnothing(t)
                         first[t] = k
                         if is_diag
                             MOI.Utilities.operate_output_index!(
@@ -168,7 +167,7 @@ end
 function MOI.supports_constraint(
     ::Type{ImageBridge{T}},
     ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:SOS.WeightedSOSCone{M,<:MB.MonomialBasis,<:MB.MonomialBasis}},
+    ::Type{<:SOS.WeightedSOSCone{M,<:MB.SubBasis{MB.Monomial},<:MB.SubBasis{MB.Monomial}}},
 ) where {T,M}
     return true
 end

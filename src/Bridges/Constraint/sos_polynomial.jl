@@ -8,8 +8,8 @@ struct SOSPolynomialBridge{
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
     W<:MP.AbstractTerm{T},
-} <: MOI.Bridges.Constraint.SetMapBridge{T,SOS.WeightedSOSCone{M,MB.MonomialBasis{MT,MVT},G,W},SOS.SOSPolynomialSet{DT,MT,MVT,CT},F,F}
-    constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,MB.MonomialBasis{MT,MVT},G,W}}
+} <: MOI.Bridges.Constraint.SetMapBridge{T,SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},SOS.SOSPolynomialSet{DT,MT,MVT,CT},F,F}
+    constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W}}
     set::SOS.SOSPolynomialSet{DT,MT,MVT,CT}
 end
 
@@ -42,7 +42,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         model,
         func,
         SOS.WeightedSOSCone{M}(
-            MB.MonomialBasis(set.monomials),
+            MB.SubBasis{MB.Monomial}(set.monomials),
             [gram_basis],
             [MP.term(one(T), MP.constant_monomial(p))],
         ),

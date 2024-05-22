@@ -4,7 +4,7 @@
 
 abstract type AbstractIdealCertificate <: AbstractCertificate end
 
-abstract type SimpleIdealCertificate{CT,BT} <: AbstractIdealCertificate end
+abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
 reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
 
 cone(certificate::SimpleIdealCertificate) = certificate.cone
@@ -15,9 +15,9 @@ function SumOfSquares.matrix_cone_type(
 end
 
 # TODO return something else when `PolyJuMP` support other bases.
-zero_basis(::SimpleIdealCertificate) = MB.MonomialBasis
-function zero_basis_type(::Type{<:SimpleIdealCertificate{CT,BT}}) where {CT,BT}
-    return MB.MonomialBasis
+zero_basis(certificate::SimpleIdealCertificate) = certificate.basis # FIXME not used yet
+function zero_basis_type(::Type{<:SimpleIdealCertificate{C,B}}) where {C,B}
+    return B
 end
 
 """
@@ -34,10 +34,10 @@ such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with a basis of type `basis` such that
 the degree of `σ(x)` does not exceed `maxdegree`.
 """
-struct MaxDegree{CT<:SumOfSquares.SOSLikeCone,BT<:MB.AbstractPolynomialBasis} <:
-       SimpleIdealCertificate{CT,BT}
+struct MaxDegree{CT<:SumOfSquares.SOSLikeCone,B<:SA.AbstractBasis} <:
+       SimpleIdealCertificate{CT,B}
     cone::CT
-    basis::Type{BT}
+    basis::B
     maxdegree::Int
 end
 function gram_basis(certificate::MaxDegree, poly)

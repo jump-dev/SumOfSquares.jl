@@ -52,9 +52,9 @@ end
 function sparsity(
     monos,
     sp::Union{SignSymmetry,Monomial},
-    gram_basis::MB.MonomialBasis,
+    gram_basis::MB.SubBasis{MB.Monomial},
 )
-    return MB.MonomialBasis.(sparsity(monos, sp, gram_basis.monomials))
+    return MB.SubBasis{MB.Monomial}.(sparsity(monos, sp, gram_basis.monomials))
 end
 function sparsity(
     poly::MP.AbstractPolynomial,

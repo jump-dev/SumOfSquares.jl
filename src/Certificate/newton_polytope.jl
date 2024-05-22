@@ -505,7 +505,7 @@ function multiplier_basis(g::MP.AbstractPolynomialLike, bounds::DegreeBounds)
     else
         halved = _half(shifted)
     end
-    basis = MB.MonomialBasis
+    basis = MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()
     if isnothing(halved)
         # TODO add `MB.empty_basis` to API
         return MB.maxdegree_basis(
@@ -541,13 +541,13 @@ function half_newton_polytope(
     bases = [multiplier_basis(g, bounds).monomials for g in gs]
     push!(
         bases,
-        maxdegree_gram_basis(MB.MonomialBasis, _half(bounds)).monomials,
+        maxdegree_gram_basis(MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(), _half(bounds)).monomials,
     )
     gs = copy(gs)
     push!(gs, one(eltype(gs)))
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
-    return MB.MonomialBasis.(filtered_bases[1:(end-1)])
+    return MB.SubBasis{MB.Monomial}.(filtered_bases[1:(end-1)])
 end
 struct SignCount
     unknown::Int

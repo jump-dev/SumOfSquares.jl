@@ -99,7 +99,7 @@ end
 function default_ideal_certificate(
     ::AbstractAlgebraicSet,
     ::Certificate.Sparsity.NoPattern,
-    basis::AbstractPolynomialBasis,
+    basis::SA.AbstractBasis,
     cone,
     args...,
 )
@@ -246,7 +246,7 @@ function JuMP.moi_set(
     cone::SOSLikeCone,
     monos::AbstractVector{<:MP.AbstractMonomial};
     domain::AbstractSemialgebraicSet = FullSpace(),
-    basis = MonomialBasis,
+    basis = MB.Monomial,
     newton_polytope::Union{Nothing,Tuple} = tuple(),
     maxdegree::Union{Nothing,Int} = default_maxdegree(monos, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
@@ -272,10 +272,7 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    # For terms, `monomials` is `OneOrZeroElementVector`
-    # so we convert it with `monomial_vector`
-    # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
-    return SOSPolynomialSet(domain, MP.monomial_vector(monos), certificate)
+    return SOSPolynomialSet(domain, MB.SubBasis{MB.Monomial}(monos), certificate)
 end
 
 function PolyJuMP.bridges(
@@ -372,14 +369,14 @@ _promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
 _promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
 
 function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
-    monos = MP.monomials(p)
-    set = JuMP.moi_set(cone, monos; kws...)
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials(p))
+    set = JuMP.moi_set(cone, basis; kws...)
     _coefs = PolyJuMP.non_constant_coefficients(p)
     # If a polynomial with real coefficients is used with the Hermitian SOS
     # cone, we want to promote the coefficients to complex
     T = _bridge_coefficient_type(typeof(set))
     coefs = convert(Vector{_promote_coef_type(eltype(_coefs), T)}, _coefs)
-    shape = PolyJuMP.PolynomialShape(monos)
+    shape = PolyJuMP.PolynomialShape(basis)
     return PolyJuMP.bridgeable(
         JuMP.VectorConstraint(coefs, set, shape),
         JuMP.moi_function_type(typeof(coefs)),
@@ -466,13 +463,13 @@ end
     certificate_monomials(cref::JuMP.ConstraintRef)
 
 Return the monomials of [`certificate_basis`](@ref). If the basis if not
-`MultivariateBases.AbstractMonomialBasis`, an error is thrown.
+`MultivariateBases.SubBasis`, an error is thrown.
 """
 function certificate_monomials(cref::JuMP.ConstraintRef)
     return basis_monomials(certificate_basis(cref))
 end
-basis_monomials(basis::AbstractMonomialBasis) = basis.monomials
-function basis_monomials(basis::AbstractPolynomialBasis)
+basis_monomials(basis::MB.SubBasis) = basis.monomials
+function basis_monomials(basis::SA.AbstractBasis)
     return error(
         "`certificate_monomials` is not supported with `$(typeof(basis))`, use `certificate_basis` instead.",
     )

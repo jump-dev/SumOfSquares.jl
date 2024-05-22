@@ -12,7 +12,7 @@ end
 
 function SymbolicWedderburn.ExtensionHomomorphism(
     action::SymbolicWedderburn.Action,
-    basis::MB.MonomialBasis,
+    basis::MB.SubBasis{MB.Monomial},
 )
     monos = collect(basis.monomials)
     return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
@@ -53,17 +53,6 @@ function SymbolicWedderburn.action(
     ])
 end
 
-# TODO Move it to MultivariateBases
-function MP.polynomial_type(
-    ::Type{<:MB.AbstractPolynomialVectorBasis{PT}},
-    T::Type,
-) where {PT}
-    C = MP.coefficient_type(PT)
-    U = MA.promote_operation(*, C, T)
-    V = MA.promote_operation(+, U, U)
-    return MP.polynomial_type(PT, V)
-end
-
 """
     struct Symmetry.Ideal{C,GT,AT<:SymbolicWedderburn.Action} <: SumOfSquares.Certificate.AbstractIdealCertificate
         pattern::Symmetry.Pattern{GT,AT}
@@ -89,8 +78,8 @@ end
 function SumOfSquares.Certificate.gram_basis_type(::Type{<:Ideal}, ::Type{M}) where {M}
     return Vector{Vector{MB.FixedPolynomialBasis}}
 end
-SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.MonomialBasis
-SumOfSquares.Certificate.zero_basis(::Ideal) = MB.MonomialBasis
+SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.Monomial
+SumOfSquares.Certificate.zero_basis(::Ideal) = MB.Monomial
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
     poly,

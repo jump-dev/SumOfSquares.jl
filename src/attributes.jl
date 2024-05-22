@@ -141,7 +141,7 @@ function MOI.Bridges.unbridged_function(
     ::MOI.Bridges.AbstractBridgeOptimizer,
     value::Union{
         GramMatrix{T},
-        MultivariateMoments.Measure{T},
+        MultivariateMoments.MomentVector{T},
     },
 ) where {T<:Number}
     return value

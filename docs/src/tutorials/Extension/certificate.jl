@@ -53,10 +53,10 @@ solution_summary(model)
 import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
-struct Schmüdgen{IC <: SOSC.AbstractIdealCertificate, CT <: SOS.SOSLikeCone, BT <: SOS.AbstractPolynomialBasis} <: SOSC.AbstractPreorderCertificate
+struct Schmüdgen{IC<:SOSC.AbstractIdealCertificate,CT<:SOS.SOSLikeCone,B<:SA.AbstractBasis} <: SOSC.AbstractPreorderCertificate
     ideal_certificate::IC
     cone::CT
-    basis::Type{BT}
+    basis::B
     maxdegree::Int
 end
 

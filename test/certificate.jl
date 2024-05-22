@@ -167,7 +167,7 @@ function _certificate_api(certificate::Certificate.AbstractCertificate)
 end
 function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
     @test basis isa basis_type
-    if basis isa MB.AbstractMonomialBasis
+    if basis isa MB.SubBasis
         # This fails if `basis` is `Vector{<:Monomial}` instead of `MonomialVector`
         # for DynamicPolynomials. This is important as
         # `polynomial(::AbstractMatrix, ::MonomialVector, ::Type)` is implemented but
@@ -233,7 +233,7 @@ end
 @testset "API" begin
     @polyvar x
     cone = SumOfSquares.SOSCone()
-    BT = MB.MonomialBasis
+    BT = MB.SubBasis{MB.Monomial}
     maxdegree = 2
     function _test(certificate::Certificate.AbstractIdealCertificate)
         certificate_api(certificate)

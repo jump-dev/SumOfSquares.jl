@@ -153,7 +153,7 @@ where `α` and `β` are JuMP decision variables and `x` and `y` are polynomial
 variables. Since the polynomial is a quadratic form, the sum-of-squares
 certificate is also a quadratic form (see [Blekherman2012; Section~3.3.4](@cite)). Hence the
 default polynomial basis used for the [Nonnegative polynomial variables]
-certificate is `MonomialBasis([x, y])`, that is, we search for a positive
+certificate is `MultivariateBases.SubBasis{MultivariateBases.Monomial}([x, y])`, that is, we search for a positive
 semidefinite matrix `Q` such that
 ```math
 \alpha x^2 + \beta y^2 - (\alpha - \beta) x y = X^\top Q X
@@ -164,7 +164,7 @@ As the polynomial space is determined by the polynomial being constrained,
 only the basis *type* needs to be given. For instance, to use the scaled monomial
 basis in the example above, use
 ```jldoctest constraint-xy
-julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y, basis = ScaledMonomialBasis)
+julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y, basis = ScaledMonomial)
 (β)y² + (-α + β)xy + (α)x² is SOS
 ```
 

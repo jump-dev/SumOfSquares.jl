@@ -183,14 +183,14 @@ function sparsity(
     return _monomial_vector(cliques)
 end
 # This also checks that it is indeed a monomial basis
-_monos(basis::MB.MonomialBasis) = basis.monomials
+_monos(basis::MB.SubBasis{MB.Monomial}) = basis.monomials
 function _gram_monos(
     vars,
-    certificate::SumOfSquares.Certificate.MaxDegree{CT,MB.MonomialBasis},
-) where {CT}
+    certificate::SumOfSquares.Certificate.MaxDegree,
+)
     return _monos(
         SumOfSquares.Certificate.maxdegree_gram_basis(
-            MB.MonomialBasis,
+            certificate.basis,
             vars,
             certificate.maxdegree,
         ),
@@ -255,6 +255,6 @@ function sparsity(
     )
     cliques, multiplier_cliques =
         sparsity(MP.monomials(poly), sp, gram_monos, multiplier_generator_monos)
-    return MB.MonomialBasis.(cliques),
-    [MB.MonomialBasis.(clique) for clique in multiplier_cliques]
+    return MB.SubBasis{MB.Monomial}.(cliques),
+    [MB.SubBasis{MB.Monomial}.(clique) for clique in multiplier_cliques]
 end

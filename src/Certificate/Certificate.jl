@@ -1,6 +1,7 @@
 module Certificate
 
 import MutableArithmetics as MA
+import StarAlgebras as SA
 import MultivariatePolynomials as MP
 import MultivariateBases as MB
 using SemialgebraicSets
@@ -45,7 +46,7 @@ function multiplier_basis_type end
 abstract type AbstractCertificate end
 
 function maxdegree_gram_basis(
-    B::Type{<:MB.AbstractMonomialBasis},
+    ::MB.FullBasis{MB.Monomial},
     bounds::DegreeBounds,
 )
     variables = MP.variables(bounds.variablewise_maxdegree)
@@ -53,15 +54,15 @@ function maxdegree_gram_basis(
         return MP.divides(bounds.variablewise_mindegree, mono) &&
                MP.divides(mono, bounds.variablewise_maxdegree)
     end
-    return B(MP.monomials(variables, bounds.mindegree:bounds.maxdegree, filter))
+    return MB.SubBasis{MB.Monomial}(MP.monomials(variables, bounds.mindegree:bounds.maxdegree, filter))
 end
-function maxdegree_gram_basis(B::Type, bounds::DegreeBounds)
+function maxdegree_gram_basis(basis::SA.AbstractBasis, bounds::DegreeBounds)
     # TODO use bounds here too
     variables = MP.variables(bounds.variablewise_maxdegree)
-    return maxdegree_gram_basis(B, variables, bounds.maxdegree)
+    return maxdegree_gram_basis(basis, variables, bounds.maxdegree)
 end
-function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
-    return MB.maxdegree_basis(B, variables, fld(maxdegree, 2))
+function maxdegree_gram_basis(basis::SA.AbstractBasis, variables, maxdegree::Int)
+    return MB.maxdegree_basis(basis, variables, fld(maxdegree, 2))
 end
 
 include("ideal.jl")
