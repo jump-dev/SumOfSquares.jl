@@ -167,7 +167,13 @@ end
 function MOI.supports_constraint(
     ::Type{ImageBridge{T}},
     ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:SOS.WeightedSOSCone{M,<:MB.SubBasis{MB.Monomial},<:MB.SubBasis{MB.Monomial}}},
+    ::Type{
+        <:SOS.WeightedSOSCone{
+            M,
+            <:MB.SubBasis{MB.Monomial},
+            <:MB.SubBasis{MB.Monomial},
+        },
+    },
 ) where {T,M}
     return true
 end

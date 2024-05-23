@@ -30,7 +30,10 @@ struct SOSPolynomialInSemialgebraicSetBridge{
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}},
     }
     lagrangian_constraints::Vector{UMCT}
-    constraint::MOI.ConstraintIndex{F,SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}}
+    constraint::MOI.ConstraintIndex{
+        F,
+        SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    }
     monomials::MVT
 end
 
@@ -197,13 +200,19 @@ function MOI.get(
 end
 function MOI.get(
     ::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
-    ::MOI.NumberOfConstraints{F,SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}},
+    ::MOI.NumberOfConstraints{
+        F,
+        SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    },
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
     return 1
 end
 function MOI.get(
     b::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
-    ::MOI.ListOfConstraintIndices{F,SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}},
+    ::MOI.ListOfConstraintIndices{
+        F,
+        SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    },
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
     return [b.constraint]
 end

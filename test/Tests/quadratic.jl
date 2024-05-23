@@ -129,13 +129,7 @@ end
 sd_tests["sos_scaled_univariate_quadratic"] =
     sos_scaled_univariate_quadratic_test
 function sos_scaled_bivariate_quadratic_test(optimizer, config)
-    return quadratic_test(
-        optimizer,
-        config,
-        SOSCone(),
-        MB.ScaledMonomial,
-        true,
-    )
+    return quadratic_test(optimizer, config, SOSCone(), MB.ScaledMonomial, true)
 end
 sd_tests["sos_scaled_bivariate_quadratic"] = sos_scaled_bivariate_quadratic_test
 function sos_cheby_univariate_quadratic_test(optimizer, config)

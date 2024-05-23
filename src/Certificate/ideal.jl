@@ -63,10 +63,8 @@ such that `p(x) - σ(x)` is guaranteed to be zero for all `x`
 such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with basis `basis`.
 """
-struct FixedBasis{
-    C<:SumOfSquares.SOSLikeCone,
-    B<:SA.ExplicitBasis,
-} <: SimpleIdealCertificate{C,B}
+struct FixedBasis{C<:SumOfSquares.SOSLikeCone,B<:SA.ExplicitBasis} <:
+       SimpleIdealCertificate{C,B}
     cone::C
     basis::B
 end

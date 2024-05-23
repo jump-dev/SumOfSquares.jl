@@ -19,7 +19,8 @@ for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
         struct $poly{B<:SA.ExplicitBasis} <: PolyJuMP.AbstractPoly
             basis::B
         end
-        $poly(monos::AbstractVector{<:_APL}) = $poly(MB.SubBasis{MB.Monomial}(monos))
+        $poly(monos::AbstractVector{<:_APL}) =
+            $poly(MB.SubBasis{MB.Monomial}(monos))
     end
 end
 

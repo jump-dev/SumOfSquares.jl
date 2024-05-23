@@ -8,8 +8,17 @@ struct SOSPolynomialBridge{
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
     W<:MP.AbstractTerm{T},
-} <: MOI.Bridges.Constraint.SetMapBridge{T,SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},F,F}
-    constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W}}
+} <: MOI.Bridges.Constraint.SetMapBridge{
+    T,
+    SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},
+    SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    F,
+    F,
+}
+    constraint::MOI.ConstraintIndex{
+        F,
+        SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},
+    }
     set::SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}
 end
 
@@ -47,10 +56,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
             [MP.term(one(T), MP.constant_monomial(p))],
         ),
     )
-    return SOSPolynomialBridge{T,F,DT,M,G,CT,MT,MVT,W}(
-        constraint,
-        set,
-    )
+    return SOSPolynomialBridge{T,F,DT,M,G,CT,MT,MVT,W}(constraint, set)
 end
 
 function MOI.supports_constraint(
@@ -92,7 +98,11 @@ function MOI.get(
     bridge::SOSPolynomialBridge,
 )
     return MultivariateMoments.Measure(
-        MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint),
+        MOI.get(
+            model,
+            MOI.ConstraintDual(attr.result_index),
+            bridge.constraint,
+        ),
         bridge.set.monomials,
     )
 end
@@ -107,7 +117,11 @@ end
 
 function MOI.get(
     model::MOI.ModelLike,
-    attr::Union{SOS.GramMatrixAttribute,SOS.MomentMatrixAttribute,SOS.SOSDecompositionAttribute},
+    attr::Union{
+        SOS.GramMatrixAttribute,
+        SOS.MomentMatrixAttribute,
+        SOS.SOSDecompositionAttribute,
+    },
     bridge::SOSPolynomialBridge,
 )
     SOS.check_multiplier_index_bounds(attr, 0:0)

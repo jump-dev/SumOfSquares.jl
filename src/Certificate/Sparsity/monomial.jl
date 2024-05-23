@@ -184,10 +184,7 @@ function sparsity(
 end
 # This also checks that it is indeed a monomial basis
 _monos(basis::MB.SubBasis{MB.Monomial}) = basis.monomials
-function _gram_monos(
-    vars,
-    certificate::SumOfSquares.Certificate.MaxDegree,
-)
+function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree)
     return _monos(
         SumOfSquares.Certificate.maxdegree_gram_basis(
             certificate.basis,

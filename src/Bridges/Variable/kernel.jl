@@ -125,7 +125,14 @@ function MOI.get(
 ) where {T,M}
     SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
     return SOS.build_gram_matrix(
-        convert(Vector{T}, MOI.get(model, _attr(attr), bridge.constraints[attr.multiplier_index])),
+        convert(
+            Vector{T},
+            MOI.get(
+                model,
+                _attr(attr),
+                bridge.constraints[attr.multiplier_index],
+            ),
+        ),
         bridge.set.gram_bases[attr.multiplier_index],
         M,
         T,

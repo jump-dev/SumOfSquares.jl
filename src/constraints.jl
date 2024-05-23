@@ -253,7 +253,11 @@ end
 
 _concrete_basis(basis::SA.AbstractBasis, _, _) = basis
 
-function _concrete_basis(::Type{B}, ::AbstractVector{M}, ::D) where {B<:MB.AbstractMonomialIndexed,M,D}
+function _concrete_basis(
+    ::Type{B},
+    ::AbstractVector{M},
+    ::D,
+) where {B<:MB.AbstractMonomialIndexed,M,D}
     return MB.FullBasis{B,_promote_monomial_type(M, D)}()
 end
 
@@ -287,7 +291,11 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(domain, MB.SubBasis{MB.Monomial}(monos), certificate)
+    return SOSPolynomialSet(
+        domain,
+        MB.SubBasis{MB.Monomial}(monos),
+        certificate,
+    )
 end
 
 function PolyJuMP.bridges(
@@ -318,21 +326,15 @@ function PolyJuMP.bridges(
     return [(Bridges.Constraint.ScaledDiagonallyDominantBridge, Float64)]
 end
 
-function _bridge_coefficient_type(
-    ::Type{<:WeightedSOSCone{M}},
-) where {M}
+function _bridge_coefficient_type(::Type{<:WeightedSOSCone{M}}) where {M}
     return _complex(Float64, M)
 end
 
-function _bridge_coefficient_type(
-    ::Type{SOSPolynomialSet{D,B,C}},
-) where {D,B,C}
+function _bridge_coefficient_type(::Type{SOSPolynomialSet{D,B,C}}) where {D,B,C}
     return _complex(Float64, matrix_cone_type(C))
 end
 
-function PolyJuMP.bridges(
-    S::Type{<:WeightedSOSCone},
-)
+function PolyJuMP.bridges(S::Type{<:WeightedSOSCone})
     return Tuple{Type,Type}[(
         Bridges.Variable.KernelBridge,
         _bridge_coefficient_type(S),

@@ -181,8 +181,7 @@ function _basis_check_each(basis::SA.ExplicitBasis, basis_type)
     end
 end
 function _basis_check(basis, basis_type)
-    @test basis isa SA.ExplicitBasis ||
-          basis isa Vector{<:SA.ExplicitBasis}
+    @test basis isa SA.ExplicitBasis || basis isa Vector{<:SA.ExplicitBasis}
     if basis isa Vector
         # FIXME `basis_type` is `Vector{MB.MonomialBasis}` instead of `Vector{MB.MonomialBasis{...}}`
         # Once this is fixed, we should check
@@ -220,7 +219,10 @@ function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
     for idx in Certificate.preorder_indices(certificate, processed)
         _basis_check(
             Certificate.multiplier_basis(certificate, idx, processed),
-            Certificate.multiplier_basis_type(typeof(certificate), MP.monomial_type(x)),
+            Certificate.multiplier_basis_type(
+                typeof(certificate),
+                MP.monomial_type(x),
+            ),
         )
         @test Certificate.generator(certificate, idx, processed) isa
               MP.AbstractPolynomial
@@ -296,7 +298,11 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
         if post_filter
             newton = Certificate.NewtonFilter(newton)
         end
-        cert = Certificate.Newton(SOSCone(), MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(), newton)
+        cert = Certificate.Newton(
+            SOSCone(),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(),
+            newton,
+        )
         certificate = Certificate.Putinar(cert, cert, max(2i, 2j + 1, 2k + 1))
     end
     processed = Certificate.preprocessed_domain(certificate, domain, poly)

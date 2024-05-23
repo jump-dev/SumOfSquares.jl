@@ -8,7 +8,11 @@ include("Constraint/Constraint.jl")
 
 function MOI.get(
     model::MOI.ModelLike,
-    attr::Union{SOS.GramMatrixAttribute,SOS.MomentMatrixAttribute,SOS.SOSDecompositionAttribute},
+    attr::Union{
+        SOS.GramMatrixAttribute,
+        SOS.MomentMatrixAttribute,
+        SOS.SOSDecompositionAttribute,
+    },
     bridge::MOI.Bridges.Constraint.VectorSlackBridge,
 )
     return MOI.get(model, attr, bridge.slack_in_set)

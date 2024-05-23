@@ -541,7 +541,10 @@ function half_newton_polytope(
     bases = [multiplier_basis(g, bounds).monomials for g in gs]
     push!(
         bases,
-        maxdegree_gram_basis(MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(), _half(bounds)).monomials,
+        maxdegree_gram_basis(
+            MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
+            _half(bounds),
+        ).monomials,
     )
     gs = copy(gs)
     push!(gs, one(eltype(gs)))
