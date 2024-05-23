@@ -51,7 +51,11 @@ function term_test(
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
         SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
-        SumOfSquares.Certificate.Newton{typeof(cone),FullBasis{Monomial,monomial_type(x)},N},
+        SumOfSquares.Certificate.Newton{
+            typeof(cone),
+            FullBasis{Monomial,monomial_type(x)},
+            N,
+        },
     }
     @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
     return test_delete_bridge(

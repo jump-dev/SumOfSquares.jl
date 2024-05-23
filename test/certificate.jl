@@ -292,7 +292,11 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
     domain = @set y^(2k + 1) >= 0
     if default
         certificate =
-            JuMP.moi_set(SOSCone(), MB.SubBasis{MB.Monomial}(monomials(poly)); domain).certificate
+            JuMP.moi_set(
+                SOSCone(),
+                MB.SubBasis{MB.Monomial}(monomials(poly));
+                domain,
+            ).certificate
     else
         newton = Certificate.NewtonDegreeBounds(tuple())
         if post_filter

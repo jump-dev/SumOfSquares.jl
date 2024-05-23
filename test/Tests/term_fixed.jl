@@ -53,7 +53,11 @@ function term_fixed_test(
         typeof(set),
         SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Remainder{
-            SumOfSquares.Certificate.Newton{typeof(cone),FullBasis{Monomial,monomial_type(x)},N},
+            SumOfSquares.Certificate.Newton{
+                typeof(cone),
+                FullBasis{Monomial,monomial_type(x)},
+                N,
+            },
         },
     }
     @test list_of_constraint_types(model) == [(Vector{JuMP.AffExpr}, S)]

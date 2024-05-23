@@ -261,11 +261,7 @@ function _default_basis(
     return MB.FullBasis{B,_promote_monomial_type(M, D)}()
 end
 
-function _default_basis(
-    ::Nothing,
-    basis::SubBasis,
-    domain,
-)
+function _default_basis(::Nothing, basis::SubBasis, domain)
     return _default_basis(MB.Monomial, basis, domain)
 end
 
@@ -299,11 +295,7 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(
-        domain,
-        b,
-        certificate,
-    )
+    return SOSPolynomialSet(domain, b, certificate)
 end
 
 function PolyJuMP.bridges(
