@@ -251,23 +251,31 @@ function _promote_monomial_type(::Type{M1}, ::Type{D}) where {M1,D}
     end
 end
 
-_concrete_basis(basis::SA.AbstractBasis, _, _) = basis
+_default_basis(basis::SA.AbstractBasis, _, _) = basis
 
-function _concrete_basis(
+function _default_basis(
     ::Type{B},
-    ::AbstractVector{M},
+    ::SubBasis{_B,M},
     ::D,
-) where {B<:MB.AbstractMonomialIndexed,M,D}
+) where {B<:MB.AbstractMonomialIndexed,_B,M,D}
     return MB.FullBasis{B,_promote_monomial_type(M, D)}()
+end
+
+function _default_basis(
+    ::Nothing,
+    basis::SubBasis,
+    domain,
+)
+    return _default_basis(MB.Monomial, basis, domain)
 end
 
 function JuMP.moi_set(
     cone::SOSLikeCone,
-    monos::AbstractVector{<:MP.AbstractMonomial};
+    b::SA.ExplicitBasis;
     domain::AbstractSemialgebraicSet = FullSpace(),
-    basis = MB.Monomial,
+    basis = nothing,
     newton_polytope::Union{Nothing,Tuple} = tuple(),
-    maxdegree::Union{Nothing,Int} = default_maxdegree(monos, domain),
+    maxdegree::Union{Nothing,Int} = default_maxdegree(b, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
     newton_of_remainder::Bool = false,
@@ -276,7 +284,7 @@ function JuMP.moi_set(
         newton_of_remainder,
         symmetry,
         sparsity,
-        _concrete_basis(basis, monos, domain),
+        _default_basis(basis, b, domain),
         cone,
         maxdegree,
         newton_polytope,
@@ -286,14 +294,14 @@ function JuMP.moi_set(
         sparsity,
         ideal_certificate,
         cone,
-        _concrete_basis(basis, monos, domain),
+        _default_basis(basis, b, domain),
         maxdegree,
         newton_polytope,
     ),
 )
     return SOSPolynomialSet(
         domain,
-        MB.SubBasis{MB.Monomial}(monos),
+        b,
         certificate,
     )
 end

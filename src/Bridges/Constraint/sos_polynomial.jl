@@ -3,7 +3,7 @@ struct SOSPolynomialBridge{
     F<:MOI.AbstractVectorFunction,
     DT<:SemialgebraicSets.AbstractSemialgebraicSet,
     M,
-    G<:MB.AbstractPolynomialBasis,
+    G<:SA.ExplicitBasis,
     CT<:SOS.Certificate.AbstractIdealCertificate,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
@@ -28,11 +28,11 @@ function MOI.Bridges.Constraint.bridge_constraint(
     func::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet},
 ) where {T,F,DT,M,G,CT,MT,MVT,W}
-    @assert MOI.output_dimension(func) == length(set.monomials)
+    @assert MOI.output_dimension(func) == length(set.basis)
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
-    # The monomials may be copied by MA however so we need to copy it.
-    p = MP.polynomial(MOI.Utilities.scalarize(func), copy(set.monomials))
+    # The basis may be copied by MA however so we need to copy it.
+    p = MP.polynomial(MOI.Utilities.scalarize(func), copy(set.basis))
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
     # need to call `similar`. This is critical since `T` is
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
@@ -51,7 +51,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         model,
         func,
         SOS.WeightedSOSCone{M}(
-            MB.SubBasis{MB.Monomial}(set.monomials),
+            set.basis,
             [gram_basis],
             [MP.term(one(T), MP.constant_monomial(p))],
         ),
@@ -97,13 +97,13 @@ function MOI.get(
     attr::PolyJuMP.MomentsAttribute,
     bridge::SOSPolynomialBridge,
 )
-    return MultivariateMoments.Measure(
+    return MultivariateMoments.moment_vector(
         MOI.get(
             model,
             MOI.ConstraintDual(attr.result_index),
             bridge.constraint,
         ),
-        bridge.set.monomials,
+        bridge.set.basis,
     )
 end
 

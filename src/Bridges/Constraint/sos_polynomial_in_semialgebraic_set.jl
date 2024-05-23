@@ -15,7 +15,7 @@ struct SOSPolynomialInSemialgebraicSetBridge{
     F<:MOI.AbstractVectorFunction,
     DT<:SemialgebraicSets.AbstractSemialgebraicSet,
     CT<:Certificate.AbstractIdealCertificate,
-    B<:Union{Vector{<:MB.AbstractPolynomialBasis},MB.AbstractPolynomialBasis},
+    B<:Union{Vector{<:MB.SA.ExplicitBasis},MB.SA.ExplicitBasis},
     UMCT<:Union{
         Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
         MOI.ConstraintIndex{MOI.VectorOfVariables},

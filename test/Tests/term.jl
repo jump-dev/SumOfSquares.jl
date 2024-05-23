@@ -38,7 +38,7 @@ function term_test(
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 1
         @test moment_value(moments(μ)[1]) ≈ 1.0 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == x^2
+        @test moments(μ)[1].polynomial.monomial == x^2
     end
 
     ν = moment_matrix(cref)
@@ -50,8 +50,8 @@ function term_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
-        SumOfSquares.Certificate.Newton{typeof(cone),MonomialBasis,N},
+        SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
+        SumOfSquares.Certificate.Newton{typeof(cone),FullBasis{Monomial,monomial_type(x)},N},
     }
     @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
     return test_delete_bridge(
@@ -64,9 +64,7 @@ function term_test(
                 MOI.VectorAffineFunction{Float64},
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     SumOfSquares.FullSpace,
-                    MonomialBasis,
-                    monomial_type(x),
-                    monomial_vector_type(x),
+                    SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
                 },
                 0,
             ),

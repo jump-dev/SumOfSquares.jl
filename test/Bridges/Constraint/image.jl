@@ -1,6 +1,7 @@
 module TestConstraintImage
 
 using Test
+import MultivariateBases as MB
 using DynamicPolynomials
 using SumOfSquares
 

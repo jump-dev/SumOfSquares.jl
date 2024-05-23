@@ -3,6 +3,7 @@ module Constraint
 using LinearAlgebra
 
 import MutableArithmetics as MA
+import StarAlgebras as SA
 
 import MathOptInterface as MOI
 
