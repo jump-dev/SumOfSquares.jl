@@ -110,11 +110,11 @@ function quadratic_test(
     )
 end
 function sos_univariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SOSCone(), MonomialBasis, false)
+    return quadratic_test(optimizer, config, SOSCone(), MB.Monomial, false)
 end
 sd_tests["sos_univariate_quadratic"] = sos_univariate_quadratic_test
 function sos_bivariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SOSCone(), MonomialBasis, true)
+    return quadratic_test(optimizer, config, SOSCone(), MB.Monomial, true)
 end
 sd_tests["sos_bivariate_quadratic"] = sos_bivariate_quadratic_test
 function sos_scaled_univariate_quadratic_test(optimizer, config)
@@ -122,7 +122,7 @@ function sos_scaled_univariate_quadratic_test(optimizer, config)
         optimizer,
         config,
         SOSCone(),
-        ScaledMonomialBasis,
+        MB.ScaledMonomial,
         false,
     )
 end
@@ -133,7 +133,7 @@ function sos_scaled_bivariate_quadratic_test(optimizer, config)
         optimizer,
         config,
         SOSCone(),
-        ScaledMonomialBasis,
+        MB.ScaledMonomial,
         true,
     )
 end
@@ -148,11 +148,11 @@ end
 sd_tests["sos_scaled_bivariate_quadratic"] = sos_scaled_bivariate_quadratic_test
 
 function sdsos_univariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SDSOSCone(), MonomialBasis, false)
+    return quadratic_test(optimizer, config, SDSOSCone(), MB.Monomial, false)
 end
 soc_tests["sdsos_univariate_quadratic"] = sdsos_univariate_quadratic_test
 function sdsos_bivariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SDSOSCone(), MonomialBasis, true)
+    return quadratic_test(optimizer, config, SDSOSCone(), MB.Monomial, true)
 end
 soc_tests["sdsos_bivariate_quadratic"] = sdsos_bivariate_quadratic_test
 function sdsos_scaled_univariate_quadratic_test(optimizer, config)
@@ -160,7 +160,7 @@ function sdsos_scaled_univariate_quadratic_test(optimizer, config)
         optimizer,
         config,
         SDSOSCone(),
-        ScaledMonomialBasis,
+        MB.ScaledMonomial,
         false,
     )
 end
@@ -171,29 +171,29 @@ function sdsos_scaled_bivariate_quadratic_test(optimizer, config)
         optimizer,
         config,
         SDSOSCone(),
-        ScaledMonomialBasis,
+        MB.ScaledMonomial,
         true,
     )
 end
 soc_tests["sdsos_scaled_bivariate_quadratic"] =
     sdsos_scaled_bivariate_quadratic_test
 function sdsos_cheby_univariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SDSOSCone(), ChebyshevBasis, false)
+    return quadratic_test(optimizer, config, SDSOSCone(), MB.Chebyshev, false)
 end
 soc_tests["sdsos_cheby_univariate_quadratic"] =
     sdsos_cheby_univariate_quadratic_test
 function sdsos_cheby_bivariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SDSOSCone(), ChebyshevBasis, true)
+    return quadratic_test(optimizer, config, SDSOSCone(), MB.Chebyshev, true)
 end
 soc_tests["sdsos_scaled_bivariate_quadratic"] =
     sdsos_scaled_bivariate_quadratic_test
 
 function dsos_univariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, DSOSCone(), MonomialBasis, false)
+    return quadratic_test(optimizer, config, DSOSCone(), MB.Monomial, false)
 end
 linear_tests["dsos_univariate_quadratic"] = dsos_univariate_quadratic_test
 function dsos_bivariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, DSOSCone(), MonomialBasis, true)
+    return quadratic_test(optimizer, config, DSOSCone(), MB.Monomial, true)
 end
 linear_tests["dsos_bivariate_quadratic"] = dsos_bivariate_quadratic_test
 function dsos_scaled_univariate_quadratic_test(optimizer, config)
@@ -201,7 +201,7 @@ function dsos_scaled_univariate_quadratic_test(optimizer, config)
         optimizer,
         config,
         DSOSCone(),
-        ScaledMonomialBasis,
+        MB.ScaledMonomial,
         false,
     )
 end
@@ -212,19 +212,19 @@ function dsos_scaled_bivariate_quadratic_test(optimizer, config)
         optimizer,
         config,
         DSOSCone(),
-        ScaledMonomialBasis,
+        MB.ScaledMonomial,
         true,
     )
 end
 linear_tests["dsos_scaled_bivariate_quadratic"] =
     dsos_scaled_bivariate_quadratic_test
 function dsos_cheby_univariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, DSOSCone(), ChebyshevBasis, false)
+    return quadratic_test(optimizer, config, DSOSCone(), MB.Chebyshev, false)
 end
 linear_tests["dsos_cheby_univariate_quadratic"] =
     dsos_cheby_univariate_quadratic_test
 function dsos_cheby_bivariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, DSOSCone(), ChebyshevBasis, true)
+    return quadratic_test(optimizer, config, DSOSCone(), MB.Chebyshev, true)
 end
 linear_tests["dsos_cheby_bivariate_quadratic"] =
     dsos_cheby_bivariate_quadratic_test

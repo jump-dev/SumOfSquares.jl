@@ -16,10 +16,10 @@ end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
     @eval begin
-        struct $poly{PB<:AbstractPolynomialBasis} <: PolyJuMP.AbstractPoly
-            polynomial_basis::PB
+        struct $poly{B<:SA.ExplicitBasis} <: PolyJuMP.AbstractPoly
+            basis::B
         end
-        $poly(x::AbstractVector{<:_APL}) = $poly(MB.SubBasis{MB.Monomial}(x))
+        $poly(monos::AbstractVector{<:_APL}) = $poly(MB.SubBasis{MB.Monomial}(monos))
     end
 end
 
@@ -55,7 +55,7 @@ function JuMP.add_variable(
     ::String = "",
 )
     MCT = matrix_cone_type(v.p)
-    set = matrix_cone(MCT, length(v.p.polynomial_basis))
+    set = matrix_cone(MCT, length(v.p.basis))
     # FIXME There is no variable bridge mechanism yet:
     #       https://github.com/jump-dev/MathOptInterface.jl/issues/710
     #       so there is no equivalent to `BridgeableConstraint`.
@@ -72,7 +72,7 @@ function JuMP.add_variable(
     Q = moi_add_variable(backend(model), set, v.binary, v.integer)
     return build_gram_matrix(
         JuMP.VariableRef[JuMP.VariableRef(model, vi) for vi in Q],
-        v.p.polynomial_basis,
+        v.p.basis,
         MCT,
         Float64,
     )

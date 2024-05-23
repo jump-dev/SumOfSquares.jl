@@ -18,7 +18,8 @@ jobs:
           using Pkg
           Pkg.add([
               PackageSpec(name="MathOptInterface", rev="master"),
-              PackageSpec(name="StarAlgebras", rev="mk/non_monomial_basis"),
+              PackageSpec(name="StarAlgebras", rev="bl/eachindex"),
+              PackageSpec(name="SymbolicWedderburn", rev="bl/supp"),
               PackageSpec(name="MultivariateBases", rev="master"),
               PackageSpec(name="SemialgebraicSets", rev="master"),
               PackageSpec(name="MultivariateMoments", rev="master"),

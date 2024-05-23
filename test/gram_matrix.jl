@@ -195,7 +195,7 @@ using LinearAlgebra, Test, SumOfSquares
         v = MOI.VariableIndex.(1:3)
         w = MOI.VariableIndex.(1:4)
         @polyvar x y
-        basis = MonomialBasis(monomials([x, y], 1))
+        basis = MB.SubBasis{MB.Monomial}(monomials([x, y], 1))
         @testset "$T" for T in [Float64, Int, BigFloat]
             #@test_throws DimensionMismatch SumOfSquares.build_gram_matrix(w, basis, T, MOI.PositiveSemidefiniteConeTriangle)
             g = SumOfSquares.build_gram_matrix(
