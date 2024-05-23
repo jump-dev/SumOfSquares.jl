@@ -242,6 +242,21 @@ function default_maxdegree(monos, domain)
     return max(MP.maxdegree(monos), _maxdegree(domain))
 end
 
+function _promote_monomial_type(::Type{M1}, ::Type{D}) where {M1,D}
+    M2 = MP.monomial_type(D)
+    if isnothing(M2)
+        return M1
+    else
+        return promote_type(M1, M2)
+    end
+end
+
+_concrete_basis(basis::SA.AbstractBasis, _, _) = basis
+
+function _concrete_basis(::Type{B}, ::AbstractVector{M}, ::D) where {B<:MB.AbstractMonomialIndexed,M,D}
+    return MB.FullBasis{B,_promote_monomial_type(M, D)}()
+end
+
 function JuMP.moi_set(
     cone::SOSLikeCone,
     monos::AbstractVector{<:MP.AbstractMonomial};
@@ -257,7 +272,7 @@ function JuMP.moi_set(
         newton_of_remainder,
         symmetry,
         sparsity,
-        basis,
+        _concrete_basis(basis, monos, domain),
         cone,
         maxdegree,
         newton_polytope,
@@ -267,7 +282,7 @@ function JuMP.moi_set(
         sparsity,
         ideal_certificate,
         cone,
-        basis,
+        _concrete_basis(basis, monos, domain),
         maxdegree,
         newton_polytope,
     ),

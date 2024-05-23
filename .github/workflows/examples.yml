@@ -17,6 +17,12 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
+              PackageSpec(name="MathOptInterface", rev="master"),
+              PackageSpec(name="StarAlgebras", rev="mk/non_monomial_basis"),
+              PackageSpec(name="MultivariateBases", rev="master"),
+              PackageSpec(name="SemialgebraicSets", rev="master"),
+              PackageSpec(name="MultivariateMoments", rev="master"),
+              PackageSpec(name="PolyJuMP", rev="master"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()

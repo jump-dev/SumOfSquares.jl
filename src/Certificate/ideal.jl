@@ -21,9 +21,9 @@ function zero_basis_type(::Type{<:SimpleIdealCertificate{C,B}}) where {C,B}
 end
 
 """
-    struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
-        cone::CT
-        basis::Type{BT}
+    struct MaxDegree{C<:SumOfSquares.SOSLikeCone,B<:SA.AbstractBasis} <: SimpleIdealCertificate{C,B}
+        cone::C
+        basis::B
         maxdegree::Int
     end
 
@@ -34,9 +34,9 @@ such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with a basis of type `basis` such that
 the degree of `σ(x)` does not exceed `maxdegree`.
 """
-struct MaxDegree{CT<:SumOfSquares.SOSLikeCone,B<:SA.AbstractBasis} <:
-       SimpleIdealCertificate{CT,B}
-    cone::CT
+struct MaxDegree{C<:SumOfSquares.SOSLikeCone,B<:SA.AbstractBasis} <:
+       SimpleIdealCertificate{C,B}
+    cone::C
     basis::B
     maxdegree::Int
 end
@@ -47,12 +47,12 @@ function gram_basis(certificate::MaxDegree, poly)
         certificate.maxdegree,
     )
 end
-function gram_basis_type(::Type{MaxDegree{CT,BT}}, ::Type{M}) where {CT,BT,M}
-    return MB.similar_type(BT, M)
+function gram_basis_type(::Type{MaxDegree{C,B}}, ::Type{M}) where {C,B,M} # TODO remove `M` it's not needed anymore
+    return MB.explicit_basis_type(B)
 end
 
 """
-    struct FixedBasis{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+    struct FixedBasis{C<:SumOfSquares.SOSLikeCone,B<:SA.ExplicitBasis} <: SimpleIdealCertificate{C,B}
         cone::CT
         basis::BT
     end
@@ -64,24 +64,26 @@ such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with basis `basis`.
 """
 struct FixedBasis{
-    CT<:SumOfSquares.SOSLikeCone,
-    BT<:MB.AbstractPolynomialBasis,
-} <: SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::BT
+    C<:SumOfSquares.SOSLikeCone,
+    B<:SA.ExplicitBasis,
+} <: SimpleIdealCertificate{C,B}
+    cone::C
+    basis::B
 end
-function gram_basis(certificate::FixedBasis, poly)
+function gram_basis(certificate::FixedBasis, _)
     return certificate.basis
 end
-function gram_basis_type(::Type{FixedBasis{CT,BT}}, ::Type{M}) where {CT,BT,M}
-    return MB.similar_type(BT, M)
-end
+gram_basis_type(::Type{FixedBasis{C,B}}, ::Type) where {C,B} = B
 
 """
-    struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, NPT <: Tuple} <: SimpleIdealCertificate{CT, BT}
-        cone::CT
-        basis::Type{BT}
-        variable_groups::NPT
+    struct Newton{
+        C<:SumOfSquares.SOSLikeCone,
+        B<:SA.AbstractBasis,
+        N<:AbstractNewtonPolytopeApproximation,
+    } <: SimpleIdealCertificate{C,B}
+        cone::C
+        basis::B
+        newton::N
     end
 
 The `Newton` certificate ensures the nonnegativity of `p(x)` for all `x` such that
@@ -94,12 +96,12 @@ If `variable_groups = tuple()` then it falls back to the classical Newton polyto
 with all variables in the same part.
 """
 struct Newton{
-    CT<:SumOfSquares.SOSLikeCone,
-    BT<:MB.AbstractPolynomialBasis,
+    C<:SumOfSquares.SOSLikeCone,
+    B<:SA.AbstractBasis,
     N<:AbstractNewtonPolytopeApproximation,
-} <: SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::Type{BT}
+} <: SimpleIdealCertificate{C,B}
+    cone::C
+    basis::B
     newton::N
 end
 
@@ -111,15 +113,15 @@ function Newton(cone, basis, variable_groups::Tuple)
     )
 end
 
-function gram_basis(certificate::Newton{CT,B}, poly) where {CT,B}
+function gram_basis(certificate::Newton, poly)
     return MB.basis_covering_monomials(
-        B,
+        certificate.basis,
         monomials_half_newton_polytope(MP.monomials(poly), certificate.newton),
     )
 end
 
-function gram_basis_type(::Type{<:Newton{CT,BT}}, ::Type{M}) where {CT,BT,M}
-    return MB.similar_type(BT, M)
+function gram_basis_type(::Type{<:Newton{C,B}}, ::Type{M}) where {C,B,M}
+    return MB.explicit_basis_type(B)
 end
 
 """

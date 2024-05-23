@@ -1,5 +1,5 @@
+import StarAlgebras as SA
 import MultivariatePolynomials as MP
-
 import MultivariateBases as MB
 
 @testset "_merge_sorted" begin
@@ -165,7 +165,7 @@ function _certificate_api(certificate::Certificate.AbstractCertificate)
     @test SumOfSquares.matrix_cone_type(typeof(certificate)) <:
           MOI.AbstractVectorSet
 end
-function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
+function _basis_check_each(basis::SA.ExplicitBasis, basis_type)
     @test basis isa basis_type
     if basis isa MB.SubBasis
         # This fails if `basis` is `Vector{<:Monomial}` instead of `MonomialVector`
@@ -181,14 +181,14 @@ function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
     end
 end
 function _basis_check(basis, basis_type)
-    @test basis isa MB.AbstractPolynomialBasis ||
-          basis isa Vector{<:MB.AbstractPolynomialBasis}
+    @test basis isa SA.ExplicitBasis ||
+          basis isa Vector{<:SA.ExplicitBasis}
     if basis isa Vector
         # FIXME `basis_type` is `Vector{MB.MonomialBasis}` instead of `Vector{MB.MonomialBasis{...}}`
         # Once this is fixed, we should check
         # @test basis isa basis_type
         for b in basis
-            _basis_check_each(b, eltype(basis_type))
+            _basis_check_each(b, basis_type)
         end
     else
         _basis_check_each(basis, basis_type)
@@ -207,8 +207,8 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
         Certificate.gram_basis_type(typeof(certificate), MP.monomial_type(x)),
     )
     zbasis = Certificate.zero_basis(certificate)
-    @test zbasis <: MB.AbstractPolynomialBasis
-    @test zbasis == Certificate.zero_basis_type(typeof(certificate))
+    @test zbasis isa SA.AbstractBasis
+    @test zbasis isa Certificate.zero_basis_type(typeof(certificate))
 end
 
 function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
@@ -233,7 +233,8 @@ end
 @testset "API" begin
     @polyvar x
     cone = SumOfSquares.SOSCone()
-    BT = MB.SubBasis{MB.Monomial}
+    B = MB.Monomial
+    full_basis = MB.FullBasis{B,MP.monomial_type(x)}()
     maxdegree = 2
     function _test(certificate::Certificate.AbstractIdealCertificate)
         certificate_api(certificate)
@@ -245,7 +246,7 @@ end
             mult_cert = mult_cert.gram_certificate
         end
         if mult_cert isa Certificate.FixedBasis # FIXME not supported yet
-            mult_cert = Certificate.MaxDegree(cone, BT, maxdegree)
+            mult_cert = Certificate.MaxDegree(cone, full_basis, maxdegree)
         end
         preorder = Certificate.Putinar(mult_cert, certificate, maxdegree)
         certificate_api(preorder)
@@ -257,18 +258,18 @@ end
             certificate_api(Certificate.Sparsity.Preorder(sparsity, preorder))
         end
     end
-    basis = BT(monomial_vector([x^2, x]))
-    @testset "$(typeof(certificate))" for certificate in [
-        Certificate.MaxDegree(cone, BT, maxdegree),
+    basis = MB.SubBasis{B}(monomial_vector([x^2, x]))
+    @testset "$(nameof(typeof(certificate)))" for certificate in [
+        Certificate.MaxDegree(cone, full_basis, maxdegree),
         Certificate.FixedBasis(cone, basis),
-        Certificate.Newton(cone, BT, tuple()),
+        Certificate.Newton(cone, full_basis, tuple()),
     ]
         _test(certificate)
         _test(Certificate.Remainder(certificate))
         if certificate isa Certificate.MaxDegree
             _test(Certificate.Sparsity.Ideal(Sparsity.Variable(), certificate))
         end
-        @testset "$(typeof(sparsity))" for sparsity in [
+        @testset "$(nameof(typeof(sparsity)))" for sparsity in [
             SignSymmetry(),
             Sparsity.Monomial(ChordalCompletion(), 1),
         ]
@@ -295,7 +296,7 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
         if post_filter
             newton = Certificate.NewtonFilter(newton)
         end
-        cert = Certificate.Newton(SOSCone(), MB.MonomialBasis, newton)
+        cert = Certificate.Newton(SOSCone(), MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(), newton)
         certificate = Certificate.Putinar(cert, cert, max(2i, 2j + 1, 2k + 1))
     end
     processed = Certificate.preprocessed_domain(certificate, domain, poly)
