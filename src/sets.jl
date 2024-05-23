@@ -155,28 +155,26 @@ end
 
 """
     struct SOSPolynomialSet{
-        DT<:AbstractSemialgebraicSet,
-        MT<:MP.AbstractMonomial,
-        MVT<:AbstractVector{MT},
-        CT<:Certificate.AbstractCertificate,
+        D<:AbstractSemialgebraicSet,
+        B<:SA.ExplicitBasis,
+        C<:Certificate.AbstractCertificate,
     } <: MOI.AbstractVectorSet
-        domain::DT
-        monomials::MVT
-        certificate::CT
+        domain::D
+        basis::B
+        certificate::C
     end
 
-The sum-of-squares cone is the set of vectors of coefficients `a` for monomials `monomials`
+The Sum-of-Squares cone is the set of vectors of coefficients `a` for `basis`
 for which the polynomial is a sum-of-squares `certificate` over `domain`.
 """
 struct SOSPolynomialSet{
-    DT<:AbstractSemialgebraicSet,
-    MT<:MP.AbstractMonomial,
-    MVT<:AbstractVector{MT},
-    CT<:Certificate.AbstractCertificate,
+    D<:AbstractSemialgebraicSet,
+    B<:SA.ExplicitBasis,
+    C<:Certificate.AbstractCertificate,
 } <: MOI.AbstractVectorSet
-    domain::DT
-    monomials::MVT
-    certificate::CT
+    domain::D
+    basis::B
+    certificate::C
 end
-MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)
+MOI.dimension(set::SOSPolynomialSet) = length(set.basis)
 Base.copy(set::SOSPolynomialSet) = set

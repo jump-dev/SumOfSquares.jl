@@ -85,8 +85,7 @@ function quadratic_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        monomial_type(x),
-        monomial_vector_type(x),
+        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Newton{typeof(cone),basis,N},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]

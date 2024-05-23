@@ -36,8 +36,7 @@ function univariate_sum_test(
 
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        monomial_type(x),
-        monomial_vector_type(x),
+        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Sparsity.Ideal{
             Sparsity.Variable,
             SumOfSquares.Certificate.MaxDegree{typeof(cone),MonomialBasis},

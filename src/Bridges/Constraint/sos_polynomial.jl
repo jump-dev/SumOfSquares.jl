@@ -8,9 +8,9 @@ struct SOSPolynomialBridge{
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
     W<:MP.AbstractTerm{T},
-} <: MOI.Bridges.Constraint.SetMapBridge{T,SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},SOS.SOSPolynomialSet{DT,MT,MVT,CT},F,F}
+} <: MOI.Bridges.Constraint.SetMapBridge{T,SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},F,F}
     constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W}}
-    set::SOS.SOSPolynomialSet{DT,MT,MVT,CT}
+    set::SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
@@ -64,7 +64,7 @@ end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:SOS.SOSPolynomialSet{DT,MT,MVT,CT}},
+    ::Type{SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}},
 ) where {T,DT<:SemialgebraicSets.AbstractAlgebraicSet,MT,MVT,CT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases

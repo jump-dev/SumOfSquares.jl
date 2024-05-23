@@ -51,8 +51,7 @@ function term_fixed_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         typeof(set),
-        monomial_type(x),
-        monomial_vector_type(x),
+        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Remainder{
             SumOfSquares.Certificate.Newton{typeof(cone),MonomialBasis,N},
         },

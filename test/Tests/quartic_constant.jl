@@ -37,8 +37,7 @@ function quartic_constant_test(
 
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        monomial_type(x),
-        monomial_vector_type(x),
+        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.FixedBasis{typeof(cone),typeof(p.basis)},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]

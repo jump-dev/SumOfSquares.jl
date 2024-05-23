@@ -30,7 +30,7 @@ struct SOSPolynomialInSemialgebraicSetBridge{
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}},
     }
     lagrangian_constraints::Vector{UMCT}
-    constraint::MOI.ConstraintIndex{F,SOS.SOSPolynomialSet{DT,MT,MVT,CT}}
+    constraint::MOI.ConstraintIndex{F,SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}}
     monomials::MVT
 end
 
@@ -77,7 +77,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # For terms, `monomials` is `OneOrZeroElementVector`
         # so we convert it with `monomial_vector`
         # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
-        MP.monomial_vector(MP.monomials(p)),
+        MB.SubBasis{MB.Monomial}(MP.monomial_vector(MP.monomials(p))),
         Certificate.ideal_certificate(set.certificate),
     )
     constraint = MOI.add_constraint(
@@ -123,7 +123,7 @@ function MOI.Bridges.added_constraint_types(
         SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
     },
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
-    return [(F, SOS.SOSPolynomialSet{DT,MT,MVT,CT})]
+    return [(F, SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT})]
 end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
@@ -131,8 +131,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{
         <:SOS.SOSPolynomialSet{
             SemialgebraicSets.BasicSemialgebraicSet{S,PS,AT},
-            MT,
-            MVT,
+            MB.SubBasis{MB.Monomial,MT,MVT},
             CT,
         },
     },
@@ -198,13 +197,13 @@ function MOI.get(
 end
 function MOI.get(
     ::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
-    ::MOI.NumberOfConstraints{F,SOS.SOSPolynomialSet{DT,MT,MVT,CT}},
+    ::MOI.NumberOfConstraints{F,SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}},
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
     return 1
 end
 function MOI.get(
     b::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
-    ::MOI.ListOfConstraintIndices{F,SOS.SOSPolynomialSet{DT,MT,MVT,CT}},
+    ::MOI.ListOfConstraintIndices{F,SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}},
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
     return [b.constraint]
 end

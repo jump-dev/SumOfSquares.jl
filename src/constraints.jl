@@ -99,7 +99,7 @@ end
 function default_ideal_certificate(
     ::AbstractAlgebraicSet,
     ::Certificate.Sparsity.NoPattern,
-    basis::SA.AbstractBasis,
+    basis::SA.ExplicitBasis,
     cone,
     args...,
 )
@@ -325,8 +325,8 @@ function _bridge_coefficient_type(
 end
 
 function _bridge_coefficient_type(
-    ::Type{SOSPolynomialSet{S,M,MV,C}},
-) where {S,M,MV,C}
+    ::Type{SOSPolynomialSet{D,B,C}},
+) where {D,B,C}
     return _complex(Float64, matrix_cone_type(C))
 end
 
