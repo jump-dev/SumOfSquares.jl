@@ -94,6 +94,12 @@ function SumOfSquares.Certificate.reduced_polynomial(
         domain,
     )
 end
+function SumOfSquares.Certificate.reduced_basis(certificate::Ideal, basis, domain)
+    return SumOfSquares.Certificate.reduced_basis(certificate.certificate, basis, domain)
+end
+function MA.promote_operation(::typeof(SumOfSquares.Certificate.reduced_basis), ::Type{Ideal{S,C}}, ::Type{B}, ::Type{D}) where {S,C,B,D}
+    return MA.promote_operation(SumOfSquares.Certificate.reduced_basis, C, B, D)
+end
 
 function matrix_reps(pattern, R, basis, ::Type{T}, form) where {T}
     polys = R * basis.monomials

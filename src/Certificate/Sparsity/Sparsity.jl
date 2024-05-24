@@ -1,5 +1,6 @@
 module Sparsity
 
+import MutableArithmetics as MA
 import MultivariatePolynomials as MP
 const _APL = MP.AbstractPolynomialLike
 import MultivariateBases as MB

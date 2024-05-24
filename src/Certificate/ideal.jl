@@ -6,6 +6,10 @@ abstract type AbstractIdealCertificate <: AbstractCertificate end
 
 abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
 reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
+reduced_basis(::SimpleIdealCertificate, basis, domain) = basis
+function MA.promote_operation(::typeof(reduced_basis), ::Type{<:SimpleIdealCertificate}, ::Type{B}, ::Type) where {B}
+    return B
+end
 
 cone(certificate::SimpleIdealCertificate) = certificate.cone
 function SumOfSquares.matrix_cone_type(
@@ -144,6 +148,14 @@ end
 
 function reduced_polynomial(::Remainder, poly, domain)
     return convert(typeof(poly), rem(poly, ideal(domain)))
+end
+
+function reduced_basis(::Remainder, basis, domain)
+    return MB.QuotientBasis(basis, ideal(domain))
+end
+
+function MA.promote_operation(::typeof(reduced_basis), ::Type{<:Remainder}, ::Type{B}, ::Type{D}) where {T,I,B<:SA.AbstractBasis{T,I},D}
+    return MB.QuotientBasis{T,I,B,MA.promote_operation(SemialgebraicSets.ideal, D)}
 end
 
 function gram_basis(certificate::Remainder, poly)

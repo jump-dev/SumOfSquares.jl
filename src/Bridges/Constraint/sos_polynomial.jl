@@ -2,7 +2,8 @@ struct SOSPolynomialBridge{
     T,
     F<:MOI.AbstractVectorFunction,
     DT<:SemialgebraicSets.AbstractSemialgebraicSet,
-    M,
+    M, # matrix cone type
+    B,
     G<:SA.ExplicitBasis,
     CT<:SOS.Certificate.AbstractIdealCertificate,
     MT<:MP.AbstractMonomial,
@@ -10,24 +11,24 @@ struct SOSPolynomialBridge{
     W<:MP.AbstractTerm{T},
 } <: MOI.Bridges.Constraint.SetMapBridge{
     T,
-    SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},
+    SOS.WeightedSOSCone{M,B,G,W},
     SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
     F,
     F,
 }
     constraint::MOI.ConstraintIndex{
         F,
-        SOS.WeightedSOSCone{M,MB.SubBasis{MB.Monomial,MT,MVT},G,W},
+        SOS.WeightedSOSCone{M,B,G,W},
     }
     set::SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{SOSPolynomialBridge{T,F,DT,M,G,CT,MT,MVT,W}},
+    ::Type{SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}},
     model::MOI.ModelLike,
     func::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet},
-) where {T,F,DT,M,G,CT,MT,MVT,W}
+) where {T,F,DT,M,B,G,CT,MT,MVT,W}
     @assert MOI.output_dimension(func) == length(set.basis)
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
@@ -38,10 +39,11 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
     # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
+    domain = MP.similar(set.domain, T)
     r = SOS.Certificate.reduced_polynomial(
         set.certificate,
         p,
-        MP.similar(set.domain, T),
+        domain,
     )
     gram_basis = SOS.Certificate.gram_basis(
         set.certificate,
@@ -51,12 +53,12 @@ function MOI.Bridges.Constraint.bridge_constraint(
         model,
         func,
         SOS.WeightedSOSCone{M}(
-            set.basis,
+            SOS.Certificate.reduced_basis(set.certificate, set.basis, domain),
             [gram_basis],
             [MP.term(one(T), MP.constant_monomial(p))],
         ),
     )
-    return SOSPolynomialBridge{T,F,DT,M,G,CT,MT,MVT,W}(constraint, set)
+    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(constraint, set)
 end
 
 function MOI.supports_constraint(
@@ -75,9 +77,10 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
+    B = MA.promote_operation(SOS.Certificate.reduced_basis, CT, MB.SubBasis{MB.Monomial,MT,MVT}, SemialgebraicSets.similar_type(DT, T))
     G = SOS.Certificate.gram_basis_type(CT, MT)
     W = MP.term_type(MT, T)
-    return SOSPolynomialBridge{T,F,DT,M,G,CT,MT,MVT,W}
+    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}
 end
 
 MOI.Bridges.inverse_map_function(::Type{<:SOSPolynomialBridge}, f) = f
