@@ -16,10 +16,7 @@ struct SOSPolynomialBridge{
     F,
     F,
 }
-    constraint::MOI.ConstraintIndex{
-        F,
-        SOS.WeightedSOSCone{M,B,G,W},
-    }
+    constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,B,G,W}}
     set::SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}
 end
 
@@ -40,11 +37,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     domain = MP.similar(set.domain, T)
-    r = SOS.Certificate.reduced_polynomial(
-        set.certificate,
-        p,
-        domain,
-    )
+    r = SOS.Certificate.reduced_polynomial(set.certificate, p, domain)
     gram_basis = SOS.Certificate.gram_basis(
         set.certificate,
         SOS.Certificate.with_variables(r, set.domain),
@@ -77,7 +70,12 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    B = MA.promote_operation(SOS.Certificate.reduced_basis, CT, MB.SubBasis{MB.Monomial,MT,MVT}, SemialgebraicSets.similar_type(DT, T))
+    B = MA.promote_operation(
+        SOS.Certificate.reduced_basis,
+        CT,
+        MB.SubBasis{MB.Monomial,MT,MVT},
+        SemialgebraicSets.similar_type(DT, T),
+    )
     G = SOS.Certificate.gram_basis_type(CT, MT)
     W = MP.term_type(MT, T)
     return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}
