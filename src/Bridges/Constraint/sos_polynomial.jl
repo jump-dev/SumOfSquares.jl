@@ -27,28 +27,26 @@ function MOI.Bridges.Constraint.bridge_constraint(
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet},
 ) where {T,F,DT,M,B,G,CT,MT,MVT,W}
     @assert MOI.output_dimension(func) == length(set.basis)
-    # MOI does not modify the coefficients of the functions so we can modify `p`.
-    # without altering `f`.
-    # The basis may be copied by MA however so we need to copy it.
-    p = MP.polynomial(MOI.Utilities.scalarize(func), copy(set.basis))
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
     # need to call `similar`. This is critical since `T` is
     # `Float64` when used with JuMP and the coefficient type is often `Int` if
     # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     domain = MP.similar(set.domain, T)
-    r = SOS.Certificate.reduced_polynomial(set.certificate, p, domain)
+    coeffs, basis = SOS.Certificate.reduced_polynomial(set.certificate, func, set.basis, domain)
     gram_basis = SOS.Certificate.gram_basis(
         set.certificate,
-        SOS.Certificate.with_variables(r, set.domain),
+        SOS.Certificate.with_variables(basis, set.domain),
     )
+    gram_bases = [gram_basis]
+    weights = [MP.term(one(T), MP.constant_monomial(eltype(basis.monomials)))]
     constraint = MOI.add_constraint(
         model,
-        func,
+        coeffs,
         SOS.WeightedSOSCone{M}(
-            SOS.Certificate.reduced_basis(set.certificate, set.basis, domain),
-            [gram_basis],
-            [MP.term(one(T), MP.constant_monomial(p))],
+            SOS.Certificate.reduced_basis(set.certificate, basis, domain, gram_bases, weights),
+            gram_bases,
+            weights,
         ),
     )
     return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(constraint, set)
@@ -75,6 +73,8 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
         CT,
         MB.SubBasis{MB.Monomial,MT,MVT},
         SemialgebraicSets.similar_type(DT, T),
+        Vector{MB.SubBasis{MB.Monomial,MT,MVT}},
+        Vector{MP.term_type(MT, T)},
     )
     G = SOS.Certificate.gram_basis_type(CT, MT)
     W = MP.term_type(MT, T)
@@ -98,22 +98,24 @@ function MOI.get(
     attr::PolyJuMP.MomentsAttribute,
     bridge::SOSPolynomialBridge,
 )
+    set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
     return MultivariateMoments.moment_vector(
         MOI.get(
             model,
             MOI.ConstraintDual(attr.result_index),
             bridge.constraint,
         ),
-        bridge.set.basis,
+        set.basis,
     )
 end
 
 function MOI.get(
-    ::MOI.ModelLike,
+    model::MOI.ModelLike,
     ::SOS.CertificateBasis,
     bridge::SOSPolynomialBridge,
 )
-    return bridge.gram_basis
+    set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
+    return set.gram_bases[]
 end
 
 function MOI.get(

@@ -45,8 +45,8 @@ end
 function MP.variables(v::WithVariables)
     return v.variables
 end
-function MP.monomials(v::WithVariables)
-    return MP.monomials(v.inner)
+function MP.monomials(v::WithVariables{<:MB.SubBasis{MB.Monomial}})
+    return v.inner.monomials
 end
 
 _merge_sorted(a::Vector, ::Tuple{}) = a

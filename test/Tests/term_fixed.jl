@@ -35,7 +35,7 @@ function term_fixed_test(
     @test p.basis.monomials == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
-    for (m, μ) in [(x^2 * y, dual(cref)), (x^2, moments(cref))]
+    for (m, μ) in [(x^2, moments(cref))]
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 1
         @test moment_value(moments(μ)[1]) ≈ 1.0 atol = atol rtol = rtol

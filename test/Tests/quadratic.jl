@@ -32,7 +32,7 @@ function quadratic_test(
     @objective(model, Max, α)
     optimize!(model)
 
-    if basis == ChebyshevBasis
+    if basis == MB.Chebyshev
         err = ErrorException(
             "`certificate_monomials` is not supported with `$(basis{typeof(x + 1.0)})`, use `certificate_basis` instead.",
         )
@@ -51,7 +51,7 @@ function quadratic_test(
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
-    if basis == ChebyshevBasis
+    if basis == MB.Chebyshev
         @test p.basis.polynomials == cert_monos
     else
         @test p.basis.monomials == cert_monos
@@ -66,7 +66,7 @@ function quadratic_test(
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 3
         @test a ≈ moment_value.(moments(μ)) atol = atol rtol = rtol
-        @test monomial.(moments(μ)) == monos
+        @test [m.polynomial.monomial for m in moments(μ)] == monos
     end
 
     ν = moment_matrix(cref)
@@ -74,7 +74,7 @@ function quadratic_test(
         a[1] a[2]
         a[2] a[3]
     ] atol = atol rtol = rtol
-    if basis == ChebyshevBasis
+    if basis == Chebyshev
         @test p.basis.polynomials == cert_monos
     else
         @test ν.basis.monomials == cert_monos
@@ -86,7 +86,7 @@ function quadratic_test(
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
         MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
-        SumOfSquares.Certificate.Newton{typeof(cone),basis,N},
+        SumOfSquares.Certificate.Newton{typeof(cone),MB.FullBasis{basis,monomial_type(x)},N},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     return test_delete_bridge(
@@ -96,16 +96,7 @@ function quadratic_test(
         (
             (MOI.VectorOfVariables, MOI.Nonnegatives, 0),
             (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}, 0),
-            (
-                MOI.VectorAffineFunction{Float64},
-                SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-                    SumOfSquares.FullSpace,
-                    basis,
-                    monomial_type(x),
-                    monomial_vector_type(x),
-                },
-                0,
-            ),
+            (MOI.VectorAffineFunction{Float64}, MOI.Zeros, 0),
         ),
     )
 end
@@ -133,11 +124,11 @@ function sos_scaled_bivariate_quadratic_test(optimizer, config)
 end
 sd_tests["sos_scaled_bivariate_quadratic"] = sos_scaled_bivariate_quadratic_test
 function sos_cheby_univariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SOSCone(), ChebyshevBasis, false)
+    return quadratic_test(optimizer, config, SOSCone(), Chebyshev, false)
 end
 sd_tests["sos_cheby_univariate_quadratic"] = sos_cheby_univariate_quadratic_test
 function sos_cheby_bivariate_quadratic_test(optimizer, config)
-    return quadratic_test(optimizer, config, SOSCone(), ChebyshevBasis, true)
+    return quadratic_test(optimizer, config, SOSCone(), Chebyshev, true)
 end
 sd_tests["sos_scaled_bivariate_quadratic"] = sos_scaled_bivariate_quadratic_test
 

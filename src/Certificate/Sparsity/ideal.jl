@@ -81,12 +81,14 @@ function SumOfSquares.Certificate.gram_basis_type(
 end
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
-    poly,
+    coeffs,
+    basis,
     domain,
 )
     return SumOfSquares.Certificate.reduced_polynomial(
         certificate.certificate,
-        poly,
+        coeffs,
+        basis,
         domain,
     )
 end
@@ -94,11 +96,15 @@ function SumOfSquares.Certificate.reduced_basis(
     certificate::Ideal,
     basis,
     domain,
+    gram_bases,
+    weights
 )
     return SumOfSquares.Certificate.reduced_basis(
         certificate.certificate,
         basis,
         domain,
+        gram_bases,
+        weights
     )
 end
 function MA.promote_operation(
@@ -106,8 +112,10 @@ function MA.promote_operation(
     ::Type{Ideal{S,C}},
     ::Type{B},
     ::Type{D},
-) where {S,C,B,D}
-    return MA.promote_operation(SumOfSquares.Certificate.reduced_basis, C, B, D)
+    ::Type{G},
+    ::Type{W},
+) where {S,C,B,D,G,W}
+    return MA.promote_operation(SumOfSquares.Certificate.reduced_basis, C, B, D, G, W)
 end
 function SumOfSquares.Certificate.cone(certificate::Ideal)
     return SumOfSquares.Certificate.cone(certificate.certificate)
