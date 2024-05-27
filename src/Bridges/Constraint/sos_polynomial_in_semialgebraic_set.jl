@@ -45,11 +45,11 @@ function MOI.Bridges.Constraint.bridge_constraint(
     f::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet},
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
-    @assert MOI.output_dimension(f) == length(set.monomials)
+    @assert MOI.output_dimension(f) == length(set.basis)
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
-    p = MP.polynomial(MOI.Utilities.scalarize(f), copy(set.monomials))
+    p = MP.polynomial(MOI.Utilities.scalarize(f), copy(set.basis))
     λ_bases = B[]
     λ_variables =
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}}[]
@@ -105,7 +105,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         λ_variables,
         λ_constraints,
         constraint,
-        set.monomials,
+        set.basis.monomials,
     )
 end
 
@@ -248,7 +248,7 @@ function MOI.get(
 )
     dual = MOI.get(model, attr, bridge.constraint)
     set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
-    μ = MultivariateMoments.measure(dual, set.monomials)
+    μ = MultivariateMoments.moment_vector(dual, set.basis)
     return [dot(mono, μ) for mono in bridge.monomials]
 end
 function MOI.get(

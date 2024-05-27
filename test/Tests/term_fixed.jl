@@ -51,11 +51,11 @@ function term_fixed_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         typeof(set),
-        SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
+        SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Remainder{
             SumOfSquares.Certificate.Newton{
                 typeof(cone),
-                FullBasis{Monomial,monomial_type(x)},
+                FullBasis{MB.Monomial,monomial_type(x)},
                 N,
             },
         },
@@ -71,7 +71,7 @@ function term_fixed_test(
                 MOI.VectorAffineFunction{Float64},
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     typeof(set),
-                    SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
+                    SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
                 },
                 0,
             ),

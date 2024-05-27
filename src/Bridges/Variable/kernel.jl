@@ -115,12 +115,9 @@ function MOI.get(
     end
 end
 
-_attr(attr::SOS.GramMatrixAttribute) = MOI.ConstraintPrimal(attr.result_index)
-_attr(attr::SOS.MomentMatrixAttribute) = MOI.ConstraintDual(attr.result_index)
-
 function MOI.get(
     model::MOI.ModelLike,
-    attr::Union{SOS.GramMatrixAttribute,SOS.MomentMatrixAttribute},
+    attr::SOS.GramMatrixAttribute,
     bridge::KernelBridge{T,M},
 ) where {T,M}
     SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
@@ -129,13 +126,32 @@ function MOI.get(
             Vector{T},
             MOI.get(
                 model,
-                _attr(attr),
-                bridge.constraints[attr.multiplier_index],
+                MOI.VariablePrimal(attr.result_index),
+                bridge.variables[attr.multiplier_index],
             ),
         ),
         bridge.set.gram_bases[attr.multiplier_index],
         M,
         T,
+    )
+end
+
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::SOS.MomentMatrixAttribute,
+    bridge::KernelBridge{T,M},
+) where {T,M}
+    SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
+    return SOS.build_moment_matrix(
+        convert(
+            Vector{T},
+            MOI.get(
+                model,
+                MOI.ConstraintDual(attr.result_index),
+                bridge.constraints[attr.multiplier_index],
+            ),
+        ),
+        bridge.set.gram_bases[attr.multiplier_index],
     )
 end
 

@@ -216,13 +216,13 @@ end
 MP.monomials(p::DummyPolynomial) = p.monomials
 MP.variables(p::DummyPolynomial) = MP.variables(p.monomials)
 function sparsity(
-    poly::MP.AbstractPolynomial,
+    basis::MB.SubBasis{MB.Monomial},
     domain::SemialgebraicSets.BasicSemialgebraicSet,
     sp::Monomial,
     certificate::SumOfSquares.Certificate.AbstractPreorderCertificate,
 )
     processed =
-        SumOfSquares.Certificate.preprocessed_domain(certificate, domain, poly)
+        SumOfSquares.Certificate.preprocessed_domain(certificate, domain, basis)
     multiplier_generator_monos = [
         (
             _monos(
@@ -246,12 +246,12 @@ function sparsity(
         SumOfSquares.Certificate.gram_basis(
             SumOfSquares.Certificate.ideal_certificate(certificate),
             DummyPolynomial(
-                _ideal_monos(MP.monomials(poly), multiplier_generator_monos),
+                _ideal_monos(basis.monomials, multiplier_generator_monos),
             ),
         ),
     )
     cliques, multiplier_cliques =
-        sparsity(MP.monomials(poly), sp, gram_monos, multiplier_generator_monos)
+        sparsity(basis.monomials, sp, gram_monos, multiplier_generator_monos)
     return MB.SubBasis{MB.Monomial}.(cliques),
     [MB.SubBasis{MB.Monomial}.(clique) for clique in multiplier_cliques]
 end

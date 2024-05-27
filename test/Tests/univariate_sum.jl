@@ -39,7 +39,7 @@ function univariate_sum_test(
         MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Sparsity.Ideal{
             Sparsity.Variable,
-            SumOfSquares.Certificate.MaxDegree{typeof(cone),MonomialBasis},
+            SumOfSquares.Certificate.MaxDegree{typeof(cone),MB.FullBasis{MB.Monomial,monomial_type(x)}},
         },
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]

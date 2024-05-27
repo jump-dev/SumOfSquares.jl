@@ -1,4 +1,5 @@
 using Test
+import MultivariateBases as MB
 using SumOfSquares
 using DynamicPolynomials
 
@@ -50,10 +51,10 @@ function term_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
+        SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Newton{
             typeof(cone),
-            FullBasis{Monomial,monomial_type(x)},
+            FullBasis{MB.Monomial,monomial_type(x)},
             N,
         },
     }
@@ -68,7 +69,7 @@ function term_test(
                 MOI.VectorAffineFunction{Float64},
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     SumOfSquares.FullSpace,
-                    SubBasis{Monomial,monomial_type(x),monomial_vector_type(x)},
+                    SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
                 },
                 0,
             ),

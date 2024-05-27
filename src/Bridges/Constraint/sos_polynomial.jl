@@ -20,6 +20,22 @@ struct SOSPolynomialBridge{
     set::SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}
 end
 
+function _flatten(gram_bases::Vector{<:SA.AbstractBasis}, weights)
+    return gram_bases, weights
+end
+
+function _flatten(gram_bases::Vector{Vector{B}}, weights) where {B<:SA.AbstractBasis}
+    flat_gram_bases = eltype(eltype(gram_bases))[]
+    flat_weights = eltype(weights)[]
+    for (g, w) in zip(gram_bases, weights)
+        for flat in g
+            push!(flat_gram_bases, flat)
+            push!(flat_weights, w)
+        end
+    end
+    return flat_gram_bases, flat_weights
+end
+
 function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}},
     model::MOI.ModelLike,
@@ -40,15 +56,16 @@ function MOI.Bridges.Constraint.bridge_constraint(
     )
     gram_bases = [gram_basis]
     weights = [MP.term(one(T), MP.constant_monomial(eltype(basis.monomials)))]
-    new_basis = SOS.Certificate.reduced_basis(set.certificate, basis, domain, gram_bases, weights)
+    flat_gram_bases, flat_weights = _flatten(gram_bases, weights)
+    new_basis = SOS.Certificate.reduced_basis(set.certificate, basis, domain, flat_gram_bases, flat_weights)
     new_coeffs = SA.coeffs(MB._algebra_element(MOI.Utilities.scalarize(coeffs), basis), new_basis)
     constraint = MOI.add_constraint(
         model,
         MOI.Utilities.vectorize(new_coeffs),
         SOS.WeightedSOSCone{M}(
             new_basis,
-            gram_bases,
-            weights,
+            flat_gram_bases,
+            flat_weights,
         ),
     )
     return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(constraint, set)
