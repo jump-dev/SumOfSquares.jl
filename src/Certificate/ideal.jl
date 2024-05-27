@@ -4,23 +4,35 @@
 
 abstract type AbstractIdealCertificate <: AbstractCertificate end
 
+struct _NonZeroo <: Number end
+Base.iszero(::_NonZeroo) = false
+Base.convert(::Type{_NonZeroo}, ::Number) = _NonZeroo()
+Base.:*(a::_NonZeroo, ::Number) = a
+Base.:*(::Number, a::_NonZeroo) = a
+Base.:*(::_NonZeroo, a::_NonZeroo) = a
+Base.:+(a::_NonZeroo, ::Number) = a
+Base.:+(::Number, a::_NonZeroo) = a
+Base.:+(::_NonZeroo, a::_NonZeroo) = a
+
 function _reduced_basis(basis::MB.SubBasis{B,M}, gram_bases::AbstractVector{<:MB.SubBasis}, weights) where {B,M}
     full = MB.FullBasis{B,M}()
-    p = MB._algebra_element(ones(Int, length(basis)), B)
+    mstr = SA.mstructure(full)
+    p = MP.polynomial(fill(_NonZeroo(), length(basis)), basis.monomials)
     for (gram, weight) in zip(gram_bases, weights)
         w = MB.convert_basis(full, weight)
         for j in eachindex(gram)
             for i in 1:j
                 s = MB.convert_basis(full, gram[i] * gram[j])
                 for w_mono in SA.supp(w)
-                    for mono in SA.supp(w_mono * s)
-                        union!(monos, mono.monomial)
+                    for s_mono in SA.supp(s)
+                        MA.operate!(SA.UnsafeAddMul(mstr), p, w_mono.monomial, s_mono.monomial)
                     end
                 end
             end
         end
     end
-    return MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(monos)))
+    MA.operate!(SA.canonical, p)
+    return MB.SubBasis{MB.Monomial}(MP.monomials(p))
 end
 
 abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end

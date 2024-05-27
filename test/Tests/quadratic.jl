@@ -32,14 +32,7 @@ function quadratic_test(
     @objective(model, Max, α)
     optimize!(model)
 
-    if basis == MB.Chebyshev
-        err = ErrorException(
-            "`certificate_monomials` is not supported with `$(basis{typeof(x + 1.0)})`, use `certificate_basis` instead.",
-        )
-        @test_throws err certificate_monomials(cref)
-    else
-        @test certificate_monomials(cref) == cert_monos
-    end
+    @test certificate_monomials(cref) == cert_monos
 
     @test termination_status(model) == MOI.OPTIMAL
     @test objective_value(model) ≈ 2.0 atol = atol rtol = rtol
@@ -51,11 +44,7 @@ function quadratic_test(
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
-    if basis == MB.Chebyshev
-        @test p.basis.polynomials == cert_monos
-    else
-        @test p.basis.monomials == cert_monos
-    end
+    @test p.basis.monomials == cert_monos
 
     a = moment_value.(moments(dual(cref)))
     @test a[2] ≈ -1.0 atol = atol rtol = rtol
@@ -74,11 +63,7 @@ function quadratic_test(
         a[1] a[2]
         a[2] a[3]
     ] atol = atol rtol = rtol
-    if basis == Chebyshev
-        @test p.basis.polynomials == cert_monos
-    else
-        @test ν.basis.monomials == cert_monos
-    end
+    @test ν.basis.monomials == cert_monos
 
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},

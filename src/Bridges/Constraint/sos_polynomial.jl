@@ -40,11 +40,13 @@ function MOI.Bridges.Constraint.bridge_constraint(
     )
     gram_bases = [gram_basis]
     weights = [MP.term(one(T), MP.constant_monomial(eltype(basis.monomials)))]
+    new_basis = SOS.Certificate.reduced_basis(set.certificate, basis, domain, gram_bases, weights)
+    new_coeffs = SA.coeffs(MB._algebra_element(MOI.Utilities.scalarize(coeffs), basis), new_basis)
     constraint = MOI.add_constraint(
         model,
-        coeffs,
+        MOI.Utilities.vectorize(new_coeffs),
         SOS.WeightedSOSCone{M}(
-            SOS.Certificate.reduced_basis(set.certificate, basis, domain, gram_bases, weights),
+            new_basis,
             gram_bases,
             weights,
         ),
