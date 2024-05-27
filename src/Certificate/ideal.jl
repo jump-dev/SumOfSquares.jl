@@ -4,14 +4,18 @@
 
 abstract type AbstractIdealCertificate <: AbstractCertificate end
 
-function _reduced_basis(basis::MB.SubBasis, gram_bases::AbstractVector{<:MB.SubBasis}, weights)
-    monos = Set(basis.monomials)
+function _reduced_basis(basis::MB.SubBasis{B,M}, gram_bases::AbstractVector{<:MB.SubBasis}, weights) where {B,M}
+    full = MB.FullBasis{B,M}()
+    p = MB._algebra_element(ones(Int, length(basis)), B)
     for (gram, weight) in zip(gram_bases, weights)
+        w = MB.convert_basis(full, weight)
         for j in eachindex(gram)
             for i in 1:j
-                s = gram[i] * gram[j]
-                for w in MP.monomials(weight)
-                    push!(monos, w * mono)
+                s = MB.convert_basis(full, gram[i] * gram[j])
+                for w_mono in SA.supp(w)
+                    for mono in SA.supp(w_mono * s)
+                        union!(monos, mono.monomial)
+                    end
                 end
             end
         end

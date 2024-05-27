@@ -204,7 +204,7 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
         MP.coefficients(poly),
         MB.SubBasis{MB.Monomial}(MP.monomials(poly)),
         domain,
-    ) isa MP.AbstractPolynomial
+    ) isa Tuple
     _basis_check(
         Certificate.gram_basis(certificate, poly),
         Certificate.gram_basis_type(typeof(certificate), MP.monomial_type(x)),
