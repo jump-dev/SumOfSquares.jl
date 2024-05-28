@@ -77,11 +77,11 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     @test μ isa AbstractMeasure{Float64}
     if remainder
         @test length(moments(μ)) == 3
-        @test moments(μ)[1].polynomial.monomial ≈ 1 / 3 atol = atol rtol = rtol
+        @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
         @test moments(μ)[1].polynomial.monomial == 1
-        @test moments(μ)[2].polynomial.monomial ≈ 1 atol = atol rtol = rtol
+        @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
         @test moments(μ)[2].polynomial.monomial == y
-        @test moments(μ)[3].polynomial.monomial ≈ 3 atol = atol rtol = rtol
+        @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
         @test moments(μ)[3].polynomial.monomial == y^2
     else
         @test length(moments(μ)) == 5
