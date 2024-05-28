@@ -71,7 +71,11 @@ function term_fixed_test(
                 MOI.VectorAffineFunction{Float64},
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     typeof(set),
-                    SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
+                    SubBasis{
+                        MB.Monomial,
+                        monomial_type(x),
+                        monomial_vector_type(x),
+                    },
                 },
                 0,
             ),

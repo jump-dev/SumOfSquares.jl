@@ -14,7 +14,11 @@ Base.:+(a::_NonZeroo, ::Number) = a
 Base.:+(::Number, a::_NonZeroo) = a
 Base.:+(::_NonZeroo, a::_NonZeroo) = a
 
-function _reduced_basis(basis::MB.SubBasis{B,M}, gram_bases::AbstractVector{<:MB.SubBasis}, weights) where {B,M}
+function _reduced_basis(
+    basis::MB.SubBasis{B,M},
+    gram_bases::AbstractVector{<:MB.SubBasis},
+    weights,
+) where {B,M}
     full = MB.FullBasis{B,M}()
     mstr = SA.mstructure(full)
     p = MP.polynomial(fill(_NonZeroo(), length(basis)), basis.monomials)
@@ -25,7 +29,12 @@ function _reduced_basis(basis::MB.SubBasis{B,M}, gram_bases::AbstractVector{<:MB
                 s = MB.convert_basis(full, gram[i] * gram[j])
                 for w_mono in SA.supp(w)
                     for s_mono in SA.supp(s)
-                        MA.operate!(SA.UnsafeAddMul(mstr), p, w_mono.monomial, s_mono.monomial)
+                        MA.operate!(
+                            SA.UnsafeAddMul(mstr),
+                            p,
+                            w_mono.monomial,
+                            s_mono.monomial,
+                        )
                     end
                 end
             end
@@ -36,8 +45,16 @@ function _reduced_basis(basis::MB.SubBasis{B,M}, gram_bases::AbstractVector{<:MB
 end
 
 abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
-reduced_polynomial(::SimpleIdealCertificate, coeffs, basis, domain) = coeffs, basis
-function reduced_basis(::SimpleIdealCertificate, basis, domain, gram_bases, weights)
+function reduced_polynomial(::SimpleIdealCertificate, coeffs, basis, domain)
+    return coeffs, basis
+end
+function reduced_basis(
+    ::SimpleIdealCertificate,
+    basis,
+    domain,
+    gram_bases,
+    weights,
+)
     return _reduced_basis(basis, gram_bases, weights)
 end
 function MA.promote_operation(
@@ -186,17 +203,30 @@ struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
     gram_certificate::GCT
 end
 
-function reduced_polynomial(::Remainder, coeffs, basis::MB.SubBasis{MB.Monomial}, domain)
+function reduced_polynomial(
+    ::Remainder,
+    coeffs,
+    basis::MB.SubBasis{MB.Monomial},
+    domain,
+)
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The basis may be copied by MA however so we need to copy it.
     poly = MP.polynomial(MOI.Utilities.scalarize(coeffs), copy(basis))
     r = convert(typeof(poly), rem(poly, ideal(domain)))
-    return MOI.Utilities.vectorize(MP.coefficients(r)), MB.SubBasis{MB.Monomial}(MP.monomials(r))
+    return MOI.Utilities.vectorize(MP.coefficients(r)),
+    MB.SubBasis{MB.Monomial}(MP.monomials(r))
 end
 
-function reduced_basis(::Remainder, basis::MB.SubBasis{MB.Monomial}, domain, gram_bases, weights)
-    rbasis = _reduced_basis(basis, gram_bases, weights)::MB.SubBasis{MB.Monomial}
+function reduced_basis(
+    ::Remainder,
+    basis::MB.SubBasis{MB.Monomial},
+    domain,
+    gram_bases,
+    weights,
+)
+    rbasis =
+        _reduced_basis(basis, gram_bases, weights)::MB.SubBasis{MB.Monomial}
     I = ideal(domain)
     # set of standard monomials that are hit
     standard = Set{eltype(basis.monomials)}()
@@ -204,7 +234,10 @@ function reduced_basis(::Remainder, basis::MB.SubBasis{MB.Monomial}, domain, gra
         r = rem(mono, I)
         union!(standard, MP.monomials(r))
     end
-    return MB.QuotientBasis(MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))), I)
+    return MB.QuotientBasis(
+        MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))),
+        I,
+    )
 end
 
 function MA.promote_operation(

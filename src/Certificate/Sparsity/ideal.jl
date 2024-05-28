@@ -115,7 +115,14 @@ function MA.promote_operation(
     ::Type{G},
     ::Type{W},
 ) where {S,C,B,D,G,W}
-    return MA.promote_operation(SumOfSquares.Certificate.reduced_basis, C, B, D, G, W)
+    return MA.promote_operation(
+        SumOfSquares.Certificate.reduced_basis,
+        C,
+        B,
+        D,
+        G,
+        W,
+    )
 end
 function SumOfSquares.Certificate.cone(certificate::Ideal)
     return SumOfSquares.Certificate.cone(certificate.certificate)

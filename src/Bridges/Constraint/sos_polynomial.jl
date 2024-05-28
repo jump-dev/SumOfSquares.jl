@@ -26,7 +26,10 @@ function _flatten(gram_bases::Vector{<:SA.AbstractBasis}, weights)
     return gram_bases, weights, 1
 end
 
-function _flatten(gram_bases::Vector{Vector{B}}, weights) where {B<:SA.AbstractBasis}
+function _flatten(
+    gram_bases::Vector{Vector{B}},
+    weights,
+) where {B<:SA.AbstractBasis}
     flat_gram_bases = eltype(eltype(gram_bases))[]
     flat_weights = eltype(weights)[]
     for (g, w) in zip(gram_bases, weights)
@@ -51,7 +54,12 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     domain = MP.similar(set.domain, T)
-    coeffs, basis = SOS.Certificate.reduced_polynomial(set.certificate, func, set.basis, domain)
+    coeffs, basis = SOS.Certificate.reduced_polynomial(
+        set.certificate,
+        func,
+        set.basis,
+        domain,
+    )
     gram_basis = SOS.Certificate.gram_basis(
         set.certificate,
         SOS.Certificate.with_variables(basis, set.domain),
@@ -59,18 +67,28 @@ function MOI.Bridges.Constraint.bridge_constraint(
     gram_bases = [gram_basis]
     weights = [MP.term(one(T), MP.constant_monomial(eltype(basis.monomials)))]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
-    new_basis = SOS.Certificate.reduced_basis(set.certificate, basis, domain, flat_gram_bases, flat_weights)
-    new_coeffs = SA.coeffs(MB._algebra_element(MOI.Utilities.scalarize(coeffs), basis), new_basis)
+    new_basis = SOS.Certificate.reduced_basis(
+        set.certificate,
+        basis,
+        domain,
+        flat_gram_bases,
+        flat_weights,
+    )
+    new_coeffs = SA.coeffs(
+        MB._algebra_element(MOI.Utilities.scalarize(coeffs), basis),
+        new_basis,
+    )
     constraint = MOI.add_constraint(
         model,
         MOI.Utilities.vectorize(new_coeffs),
-        SOS.WeightedSOSCone{M}(
-            new_basis,
-            flat_gram_bases,
-            flat_weights,
-        ),
+        SOS.WeightedSOSCone{M}(new_basis, flat_gram_bases, flat_weights),
     )
-    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(constraint, set, new_basis, flat_indices)
+    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(
+        constraint,
+        set,
+        new_basis,
+        flat_indices,
+    )
 end
 
 function MOI.supports_constraint(
@@ -165,7 +183,7 @@ function _get(
     model::MOI.ModelLike,
     attr,
     constraint::MOI.ConstraintIndex,
-    indices::UnitRange
+    indices::UnitRange,
 )
     return MultivariateMoments.block_diagonal([
         _get(model, attr, constraint, index) for index in indices

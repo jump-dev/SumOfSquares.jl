@@ -60,7 +60,13 @@ function quadratic_test(
     @test dual_status(model) == MOI.FEASIBLE_POINT
     _test_moments(dual(cref), a, monos; atol, rtol)
     if basis === MB.Chebyshev && bivariate
-        _test_moments(moments(cref), [0, 0, 2, -1, 0, 0], monomial_vector([1, x, y^2, x * y, x^2, x^3]); atol, rtol)
+        _test_moments(
+            moments(cref),
+            [0, 0, 2, -1, 0, 0],
+            monomial_vector([1, x, y^2, x * y, x^2, x^3]);
+            atol,
+            rtol,
+        )
     else
         _test_moments(moments(cref), a, monos; atol, rtol)
     end
@@ -78,7 +84,11 @@ function quadratic_test(
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
         MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
-        SumOfSquares.Certificate.Newton{typeof(cone),MB.FullBasis{basis,monomial_type(x)},N},
+        SumOfSquares.Certificate.Newton{
+            typeof(cone),
+            MB.FullBasis{basis,monomial_type(x)},
+            N,
+        },
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     return test_delete_bridge(

@@ -33,7 +33,10 @@ function csp_graph(basis::MB.SubBasis, domain::BasicSemialgebraicSet)
     return G
 end
 
-function chordal_csp_graph(basis::MB.SubBasis, domain::AbstractBasicSemialgebraicSet)
+function chordal_csp_graph(
+    basis::MB.SubBasis,
+    domain::AbstractBasicSemialgebraicSet,
+)
     H, cliques =
         CEG.chordal_extension(csp_graph(basis, domain), CEG.GreedyFillIn())
     for clique in cliques
