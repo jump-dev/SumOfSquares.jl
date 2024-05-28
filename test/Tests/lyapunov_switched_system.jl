@@ -50,7 +50,10 @@ function lyapunov_switched_system_test(
     # and sum it with a strictly positive `q`.
     # Since the problem is homogeneous (i.e. given any `λ > 0`, `p` is
     # feasible iff `λp` is feasible), this is wlog.
-    p0 = @variable(model, variable_type = SOSPoly(MB.SubBasis{basis}(monomials(x, degree))))
+    p0 = @variable(
+        model,
+        variable_type = SOSPoly(MB.SubBasis{basis}(monomials(x, degree)))
+    )
     q = GramMatrix(SOSDecomposition(x .^ degree))
 
     # Keep `p` in a `GramMatrix` form while `q + p0` would transform it to
