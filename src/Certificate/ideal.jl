@@ -14,7 +14,7 @@ Base.:+(a::_NonZeroo, ::Number) = a
 Base.:+(::Number, a::_NonZeroo) = a
 Base.:+(::_NonZeroo, a::_NonZeroo) = a
 
-function _reduced_basis(
+function _combine_with_gram(
     basis::MB.SubBasis{B,M},
     gram_bases::AbstractVector{<:MB.SubBasis},
     weights,
@@ -44,28 +44,39 @@ function _reduced_basis(
     return MB.SubBasis{MB.Monomial}(MP.monomials(p))
 end
 
-abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
-function reduced_polynomial(::SimpleIdealCertificate, coeffs, basis, domain)
-    return coeffs, basis
+_reduce_with_domain(basis::MB.SubBasis{MB.Monomial}, ::FullSpace) = basis
+
+function _reduce_with_domain(
+    basis::MB.SubBasis{MB.Monomial},
+    domain,
+)
+    I = ideal(domain)
+    # set of standard monomials that are hit
+    standard = Set{eltype(basis.monomials)}()
+    for mono in basis.monomials
+        r = rem(mono, I)
+        union!(standard, MP.monomials(r))
+    end
+    return MB.QuotientBasis(
+        MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))),
+        I,
+    )
 end
+
 function reduced_basis(
-    ::SimpleIdealCertificate,
+    ::AbstractIdealCertificate,
     basis,
     domain,
     gram_bases,
     weights,
 )
-    return _reduced_basis(basis, gram_bases, weights)
+    return _reduce_with_domain(_combine_with_gram(basis, gram_bases, weights), domain)
 end
-function MA.promote_operation(
-    ::typeof(reduced_basis),
-    ::Type{<:SimpleIdealCertificate},
-    ::Type{B},
-    ::Type,
-    ::Type,
-    ::Type,
-) where {B}
-    return B
+
+abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
+
+function reduced_polynomial(::SimpleIdealCertificate, coeffs, basis, domain)
+    return coeffs, basis
 end
 
 cone(certificate::SimpleIdealCertificate) = certificate.cone
@@ -218,44 +229,6 @@ function reduced_polynomial(
     MB.SubBasis{MB.Monomial}(MP.monomials(r))
 end
 
-function reduced_basis(
-    ::Remainder,
-    basis::MB.SubBasis{MB.Monomial},
-    domain,
-    gram_bases,
-    weights,
-)
-    rbasis =
-        _reduced_basis(basis, gram_bases, weights)::MB.SubBasis{MB.Monomial}
-    I = ideal(domain)
-    # set of standard monomials that are hit
-    standard = Set{eltype(basis.monomials)}()
-    for mono in rbasis.monomials
-        r = rem(mono, I)
-        union!(standard, MP.monomials(r))
-    end
-    return MB.QuotientBasis(
-        MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))),
-        I,
-    )
-end
-
-function MA.promote_operation(
-    ::typeof(reduced_basis),
-    ::Type{<:Remainder},
-    ::Type{B},
-    ::Type{D},
-    ::Type,
-    ::Type,
-) where {T,I,B<:SA.AbstractBasis{T,I},D}
-    return MB.QuotientBasis{
-        T,
-        I,
-        B,
-        MA.promote_operation(SemialgebraicSets.ideal, D),
-    }
-end
-
 function gram_basis(certificate::Remainder, poly)
     return gram_basis(certificate.gram_certificate, poly)
 end
@@ -270,3 +243,34 @@ function SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT}
 end
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
+
+function _quotient_basis_type(::Type{B}, ::Type{D}) where {T,I,B<:SA.AbstractBasis{T,I},D}
+    return MB.QuotientBasis{
+        T,
+        I,
+        B,
+        MA.promote_operation(SemialgebraicSets.ideal, D),
+    }
+end
+
+function MA.promote_operation(
+    ::typeof(reduced_basis),
+    ::Type{<:Union{SimpleIdealCertificate,Remainder}},
+    ::Type{B},
+    ::Type{SemialgebraicSets.FullSpace},
+    ::Type,
+    ::Type,
+) where {B}
+    return B
+end
+
+function MA.promote_operation(
+    ::typeof(reduced_basis),
+    ::Type{<:Union{SimpleIdealCertificate,Remainder}},
+    ::Type{B},
+    ::Type{D},
+    ::Type,
+    ::Type,
+) where {B,D}
+    return _quotient_basis_type(B, D)
+end

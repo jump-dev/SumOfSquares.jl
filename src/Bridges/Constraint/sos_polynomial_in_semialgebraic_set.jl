@@ -270,6 +270,17 @@ function MOI.get(
 )
     return MOI.get(model, attr, bridge.constraint)
 end
+function _gram(
+    f::Function,
+    Qs::Vector{Vector{MOI.VariableIndex}},
+    gram_bases,
+    T::Type,
+    MCT,
+)
+    return SOS.build_gram_matrix(gram_bases, MCT, T) do i
+        return convert(Vector{T}, f(Qs[i]))
+    end
+end
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.LagrangianMultipliers,

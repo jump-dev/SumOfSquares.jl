@@ -133,7 +133,7 @@ function multiplier_basis(
     )
 end
 function multiplier_basis(
-    certificate::Putinar{<:Newton},
+    ::Putinar{<:Newton},
     index::PreorderIndex,
     domain::WithFixedBases,
 )

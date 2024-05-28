@@ -141,7 +141,9 @@ function MOI.Bridges.unbridged_function(
     ::MOI.Bridges.AbstractBridgeOptimizer,
     value::Union{
         GramMatrix{T},
+        Vector{<:GramMatrix{T}},
         BlockDiagonalGramMatrix{T},
+        Vector{<:BlockDiagonalGramMatrix{T}},
         MultivariateMoments.MomentMatrix{T},
         MultivariateMoments.BlockDiagonalMomentMatrix{T},
         MultivariateMoments.MomentVector{T},

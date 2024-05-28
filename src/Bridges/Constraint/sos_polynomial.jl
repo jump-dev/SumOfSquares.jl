@@ -120,8 +120,10 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}
 end
 
-function MOI.Bridges.inverse_map_function(bridge::SOSPolynomialBridge, f)
-    return SA.coeffs(MB._algebra_element(f, bridge.new_basis), bridge.set.basis)
+function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
+    throw(MOI.Bridges.MapNotInvertible())
+    # Does not work with QuotientBasis
+    #return SA.coeffs(MB._algebra_element(f, bridge.new_basis), bridge.set.basis)
 end
 
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
