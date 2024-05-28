@@ -46,10 +46,7 @@ end
 
 _reduce_with_domain(basis::MB.SubBasis{MB.Monomial}, ::FullSpace) = basis
 
-function _reduce_with_domain(
-    basis::MB.SubBasis{MB.Monomial},
-    domain,
-)
+function _reduce_with_domain(basis::MB.SubBasis{MB.Monomial}, domain)
     I = ideal(domain)
     # set of standard monomials that are hit
     standard = Set{eltype(basis.monomials)}()
@@ -70,7 +67,10 @@ function reduced_basis(
     gram_bases,
     weights,
 )
-    return _reduce_with_domain(_combine_with_gram(basis, gram_bases, weights), domain)
+    return _reduce_with_domain(
+        _combine_with_gram(basis, gram_bases, weights),
+        domain,
+    )
 end
 
 abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
@@ -244,7 +244,10 @@ end
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
 
-function _quotient_basis_type(::Type{B}, ::Type{D}) where {T,I,B<:SA.AbstractBasis{T,I},D}
+function _quotient_basis_type(
+    ::Type{B},
+    ::Type{D},
+) where {T,I,B<:SA.AbstractBasis{T,I},D}
     return MB.QuotientBasis{
         T,
         I,
