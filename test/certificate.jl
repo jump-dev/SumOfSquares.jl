@@ -199,14 +199,15 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
     @polyvar x
     poly = x + 1
     domain = @set x == 1
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials(poly))
     @test Certificate.reduced_polynomial(
         certificate,
         MP.coefficients(poly),
-        MB.SubBasis{MB.Monomial}(MP.monomials(poly)),
+        basis,
         domain,
     ) isa Tuple
     _basis_check(
-        Certificate.gram_basis(certificate, poly),
+        Certificate.gram_basis(certificate, basis),
         Certificate.gram_basis_type(typeof(certificate), MP.monomial_type(x)),
     )
     zbasis = Certificate.zero_basis(certificate)
