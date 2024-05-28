@@ -78,11 +78,11 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     if remainder
         @test length(moments(μ)) == 3
         @test moments(μ)[1].polynomial.monomial ≈ 1 / 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == 1
+        @test moments(μ)[1].polynomial.monomial == 1
         @test moments(μ)[2].polynomial.monomial ≈ 1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[2]) == y
+        @test moments(μ)[2].polynomial.monomial == y
         @test moments(μ)[3].polynomial.monomial ≈ 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[3]) == y^2
+        @test moments(μ)[3].polynomial.monomial == y^2
     else
         @test length(moments(μ)) == 5
         @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
@@ -139,11 +139,11 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     if remainder
         @test length(moments(μ)) == 3
         @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == 1
+        @test moments(μ)[1].polynomial.monomial == 1
         @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
-        @test monomial(moments(μ)[2]) == y
+        @test moments(μ)[2].polynomial.monomial == y
         @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
-        @test monomial(moments(μ)[3]) == y^2
+        @test moments(μ)[3].polynomial.monomial == y^2
     else
         @test length(moments(μ)) == 5
         @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
