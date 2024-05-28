@@ -22,10 +22,10 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="MathOptInterface", rev="master"),
-              PackageSpec(name="StarAlgebras", rev="bl/eachindex"),
-              PackageSpec(name="SymbolicWedderburn", rev="bl/supp"),
-              PackageSpec(name="MultivariateBases", rev="master"),
+              PackageSpec(name="MathOptInterface", rev="bl/set_map_type"),
+              PackageSpec(name="StarAlgebras", rev="bl/sos"),
+              PackageSpec(name="SymbolicWedderburn", rev="mk/StarAlgebras_0_3"),
+              PackageSpec(name="MultivariateBases", rev="bl/sos"),
               PackageSpec(name="SemialgebraicSets", rev="master"),
               PackageSpec(name="MultivariateMoments", rev="master"),
               PackageSpec(name="PolyJuMP", rev="master"),

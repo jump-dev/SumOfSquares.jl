@@ -2,6 +2,13 @@ using Test
 import MultivariateBases
 using DynamicPolynomials
 
+function _test_moments(μ, a, monos; atol, rtol)
+    @test μ isa AbstractMeasure{Float64}
+    @test length(moments(μ)) == length(a)
+    @test a ≈ moment_value.(moments(μ)) atol = atol rtol = rtol
+    @test [m.polynomial.monomial for m in moments(μ)] == monos
+end
+
 function quadratic_test(
     optimizer,
     config::MOI.Test.Config,
@@ -51,11 +58,11 @@ function quadratic_test(
     @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
-    for μ in [dual(cref), moments(cref)]
-        @test μ isa AbstractMeasure{Float64}
-        @test length(moments(μ)) == 3
-        @test a ≈ moment_value.(moments(μ)) atol = atol rtol = rtol
-        @test [m.polynomial.monomial for m in moments(μ)] == monos
+    _test_moments(dual(cref), a, monos; atol, rtol)
+    if basis === MB.Chebyshev && bivariate
+        _test_moments(moments(cref), [0, 0, 2, -1, 0, 0], monomial_vector([1, x, y^2, x * y, x^2, x^3]); atol, rtol)
+    else
+        _test_moments(moments(cref), a, monos; atol, rtol)
     end
 
     ν = moment_matrix(cref)

@@ -18,10 +18,12 @@ struct SOSPolynomialBridge{
 }
     constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,B,G,W}}
     set::SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}
+    new_basis::B
+    flat_indices::Union{Int,Base.UnitRange{Int}}
 end
 
 function _flatten(gram_bases::Vector{<:SA.AbstractBasis}, weights)
-    return gram_bases, weights
+    return gram_bases, weights, 1
 end
 
 function _flatten(gram_bases::Vector{Vector{B}}, weights) where {B<:SA.AbstractBasis}
@@ -33,7 +35,7 @@ function _flatten(gram_bases::Vector{Vector{B}}, weights) where {B<:SA.AbstractB
             push!(flat_weights, w)
         end
     end
-    return flat_gram_bases, flat_weights
+    return flat_gram_bases, flat_weights, 1:length(flat_weights)
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
@@ -56,7 +58,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     )
     gram_bases = [gram_basis]
     weights = [MP.term(one(T), MP.constant_monomial(eltype(basis.monomials)))]
-    flat_gram_bases, flat_weights = _flatten(gram_bases, weights)
+    flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
     new_basis = SOS.Certificate.reduced_basis(set.certificate, basis, domain, flat_gram_bases, flat_weights)
     new_coeffs = SA.coeffs(MB._algebra_element(MOI.Utilities.scalarize(coeffs), basis), new_basis)
     constraint = MOI.add_constraint(
@@ -68,7 +70,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
             flat_weights,
         ),
     )
-    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(constraint, set)
+    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(constraint, set, new_basis, flat_indices)
 end
 
 function MOI.supports_constraint(
@@ -100,8 +102,14 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}
 end
 
-MOI.Bridges.inverse_map_function(::Type{<:SOSPolynomialBridge}, f) = f
-MOI.Bridges.adjoint_map_function(::Type{<:SOSPolynomialBridge}, f) = f
+function MOI.Bridges.inverse_map_function(bridge::SOSPolynomialBridge, f)
+    return SA.coeffs(MB._algebra_element(f, bridge.new_basis), bridge.set.basis)
+end
+
+function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
+    # FIXME `coeffs` should be an `AbstractMatrix`
+    return SA.coeffs(MB._algebra_element(f, bridge.new_basis), bridge.set.basis)
+end
 
 # Attributes, Bridge acting as a constraint
 function MOI.get(
@@ -137,6 +145,33 @@ function MOI.get(
     return set.gram_bases[]
 end
 
+function _get(
+    model::MOI.ModelLike,
+    attr,
+    constraint::MOI.ConstraintIndex,
+    index::Int,
+)
+    return MOI.get(
+        model,
+        typeof(attr)(
+            multiplier_index = index,
+            result_index = attr.result_index,
+        ),
+        constraint,
+    )
+end
+
+function _get(
+    model::MOI.ModelLike,
+    attr,
+    constraint::MOI.ConstraintIndex,
+    indices::UnitRange
+)
+    return MultivariateMoments.block_diagonal([
+        _get(model, attr, constraint, index) for index in indices
+    ])
+end
+
 function MOI.get(
     model::MOI.ModelLike,
     attr::Union{
@@ -147,12 +182,5 @@ function MOI.get(
     bridge::SOSPolynomialBridge,
 )
     SOS.check_multiplier_index_bounds(attr, 0:0)
-    return MOI.get(
-        model,
-        typeof(attr)(
-            multiplier_index = attr.multiplier_index + 1,
-            result_index = attr.result_index,
-        ),
-        bridge.constraint,
-    )
+    return _get(model, attr, bridge.constraint, bridge.flat_indices)
 end

@@ -139,7 +139,14 @@ MOI.Bridges.Constraint.invariant_under_function_conversion(::_Attributes) = true
 # be unbridged.
 function MOI.Bridges.unbridged_function(
     ::MOI.Bridges.AbstractBridgeOptimizer,
-    value::Union{GramMatrix{T},MultivariateMoments.MomentMatrix{T},MultivariateMoments.MomentVector{T},SA.AbstractBasis},
+    value::Union{
+        GramMatrix{T},
+        BlockDiagonalGramMatrix{T},
+        MultivariateMoments.MomentMatrix{T},
+        MultivariateMoments.BlockDiagonalMomentMatrix{T},
+        MultivariateMoments.MomentVector{T},
+        SA.AbstractBasis,
+    },
 ) where {T<:Number}
     return value
 end
