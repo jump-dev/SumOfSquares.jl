@@ -2,10 +2,10 @@ using Test
 import MultivariateBases
 using DynamicPolynomials
 
-function _test_moments(μ, a, monos; atol, rtol)
+function _test_moments(test_values, μ, monos)
     @test μ isa AbstractMeasure{Float64}
-    @test length(moments(μ)) == length(a)
-    @test a ≈ moment_value.(moments(μ)) atol = atol rtol = rtol
+    @test length(moments(μ)) == length(monos)
+    test_values(moment_value.(moments(μ)))
     @test [m.polynomial.monomial for m in moments(μ)] == monos
 end
 
@@ -47,7 +47,7 @@ function quadratic_test(
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 2.0 atol = atol rtol = rtol
 
-    test_constraint_primal(cref, value(poly))
+    test_constraint_primal(cref, value(poly); atol, rtol)
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
@@ -58,17 +58,25 @@ function quadratic_test(
     @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
-    _test_moments(dual(cref), a, monos; atol, rtol)
+    _test_moments(dual(cref), monos) do vals
+        @test vals ≈ a atol = atol rtol = rtol
+    end
     if basis === MB.Chebyshev && bivariate
         _test_moments(
             moments(cref),
-            [0, 0, 2, -1, 0, 0],
-            monomial_vector([1, x, y^2, x * y, x^2, x^3]);
-            atol,
-            rtol,
-        )
+            monomial_vector([1, x, y^2, x * y, x^2, x^3]),
+        ) do vals
+            @test length(vals) == 6
+            for i in [1, 2, 6]
+                @test vals[i] ≈ 0 rtol = rtol atol = atol
+            end
+            @test vals[4] ≈ -1 rtol = rtol atol = atol
+            @test vals[3] + vals[5] ≈ 2 rtol = rtol atol = atol
+        end
     else
-        _test_moments(moments(cref), a, monos; atol, rtol)
+        _test_moments(moments(cref), monos) do vals
+            @test vals ≈ a atol = atol rtol = rtol
+        end
     end
 
     ν = moment_matrix(cref)

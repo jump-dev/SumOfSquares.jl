@@ -26,7 +26,7 @@ function csp_graph(basis::MB.SubBasis, domain::AbstractAlgebraicSet)
 end
 
 function csp_graph(basis::MB.SubBasis, domain::BasicSemialgebraicSet)
-    G = csp_graph(poly, domain.V)
+    G = csp_graph(basis, domain.V)
     for p in inequalities(domain)
         CEG.add_clique!(G, MP.effective_variables(p))
     end

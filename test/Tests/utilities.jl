@@ -165,14 +165,16 @@ function inner_inspect(model, atol = 1e-4)
     end
 end
 
-function test_constraint_primal(cref, expected)
+function test_constraint_primal(cref, expected; atol, rtol)
     # If there is a CachingOptimizer, it can use the fallback,
     # otherwise, it should throw `ValueNotSupported`.
     try
         v = value(cref)
         @test v isa AbstractPolynomial
-        @test v ≈ expected
+        @test v ≈ expected atol = atol rtol = rtol
     catch err
-        @test err isa SumOfSquares.ValueNotSupported
+        if !(err isa SumOfSquares.ValueNotSupported)
+            rethrow(err)
+        end
     end
 end

@@ -28,7 +28,7 @@ function term_fixed_test(
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 1.0 atol = atol rtol = rtol
 
-    test_constraint_primal(cref, 0.0)
+    test_constraint_primal(cref, 0.0; atol, rtol)
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ zeros(1, 1) atol = atol rtol = rtol

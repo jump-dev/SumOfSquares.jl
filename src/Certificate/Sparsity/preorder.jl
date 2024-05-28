@@ -32,7 +32,7 @@ function SumOfSquares.Certificate.preprocessed_domain(
     p,
 )
     basis, Preorder_bases =
-        sparsity(p, domain, certificate.sparsity, certificate.certificate)
+        sparsity(MB.SubBasis{MB.Monomial}(MP.monomials(p)), domain, certificate.sparsity, certificate.certificate)
     return Domain(
         domain,
         SumOfSquares.Certificate.preprocessed_domain(

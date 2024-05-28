@@ -139,9 +139,9 @@ function MP.polynomial(p::GramMatrix, ::Type{S}) where {S}
 end
 
 function change_basis(
-    p::GramMatrix{T,B},
-    ::Type{B},
-) where {T,B<:SA.ExplicitBasis}
+    p::GramMatrix{T,<:MB.SubBasis{B}},
+    ::FullBasis{B},
+) where {T,B}
     return p
 end
 function change_basis(p::GramMatrix, basis::SA.AbstractBasis)
@@ -190,11 +190,10 @@ function gram_operate(
 end
 function gram_operate(
     ::typeof(+),
-    p::GramMatrix{S,Bp},
-    q::GramMatrix{T,Bq},
-) where {S,T,Bp,Bq}
-    B = promote_type(Bp, Bq)
-    return gram_operate(+, change_basis(p, B), change_basis(q, B))
+    p::GramMatrix{S},
+    q::GramMatrix{T},
+) where {S,T}
+    return gram_operate(+, p, change_basis(q, parent(p.basis)))
 end
 
 """
