@@ -273,6 +273,14 @@ function post_filter(monos, X)
     return monos[findall(keep)]
 end
 
+# FIXME update API with basis, this is a hack
+function monomials_half_newton_polytope(
+    basis::MB.SubBasis{MB.Monomial},
+    newton::AbstractNewtonPolytopeApproximation,
+)
+    return half_newton_polytope(basis.monomials, newton)
+end
+
 function monomials_half_newton_polytope(
     monos::AbstractVector,
     newton::AbstractNewtonPolytopeApproximation,

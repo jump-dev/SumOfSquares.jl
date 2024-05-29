@@ -213,6 +213,7 @@ function wml19()
         f =
             1 + x[1]^2 * x[2]^4 + x[1]^4 * x[2]^2 + x[1]^4 * x[2]^4 -
             x[1] * x[2]^2 - 3x[1]^2 * x[2]^2
+        basis = MB.SubBasis{MB.Monomial}(MP.monomials(f))
         @testset "$completion $k $use_all_monomials" for completion in [
                 ClusterCompletion(),
                 ChordalCompletion(),
@@ -240,14 +241,14 @@ function wml19()
             end
             @test set_monos(
                 Certificate.Sparsity.sparsity(
-                    f,
+                    basis,
                     Sparsity.Monomial(completion, k, use_all_monomials),
                     certificate,
                 ),
             ) == expected
         end
         @test set_monos(
-            Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
+            Certificate.Sparsity.sparsity(basis, SignSymmetry(), certificate),
         ) == Set(
             monomial_vector.([
                 [x[1]^2 * x[2]^2, x[1] * x[2]^2, 1],
@@ -534,7 +535,7 @@ end
 function drop_monomials()
     @testset "Drop monomials" begin
         @polyvar x
-        f = polynomial(x^2)
+        basis = MB.SubBasis{MB.Monomial}([x^2])
         certificate = Certificate.MaxDegree(
             SOSCone(),
             MB.FullBasis{MB.Monomial,typeof(x^2)}(),
@@ -551,7 +552,7 @@ function drop_monomials()
             end
             @test set_monos(
                 Certificate.Sparsity.sparsity(
-                    f,
+                    basis,
                     Sparsity.Monomial(
                         ChordalCompletion(),
                         k,
@@ -582,13 +583,12 @@ function drop_monomials()
                 ideal_certificate,
                 3,
             )
-            f = polynomial(x^3)
             K = @set x >= 0
             @testset "$k $use_all_monomials" for k in 0:3,
                 use_all_monomials in [false, true]
 
                 basis, preorder_bases = Certificate.Sparsity.sparsity(
-                    f,
+                    MB.SubBasis{MB.Monomial}([x^3]),
                     K,
                     Sparsity.Monomial(
                         ChordalCompletion(),

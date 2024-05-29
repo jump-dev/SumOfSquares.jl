@@ -99,6 +99,9 @@ function MOI.supports_constraint(
     return MOI.Utilities.is_coefficient_type(F, T)
 end
 
+_eltype(::Type{Vector{T}}) where T = T
+_eltype(::Type{T}) where T = T
+
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
@@ -117,7 +120,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     )
     G = SOS.Certificate.gram_basis_type(CT, MT)
     W = MP.term_type(MT, T)
-    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}
+    return SOSPolynomialBridge{T,F,DT,M,B,_eltype(G),CT,MT,MVT,W}
 end
 
 function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)

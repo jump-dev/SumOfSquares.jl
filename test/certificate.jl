@@ -166,7 +166,6 @@ function _certificate_api(certificate::Certificate.AbstractCertificate)
           MOI.AbstractVectorSet
 end
 function _basis_check_each(basis::SA.ExplicitBasis, basis_type)
-    @test basis isa basis_type
     if basis isa MB.SubBasis
         # This fails if `basis` is `Vector{<:Monomial}` instead of `MonomialVector`
         # for DynamicPolynomials. This is important as
@@ -182,10 +181,8 @@ function _basis_check_each(basis::SA.ExplicitBasis, basis_type)
 end
 function _basis_check(basis, basis_type)
     @test basis isa SA.ExplicitBasis || basis isa Vector{<:SA.ExplicitBasis}
+    @test basis isa basis_type
     if basis isa Vector
-        # FIXME `basis_type` is `Vector{MB.MonomialBasis}` instead of `Vector{MB.MonomialBasis{...}}`
-        # Once this is fixed, we should check
-        # @test basis isa basis_type
         for b in basis
             _basis_check_each(b, basis_type)
         end

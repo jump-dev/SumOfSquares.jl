@@ -56,6 +56,13 @@ function sparsity(
 )
     return MB.SubBasis{MB.Monomial}.(sparsity(monos, sp, gram_basis.monomials))
 end
+# Backward compatibility, we may remove this at some time
+function sparsity(
+    p::MP.AbstractPolynomialLike,
+    args...
+)
+    return sparsity(MB.SubBasis{MB.Monomial}(MP.monomials(p)), args...)
+end
 function sparsity(
     basis::MB.SubBasis{MB.Monomial},
     sp::Union{SignSymmetry,Monomial},
@@ -64,7 +71,7 @@ function sparsity(
     return sparsity(
         basis.monomials,
         sp,
-        SumOfSquares.Certificate.gram_basis(certificate, poly),
+        SumOfSquares.Certificate.gram_basis(certificate, basis),
     )
 end
 function sparsity(v::SumOfSquares.Certificate.WithVariables, sp, certificate)
@@ -77,7 +84,7 @@ function SumOfSquares.Certificate.gram_basis_type(
     ::Type{Ideal{S,C}},
     ::Type{M},
 ) where {S,C,M}
-    return SumOfSquares.Certificate.gram_basis_type(C, M)
+    return Vector{SumOfSquares.Certificate.gram_basis_type(C, M)}
 end
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
