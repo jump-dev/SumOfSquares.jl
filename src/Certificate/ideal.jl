@@ -4,15 +4,15 @@
 
 abstract type AbstractIdealCertificate <: AbstractCertificate end
 
-struct _NonZeroo <: Number end
-Base.iszero(::_NonZeroo) = false
-Base.convert(::Type{_NonZeroo}, ::Number) = _NonZeroo()
-Base.:*(a::_NonZeroo, ::Number) = a
-Base.:*(::Number, a::_NonZeroo) = a
-Base.:*(::_NonZeroo, a::_NonZeroo) = a
-Base.:+(a::_NonZeroo, ::Number) = a
-Base.:+(::Number, a::_NonZeroo) = a
-Base.:+(::_NonZeroo, a::_NonZeroo) = a
+struct _NonZero <: Number end
+Base.iszero(::_NonZero) = false
+Base.convert(::Type{_NonZero}, ::Number) = _NonZero()
+Base.:*(a::_NonZero, ::Number) = a
+Base.:*(::Number, a::_NonZero) = a
+Base.:*(::_NonZero, a::_NonZero) = a
+Base.:+(a::_NonZero, ::Number) = a
+Base.:+(::Number, a::_NonZero) = a
+Base.:+(::_NonZero, a::_NonZero) = a
 
 function _combine_with_gram(
     basis::MB.SubBasis{B,M},
@@ -21,7 +21,7 @@ function _combine_with_gram(
 ) where {B,M}
     full = MB.FullBasis{B,M}()
     mstr = SA.mstructure(full)
-    p = MP.polynomial(fill(_NonZeroo(), length(basis)), basis.monomials)
+    p = MP.polynomial(fill(_NonZero(), length(basis)), basis.monomials)
     for (gram, weight) in zip(gram_bases, weights)
         w = MB.convert_basis(full, weight)
         for j in eachindex(gram)
@@ -75,9 +75,7 @@ end
 
 abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
 
-function reduced_polynomial(::SimpleIdealCertificate, coeffs, basis, domain)
-    return coeffs, basis
-end
+reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
 
 cone(certificate::SimpleIdealCertificate) = certificate.cone
 function SumOfSquares.matrix_cone_type(
@@ -186,7 +184,7 @@ end
 function gram_basis(certificate::Newton, basis)
     return MB.basis_covering_monomials(
         certificate.basis,
-        monomials_half_newton_polytope(_basis(basis), certificate.newton),
+        monomials_half_newton_polytope(SA.basis(basis), certificate.newton),
     )
 end
 
@@ -216,14 +214,9 @@ end
 
 function reduced_polynomial(
     ::Remainder,
-    coeffs,
-    basis::MB.SubBasis{MB.Monomial},
+    poly,
     domain,
 )
-    # MOI does not modify the coefficients of the functions so we can modify `p`.
-    # without altering `f`.
-    # The basis may be copied by MA however so we need to copy it.
-    poly = MP.polynomial(MOI.Utilities.scalarize(coeffs), copy(basis))
     r = convert(typeof(poly), rem(poly, ideal(domain)))
     return MOI.Utilities.vectorize(MP.coefficients(r)),
     MB.SubBasis{MB.Monomial}(MP.monomials(r))

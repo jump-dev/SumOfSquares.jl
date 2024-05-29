@@ -54,30 +54,31 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     domain = MP.similar(set.domain, T)
-    coeffs, basis = SOS.Certificate.reduced_polynomial(
+    @show set.certificate
+    @show typeof(MP.polynomial(MOI.Utilities.scalarize(func), copy(set.basis)))
+    poly = SOS.Certificate.reduced_polynomial(
         set.certificate,
-        func,
-        set.basis,
+        # MOI does not modify the coefficients of the functions so we can modify `p`.
+        # without altering `f`.
+        # The basis may be copied by MA however so we need to copy it.
+        MP.polynomial(MOI.Utilities.scalarize(func), copy(set.basis)),
         domain,
     )
     gram_basis = SOS.Certificate.gram_basis(
         set.certificate,
-        SOS.Certificate.with_variables(basis, set.domain),
+        SOS.Certificate.with_variables(poly, set.domain),
     )
     gram_bases = [gram_basis]
-    weights = [MP.term(one(T), MP.constant_monomial(eltype(basis.monomials)))]
+    weights = [MP.term(one(T), MP.constant_monomial(poly))]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
     new_basis = SOS.Certificate.reduced_basis(
         set.certificate,
-        basis,
+        SA.basis(poly),
         domain,
         flat_gram_bases,
         flat_weights,
     )
-    new_coeffs = SA.coeffs(
-        MB._algebra_element(MOI.Utilities.scalarize(coeffs), basis),
-        new_basis,
-    )
+    new_coeffs = SA.coeffs(poly, new_basis)
     constraint = MOI.add_constraint(
         model,
         MOI.Utilities.vectorize(new_coeffs),

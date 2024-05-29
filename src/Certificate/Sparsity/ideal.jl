@@ -88,14 +88,12 @@ function SumOfSquares.Certificate.gram_basis_type(
 end
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
-    coeffs,
-    basis,
+    poly,
     domain,
 )
     return SumOfSquares.Certificate.reduced_polynomial(
         certificate.certificate,
-        coeffs,
-        basis,
+        poly,
         domain,
     )
 end
