@@ -8,7 +8,7 @@ struct SOSPolynomialBridge{
     CT<:SOS.Certificate.AbstractIdealCertificate,
     MT<:MP.AbstractMonomial,
     MVT<:AbstractVector{MT},
-    W<:MP.AbstractTerm{T},
+    W<:SA.AlgebraElement,
 } <: MOI.Bridges.Constraint.SetMapBridge{
     T,
     SOS.WeightedSOSCone{M,B,G,W},
@@ -69,7 +69,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         SOS.Certificate.with_variables(poly, set.domain),
     )
     gram_bases = [gram_basis]
-    weights = [MP.term(one(T), MP.constant_monomial(poly))]
+    weights = [MB.constant_polynomial(typeof(SA.basis(poly)), T)]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
     new_basis = SOS.Certificate.reduced_basis(
         set.certificate,
@@ -111,23 +111,24 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    B = MA.promote_operation(
+    B = MB.SubBasis{MB.Monomial,MT,MVT}
+    W = MP.polynomial_type(B, T)
+    R = MA.promote_operation(
         SOS.Certificate.reduced_basis,
         CT,
-        MB.SubBasis{MB.Monomial,MT,MVT},
+        B,
         SemialgebraicSets.similar_type(DT, T),
         Vector{MB.SubBasis{MB.Monomial,MT,MVT}},
-        Vector{MP.term_type(MT, T)},
+        Vector{W},
     )
     G = SOS.Certificate.gram_basis_type(CT, MT)
-    W = MP.term_type(MT, T)
-    return SOSPolynomialBridge{T,F,DT,M,B,_eltype(G),CT,MT,MVT,W}
+    return SOSPolynomialBridge{T,F,DT,M,R,_eltype(G),CT,MT,MVT,W}
 end
 
 function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
     throw(MOI.Bridges.MapNotInvertible())
     # Does not work with QuotientBasis
-    #return SA.coeffs(MB._algebra_element(f, bridge.new_basis), bridge.set.basis)
+    #return SA.coeffs(MP.polynomial(f, bridge.new_basis), bridge.set.basis)
 end
 
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)

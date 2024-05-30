@@ -28,10 +28,18 @@ function MP.term_type(
 ) where {T,B,U}
     return MP.term_type(MP.polynomial_type(p))
 end
+
 function MP.polynomial_type(
     ::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
+    ::Type{S},
+) where {T,B,U,S}
+    return MP.polynomial_type(B, S)
+end
+
+function MP.polynomial_type(
+    G::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
 ) where {T,B,U}
-    return MP.polynomial_type(B, U)
+    return MP.polynomial_type(G, U)
 end
 
 Base.:(==)(p::_APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
@@ -134,8 +142,27 @@ end
 function MP.polynomial(p::GramMatrix{T,B,U}) where {T,B,U}
     return MP.polynomial(p, U)
 end
-function MP.polynomial(p::GramMatrix, ::Type{S}) where {S}
-    return MP.polynomial(value_matrix(p), p.basis, S)
+
+function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, p::SA.AlgebraElement, g::GramMatrix)
+    for col in eachindex(g.basis)
+        for row in eachindex(g.basis)
+            MA.operate_to!(
+                op,
+                p,
+                g.Q[row, col],
+                SA.star(g.basis[row]) * g.basis[col],
+            )
+        end
+    end
+end
+
+function MP.polynomial(g::GramMatrix, ::Type{T}) where {T}
+    n = length(g.basis)
+    @assert size(g.Q) == (n, n)
+    p = zero(MP.polynomial_type(typeof(g), T))
+    MA.operate(SA.UnsafeAddMul(*), p, g)
+    MA.operate(SA.canonical, p)
+    return p
 end
 
 function change_basis(
