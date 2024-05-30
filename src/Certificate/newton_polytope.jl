@@ -674,3 +674,8 @@ function post_filter(poly, generators, multipliers_gram_monos)
         (keep, gram_monos) in zip(keep, multipliers_gram_monos)
     ]
 end
+
+function half_newton_polytope(a::SA.AlgebraElement, args...)
+    @assert SA.basis(a) isa MB.SubBasis{MB.Monomial}
+    half_newton_polytope(SA.coeffs(a, MB.FullBasis{MB.Monomial,MP.monomial_type(typeof(a))}()), args...)
+end

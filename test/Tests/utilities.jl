@@ -1,3 +1,4 @@
+import StarAlgebras as SA
 using Test, JuMP
 using SumOfSquares
 
@@ -172,7 +173,7 @@ function test_constraint_primal(cref, expected; atol, rtol)
     # otherwise, it should throw `ValueNotSupported`.
     try
         v = value(cref)
-        @test v isa AbstractPolynomial
+        @test v isa SA.AlgebraElement
         @test v ≈ expected atol = atol rtol = rtol
     catch err
         if !(err isa SumOfSquares.ValueNotSupported)

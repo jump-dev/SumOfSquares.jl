@@ -49,7 +49,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
-    p = MP.polynomial(MOI.Utilities.scalarize(f), copy(set.basis))
+    p = MB.algebra_element(MOI.Utilities.scalarize(f), copy(set.basis))
     λ_bases = B[]
     λ_variables =
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}}[]
