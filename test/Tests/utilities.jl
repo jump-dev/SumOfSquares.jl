@@ -30,7 +30,7 @@ macro test_suite(setname, subsets = false)
     testname = Symbol(string(setname) * "_test")
     testdict = Symbol(string(testname) * "s")
     if subsets
-        runtest = :(f(model, config, exclude))
+        runtest = :(f(model, config; exclude))
     else
         runtest = :(f(model, config))
     end
@@ -38,10 +38,12 @@ macro test_suite(setname, subsets = false)
         :(
             function $testname(
                 model, # could be ModelLike or an optimizer constructor
-                config::$MOI.Test.Config,
+                config::$MOI.Test.Config;
+                include::Vector{String} = collect(keys($testdict)),
                 exclude::Vector{String} = String[],
             )
-                for (name, f) in $testdict
+                for name in include
+                    f = $(testdict)[name]
                     if name in exclude
                         continue
                     end

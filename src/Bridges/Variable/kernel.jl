@@ -12,15 +12,14 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
 ) where {T,M}
     variables = Vector{MOI.VariableIndex}[]
     constraints = MOI.ConstraintIndex{MOI.VectorOfVariables}[]
-    acc = MA.Zero()
+    acc = SA.AlgebraElement(SparseArrays.sparsevec(SA.key_type(typeof(set.basis))[], MOI.ScalarAffineFunction{T}[], length(set.basis)), SA.algebra(set.basis))
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
         gram, vars, con = SOS.add_gram_matrix(model, M, gram_basis, T)
         push!(variables, vars)
         push!(constraints, con)
-        acc = MA.add_mul!!(acc, weight, gram)
+        MA.operate!(SA.UnsafeAddMul(*), acc, weight, gram)
     end
-    affine = MP.coefficients(acc, set.basis)
-    return KernelBridge{T,M}(affine, variables, constraints, set)
+    return KernelBridge{T,M}(SA.coeffs(acc), variables, constraints, set)
 end
 
 function MOI.Bridges.Variable.supports_constrained_variable(

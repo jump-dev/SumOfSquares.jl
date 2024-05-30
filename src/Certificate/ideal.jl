@@ -212,12 +212,16 @@ struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
     gram_certificate::GCT
 end
 
+function _rem(coeffs, basis::MB.SubBasis{MB.Monomial}, I)
+    return rem(MP.polynomial(coeffs, basis.monomials), I)
+end
+
 function reduced_polynomial(
     ::Remainder,
-    poly,
+    a::SA.AlgebraElement,
     domain,
 )
-    r = convert(typeof(poly), rem(poly, ideal(domain)))
+    r = convert(typeof(poly), _rem(SA.coeffs(a), SA.basis(a), ideal(domain)))
     return MOI.Utilities.vectorize(MP.coefficients(r)),
     MB.SubBasis{MB.Monomial}(MP.monomials(r))
 end

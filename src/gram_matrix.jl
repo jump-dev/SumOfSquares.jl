@@ -143,27 +143,32 @@ function MP.polynomial(p::GramMatrix{T,B,U}) where {T,B,U}
     return MP.polynomial(p, U)
 end
 
-function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, p::SA.AlgebraElement, g::GramMatrix)
+function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, p::SA.AlgebraElement, w::SA.AlgebraElement, g::GramMatrix)
     for col in eachindex(g.basis)
         for row in eachindex(g.basis)
-            MA.operate_to!(
-                op,
-                p,
-                g.Q[row, col],
-                SA.star(g.basis[row]) * g.basis[col],
-            )
+            for (k, v) in SA.nonzero_pairs(SA.coeffs(w))
+                MA.operate!(
+                    op,
+                    p,
+                    v * g.Q[row, col],
+                    SA.basis(w)[k],
+                    SA.star(g.basis[row]),
+                    g.basis[col],
+                )
+            end
         end
     end
-end
-
-function MP.polynomial(g::GramMatrix, ::Type{T}) where {T}
-    n = length(g.basis)
-    @assert size(g.Q) == (n, n)
-    p = zero(MP.polynomial_type(typeof(g), T))
-    MA.operate(SA.UnsafeAddMul(*), p, g)
-    MA.operate(SA.canonical, p)
     return p
 end
+
+#function MP.polynomial(g::GramMatrix, ::Type{T}) where {T}
+#    n = length(g.basis)
+#    @assert size(g.Q) == (n, n)
+#    p = zero(MP.polynomial_type(typeof(g), T))
+#    MA.operate(SA.UnsafeAddMul(*), p, g)
+#    MA.operate(SA.canonical, p)
+#    return p
+#end
 
 function change_basis(
     p::GramMatrix{T,<:MB.SubBasis{B}},

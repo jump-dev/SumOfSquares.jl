@@ -132,7 +132,7 @@ struct WeightedSOSCone{
     M,
     B<:SA.ExplicitBasis,
     G<:SA.ExplicitBasis,
-    W<:MP.AbstractPolynomialLike,
+    W<:SA.AlgebraElement,
 } <: MOI.AbstractVectorSet
     basis::B
     gram_bases::Vector{G}
@@ -142,7 +142,7 @@ function WeightedSOSCone{M}(
     basis::SA.ExplicitBasis,
     gram_bases::Vector{G},
     weights::Vector{W},
-) where {M,G<:SA.ExplicitBasis,W<:MP.AbstractPolynomialLike}
+) where {M,G<:SA.ExplicitBasis,W<:SA.AlgebraElement}
     return WeightedSOSCone{M,typeof(basis),G,W}(basis, gram_bases, weights)
 end
 MOI.dimension(set::WeightedSOSCone) = length(set.basis)

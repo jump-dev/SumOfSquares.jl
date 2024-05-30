@@ -1,6 +1,8 @@
 module Variable
 
+import SparseArrays
 import MutableArithmetics as MA
+import StarAlgebras as SA
 import MathOptInterface as MOI
 import MultivariatePolynomials as MP
 import SumOfSquares as SOS

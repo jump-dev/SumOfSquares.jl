@@ -54,14 +54,12 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     domain = MP.similar(set.domain, T)
-    @show set.certificate
-    @show typeof(MP.polynomial(MOI.Utilities.scalarize(func), copy(set.basis)))
     poly = SOS.Certificate.reduced_polynomial(
         set.certificate,
         # MOI does not modify the coefficients of the functions so we can modify `p`.
         # without altering `f`.
         # The basis may be copied by MA however so we need to copy it.
-        MP.polynomial(MOI.Utilities.scalarize(func), copy(set.basis)),
+        MB.algebra_element(MOI.Utilities.scalarize(func), copy(set.basis)),
         domain,
     )
     gram_basis = SOS.Certificate.gram_basis(
@@ -69,7 +67,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         SOS.Certificate.with_variables(poly, set.domain),
     )
     gram_bases = [gram_basis]
-    weights = [MB.constant_polynomial(typeof(SA.basis(poly)), T)]
+    weights = [MB.constant_algebra_element(typeof(SA.basis(poly)), T)]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
     new_basis = SOS.Certificate.reduced_basis(
         set.certificate,
@@ -112,7 +110,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # for most use cases
     M = SOS.matrix_cone_type(CT)
     B = MB.SubBasis{MB.Monomial,MT,MVT}
-    W = MP.polynomial_type(B, T)
+    W = SA.AlgebraElement{MB.algebra_type(B),T,Vector{T}}
     R = MA.promote_operation(
         SOS.Certificate.reduced_basis,
         CT,
