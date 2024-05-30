@@ -221,9 +221,11 @@ function reduced_polynomial(
     a::SA.AlgebraElement,
     domain,
 )
-    r = convert(typeof(poly), _rem(SA.coeffs(a), SA.basis(a), ideal(domain)))
-    return MOI.Utilities.vectorize(MP.coefficients(r)),
-    MB.SubBasis{MB.Monomial}(MP.monomials(r))
+    r = _rem(SA.coeffs(a), SA.basis(a), ideal(domain))
+    return MB.algebra_element(
+        MP.coefficients(r),
+        MB.SubBasis{MB.Monomial}(MP.monomials(r)),
+    )
 end
 
 function gram_basis(certificate::Remainder, poly)
