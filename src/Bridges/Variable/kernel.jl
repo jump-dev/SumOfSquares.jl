@@ -19,6 +19,7 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
         push!(constraints, con)
         MA.operate!(SA.UnsafeAddMul(*), acc, weight, gram)
     end
+    MA.operate!(SA.canonical, acc)
     return KernelBridge{T,M}(SA.coeffs(acc), variables, constraints, set)
 end
 
