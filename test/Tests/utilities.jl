@@ -1,5 +1,6 @@
 import StarAlgebras as SA
 using Test, JuMP
+import StarAlgebras as SA
 using SumOfSquares
 
 function _model(optimizer::MOI.AbstractOptimizer)

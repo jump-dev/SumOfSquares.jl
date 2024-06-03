@@ -213,7 +213,8 @@ struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
 end
 
 function _rem(coeffs, basis::MB.SubBasis{MB.Monomial}, I)
-    return rem(MP.polynomial(coeffs, basis.monomials), I)
+    poly = MP.polynomial(coeffs, basis.monomials)
+    return convert(typeof(poly), rem(poly, I))
 end
 
 function reduced_polynomial(

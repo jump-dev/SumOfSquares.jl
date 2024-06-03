@@ -376,9 +376,9 @@ _sign(a) = missing
 
 function deg_sign(deg, p, d)
     sgn = nothing
-    for t in MP.terms(p)
-        if deg(t) == d
-            s = _sign(MP.coefficient(t))
+    for (k, v) in SA.nonzero_pairs(SA.coeffs(p))
+        if deg(SA.basis(p)[k]) == d
+            s = _sign(v)
             if isnothing(sgn)
                 sgn = s
             else
@@ -456,21 +456,26 @@ function deg_range(deg, p, gs, gram_deg, range::UnitRange)
     return
 end
 
+_mindegree(p::MP.AbstractPolynomialLike) = MP.mindegree(p)
+_mindegree(a::SA.AlgebraElement) = _mindegree(SA.basis(a))
+_mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
+_mindegree(p::MB.Polynomial{MB.Monomial}) = MP.mindegree(p.monomial)
+
 function putinar_degree_bounds(
-    p::MP.AbstractPolynomialLike,
+    p::SA.AlgebraElement,
     gs::AbstractVector{<:MP.AbstractPolynomialLike},
     vars,
     maxdegree,
 )
     mindegree = 0
     # TODO homogeneous case
-    mindeg(g) = _min_half(min_shift(mindegree, MP.mindegree(g)))
+    mindeg(g) = _min_half(min_shift(mindegree, _mindegree(g)))
     maxdeg(g) = _max_half(maxdegree - MP.maxdegree(g))
     degrange(g) = mindeg(g):maxdeg(g)
     minus_degrange(g) = -maxdeg(g):-mindeg(g)
     # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
     mindegree =
-        -deg_range(p -> -MP.mindegree(p), p, gs, minus_degrange, -maxdegree:0)
+        -deg_range(p -> -_mindegree(p), p, gs, minus_degrange, -maxdegree:0)
     if isnothing(mindegree)
         return
     end
@@ -539,7 +544,7 @@ function half_newton_polytope(
 end
 
 function half_newton_polytope(
-    p::MP.AbstractPolynomialLike,
+    p::SA.AlgebraElement,
     gs::AbstractVector{<:MP.AbstractPolynomialLike},
     vars,
     maxdegree,
@@ -560,6 +565,7 @@ function half_newton_polytope(
     # The last one will be recomputed by the ideal certificate
     return MB.SubBasis{MB.Monomial}.(filtered_bases[1:(end-1)])
 end
+
 struct SignCount
     unknown::Int
     positive::Int
