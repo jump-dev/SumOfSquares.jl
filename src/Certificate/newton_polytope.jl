@@ -316,9 +316,11 @@ function _half(d::DegreeBounds)
     )
 end
 
-function min_degree(p, v)
-    return mapreduce(Base.Fix2(MP.degree, v), min, MP.monomials(p))
+function min_degree(basis::MB.SubBasis{MB.Monomial}, v)
+    return mapreduce(Base.Fix2(MP.degree, v), min, basis.monomials)
 end
+min_degree(p::SA.AlgebraElement, v) = min_degree(SA.basis(p), v)
+min_degree(p::MB.Polynomial{MB.Monomial}, v) = MP.degree(p.monomial, v)
 minus_min_degree(p, v) = -min_degree(p, v)
 
 function _monomial(vars, exps)
@@ -328,9 +330,12 @@ function _monomial(vars, exps)
     return prod(vars .^ exps)
 end
 
-function max_degree(p, v)
-    return mapreduce(Base.Fix2(MP.degree, v), max, MP.monomials(p))
+function max_degree(basis::MB.SubBasis{MB.Monomial}, v)
+    return mapreduce(Base.Fix2(MP.degree, v), max, basis.monomials)
 end
+max_degree(p::SA.AlgebraElement, v) = max_degree(SA.basis(p), v)
+max_degree(p::MB.Polynomial{MB.Monomial}, v) = MP.degree(p.monomial, v)
+
 
 function min_shift(d, shift)
     return max(0, d - shift)
@@ -339,7 +344,7 @@ end
 function minus_shift(
     deg,
     mono::MP.AbstractMonomial,
-    p::MP.AbstractPolynomialLike,
+    p::SA.AlgebraElement,
     shift,
 )
     return _map_powers(mono) do (v, d)
@@ -347,7 +352,7 @@ function minus_shift(
     end
 end
 
-function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
+function minus_shift(d::DegreeBounds, p::SA.AlgebraElement)
     var_mindegree =
         minus_shift(min_degree, d.variablewise_mindegree, p, min_shift)
     var_maxdegree = minus_shift(max_degree, d.variablewise_maxdegree, p, -)
@@ -355,8 +360,8 @@ function minus_shift(d::DegreeBounds, p::MP.AbstractPolynomialLike)
         return
     end
     return DegreeBounds(
-        min_shift(d.mindegree, MP.mindegree(p)),
-        d.maxdegree - MP.maxdegree(p),
+        min_shift(d.mindegree, _mindegree(p)),
+        d.maxdegree - _maxdegree(p),
         var_mindegree,
         var_maxdegree,
     )
@@ -456,30 +461,33 @@ function deg_range(deg, p, gs, gram_deg, range::UnitRange)
     return
 end
 
-_mindegree(p::MP.AbstractPolynomialLike) = MP.mindegree(p)
+#_mindegree(p::MP.AbstractPolynomialLike) = MP.mindegree(p)
 _mindegree(a::SA.AlgebraElement) = _mindegree(SA.basis(a))
+_maxdegree(a::SA.AlgebraElement) = _maxdegree(SA.basis(a))
 _mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
+_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
 _mindegree(p::MB.Polynomial{MB.Monomial}) = MP.mindegree(p.monomial)
+_maxdegree(p::MB.Polynomial{MB.Monomial}) = MP.maxdegree(p.monomial)
 
 function putinar_degree_bounds(
     p::SA.AlgebraElement,
-    gs::AbstractVector{<:MP.AbstractPolynomialLike},
+    gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
 )
     mindegree = 0
     # TODO homogeneous case
     mindeg(g) = _min_half(min_shift(mindegree, _mindegree(g)))
-    maxdeg(g) = _max_half(maxdegree - MP.maxdegree(g))
+    maxdeg(g) = _max_half(maxdegree - _maxdegree(g))
     degrange(g) = mindeg(g):maxdeg(g)
     minus_degrange(g) = -maxdeg(g):-mindeg(g)
-    # The multiplier will have degree `0:2fld(maxdegree - MP.maxdegree(g), 2)`
+    # The multiplier will have degree `0:2fld(maxdegree - _maxdegree(g), 2)`
     mindegree =
         -deg_range(p -> -_mindegree(p), p, gs, minus_degrange, -maxdegree:0)
     if isnothing(mindegree)
         return
     end
-    maxdegree = deg_range(MP.maxdegree, p, gs, degrange, 0:maxdegree)
+    maxdegree = deg_range(_maxdegree, p, gs, degrange, 0:maxdegree)
     if isnothing(maxdegree)
         return
     end
@@ -511,14 +519,14 @@ function putinar_degree_bounds(
     )
 end
 
-function multiplier_basis(g::MP.AbstractPolynomialLike, bounds::DegreeBounds)
+function multiplier_basis(g::SA.AlgebraElement, bounds::DegreeBounds)
     shifted = minus_shift(bounds, g)
     if isnothing(shifted)
         halved = nothing
     else
         halved = _half(shifted)
     end
-    basis = MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()
+    basis = MB.FullBasis{MB.Monomial,MP.monomial_type(typeof(g))}()
     if isnothing(halved)
         # TODO add `MB.empty_basis` to API
         return MB.maxdegree_basis(
@@ -548,6 +556,22 @@ function half_newton_polytope(
     gs::AbstractVector{<:MP.AbstractPolynomialLike},
     vars,
     maxdegree,
+    filter,
+)
+    return half_newton_polytope(
+        p,
+        [MB.algebra_element(MP.coefficients(g), MB.SubBasis{MB.Monomial}(MP.monomials(g))) for g in gs],
+        vars,
+        maxdegree,
+        filter,
+    )
+end
+
+function half_newton_polytope(
+    p::SA.AlgebraElement,
+    gs::AbstractVector{<:SA.AlgebraElement},
+    vars,
+    maxdegree,
     ::NewtonFilter{<:NewtonDegreeBounds},
 )
     bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
@@ -555,12 +579,12 @@ function half_newton_polytope(
     push!(
         bases,
         maxdegree_gram_basis(
-            MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(typeof(p))}(),
             _half(bounds),
         ).monomials,
     )
     gs = copy(gs)
-    push!(gs, one(eltype(gs)))
+    push!(gs, MB.constant_algebra_element(MA.promote_operation(SA.basis, eltype(gs)), eltype(eltype(gs))))
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
     return MB.SubBasis{MB.Monomial}.(filtered_bases[1:(end-1)])
@@ -603,7 +627,7 @@ function add(c::SignCount, a::Number, Δ)
         error("Cannot determine sign of `$a`.")
     end
 end
-function add(counter, sign, mono, Δ)
+function add(counter, sign, mono::MB.Polynomial, Δ)
     count = get(counter, mono, SignCount())
     return counter[mono] = add(count, sign, Δ)
 end
@@ -617,16 +641,15 @@ function increase(counter, generator_sign, monos, mult)
     end
 end
 
-function post_filter(poly, generators, multipliers_gram_monos)
-    counter = Dict{MP.monomial_type(poly),SignCount}()
-    for t in MP.terms(poly)
+function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos)
+    counter = Dict{eltype(MA.promote_operation(SA.basis, typeof(poly))),SignCount}()
+    for (mono, v) in SA.nonzero_pairs(poly)
         coef = SignCount()
-        counter[MP.monomial(t)] = add(coef, _sign(MP.coefficient(t)), 1)
+        counter[mono] = add(coef, _sign(v), 1)
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
-        for t in MP.terms(mult)
-            sign = -_sign(MP.coefficient(t))
-            mono = MP.monomial(t)
+        for (mono, v) in SA.nonzero_pairs(mult)
+            sign = -_sign(v)
             increase(counter, sign, gram_monos, mono)
         end
     end

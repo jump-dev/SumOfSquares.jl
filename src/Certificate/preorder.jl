@@ -84,7 +84,7 @@ function with_fixed_basis(
     v = with_variables(domain, p)
     return WithFixedBases(
         v.inner,
-        half_newton_polytope(p, domain.p, v.variables, maxdegree, newton),
+        half_newton_polytope(p, SemialgebraicSets.inequalities(domain), v.variables, maxdegree, newton),
     )
 end
 

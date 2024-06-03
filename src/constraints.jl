@@ -151,7 +151,7 @@ function default_ideal_certificate(
 end
 
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
-    return default_ideal_certificate(domain.V, args...)
+    return default_ideal_certificate(SemialgebraicSets.algebraic_set(domain), args...)
 end
 
 function default_certificate(
@@ -198,7 +198,7 @@ function default_certificate(
     # that wouldn't work if `ideal_certificate` is `Remainder`,
     # `Sparseity.Ideal` or `Symmetry.Ideal`
     multipliers_certificate = default_ideal_certificate(
-        domain.V,
+        SemialgebraicSets.algebraic_set(domain),
         basis,
         cone,
         maxdegree,
@@ -222,11 +222,11 @@ _max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init = 0)
 _maxdegree(domain) = 0
 
 function _maxdegree(domain::AlgebraicSet)
-    return _max_maxdegree(domain.I.p)
+    return _max_maxdegree(SemialgebraicSets.equalities(domain))
 end
 
 function _maxdegree(domain::BasicSemialgebraicSet)
-    return max(_max_maxdegree(domain.p), _maxdegree(domain.V))
+    return max(_max_maxdegree(SemialgebraicSets.inequalities(domain)), _maxdegree(SemialgebraicSets.algebraic_set(domain)))
 end
 
 """
