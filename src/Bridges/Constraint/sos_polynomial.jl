@@ -3,21 +3,20 @@ struct SOSPolynomialBridge{
     F<:MOI.AbstractVectorFunction,
     DT<:SemialgebraicSets.AbstractSemialgebraicSet,
     M, # matrix cone type
+    BT,
     B,
     G<:SA.ExplicitBasis,
     CT<:SOS.Certificate.AbstractIdealCertificate,
-    MT<:MP.AbstractMonomial,
-    MVT<:AbstractVector{MT},
     W<:SA.AlgebraElement,
 } <: MOI.Bridges.Constraint.SetMapBridge{
     T,
     SOS.WeightedSOSCone{M,B,G,W},
-    SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    SOS.SOSPolynomialSet{DT,BT,CT},
     F,
     F,
 }
     constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,B,G,W}}
-    set::SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}
+    set::SOS.SOSPolynomialSet{DT,BT,CT}
     new_basis::B
     flat_indices::Union{Int,Base.UnitRange{Int}}
 end
@@ -42,11 +41,11 @@ function _flatten(
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}},
+    ::Type{SOSPolynomialBridge{T,F,DT,M,BT,B,G,CT,W}},
     model::MOI.ModelLike,
     func::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet},
-) where {T,F,DT,M,B,G,CT,MT,MVT,W}
+) where {T,F,DT,M,BT,B,G,CT,W}
     @assert MOI.output_dimension(func) == length(set.basis)
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
     # need to call `similar`. This is critical since `T` is
@@ -82,7 +81,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         MOI.Utilities.vectorize(new_coeffs),
         SOS.WeightedSOSCone{M}(new_basis, flat_gram_bases, flat_weights),
     )
-    return SOSPolynomialBridge{T,F,DT,M,B,G,CT,MT,MVT,W}(
+    return SOSPolynomialBridge{T,F,DT,M,BT,B,G,CT,W}(
         constraint,
         set,
         new_basis,
@@ -104,23 +103,22 @@ _eltype(::Type{T}) where T = T
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialBridge{T}},
     F::Type{<:MOI.AbstractVectorFunction},
-    ::Type{SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT}},
-) where {T,DT<:SemialgebraicSets.AbstractAlgebraicSet,MT,MVT,CT}
+    ::Type{SOS.SOSPolynomialSet{DT,BT,CT}},
+) where {T,DT<:SemialgebraicSets.AbstractAlgebraicSet,BT,CT}
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    B = MB.SubBasis{MB.Monomial,MT,MVT}
-    W = SA.AlgebraElement{MB.algebra_type(B),T,Vector{T}}
-    R = MA.promote_operation(
+    W = SA.AlgebraElement{MB.algebra_type(BT),T,Vector{T}}
+    B = MA.promote_operation(
         SOS.Certificate.reduced_basis,
         CT,
-        B,
+        BT,
         SemialgebraicSets.similar_type(DT, T),
-        Vector{MB.SubBasis{MB.Monomial,MT,MVT}},
+        Vector{BT},
         Vector{W},
     )
-    G = SOS.Certificate.gram_basis_type(CT, MT)
-    return SOSPolynomialBridge{T,F,DT,M,R,_eltype(G),CT,MT,MVT,W}
+    G = SOS.Certificate.gram_basis_type(CT)
+    return SOSPolynomialBridge{T,F,DT,M,BT,B,_eltype(G),CT,W}
 end
 
 function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)

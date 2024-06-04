@@ -204,7 +204,7 @@ function half_newton_polytope(X::AbstractVector, ::NewtonDegreeBounds{Tuple{}})
     end
 end
 
-function half_newton_polytope(monos::AbstractVector, newton::NewtonFilter)
+function half_newton_polytope(basis::SA.ExplicitBasis, newton::NewtonFilter)
     gram_monos = half_newton_polytope(monos, newton.outer_approximation)
     return post_filter(gram_monos, monos)
 end
@@ -271,21 +271,6 @@ function post_filter(monos, X)
         end
     end
     return monos[findall(keep)]
-end
-
-# FIXME update API with basis, this is a hack
-function monomials_half_newton_polytope(
-    basis::MB.SubBasis{MB.Monomial},
-    newton::AbstractNewtonPolytopeApproximation,
-)
-    return half_newton_polytope(basis.monomials, newton)
-end
-
-function monomials_half_newton_polytope(
-    monos::AbstractVector,
-    newton::AbstractNewtonPolytopeApproximation,
-)
-    return half_newton_polytope(MP.monomial_vector(monos), newton)
 end
 
 struct DegreeBounds{M}

@@ -204,7 +204,7 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
     ) isa Tuple
     _basis_check(
         Certificate.gram_basis(certificate, basis),
-        Certificate.gram_basis_type(typeof(certificate), MP.monomial_type(x)),
+        Certificate.gram_basis_type(typeof(certificate)),
     )
     zbasis = Certificate.zero_basis(certificate)
     @test zbasis isa SA.AbstractBasis

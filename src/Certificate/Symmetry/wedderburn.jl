@@ -77,8 +77,7 @@ function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
 end
 function SumOfSquares.Certificate.gram_basis_type(
     ::Type{<:Ideal},
-    ::Type{M},
-) where {M}
+)
     return Vector{Vector{MB.FixedPolynomialBasis}}
 end
 SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.Monomial

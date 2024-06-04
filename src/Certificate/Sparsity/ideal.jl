@@ -85,9 +85,8 @@ function SumOfSquares.Certificate.gram_basis(certificate::Ideal, poly)
 end
 function SumOfSquares.Certificate.gram_basis_type(
     ::Type{Ideal{S,C}},
-    ::Type{M},
-) where {S,C,M}
-    return Vector{SumOfSquares.Certificate.gram_basis_type(C, M)}
+) where {S,C}
+    return Vector{SumOfSquares.Certificate.gram_basis_type(C)}
 end
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,

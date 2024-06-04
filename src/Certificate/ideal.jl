@@ -117,7 +117,7 @@ function gram_basis(certificate::MaxDegree, poly)
         certificate.maxdegree,
     )
 end
-function gram_basis_type(::Type{MaxDegree{C,B}}, ::Type{M}) where {C,B,M} # TODO remove `M` it's not needed anymore
+function gram_basis_type(::Type{MaxDegree{C,B}}) where {C,B}
     return MB.explicit_basis_type(B)
 end
 
@@ -141,7 +141,7 @@ end
 function gram_basis(certificate::FixedBasis, _)
     return certificate.basis
 end
-gram_basis_type(::Type{FixedBasis{C,B}}, ::Type) where {C,B} = B
+gram_basis_type(::Type{FixedBasis{C,B}}) where {C,B} = B
 
 """
     struct Newton{
@@ -184,11 +184,11 @@ end
 function gram_basis(certificate::Newton, basis)
     return MB.basis_covering_monomials(
         certificate.basis,
-        monomials_half_newton_polytope(SA.basis(basis), certificate.newton),
+        half_newton_polytope(SA.basis(basis), certificate.newton),
     )
 end
 
-function gram_basis_type(::Type{<:Newton{C,B}}, ::Type{M}) where {C,B,M}
+function gram_basis_type(::Type{<:Newton{C,B}}) where {C,B}
     return MB.explicit_basis_type(B)
 end
 
@@ -233,8 +233,8 @@ function gram_basis(certificate::Remainder, poly)
     return gram_basis(certificate.gram_certificate, poly)
 end
 
-function gram_basis_type(::Type{Remainder{GCT}}, ::Type{M}) where {GCT,M}
-    return gram_basis_type(GCT, M)
+function gram_basis_type(::Type{Remainder{GCT}}) where {GCT}
+    return gram_basis_type(GCT)
 end
 
 cone(certificate::Remainder) = cone(certificate.gram_certificate)
