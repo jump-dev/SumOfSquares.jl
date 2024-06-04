@@ -361,12 +361,21 @@ end
 _promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
 _promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
 
-function _default_basis(coeffs, basis::MB.SubBasis{B}, ::Union{Nothing,Type{B}}) where {B}
-    return coeffs, basis
+function _default_basis(coeffs, basis::MB.SubBasis{B}, b) where {B}
+    if isnothing(b) || B == b
+        return coeffs, basis
+    else
+        return _default_basis(MP.polynomial(coeffs, basis.monomials), MB.implicit_basis(basis), b)
+    end
 end
 
-function _default_basis(p::MP.AbstractPolynomialLike, ::MB.FullBasis{B}, basis) where {B}
-    return _default_basis(MP.coefficients(p), MB.SubBasis{B}(MP.monomials(p)), basis)
+function _default_basis(p::MP.AbstractPolynomialLike, basis::MB.FullBasis{B}, b) where {B}
+    if isnothing(b) || B == b
+        return _default_basis(MP.coefficients(p), MB.SubBasis{B}(MP.monomials(p)), b)
+    else
+        new_basis = MB.FullBasis{b,MP.monomial_type(typeof(basis))}()
+        return _default_basis(SA.coeffs(p, basis, new_basis), new_basis, b)
+    end
 end
 
 function _default_basis(a::SA.AlgebraElement, basis)
