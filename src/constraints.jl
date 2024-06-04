@@ -242,36 +242,12 @@ function default_maxdegree(monos, domain)
     return max(MP.maxdegree(monos), _maxdegree(domain))
 end
 
-function _promote_monomial_type(::Type{M1}, ::Type{D}) where {M1,D}
-    M2 = MP.monomial_type(D)
-    if isnothing(M2)
-        return M1
-    else
-        return promote_type(M1, M2)
-    end
-end
-
-_default_basis(basis::SA.AbstractBasis, _, _) = basis
-
-function _default_basis(
-    ::Type{B},
-    ::SubBasis{_B,M},
-    ::D,
-) where {B<:MB.AbstractMonomialIndexed,_B,M,D}
-    return MB.FullBasis{B,_promote_monomial_type(M, D)}()
-end
-
-function _default_basis(::Nothing, basis::SubBasis, domain)
-    return _default_basis(MB.Monomial, basis, domain)
-end
-
 function JuMP.moi_set(
     cone::SOSLikeCone,
-    b::SA.ExplicitBasis;
+    basis::SA.ExplicitBasis;
     domain::AbstractSemialgebraicSet = FullSpace(),
-    basis = nothing,
     newton_polytope::Union{Nothing,Tuple} = tuple(),
-    maxdegree::Union{Nothing,Int} = default_maxdegree(b, domain),
+    maxdegree::Union{Nothing,Int} = default_maxdegree(basis, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
     newton_of_remainder::Bool = false,
@@ -280,7 +256,7 @@ function JuMP.moi_set(
         newton_of_remainder,
         symmetry,
         sparsity,
-        _default_basis(basis, b, domain),
+        MB.implicit_basis(basis),
         cone,
         maxdegree,
         newton_polytope,
@@ -290,12 +266,12 @@ function JuMP.moi_set(
         sparsity,
         ideal_certificate,
         cone,
-        _default_basis(basis, b, domain),
+        MB.implicit_basis(basis),
         maxdegree,
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(domain, b, certificate)
+    return SOSPolynomialSet(domain, basis, certificate)
 end
 
 function PolyJuMP.bridges(
@@ -385,10 +361,36 @@ end
 _promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
 _promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
 
-function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
-    basis = MB.SubBasis{MB.Monomial}(MP.monomials(p))
+function _default_basis(coeffs, basis::MB.SubBasis{B}, ::Union{Nothing,Type{B}}) where {B}
+    return coeffs, basis
+end
+
+function _default_basis(p::MP.AbstractPolynomialLike, ::MB.FullBasis{B}, basis) where {B}
+    return _default_basis(MP.coefficients(p), MB.SubBasis{B}(MP.monomials(p)), basis)
+end
+
+function _default_basis(a::SA.AlgebraElement, basis)
+    return _default_basis(SA.coeffs(a), SA.basis(a), basis)
+end
+
+function _default_basis(a::SA.AlgebraElement, basis::SA.ExplicitBasis)
+    return SA.coeffs(a, basis), basis
+end
+
+function _default_basis(p, basis)
+    return _default_basis(MB.algebra_element(p, MB.FullBasis{MB.Monomial,MP.monomial_type(p)}()), basis)
+end
+
+function JuMP.build_constraint(
+    _error::Function,
+    p,
+    cone::SOSLikeCone;
+    basis = nothing,
+    kws...,
+)
+    __coefs, basis = _default_basis(p, basis)
     set = JuMP.moi_set(cone, basis; kws...)
-    _coefs = PolyJuMP.non_constant_coefficients(p)
+    _coefs = PolyJuMP.non_constant(__coefs)
     # If a polynomial with real coefficients is used with the Hermitian SOS
     # cone, we want to promote the coefficients to complex
     T = _bridge_coefficient_type(typeof(set))
