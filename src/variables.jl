@@ -90,6 +90,6 @@ function JuMP.add_variable(
         JuMP.VariableRef[JuMP.VariableRef(model, vi) for vi in Q],
         v.p.basis,
         MCT,
-        Float64,
+        JuMP.value_type(typeof(model)),
     )
 end
