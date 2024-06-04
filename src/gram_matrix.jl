@@ -151,9 +151,9 @@ function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, p::SA.AlgebraElement, w::SA
                     op,
                     p,
                     v * g.Q[row, col],
-                    SA.basis(w)[k],
-                    SA.star(g.basis[row]),
-                    g.basis[col],
+                    MB.algebra_element(SA.basis(w)[k]),
+                    MB.algebra_element(SA.star(g.basis[row])),
+                    MB.algebra_element(g.basis[col]),
                 )
             end
         end

@@ -316,10 +316,9 @@ function _half(d::DegreeBounds)
     )
 end
 
-function min_degree(basis::MB.SubBasis{MB.Monomial}, v)
-    return mapreduce(Base.Fix2(MP.degree, v), min, basis.monomials)
+function min_degree(p::SA.AlgebraElement, v)
+    return mapreduce(Base.Fix2(min_degree, v), min, SA.supp(p))
 end
-min_degree(p::SA.AlgebraElement, v) = min_degree(SA.basis(p), v)
 min_degree(p::MB.Polynomial{MB.Monomial}, v) = MP.degree(p.monomial, v)
 minus_min_degree(p, v) = -min_degree(p, v)
 
@@ -330,12 +329,10 @@ function _monomial(vars, exps)
     return prod(vars .^ exps)
 end
 
-function max_degree(basis::MB.SubBasis{MB.Monomial}, v)
-    return mapreduce(Base.Fix2(MP.degree, v), max, basis.monomials)
+function max_degree(p::SA.AlgebraElement, v)
+    return mapreduce(Base.Fix2(max_degree, v), max, SA.supp(p))
 end
-max_degree(p::SA.AlgebraElement, v) = max_degree(SA.basis(p), v)
 max_degree(p::MB.Polynomial{MB.Monomial}, v) = MP.degree(p.monomial, v)
-
 
 function min_shift(d, shift)
     return max(0, d - shift)
@@ -462,10 +459,10 @@ function deg_range(deg, p, gs, gram_deg, range::UnitRange)
 end
 
 #_mindegree(p::MP.AbstractPolynomialLike) = MP.mindegree(p)
-_mindegree(a::SA.AlgebraElement) = _mindegree(SA.basis(a))
-_maxdegree(a::SA.AlgebraElement) = _maxdegree(SA.basis(a))
-_mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
-_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
+_mindegree(a::SA.AlgebraElement) = minimum(_mindegree, SA.supp(a))
+_maxdegree(a::SA.AlgebraElement) = maximum(_maxdegree, SA.supp(a))
+#_mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
+#_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
 _mindegree(p::MB.Polynomial{MB.Monomial}) = MP.mindegree(p.monomial)
 _maxdegree(p::MB.Polynomial{MB.Monomial}) = MP.maxdegree(p.monomial)
 
@@ -575,20 +572,29 @@ function half_newton_polytope(
     ::NewtonFilter{<:NewtonDegreeBounds},
 )
     bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
-    bases = [multiplier_basis(g, bounds).monomials for g in gs]
+    bases = [multiplier_basis(g, bounds) for g in gs]
     push!(
         bases,
         maxdegree_gram_basis(
             MB.FullBasis{MB.Monomial,MP.monomial_type(typeof(p))}(),
             _half(bounds),
-        ).monomials,
+        ),
     )
     gs = copy(gs)
     push!(gs, MB.constant_algebra_element(MA.promote_operation(SA.basis, eltype(gs)), eltype(eltype(gs))))
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
-    return MB.SubBasis{MB.Monomial}.(filtered_bases[1:(end-1)])
+    return filtered_bases[1:(end-1)]
 end
+
+struct SignChange{T}
+    sign::T
+    Δ::Int
+end
+Base.copy(s::SignChange) = s
+Base.iszero(::SignChange) = false
+MA.scaling_convert(::Type, s::SignChange) = s
+Base.:*(s::SignChange, α::Real) = SignChange(s.sign * α, s.Δ)
 
 struct SignCount
     unknown::Int
@@ -596,6 +602,7 @@ struct SignCount
     negative::Int
 end
 SignCount() = SignCount(0, 0, 0)
+Base.iszero(::SignCount) = false
 function _sign(c::SignCount)
     if !iszero(c.unknown)
         return missing
@@ -608,61 +615,91 @@ function _sign(c::SignCount)
     end
 end
 
-function add(c::SignCount, ::Missing, Δ)
-    @assert c.unknown >= -Δ
-    return SignCount(c.unknown + Δ, c.positive, c.negative)
+function Base.:+(c::SignCount, a::SignChange{Missing})
+    @assert c.unknown >= -a.Δ
+    return SignCount(c.unknown + a.Δ, c.positive, c.negative)
 end
-function add(c::SignCount, a::Number, Δ)
-    if a > 0
-        @assert c.positive >= -Δ
-        return SignCount(c.unknown, c.positive + Δ, c.negative)
-    elseif a < 0
-        @assert c.negative >= -Δ
-        return SignCount(c.unknown, c.positive, c.negative + Δ)
-    elseif iszero(a)
+function Base.:+(c::SignCount, a::SignChange{<:Number})
+    if a.sign > 0
+        @assert c.positive >= -a.Δ
+        return SignCount(c.unknown, c.positive + a.Δ, c.negative)
+    elseif a.sign < 0
+        @assert c.negative >= -a.Δ
+        return SignCount(c.unknown, c.positive, c.negative + a.Δ)
+    elseif iszero(a.sign)
         error(
-            "A polynomial should never contain a term with zero coefficient but found `$a`.",
+            "A polynomial should never contain a term with zero coefficient but found `$(a.sign)`.",
         )
     else
-        error("Cannot determine sign of `$a`.")
+        error("Cannot determine sign of `$(a.sign)`.")
     end
 end
-function add(counter, sign, mono::MB.Polynomial, Δ)
-    count = get(counter, mono, SignCount())
-    return counter[mono] = add(count, sign, Δ)
-end
 
-function increase(counter, generator_sign, monos, mult)
+Base.convert(::Type{SignCount}, Δ::SignChange) = SignCount() + Δ
+
+function increase(cache, counter, generator_sign, monos, mult)
     for a in monos
         for b in monos
-            sign = (a != b) ? missing : generator_sign
-            add(counter, sign, a * b * mult, 1)
+            MA.operate_to!(
+                cache,
+                *,
+                MB.algebra_element(mult),
+                MB.algebra_element(a),
+                MB.algebra_element(b),
+            )
+            MA.operate!(
+                SA.UnsafeAddMul(*),
+                counter,
+                SignChange((a != b) ? missing : generator_sign, 1,),
+                cache,
+            )
         end
     end
 end
 
 function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos)
-    counter = Dict{eltype(MA.promote_operation(SA.basis, typeof(poly))),SignCount}()
+    counter = MB.algebra_element(
+        zero(MP.polynomial_type(MP.monomial_type(typeof(SA.basis(poly))), SignCount)),
+        MB.implicit_basis(SA.basis(poly)),
+    )
+    cache = MB.algebra_element(
+        zero(MP.polynomial_type(MP.monomial_type(typeof(SA.basis(poly))), Float64)),
+        MB.implicit_basis(SA.basis(poly)),
+    )
     for (mono, v) in SA.nonzero_pairs(poly)
-        coef = SignCount()
-        counter[mono] = add(coef, _sign(v), 1)
+        MA.operate!(
+            SA.UnsafeAddMul(*),
+            counter,
+            SignChange(_sign(v), 1),
+            mono,
+        )
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
         for (mono, v) in SA.nonzero_pairs(mult)
-            sign = -_sign(v)
-            increase(counter, sign, gram_monos, mono)
+            increase(cache, counter, -_sign(v), gram_monos, mono)
         end
     end
-    function decrease(sign, mono)
-        count = add(counter, sign, mono, -1)
-        count_sign = _sign(count)
-        # This means the `counter` has a sign and it didn't have a sign before
-        # so we need to delete back edges
-        if !ismissing(count_sign) && (ismissing(count) || count != count_sign)
-            # TODO could see later if deleting the counter improves perf
-            if haskey(back, mono)
-                for (i, j) in back[mono]
-                    delete(i, j)
+    function decrease(sign, a, b, c)
+        MA.operate_to!(
+            cache,
+            *,
+            MB.algebra_element(a),
+            MB.algebra_element(b),
+            MB.algebra_element(c),
+        )
+        MA.operate!(SA.UnsafeAddMul(*), counter, SignChange(sign, -1), cache)
+        MA.operate!(SA.canonical, counter)
+        for mono in SA.supp(cache)
+            count = counter[mono]
+            count_sign = _sign(count)
+            # This means the `counter` has a sign and it didn't have a sign before
+            # so we need to delete back edges
+            if !ismissing(count_sign) && (ismissing(count) || count != count_sign)
+                # TODO could see later if deleting the counter improves perf
+                if haskey(back, mono)
+                    for (i, j) in back[mono]
+                        delete(i, j)
+                    end
                 end
             end
         end
@@ -675,33 +712,45 @@ function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos
         end
         keep[i][j] = false
         a = multipliers_gram_monos[i][j]
-        for t in MP.terms(generators[i])
-            sign = -_sign(MP.coefficient(t))
-            decrease(sign, MP.monomial(t) * a^2)
+        for (k, v) in SA.nonzero_pairs(generators[i])
+            sign = -_sign(v)
+            decrease(sign, k, a, a)
             for (j, b) in enumerate(multipliers_gram_monos[i])
                 if keep[i][j]
-                    decrease(missing, MP.monomial(t) * a * b)
-                    decrease(missing, MP.monomial(t) * b * a)
+                    decrease(missing, k, a, b)
+                    decrease(missing, k, b, a)
                 end
             end
         end
     end
     for i in eachindex(generators)
-        for t in MP.terms(generators[i])
+        for k in SA.supp(generators[i])
             for (j, mono) in enumerate(multipliers_gram_monos[i])
-                w = MP.monomial(t) * mono^2
-                if ismissing(_sign(counter[w]))
-                    push!(get(back, w, Tuple{Int,Int}[]), (i, j))
-                else
-                    delete(i, j)
+                MA.operate_to!(
+                    cache,
+                    *,
+                    MB.algebra_element(k),
+                    MB.algebra_element(mono),
+                    MB.algebra_element(mono),
+                )
+                for w in SA.supp(cache)
+                    if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
+                        push!(get(back, w, Tuple{Int,Int}[]), (i, j))
+                    else
+                        delete(i, j)
+                    end
                 end
             end
         end
     end
     return [
-        gram_monos[findall(keep)] for
+        _sub(gram_monos, keep) for
         (keep, gram_monos) in zip(keep, multipliers_gram_monos)
     ]
+end
+
+function _sub(basis::SubBasis{B}, I) where {B}
+    return SubBasis{B}(basis.monomials[I])
 end
 
 function half_newton_polytope(a::SA.AlgebraElement, args...)

@@ -69,6 +69,13 @@ function _merge_sorted(a::Tuple, b::Tuple)
 end
 
 _vars(::SemialgebraicSets.FullSpace) = tuple()
+function _vars(x::SA.AlgebraElement)
+    if SA.basis(x) isa SA.ImplicitBasis
+        return MP.variables(SA.coeffs(x))
+    else
+        return MP.variables(SA.basis(x))
+    end
+end
 _vars(x) = MP.variables(x)
 
 function with_variables(inner, outer)

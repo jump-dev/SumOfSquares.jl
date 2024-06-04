@@ -49,7 +49,10 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
-    p = MB.algebra_element(MOI.Utilities.scalarize(f), copy(set.basis))
+    p = MB.algebra_element(
+        MP.polynomial(MOI.Utilities.scalarize(f), copy(set.basis.monomials)),
+        MB.implicit_basis(set.basis),
+    )
     λ_bases = B[]
     λ_variables =
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}}[]
@@ -73,19 +76,25 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
         g = Certificate.generator(set.certificate, index, preprocessed)
         # TODO replace with `MA.sub_mul` when it works.
-        p = MA.operate!!(MA.add_mul, p, -one(T), λ, similar(g, T))
+        p = MA.operate!(
+            SA.UnsafeAddMul(*),
+            p,
+            MB.algebra_element(-one(T) * similar(g, T), MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()),
+            λ,
+        )
     end
+    MA.operate!(SA.canonical, SA.coeffs(p))
     new_set = SOS.SOSPolynomialSet(
         set.domain.V,
         # For terms, `monomials` is `OneOrZeroElementVector`
         # so we convert it with `monomial_vector`
         # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
-        MB.SubBasis{MB.Monomial}(MP.monomial_vector(MP.monomials(p))),
+        MB.SubBasis{MB.Monomial}(MP.monomial_vector(MP.monomials(SA.coeffs(p)))),
         Certificate.ideal_certificate(set.certificate),
     )
     constraint = MOI.add_constraint(
         model,
-        MOI.Utilities.vectorize(MP.coefficients(p)),
+        MOI.Utilities.vectorize(MP.coefficients(SA.coeffs(p))),
         new_set,
     )
 

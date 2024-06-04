@@ -347,7 +347,7 @@ function PolyJuMP.bridges(
 ) # Needed so that `KernelBridge` is added as well
     return Tuple{Type,Type}[(
         MOI.Bridges.Constraint.VectorSlackBridge,
-        PolyJuMP._coef_type(F),
+        PolyJuMP.coefficient_type_or_float(F),
     )]
 end
 
