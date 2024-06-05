@@ -337,27 +337,31 @@ function multiplier_basis(g::SA.AlgebraElement{<:MB.Algebra{BT,B}}, bounds::Degr
 end
 
 function half_newton_polytope(
-    p::SA.AlgebraElement,
+    p::SA.AlgebraElement{<:MB.Algebra{BT,B,M}},
     gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
     ::NewtonDegreeBounds,
-)
+) where {BT,B,M}
     # TODO take `variable_groups` into account
     bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
-    return [multiplier_basis(g, bounds) for g in gs]
+    @show bounds
+    return maxdegree_gram_basis(
+        MB.FullBasis{B,M}(),
+        _half(bounds),
+    ), [multiplier_basis(g, bounds) for g in gs]
 end
 
 function half_newton_polytope(
-    p::SA.AlgebraElement{<:MB.Algebra{BT,B}},
+    p::SA.AlgebraElement,
     gs::AbstractVector{<:MP.AbstractPolynomialLike},
     vars,
     maxdegree,
     filter,
-) where {BT,B}
+)
     return half_newton_polytope(
         p,
-        [MB.algebra_element(MP.coefficients(g), MB.SubBasis{B}(MP.monomials(g))) for g in gs],
+        [MB.algebra_element(MP.coefficients(g), MB.SubBasis{MB.Monomial}(MP.monomials(g))) for g in gs],
         vars,
         maxdegree,
         filter,
@@ -365,26 +369,21 @@ function half_newton_polytope(
 end
 
 function half_newton_polytope(
-    p::SA.AlgebraElement{<:MB.Algebra{BT,B,M}},
+    p::SA.AlgebraElement,
     gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
     filter::NewtonFilter{<:NewtonDegreeBounds},
-) where {BT,B,M}
-    bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
-    bases = half_newton_polytope(p, gs, vars, maxdegree, filter.outer_approximation)
-    push!(
-        bases,
-        maxdegree_gram_basis(
-            MB.FullBasis{B,M}(),
-            _half(bounds),
-        ),
-    )
+)
+    basis, multipliers_bases = half_newton_polytope(p, gs, vars, maxdegree, filter.outer_approximation)
+    @show basis
+    bases = copy(multipliers_bases)
+    push!(bases, basis)
     gs = copy(gs)
     push!(gs, MB.constant_algebra_element(MA.promote_operation(SA.basis, eltype(gs)), eltype(eltype(gs))))
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
-    return filtered_bases[1:(end-1)]
+    return filtered_bases[end], filtered_bases[1:(end-1)]
 end
 
 struct SignChange{T}
@@ -415,6 +414,11 @@ function _sign(c::SignCount)
     end
 end
 
+function Base.:+(a::SignCount, b::SignCount)
+    return SignCount(a.unknown + b.unknown, a.positive + b.positive, a.negative + b.negative)
+end
+
+
 function Base.:+(c::SignCount, a::SignChange{Missing})
     @assert c.unknown >= -a.Δ
     return SignCount(c.unknown + a.Δ, c.positive, c.negative)
@@ -439,6 +443,8 @@ end
 Base.convert(::Type{SignCount}, Δ::SignChange) = SignCount() + Δ
 
 function increase(cache, counter, generator_sign, monos, mult)
+    @show monos
+    @show mult
     for a in monos
         for b in monos
             MA.operate_to!(
@@ -456,6 +462,7 @@ function increase(cache, counter, generator_sign, monos, mult)
             )
         end
     end
+    @show counter
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
@@ -551,7 +558,11 @@ function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos
                     MB.algebra_element(mono),
                     MB.algebra_element(mono),
                 )
+                MA.operate!(SA.canonical, SA.coeffs(counter))
+                @show counter
+                @show cache
                 for w in SA.supp(cache)
+                    @show w
                     if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
                         push!(get(back, w, Tuple{Int,Int}[]), (i, j))
                     else

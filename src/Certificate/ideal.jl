@@ -19,32 +19,31 @@ function _combine_with_gram(
     gram_bases::AbstractVector{<:MB.SubBasis},
     weights,
 ) where {B,M}
-    full = MB.FullBasis{B,M}()
-    mstr = SA.mstructure(full)
-    p = MP.polynomial(fill(_NonZero(), length(basis)), basis.monomials)
+    p = zero(_NonZero, SA.algebra(MB.FullBasis{B,M}()))
+    for mono in basis
+        MA.operate!(SA.UnsafeAddMul(*), p, _NonZero(), MB.algebra_element(mono))
+    end
     for (gram, weight) in zip(gram_bases, weights)
-        w = MB.convert_basis(full, weight)
-        for j in eachindex(gram)
-            for i in 1:j
-                s = MB.convert_basis(full, gram[i] * gram[j])
-                for w_mono in SA.supp(w)
-                    for s_mono in SA.supp(s)
-                        MA.operate!(
-                            SA.UnsafeAddMul(mstr),
-                            p,
-                            w_mono.monomial,
-                            s_mono.monomial,
-                        )
-                    end
+        for col in gram
+            for row in gram
+                for mono in SA.supp(weight)
+                    MA.operate!(
+                        SA.UnsafeAddMul(*),
+                        p,
+                        _NonZero(),
+                        MB.algebra_element(mono),
+                        MB.algebra_element(SA.star(row)),
+                        MB.algebra_element(col),
+                    )
                 end
             end
         end
     end
-    MA.operate!(SA.canonical, p)
-    return MB.SubBasis{MB.Monomial}(MP.monomials(p))
+    MA.operate!(SA.canonical, SA.coeffs(p))
+    return MB.SubBasis{B}(keys(SA.coeffs(p)))
 end
 
-_reduce_with_domain(basis::MB.SubBasis{MB.Monomial}, ::FullSpace) = basis
+_reduce_with_domain(basis::MB.SubBasis, ::FullSpace) = basis
 
 function _reduce_with_domain(basis::MB.SubBasis{MB.Monomial}, domain)
     I = ideal(domain)
@@ -183,10 +182,7 @@ end
 
 function gram_basis(certificate::Newton, poly)
     a = _algebra_element(poly)
-    return MB.basis_covering_monomials(
-        certificate.basis,
-        half_newton_polytope(a, typeof(a)[], MP.variables(poly), _maxdegree(a), certificate.newton),
-    )
+    return half_newton_polytope(a, typeof(a)[], MP.variables(poly), _maxdegree(a), certificate.newton)[1]
 end
 
 function gram_basis_type(::Type{<:Newton{C,B}}) where {C,B}

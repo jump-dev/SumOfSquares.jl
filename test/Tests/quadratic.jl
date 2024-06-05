@@ -91,7 +91,7 @@ function quadratic_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
+        MB.SubBasis{basis,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Newton{
             typeof(cone),
             MB.FullBasis{basis,monomial_type(x)},

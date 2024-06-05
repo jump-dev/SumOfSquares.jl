@@ -374,6 +374,8 @@ function _default_basis(p::MP.AbstractPolynomialLike, basis::MB.FullBasis{B}, b)
         return _default_basis(MP.coefficients(p), MB.SubBasis{B}(MP.monomials(p)), b)
     else
         new_basis = MB.FullBasis{b,MP.monomial_type(typeof(basis))}()
+        @show p
+        @show SA.coeffs(p, basis, new_basis)
         return _default_basis(SA.coeffs(p, basis, new_basis), new_basis, b)
     end
 end

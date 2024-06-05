@@ -12,10 +12,7 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
 ) where {T,M}
     variables = Vector{MOI.VariableIndex}[]
     constraints = MOI.ConstraintIndex{MOI.VectorOfVariables}[]
-    acc = MB.algebra_element(
-        zero(MP.polynomial_type(MP.monomial_type(typeof(set.basis)), MOI.ScalarAffineFunction{T})),
-        MB.implicit_basis(set.basis),
-    )
+    acc = zero(MOI.ScalarAffineFunction{T}, SA.algebra(MB.implicit_basis(set.basis)))
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
         gram, vars, con = SOS.add_gram_matrix(model, M, gram_basis, T)
         push!(variables, vars)
@@ -23,6 +20,7 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
         MA.operate!(SA.UnsafeAddMul(*), acc, weight, gram)
     end
     MA.operate!(SA.canonical, SA.coeffs(acc))
+    @show SA.coeffs(acc, set.basis)
     return KernelBridge{T,M}(SA.coeffs(acc, set.basis), variables, constraints, set)
 end
 

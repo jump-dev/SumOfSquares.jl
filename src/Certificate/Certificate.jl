@@ -45,20 +45,20 @@ function multiplier_basis_type end
 
 abstract type AbstractCertificate end
 
-function maxdegree_gram_basis(::MB.FullBasis{MB.Monomial}, bounds::DegreeBounds)
+function maxdegree_gram_basis(::MB.FullBasis{B}, bounds::DegreeBounds) where {B<:MB.AbstractMonomial}
     variables = MP.variables(bounds.variablewise_maxdegree)
     function filter(mono)
         return MP.divides(bounds.variablewise_mindegree, mono) &&
                MP.divides(mono, bounds.variablewise_maxdegree)
     end
-    return MB.SubBasis{MB.Monomial}(
+    return MB.SubBasis{B}(
         MP.monomials(variables, bounds.mindegree:bounds.maxdegree, filter),
     )
 end
 function maxdegree_gram_basis(basis::SA.AbstractBasis, bounds::DegreeBounds)
     # TODO use bounds here too
     variables = MP.variables(bounds.variablewise_maxdegree)
-    return maxdegree_gram_basis(basis, variables, bounds.maxdegree)
+    return MB.maxdegree_basis(basis, variables, bounds.maxdegree)
 end
 function maxdegree_gram_basis(
     basis::SA.AbstractBasis,
