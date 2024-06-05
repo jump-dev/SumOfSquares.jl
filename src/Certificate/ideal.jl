@@ -181,10 +181,11 @@ function Newton(cone, basis, variable_groups::Tuple)
     )
 end
 
-function gram_basis(certificate::Newton, basis)
+function gram_basis(certificate::Newton, poly)
+    a = _algebra_element(poly)
     return MB.basis_covering_monomials(
         certificate.basis,
-        half_newton_polytope(SA.basis(basis), certificate.newton),
+        half_newton_polytope(a, typeof(a)[], MP.variables(poly), _maxdegree(a), certificate.newton),
     )
 end
 

@@ -37,15 +37,17 @@ struct WithVariables{S,V}
     variables::V
 end
 
-struct WithFixedBases{S,B}
-    inner::S
-    bases::Vector{B}
-end
-
 function MP.variables(v::WithVariables)
     return v.variables
 end
 SA.basis(v::WithVariables) = SA.basis(v.inner)
+_algebra_element(v::WithVariables) = v.inner
+_algebra_element(a::SA.AlgebraElement) = a
+
+struct WithFixedBases{S,B}
+    inner::S
+    bases::Vector{B}
+end
 
 _merge_sorted(a::Vector, ::Tuple{}) = a
 function _merge_sorted(a::Vector, b::Vector)
