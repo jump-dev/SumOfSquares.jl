@@ -46,8 +46,6 @@ function MOI.Bridges.Constraint.bridge_constraint(
     func::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet},
 ) where {T,F,DT,M,BT,B,G,CT,W}
-    @show func
-    @show set.basis
     @assert MOI.output_dimension(func) == length(set.basis)
     # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
     # need to call `similar`. This is critical since `T` is
@@ -69,9 +67,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     )
     gram_bases = [gram_basis]
     weights = [MB.constant_algebra_element(typeof(SA.basis(poly)), T)]
-    @show typeof(gram_bases)
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
-    @show flat_indices
     new_basis = SOS.Certificate.reduced_basis(
         set.certificate,
         SA.basis(poly),
@@ -80,7 +76,6 @@ function MOI.Bridges.Constraint.bridge_constraint(
         flat_weights,
     )
     new_coeffs = SA.coeffs(poly, new_basis)
-    @show new_coeffs
     constraint = MOI.add_constraint(
         model,
         MOI.Utilities.vectorize(new_coeffs),
