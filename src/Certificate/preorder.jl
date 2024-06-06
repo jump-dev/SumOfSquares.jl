@@ -146,7 +146,7 @@ function multiplier_basis(
 )
     return domain.bases[index.value]
 end
-function multiplier_basis_type(::Type{<:Putinar{MC}}) where {MC}
+function multiplier_basis_type(::Type{<:Putinar{MC}}, ::Type) where {MC}
     return gram_basis_type(MC)
 end
 

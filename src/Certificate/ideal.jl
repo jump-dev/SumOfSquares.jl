@@ -45,7 +45,10 @@ end
 
 _reduce_with_domain(basis::MB.SubBasis, ::FullSpace) = basis
 
-function _reduce_with_domain(basis::MB.SubBasis{MB.Monomial}, domain)
+function _reduce_with_domain(basis::MB.SubBasis{B}, domain) where {B}
+    if B !== MB.Monomial
+        error("Only Monomial basis support with an equalities in domain")
+    end
     I = ideal(domain)
     # set of standard monomials that are hit
     standard = Set{eltype(basis.monomials)}()

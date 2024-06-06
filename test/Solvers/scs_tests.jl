@@ -3,7 +3,8 @@ import SCS
 factory = optimizer_with_attributes(SCS.Optimizer, MOI.Silent() => true)
 config = MOI.Test.Config(atol = 1e-3, rtol = 1e-3)
 @testset "Linear" begin
-    Tests.linear_test(factory, config, include = ["dsos_scaled_univariate_quadratic"])
+    Tests.linear_test(factory, config, include = ["dsos_cheby_univariate_quadratic"])
+    #Tests.linear_test(factory, config)
 end
 #@testset "SOC" begin
 #    Tests.soc_test(factory, config)

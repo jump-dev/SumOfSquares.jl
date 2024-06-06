@@ -49,8 +49,9 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
+    # TODO remove `collect` when `DynamicPolynomials.MonomialVector` can be used as keys
     p = MB.algebra_element(
-        MP.polynomial(MOI.Utilities.scalarize(f), copy(set.basis.monomials)),
+        SA.SparseCoefficients(copy(collect(set.basis.monomials)), MOI.Utilities.scalarize(f)),
         MB.implicit_basis(set.basis),
     )
     λ_bases = B[]
@@ -89,12 +90,12 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # For terms, `monomials` is `OneOrZeroElementVector`
         # so we convert it with `monomial_vector`
         # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
-        MB.SubBasis{MB.Monomial}(MP.monomial_vector(MP.monomials(SA.coeffs(p)))),
+        MB.SubBasis{MB.Monomial}(MP.monomial_vector(SA.keys(SA.coeffs(p)))),
         Certificate.ideal_certificate(set.certificate),
     )
     constraint = MOI.add_constraint(
         model,
-        MOI.Utilities.vectorize(MP.coefficients(SA.coeffs(p))),
+        MOI.Utilities.vectorize(SA.values(SA.coeffs(p))),
         new_set,
     )
 

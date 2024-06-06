@@ -203,7 +203,7 @@ end
 
 #_mindegree(p::MP.AbstractPolynomialLike) = MP.mindegree(p)
 _mindegree(a::SA.AlgebraElement) = minimum(_mindegree, SA.supp(a))
-_maxdegree(a::SA.AlgebraElement) = maximum(_maxdegree, SA.supp(a))
+_maxdegree(a::SA.AlgebraElement) = maximum(_maxdegree, SA.supp(a), init = 0)
 #_mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
 #_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
 function _mindegree(p::MB.Polynomial{B}) where {B}
@@ -280,8 +280,11 @@ function putinar_degree_bounds(
     degrange(g) = _multiplier_deg_range(mindegree:maxdegree, g)
     minus_degrange(g) = (-).(degrange(g))
     # The multiplier will have degree `0:2fld(maxdegree - _maxdegree(g), 2)`
-    mindegree =
+    mindegree = if _is_monomial_basis(typeof(p))
         -deg_range((-) ∘ _mindegree, p, gs, minus_degrange, -maxdegree:0)
+    else
+        0
+    end
     if isnothing(mindegree)
         return
     end
@@ -345,10 +348,9 @@ function half_newton_polytope(
 ) where {BT,B,M}
     # TODO take `variable_groups` into account
     bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
-    return maxdegree_gram_basis(
-        MB.FullBasis{B,M}(),
-        _half(bounds),
-    ), [multiplier_basis(g, bounds) for g in gs]
+    full = MB.FullBasis{B,M}()
+    return maxdegree_gram_basis(full, _half(bounds)),
+        MB.explicit_basis_type(typeof(full))[multiplier_basis(g, bounds) for g in gs]
 end
 
 function half_newton_polytope(

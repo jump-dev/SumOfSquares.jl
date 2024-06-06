@@ -53,8 +53,10 @@ function quadratic_test(
     @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     @test p.basis.monomials == cert_monos
 
-    a = moment_value.(moments(dual(cref)))
-    @test a[2] ≈ -1.0 atol = atol rtol = rtol
+    μ = moments(dual(cref))
+    a = moment_value.(μ)
+    @test μ[2].polynomial == MB.Polynomial{basis}(bivariate ? x * y : x^1)
+    @test a[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol = atol rtol = rtol
     @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
@@ -80,9 +82,10 @@ function quadratic_test(
     end
 
     ν = moment_matrix(cref)
+    off = (bivariate && basis === ScaledMonomial) ? a[2] / √2 : a[2]
     @test value_matrix(ν) ≈ [
-        a[1] a[2]
-        a[2] a[3]
+        a[1] off
+        off a[3]
     ] atol = atol rtol = rtol
     @test ν.basis.monomials == cert_monos
 
