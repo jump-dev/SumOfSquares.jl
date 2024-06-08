@@ -161,14 +161,14 @@ function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, p::SA.AlgebraElement, w::SA
     return p
 end
 
-#function MP.polynomial(g::GramMatrix, ::Type{T}) where {T}
-#    n = length(g.basis)
-#    @assert size(g.Q) == (n, n)
-#    p = zero(MP.polynomial_type(typeof(g), T))
-#    MA.operate(SA.UnsafeAddMul(*), p, g)
-#    MA.operate(SA.canonical, p)
-#    return p
-#end
+function MP.polynomial(g::GramMatrix, ::Type{T}) where {T}
+    p = zero(T, SA.algebra(g.basis))
+    # TODO Remove the need for this multiplier
+    multiplier = MB.algebra_element(MB.sparse_coefficients(MP.term(true, MP.constant_monomial(g))), MB.implicit_basis(g.basis))
+    MA.operate!(SA.UnsafeAddMul(*), p, multiplier, g)
+    MA.operate!(SA.canonical, p)
+    return MP.polynomial(SA.coeffs(p, MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()))
+end
 
 function change_basis(
     p::GramMatrix{T,<:MB.SubBasis{B}},
