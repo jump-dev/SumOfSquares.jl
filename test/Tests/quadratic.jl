@@ -87,14 +87,14 @@ function quadratic_test(
     if basis === MB.Chebyshev && bivariate
         _test_moments(
             moments(cref),
-            monomial_vector([1, x, y^2, x * y, x^2, x^3]),
+            monomial_vector([1, y, x, y^2, x * y, x^2]),
         ) do vals
             @test length(vals) == 6
-            for i in [1, 2, 6]
+            for i in [2, 3]
                 @test vals[i] ≈ 0 rtol = rtol atol = atol
             end
-            @test vals[4] ≈ -1 rtol = rtol atol = atol
-            @test vals[3] + vals[5] ≈ 2 rtol = rtol atol = atol
+            @test vals[5] ≈ -1 rtol = rtol atol = atol
+            @test vals[4] + vals[6] + 2vals[1] ≈ 4 rtol = rtol atol = atol
         end
     else
         _test_moments(moments(cref), monos) do vals
@@ -103,10 +103,15 @@ function quadratic_test(
     end
 
     ν = moment_matrix(cref)
-    off = (bivariate && basis === ScaledMonomial) ? a[2] / √2 : a[2]
+    off = if bivariate && basis === ScaledMonomial
+        a[2] / √2
+    elseif bivariate && basis == Chebyshev
+        -(a[1] + a[2]) / 2
+    else
+        a[2]
+    end
     M = value_matrix(ν)
     if basis === Chebyshev && bivariate
-        display(M)
         M = M[2:end, 2:end]
     end
     @test M ≈ [
