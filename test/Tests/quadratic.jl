@@ -27,8 +27,17 @@ function quadratic_test(
     if bivariate
         @polyvar y
         poly = x^2 + α * x * y + y^2
-        cert_monos = [y, x]
-        monos = [y^2, x * y, x^2]
+        if basis === Chebyshev
+            # See https://github.com/jump-dev/SumOfSquares.jl/issues/357
+            cert_monos = [1, y, x]
+        else
+            cert_monos = [y, x]
+        end
+        if basis === Chebyshev
+            monos = [1, y^2, x * y, x^2]
+        else
+            monos = [y^2, x * y, x^2]
+        end
     else
         poly = x^2 + α * x + 1
         cert_monos = [1, x]
@@ -50,14 +59,26 @@ function quadratic_test(
     test_constraint_primal(cref, value(poly); atol, rtol)
 
     p = gram_matrix(cref)
-    @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
+    if basis === Chebyshev && bivariate
+        # See https://github.com/jump-dev/SumOfSquares.jl/issues/357
+        @test value_matrix(p) ≈ [zeros(1, 3); zeros(2) ones(2, 2)] atol = atol rtol = rtol
+    else
+        @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
+    end
     @test p.basis.monomials == cert_monos
 
     μ = moments(dual(cref))
     a = moment_value.(μ)
-    @test μ[2].polynomial == MB.Polynomial{basis}(bivariate ? x * y : x^1)
-    @test a[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol = atol rtol = rtol
-    @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
+    if bivariate && basis === MB.Chebyshev
+        b = a[2:end] + [a[1], 0, a[1]]
+        b[1] /= 2
+        b[3] /= 2
+    else
+        b = a
+    end
+    @test b[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol = atol rtol = rtol
+    @test b[1] + b[3] ≈ 2.0 atol = atol rtol = rtol
+    @test μ[2].polynomial == MB.Polynomial{basis}(bivariate ? (basis === MB.Chebyshev ? y^2 : x * y) : x^1)
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     _test_moments(dual(cref), monos) do vals
@@ -83,9 +104,14 @@ function quadratic_test(
 
     ν = moment_matrix(cref)
     off = (bivariate && basis === ScaledMonomial) ? a[2] / √2 : a[2]
-    @test value_matrix(ν) ≈ [
-        a[1] off
-        off a[3]
+    M = value_matrix(ν)
+    if basis === Chebyshev && bivariate
+        display(M)
+        M = M[2:end, 2:end]
+    end
+    @test M ≈ [
+        b[1] off
+        off b[3]
     ] atol = atol rtol = rtol
     @test ν.basis.monomials == cert_monos
 

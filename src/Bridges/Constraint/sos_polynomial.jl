@@ -129,7 +129,7 @@ end
 
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
     # FIXME `coeffs` should be an `AbstractMatrix`
-    return MB.adjoint_coeffs(f, bridge.new_basis, bridge.set.basis)
+    return SA.adjoint_coeffs(f, bridge.set.basis, bridge.new_basis)
 end
 
 # Attributes, Bridge acting as a constraint
