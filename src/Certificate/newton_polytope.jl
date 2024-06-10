@@ -91,9 +91,10 @@ function minus_shift(d::DegreeBounds, p::SA.AlgebraElement)
     if isnothing(var_maxdegree)
         return
     end
+    vars = MP.variables(d.variablewise_maxdegree)
     return DegreeBounds(
-        min_shift(d.mindegree, _mindegree(p)),
-        d.maxdegree - _maxdegree(p),
+        min_shift(d.mindegree, _mindegree(p, vars)),
+        d.maxdegree - _maxdegree(p, vars),
         var_mindegree,
         var_maxdegree,
     )
@@ -109,7 +110,7 @@ end
 
 _sign(a::Number) = sign(a)
 # Can be for instance a JuMP or MOI function so the sign can be anything
-_sign(a) = missing
+_sign(_) = missing
 
 function deg_sign(deg, p, d)
     sgn = nothing
@@ -202,18 +203,19 @@ function deg_range(deg, p, gs, gram_deg, range::UnitRange)
 end
 
 #_mindegree(p::MP.AbstractPolynomialLike) = MP.mindegree(p)
-_mindegree(a::SA.AlgebraElement) = minimum(_mindegree, SA.supp(a))
-_maxdegree(a::SA.AlgebraElement) = maximum(_maxdegree, SA.supp(a), init = 0)
+_mindegree(a::SA.AlgebraElement, vars) = minimum(Base.Fix2(_mindegree, vars), SA.supp(a))
+_maxdegree(a::SA.AlgebraElement, vars) = maximum(Base.Fix2(_maxdegree, vars), SA.supp(a), init = 0)
 #_mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
 #_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
-function _mindegree(p::MB.Polynomial{B}) where {B}
+function _mindegree(p::MB.Polynomial{B}, vars) where {B}
     if _is_monomial_basis(B)
-        MP.mindegree(p.monomial)
+        _sub_degree(p.monomial, vars)
     else
         error("TODO $B")
     end
 end
-_maxdegree(p::MB.Polynomial) = MP.maxdegree(p.monomial)
+_maxdegree(p::MB.Polynomial, vars) = _sub_degree(p.monomial, vars)
+_sub_degree(mono, vars) = sum(var -> MP.degree(mono, var), vars)
 
 _is_monomial_basis(::Type{<:MB.AbstractMonomialIndexed}) = false
 _is_monomial_basis(::Type{<:Union{MB.Monomial,MB.ScaledMonomial}}) = true
@@ -224,9 +226,10 @@ _is_monomial_basis(::Type{<:SA.AlgebraElement{<:MB.Algebra{BT,B}}}) where {BT,B}
 function _multiplier_mindegree(
     mindegree,
     g::SA.AlgebraElement,
+    vars,
 )
     if _is_monomial_basis(typeof(g))
-        return _min_half(min_shift(mindegree, _mindegree(g)))
+        return _min_half(min_shift(mindegree, _mindegree(g, vars)))
     else
         # For instance, with `Chebyshev` a square already produces
         # a monomial of degree 0 so let's just give up here
@@ -242,12 +245,12 @@ end
 # such that the maximum degree of `s * g` is at most `maxdegree`.
 # Here, we assume that the degree of `*(a::MB.Polynomial, b::MB.Polynomial)`
 # is bounded by the sum of the degree of `a` and `b` for any basis.
-function _multiplier_maxdegree(maxdegree, g::SA.AlgebraElement)
-    return _max_half(maxdegree - _maxdegree(g))
+function _multiplier_maxdegree(maxdegree, g::SA.AlgebraElement, vars)
+    return _max_half(maxdegree - _maxdegree(g, vars))
 end
 
-function _multiplier_deg_range(range, g::SA.AlgebraElement)
-    return _multiplier_mindegree(minimum(range), g):_multiplier_maxdegree(maximum(range), g)
+function _multiplier_deg_range(range, g::SA.AlgebraElement, vars)
+    return _multiplier_mindegree(minimum(range), g, vars):_multiplier_maxdegree(maximum(range), g, vars)
 end
 
 # Cheap approximation of the convex hull as the approximation of:
@@ -277,18 +280,18 @@ function putinar_degree_bounds(
 )
     mindegree = 0
     # TODO homogeneous case
-    degrange(g) = _multiplier_deg_range(mindegree:maxdegree, g)
+    degrange(g) = _multiplier_deg_range(mindegree:maxdegree, g, vars)
     minus_degrange(g) = (-).(degrange(g))
     # The multiplier will have degree `0:2fld(maxdegree - _maxdegree(g), 2)`
     mindegree = if _is_monomial_basis(typeof(p))
-        -deg_range((-) ∘ _mindegree, p, gs, minus_degrange, -maxdegree:0)
+        -deg_range((-) ∘ Base.Fix2(_mindegree, vars), p, gs, minus_degrange, -maxdegree:0)
     else
         0
     end
     if isnothing(mindegree)
         return
     end
-    maxdegree = deg_range(_maxdegree, p, gs, degrange, 0:maxdegree)
+    maxdegree = deg_range(Base.Fix2(_maxdegree, vars), p, gs, degrange, 0:maxdegree)
     if isnothing(maxdegree)
         return
     end
@@ -339,12 +342,68 @@ function multiplier_basis(g::SA.AlgebraElement{<:MB.Algebra{BT,B}}, bounds::Degr
     end
 end
 
+# Cartesian product of the newton polytopes of the different parts
+function _cartesian_product(bases::Vector{<:MB.SubBasis{B}}, bounds) where {B}
+    monos = [b.monomials for b in bases]
+    basis = MB.SubBasis{B}(vec([prod(monos) for monos in Iterators.product(monos...)]))
+    # We know that the degree inequalities are satisfied variable-wise and
+    # part-wise but for all variables together so we filter with that
+    if isnothing(bounds)
+        return MB.empty_basis(typeof(basis))
+    else
+        return MB.SubBasis{B}(filter(Base.Fix2(within_bounds, _half(bounds)), basis.monomials))
+    end
+end
+
 function half_newton_polytope(
     p::SA.AlgebraElement{<:MB.Algebra{BT,B,M}},
     gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
-    ::NewtonDegreeBounds,
+    newton::NewtonDegreeBounds,
+) where {BT,B,M}
+    if !is_commutative(vars)
+        throw(
+            ArgumentError(
+                "Multipartite Newton polytope not supported with noncommutative variables.",
+            ),
+        )
+    end
+    parts = newton.variable_groups
+    if !all(
+        i -> all(j -> i == j || isempty(parts[i] ∩ parts[j]), eachindex(parts)),
+        eachindex(parts),
+    )
+        throw(
+            ArgumentError(
+                "Parts are not disjoint in multipartite Newton polytope estimation: $parts.",
+            ),
+        )
+    end
+    # Some variables might be in no part...
+    missing_vars = setdiff(vars, reduce(union, parts))
+    if isempty(missing_vars)
+        all_parts = parts
+    else
+        # in that case, create a part with the missing ones
+        all_parts = (parts..., missing_vars)
+    end
+    if length(all_parts) == 1
+        # all variables on same part, fallback to shortcut
+        return half_newton_polytope(p, gs, vars, maxdegree, NewtonDegreeBounds(tuple()))
+    end
+    bases = map(part -> half_newton_polytope(p, gs, part, maxdegree, NewtonDegreeBounds(tuple())), all_parts)
+    bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
+    return _cartesian_product([b[1] for b in bases], bounds),
+        [_cartesian_product([b[2][i] for b in bases], minus_shift(bounds, gs[i])) for i in eachindex(first(bases)[2])]
+end
+
+function half_newton_polytope(
+    p::SA.AlgebraElement{<:MB.Algebra{BT,B,M}},
+    gs::AbstractVector{<:SA.AlgebraElement},
+    vars,
+    maxdegree,
+    ::NewtonDegreeBounds{Tuple{}},
 ) where {BT,B,M}
     # TODO take `variable_groups` into account
     bounds = putinar_degree_bounds(p, gs, vars, maxdegree)

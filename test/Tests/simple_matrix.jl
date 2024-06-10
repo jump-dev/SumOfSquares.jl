@@ -9,7 +9,7 @@ Example 3.77 and 3.79 of
 Blekherman, G., Parrilo, P. A., & Thomas, R. R. (Eds.).
 Semidefinite optimization and convex algebraic geometry SIAM 2013
 """
-function simple_matrix_test(optimizer, config::MOI.Test.Config)
+function simple_matrix_test(optimizer, ::MOI.Test.Config)
     @polyvar x
     P = [x^2-2x+2 x; x x^2]
 
