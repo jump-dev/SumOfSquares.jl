@@ -23,23 +23,8 @@ function _combine_with_gram(
     for mono in basis
         MA.operate!(SA.UnsafeAddMul(*), p, _NonZero(), MB.algebra_element(mono))
     end
-    # TODO, could refactor with
-    # MA.operate!(SA.UnsafeAddMul(*), p, GramMatrix(_ -> _NonZero(), gram), weight)
     for (gram, weight) in zip(gram_bases, weights)
-        for col in gram
-            for row in gram
-                for mono in SA.supp(weight)
-                    MA.operate!(
-                        SA.UnsafeAddMul(*),
-                        p,
-                        _NonZero(),
-                        MB.algebra_element(SA.star(row)),
-                        MB.algebra_element(col),
-                        MB.algebra_element(mono),
-                    )
-                end
-            end
-        end
+        MA.operate!(SA.UnsafeAddMul(*), p, GramMatrix{_NonZero}((_, _) -> _NonZero(), gram), weight)
     end
     MA.operate!(SA.canonical, SA.coeffs(p))
     return MB.SubBasis{B}(keys(SA.coeffs(p)))
