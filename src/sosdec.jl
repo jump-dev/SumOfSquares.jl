@@ -5,43 +5,39 @@ export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
 Represents a Sum-of-Squares decomposition without domain.
 """
-struct SOSDecomposition{T,PT<:_APL{T},U} <: AbstractDecomposition{U}
-    ps::Vector{PT}
-    function SOSDecomposition{T,PT,U}(ps::Vector{PT}) where {T,PT,U}
+struct SOSDecomposition{A,T,V,U} <: AbstractDecomposition{U}
+    ps::Vector{SA.AlgebraElement{A,T,V}} # TODO rename `elements`
+    function SOSDecomposition{A,T,V,U}(ps::Vector{SA.AlgebraElement{A,T,V}}) where {A,T,V,U}
         return new(ps)
     end
 end
 
-function SOSDecomposition(ps::Vector{PT}) where {T,PT<:_APL{T}}
-    return SOSDecomposition{T,PT,_promote_add_mul(T)}(ps)
+function SOSDecomposition(elements::Vector{SA.AlgebraElement{A,T,V}}) where {A,T,V}
+    return SOSDecomposition{A,T,V,_promote_add_mul(T)}(elements)
 end
 function MP.polynomial_type(
-    ::Union{SOSDecomposition{T,PT,U},Type{SOSDecomposition{T,PT,U}}},
-) where {T,PT,U}
-    return MP.polynomial_type(PT, U)
+    ::Union{SOSDecomposition{A,T,V,U},Type{SOSDecomposition{A,T,V,U}}},
+) where {A,T,V,U}
+    return MP.polynomial_type(MP.polynomial_type(SA.AlgebraElement{A,T,V}), U)
 end
 
-#function SOSDecomposition(ps::Vector)
-#    T = reduce(promote_type, Int, map(eltype, ps))
-#    SOSDecomposition{T}(ps)
-#end
-
-function GramMatrix(p::SOSDecomposition{T}) where {T}
-    X = MP.merge_monomial_vectors(map(MP.monomials, p))
-    m = length(p)
-    n = length(X)
+function GramMatrix(p::SOSDecomposition{A,T}) where {A,T}
+    basis = mapreduce(SA.basis, (b1, b2) -> MB.merge_bases(b1, b2)[1], p.ps)
+    m = length(p.ps)
+    n = length(basis)
     Q = zeros(T, m, n)
     for i in 1:m
         j = 1
-        for t in MP.terms(p[i])
-            while X[j] != MP.monomial(t)
+        for (k, v) in SA.nonzero_pairs(SA.coeffs(p.ps[i]))
+            poly = SA.basis(p.ps[i])[k]
+            while j in eachindex(basis) && basis[j] != poly
                 j += 1
             end
-            Q[i, j] = MP.coefficient(t)
+            Q[i, j] = v
             j += 1
         end
     end
-    return GramMatrix(Q' * Q, X)
+    return GramMatrix(Q' * Q, basis)
 end
 
 _lazy_adjoint(x::AbstractVector{<:Real}) = x
@@ -52,21 +48,22 @@ function SOSDecomposition(
     ranktol = 0.0,
     dec::MultivariateMoments.LowRankLDLTAlgorithm = SVDLDLT(),
 )
-    n = length(p.basis)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
-    ldlt =
-        MultivariateMoments.low_rank_ldlt(Matrix(value_matrix(p)), dec, ranktol)
+    ldlt = MultivariateMoments.low_rank_ldlt(
+        Matrix(value_matrix(p)),
+        dec,
+        ranktol,
+    )
     # The Sum-of-Squares decomposition is
     # ∑ adjoint(u_i) * u_i
     # and we have `L` of the LDL* so we need to take the adjoint.
-    ps = [
-        MP.polynomial(
+    return SOSDecomposition(map(axes(ldlt.L, 2)) do i
+        MB.algebra_element(
             √ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]),
             p.basis,
-        ) for i in axes(ldlt.L, 2)
-    ]
-    return SOSDecomposition(ps)
+        )
+    end)
 end
 # Without LDL^T, we need to do float(T)
 #SOSDecomposition(p::GramMatrix{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)

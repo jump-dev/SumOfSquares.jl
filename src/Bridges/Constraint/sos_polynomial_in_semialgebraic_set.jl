@@ -80,8 +80,11 @@ function MOI.Bridges.Constraint.bridge_constraint(
         p = MA.operate!(
             SA.UnsafeAddMul(*),
             p,
-            MB.algebra_element(-one(T) * similar(g, T), MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()),
             λ,
+            MB.algebra_element(
+                MB.sparse_coefficients(-one(T) * similar(g, T)),
+                MB.FullBasis{MB.Monomial,MP.monomial_type(g)}(),
+            ),
         )
     end
     MA.operate!(SA.canonical, SA.coeffs(p))

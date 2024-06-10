@@ -40,6 +40,13 @@ function _flatten(
     return flat_gram_bases, flat_weights, 1:length(flat_weights)
 end
 
+function _poly(coeffs, basis::MB.MonomialIndexedBasis{B,M}) where {B,M}
+    return MB.algebra_element(
+        MB.sparse_coefficients(MP.polynomial(coeffs, basis.monomials)),
+        MB.FullBasis{B,M}(),
+    )
+end
+
 function MOI.Bridges.Constraint.bridge_constraint(
     ::Type{SOSPolynomialBridge{T,F,DT,M,BT,B,G,CT,W}},
     model::MOI.ModelLike,
@@ -58,7 +65,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # MOI does not modify the coefficients of the functions so we can modify `p`.
         # without altering `f`.
         # The basis may be copied by MA however so we need to copy it.
-        MB.algebra_element(MOI.Utilities.scalarize(func), copy(set.basis)),
+        _poly(MOI.Utilities.scalarize(func), copy(set.basis)),
         domain,
     )
     gram_basis = SOS.Certificate.gram_basis(
@@ -70,7 +77,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
     new_basis = SOS.Certificate.reduced_basis(
         set.certificate,
-        SA.basis(poly),
+        MB.explicit_basis(poly),
         domain,
         flat_gram_bases,
         flat_weights,
@@ -108,7 +115,17 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    W = SA.AlgebraElement{MB.algebra_type(BT),T,Vector{T}}
+    W = SA.AlgebraElement{
+        MA.promote_operation(
+            SA.algebra,
+            MA.promote_operation(MB.implicit_basis, BT),
+        ),
+        T,
+        MA.promote_operation(
+            MB.sparse_coefficients,
+            MP.polynomial_type(MP.monomial_type(BT), T),
+        ),
+    }
     B = MA.promote_operation(
         SOS.Certificate.reduced_basis,
         CT,

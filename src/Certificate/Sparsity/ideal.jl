@@ -75,7 +75,7 @@ function sparsity(
     )
 end
 function sparsity(a::SA.AlgebraElement, sp, certificate)
-    return sparsity(SA.basis(a), sp, certificate)
+    return sparsity(MB.explicit_basis(a), sp, certificate)
 end
 function sparsity(v::SumOfSquares.Certificate.WithVariables, sp, certificate)
     return sparsity(v.inner, sp, certificate)

@@ -9,5 +9,5 @@ config = MOI.Test.Config(atol = 1e-3, rtol = 1e-3)
 #    Tests.soc_test(factory, config)
 #end
 @testset "SDP" begin
-    Tests.sd_test(factory, config, include = ["sosdemo5_infeasible"])
+    Tests.sd_test(factory, config, include = ["simple_matrix"])
 end

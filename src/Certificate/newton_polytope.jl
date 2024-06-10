@@ -462,6 +462,24 @@ function increase(cache, counter, generator_sign, monos, mult)
     end
 end
 
+struct _DictCoefficients{K,V} <: SA.AbstractCoefficients{K,V}
+    inner::Dict{K,V}
+end
+
+SA.nonzero_pairs(d::_DictCoefficients) = d.inner
+Base.keys(d::_DictCoefficients) = keys(d.inner)
+
+Base.getindex(d::_DictCoefficients{K}, key::K) where {K} = d.inner[key]
+
+function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
+    c.inner[key] = if haskey(c.inner, key)
+        MA.operate!!(+, c.inner[key], value)
+    else
+        value
+    end
+    return c
+end
+
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
 # two different monomials of `monos` and `mono` is not in `X` then, the corresponding
 # diagonal entry of the Gram matrix will be zero hence the whole column and row
@@ -486,8 +504,11 @@ end
 # *Exploiting the Structure of a Polynomial Optimization Problem*
 # SIAM Conference on Applications of Dynamical Systems, 2023
 function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos)
-    counter = zero(SignCount, SA.algebra(MB.implicit_basis(SA.basis(poly))))
-    cache = similar(counter, Float64)
+    # We use `_DictCoefficients` instead `SA.SparseCoefficients` because
+    # we need to keep it canonicalized (without duplicate actually)
+    # and don't care about the list of monomials being ordered
+    counter = MB.algebra_element(_DictCoefficients(Dict{MP.monomial_type(typeof(poly)),SignCount}()), MB.implicit_basis(SA.basis(poly)))
+    cache = zero(Float64, SA.algebra(MB.implicit_basis(SA.basis(poly))))
     for (mono, v) in SA.nonzero_pairs(poly)
         MA.operate!(
             SA.UnsafeAddMul(*),
@@ -510,9 +531,8 @@ function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos
             MB.algebra_element(c),
         )
         MA.operate!(SA.UnsafeAddMul(*), counter, SignChange(sign, -1), cache)
-        MA.operate!(SA.canonical, counter)
         for mono in SA.supp(cache)
-            count = counter[mono]
+            count = SA.coeffs(counter)[SA.basis(counter)[mono]]
             count_sign = _sign(count)
             # This means the `counter` has a sign and it didn't have a sign before
             # so we need to delete back edges
@@ -534,13 +554,14 @@ function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos
         end
         keep[i][j] = false
         a = multipliers_gram_monos[i][j]
-        for (k, v) in SA.nonzero_pairs(generators[i])
+        for (k, v) in SA.nonzero_pairs(SA.coeffs(generators[i]))
+            mono = SA.basis(generators[i])[k]
             sign = -_sign(v)
-            decrease(sign, k, a, a)
+            decrease(sign, mono, a, a)
             for (j, b) in enumerate(multipliers_gram_monos[i])
                 if keep[i][j]
-                    decrease(missing, k, a, b)
-                    decrease(missing, k, b, a)
+                    decrease(missing, mono, a, b)
+                    decrease(missing, mono, b, a)
                 end
             end
         end
@@ -555,7 +576,6 @@ function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos
                     MB.algebra_element(mono),
                     MB.algebra_element(mono),
                 )
-                MA.operate!(SA.canonical, SA.coeffs(counter))
                 for w in SA.supp(cache)
                     if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
                         push!(get(back, w, Tuple{Int,Int}[]), (i, j))

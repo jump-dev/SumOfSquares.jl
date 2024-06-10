@@ -23,6 +23,8 @@ function _combine_with_gram(
     for mono in basis
         MA.operate!(SA.UnsafeAddMul(*), p, _NonZero(), MB.algebra_element(mono))
     end
+    # TODO, could refactor with
+    # MA.operate!(SA.UnsafeAddMul(*), p, GramMatrix(_ -> _NonZero(), gram), weight)
     for (gram, weight) in zip(gram_bases, weights)
         for col in gram
             for row in gram
@@ -31,9 +33,9 @@ function _combine_with_gram(
                         SA.UnsafeAddMul(*),
                         p,
                         _NonZero(),
-                        MB.algebra_element(mono),
                         MB.algebra_element(SA.star(row)),
                         MB.algebra_element(col),
+                        MB.algebra_element(mono),
                     )
                 end
             end
@@ -212,9 +214,10 @@ struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
     gram_certificate::GCT
 end
 
-function _rem(coeffs, basis::MB.SubBasis{MB.Monomial}, I)
-    poly = MP.polynomial(coeffs, basis.monomials)
-    return convert(typeof(poly), rem(poly, I))
+function _rem(coeffs, basis::MB.FullBasis{MB.Monomial}, I)
+    poly = MP.polynomial(SA.values(coeffs), SA.keys(coeffs))
+    r = convert(typeof(poly), rem(poly, I))
+    return MB.algebra_element(MB.sparse_coefficients(r), basis)
 end
 
 function reduced_polynomial(
@@ -222,11 +225,7 @@ function reduced_polynomial(
     a::SA.AlgebraElement,
     domain,
 )
-    r = _rem(SA.coeffs(a), SA.basis(a), ideal(domain))
-    return MB.algebra_element(
-        MP.coefficients(r),
-        MB.SubBasis{MB.Monomial}(MP.monomials(r)),
-    )
+    return _rem(SA.coeffs(a), SA.basis(a), ideal(domain))
 end
 
 function gram_basis(certificate::Remainder, poly)

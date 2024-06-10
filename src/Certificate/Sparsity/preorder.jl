@@ -31,8 +31,8 @@ function SumOfSquares.Certificate.preprocessed_domain(
     domain::SemialgebraicSets.BasicSemialgebraicSet,
     p,
 )
-    basis, Preorder_bases = sparsity(
-        MB.SubBasis{MB.Monomial}(MP.monomials(p)),
+    _, preorder_bases = sparsity(
+        MB.explicit_basis(p),
         domain,
         certificate.sparsity,
         certificate.certificate,
@@ -44,7 +44,7 @@ function SumOfSquares.Certificate.preprocessed_domain(
             domain,
             p,
         ),
-        Preorder_bases,
+        preorder_bases,
     )
 end
 
