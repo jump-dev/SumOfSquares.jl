@@ -37,6 +37,7 @@ end
 
 _min_half(d::Integer) = cld(d, 2)
 _max_half(d::Integer) = fld(d, 2)
+_half(::Nothing) = nothing
 function _half(d::DegreeBounds)
     return DegreeBounds(
         _min_half(d.mindegree),
@@ -284,7 +285,8 @@ function putinar_degree_bounds(
     minus_degrange(g) = (-).(degrange(g))
     # The multiplier will have degree `0:2fld(maxdegree - _maxdegree(g), 2)`
     mindegree = if _is_monomial_basis(typeof(p))
-        -deg_range((-) ∘ Base.Fix2(_mindegree, vars), p, gs, minus_degrange, -maxdegree:0)
+        d = deg_range((-) ∘ Base.Fix2(_mindegree, vars), p, gs, minus_degrange, -maxdegree:0)
+        isnothing(d) ? d : -d
     else
         0
     end
@@ -328,18 +330,10 @@ function putinar_degree_bounds(
 end
 
 function multiplier_basis(g::SA.AlgebraElement{<:MB.Algebra{BT,B}}, bounds::DegreeBounds) where {BT,B}
-    shifted = minus_shift(bounds, g)
-    if isnothing(shifted)
-        halved = nothing
-    else
-        halved = _half(shifted)
-    end
-    basis = MB.FullBasis{B,MP.monomial_type(typeof(g))}()
-    if isnothing(halved)
-        return MB.empty_basis(MB.explicit_basis_type(typeof(basis)))
-    else
-        return maxdegree_gram_basis(basis, halved)
-    end
+    return maxdegree_gram_basis(
+        MB.FullBasis{B,MP.monomial_type(typeof(g))}(),
+        _half(minus_shift(bounds, g)),
+    )
 end
 
 # Cartesian product of the newton polytopes of the different parts
@@ -637,7 +631,7 @@ function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos
                 )
                 for w in SA.supp(cache)
                     if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
-                        push!(get(back, w, Tuple{Int,Int}[]), (i, j))
+                        push!(get!(back, w, Tuple{Int,Int}[]), (i, j))
                     else
                         delete(i, j)
                     end

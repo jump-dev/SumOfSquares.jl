@@ -62,6 +62,11 @@ function maxdegree_gram_basis(::MB.FullBasis{B}, bounds::DegreeBounds) where {B<
         MP.monomials(variables, bounds.mindegree:bounds.maxdegree, Base.Fix2(within_variablewise_bounds, bounds)),
     )
 end
+
+function maxdegree_gram_basis(basis::SA.AbstractBasis, ::Nothing)
+    return MB.empty_basis(MB.explicit_basis_type(typeof(basis)))
+end
+
 function maxdegree_gram_basis(basis::SA.AbstractBasis, bounds::DegreeBounds)
     # TODO use bounds here too
     variables = MP.variables(bounds.variablewise_maxdegree)

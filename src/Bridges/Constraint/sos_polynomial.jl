@@ -115,17 +115,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    W = SA.AlgebraElement{
-        MA.promote_operation(
-            SA.algebra,
-            MA.promote_operation(MB.implicit_basis, BT),
-        ),
-        T,
-        MA.promote_operation(
-            MB.sparse_coefficients,
-            MP.polynomial_type(MP.monomial_type(BT), T),
-        ),
-    }
+    W = SOS.Certificate._weight_type(T, BT)
     B = MA.promote_operation(
         SOS.Certificate.reduced_basis,
         CT,
