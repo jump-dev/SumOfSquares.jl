@@ -54,7 +54,12 @@ function lyapunov_switched_system_test(
         model,
         variable_type = SOSPoly(MB.SubBasis{basis}(monomials(x, degree)))
     )
-    q = GramMatrix(SOSDecomposition([MB.algebra_element([1], MB.SubBasis{basis}([var^degree])) for var in x]))
+    q = GramMatrix(
+        SOSDecomposition([
+            MB.algebra_element([1], MB.SubBasis{basis}([var^degree])) for
+            var in x
+        ]),
+    )
 
     # Keep `p` in a `GramMatrix` form while `q + p0` would transform it to
     # a polynomial. It is not mandatory to keep it in its `GramMatrix` form

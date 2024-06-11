@@ -104,8 +104,8 @@ function MOI.supports_constraint(
     return MOI.Utilities.is_coefficient_type(F, T)
 end
 
-_eltype(::Type{Vector{T}}) where T = T
-_eltype(::Type{T}) where T = T
+_eltype(::Type{Vector{T}}) where {T} = T
+_eltype(::Type{T}) where {T} = T
 
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialBridge{T}},

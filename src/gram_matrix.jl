@@ -144,7 +144,12 @@ function _term_element(α, p::MB.Polynomial{B,M}) where {B,M}
     )
 end
 
-function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, p::SA.AlgebraElement, g::GramMatrix, args::Vararg{Any,N}) where {N}
+function MA.operate!(
+    op::SA.UnsafeAddMul{typeof(*)},
+    p::SA.AlgebraElement,
+    g::GramMatrix,
+    args::Vararg{Any,N},
+) where {N}
     for col in eachindex(g.basis)
         for row in eachindex(g.basis)
             MA.operate!(
@@ -224,7 +229,9 @@ struct BlockDiagonalGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
     blocks::Vector{GramMatrix{T,B,U,MT}}
 end
 
-MB.implicit_basis(g::BlockDiagonalGramMatrix) = MB.implicit_basis(first(g.blocks))
+function MB.implicit_basis(g::BlockDiagonalGramMatrix)
+    return MB.implicit_basis(first(g.blocks))
+end
 
 function MultivariateMoments.block_diagonal(blocks::Vector{<:GramMatrix})
     return BlockDiagonalGramMatrix(blocks)
@@ -245,7 +252,12 @@ function Base.zero(::Type{BlockDiagonalGramMatrix{T,B,U,MT}}) where {T,B,U,MT}
     return BlockDiagonalGramMatrix(GramMatrix{T,B,U,MT}[])
 end
 
-function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, p::SA.AlgebraElement, g::BlockDiagonalGramMatrix, args::Vararg{Any,N}) where {N}
+function MA.operate!(
+    op::SA.UnsafeAddMul{typeof(*)},
+    p::SA.AlgebraElement,
+    g::BlockDiagonalGramMatrix,
+    args::Vararg{Any,N},
+) where {N}
     for block in g.blocks
         MA.operate!(op, p, block, args...)
     end
@@ -263,13 +275,20 @@ end
 #    convert(PT, MP.polynomial(p))
 #end
 
-function MP.polynomial(p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}}) where {T,B,U}
+function MP.polynomial(
+    p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
+) where {T,B,U}
     return MP.polynomial(p, U)
 end
 
-function MP.polynomial(g::Union{GramMatrix,BlockDiagonalGramMatrix}, ::Type{T}) where {T}
+function MP.polynomial(
+    g::Union{GramMatrix,BlockDiagonalGramMatrix},
+    ::Type{T},
+) where {T}
     p = zero(T, SA.algebra(MB.implicit_basis(g)))
     MA.operate!(SA.UnsafeAddMul(*), p, g)
     MA.operate!(SA.canonical, SA.coeffs(p))
-    return MP.polynomial(SA.coeffs(p, MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()))
+    return MP.polynomial(
+        SA.coeffs(p, MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()),
+    )
 end

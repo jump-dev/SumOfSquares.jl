@@ -57,10 +57,7 @@ function sparsity(
     return MB.SubBasis{MB.Monomial}.(sparsity(monos, sp, gram_basis.monomials))
 end
 # Backward compatibility, we may remove this at some time
-function sparsity(
-    p::MP.AbstractPolynomialLike,
-    args...
-)
+function sparsity(p::MP.AbstractPolynomialLike, args...)
     return sparsity(MB.SubBasis{MB.Monomial}(MP.monomials(p)), args...)
 end
 function sparsity(

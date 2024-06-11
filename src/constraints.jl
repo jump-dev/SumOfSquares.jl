@@ -151,7 +151,10 @@ function default_ideal_certificate(
 end
 
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
-    return default_ideal_certificate(SemialgebraicSets.algebraic_set(domain), args...)
+    return default_ideal_certificate(
+        SemialgebraicSets.algebraic_set(domain),
+        args...,
+    )
 end
 
 function default_certificate(
@@ -226,7 +229,10 @@ function _maxdegree(domain::AlgebraicSet)
 end
 
 function _maxdegree(domain::BasicSemialgebraicSet)
-    return max(_max_maxdegree(SemialgebraicSets.inequalities(domain)), _maxdegree(SemialgebraicSets.algebraic_set(domain)))
+    return max(
+        _max_maxdegree(SemialgebraicSets.inequalities(domain)),
+        _maxdegree(SemialgebraicSets.algebraic_set(domain)),
+    )
 end
 
 """
@@ -362,28 +368,54 @@ end
 _promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
 _promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
 
-function _default_basis(coeffs, basis::MB.SubBasis{B}, gram_basis::MB.MonomialIndexedBasis{G}) where {B,G}
+function _default_basis(
+    coeffs,
+    basis::MB.SubBasis{B},
+    gram_basis::MB.MonomialIndexedBasis{G},
+) where {B,G}
     if B === G
         return coeffs, basis
     else
-        return _default_basis(SA.SparseCoefficients(basis.monomials, coeffs), MB.implicit_basis(basis), gram_basis)
+        return _default_basis(
+            SA.SparseCoefficients(basis.monomials, coeffs),
+            MB.implicit_basis(basis),
+            gram_basis,
+        )
     end
 end
 
-function _default_basis(p::SA.AbstractCoefficients, basis::MB.FullBasis{B}, gram_basis::MB.MonomialIndexedBasis{G}) where {B,G}
+function _default_basis(
+    p::SA.AbstractCoefficients,
+    basis::MB.FullBasis{B},
+    gram_basis::MB.MonomialIndexedBasis{G},
+) where {B,G}
     if B === G
-        return _default_basis(collect(SA.values(p)), MB.SubBasis{B}(collect(SA.keys(p))), gram_basis)
+        return _default_basis(
+            collect(SA.values(p)),
+            MB.SubBasis{B}(collect(SA.keys(p))),
+            gram_basis,
+        )
     else
         new_basis = MB.FullBasis{G,MP.monomial_type(typeof(basis))}()
-        return _default_basis(SA.coeffs(p, basis, new_basis), new_basis, gram_basis)
+        return _default_basis(
+            SA.coeffs(p, basis, new_basis),
+            new_basis,
+            gram_basis,
+        )
     end
 end
 
-function _default_gram_basis(::MB.MonomialIndexedBasis{B,M}, ::Nothing) where {B,M}
+function _default_gram_basis(
+    ::MB.MonomialIndexedBasis{B,M},
+    ::Nothing,
+) where {B,M}
     return MB.FullBasis{B,M}()
 end
 
-function _default_gram_basis(::MB.MonomialIndexedBasis{_B,M}, ::Type{B}) where {_B,B,M}
+function _default_gram_basis(
+    ::MB.MonomialIndexedBasis{_B,M},
+    ::Type{B},
+) where {_B,B,M}
     return MB.FullBasis{B,M}()
 end
 
@@ -398,7 +430,13 @@ function _default_basis(a::SA.AlgebraElement, basis)
 end
 
 function _default_basis(p::MP.AbstractPolynomialLike, basis)
-    return _default_basis(MB.algebra_element(MB.sparse_coefficients(p), MB.FullBasis{MB.Monomial,MP.monomial_type(p)}()), basis)
+    return _default_basis(
+        MB.algebra_element(
+            MB.sparse_coefficients(p),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
+        ),
+        basis,
+    )
 end
 
 function JuMP.build_constraint(

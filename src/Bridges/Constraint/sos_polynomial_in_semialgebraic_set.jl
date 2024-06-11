@@ -51,7 +51,10 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # The monomials may be copied by MA however so we need to copy it.
     # TODO remove `collect` when `DynamicPolynomials.MonomialVector` can be used as keys
     p = MB.algebra_element(
-        SA.SparseCoefficients(copy(collect(set.basis.monomials)), MOI.Utilities.scalarize(f)),
+        SA.SparseCoefficients(
+            copy(collect(set.basis.monomials)),
+            MOI.Utilities.scalarize(f),
+        ),
         MB.implicit_basis(set.basis),
     )
     λ_bases = B[]

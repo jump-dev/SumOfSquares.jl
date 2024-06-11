@@ -24,7 +24,12 @@ function _combine_with_gram(
         MA.operate!(SA.UnsafeAddMul(*), p, _NonZero(), MB.algebra_element(mono))
     end
     for (gram, weight) in zip(gram_bases, weights)
-        MA.operate!(SA.UnsafeAddMul(*), p, GramMatrix{_NonZero}((_, _) -> _NonZero(), gram), weight)
+        MA.operate!(
+            SA.UnsafeAddMul(*),
+            p,
+            GramMatrix{_NonZero}((_, _) -> _NonZero(), gram),
+            weight,
+        )
     end
     MA.operate!(SA.canonical, SA.coeffs(p))
     return MB.SubBasis{B}(keys(SA.coeffs(p)))
@@ -187,7 +192,13 @@ end
 function gram_basis(certificate::Newton, poly)
     a = _algebra_element(poly)
     vars = MP.variables(poly)
-    return half_newton_polytope(a, _weight_type(Bool, typeof(SA.basis(poly)))[], vars, _maxdegree(a, vars), certificate.newton)[1]
+    return half_newton_polytope(
+        a,
+        _weight_type(Bool, typeof(SA.basis(poly)))[],
+        vars,
+        _maxdegree(a, vars),
+        certificate.newton,
+    )[1]
 end
 
 function gram_basis_type(::Type{<:Newton{C,B}}) where {C,B}
@@ -220,11 +231,7 @@ function _rem(coeffs, basis::MB.FullBasis{MB.Monomial}, I)
     return MB.algebra_element(MB.sparse_coefficients(r), basis)
 end
 
-function reduced_polynomial(
-    ::Remainder,
-    a::SA.AlgebraElement,
-    domain,
-)
+function reduced_polynomial(::Remainder, a::SA.AlgebraElement, domain)
     return _rem(SA.coeffs(a), SA.basis(a), ideal(domain))
 end
 

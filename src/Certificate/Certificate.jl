@@ -49,17 +49,30 @@ function within_total_bounds(mono::MP.AbstractMonomial, bounds::DegreeBounds)
     return bounds.mindegree <= MP.degree(mono) <= bounds.maxdegree
 end
 
-function within_variablewise_bounds(mono::MP.AbstractMonomial, bounds::DegreeBounds)
+function within_variablewise_bounds(
+    mono::MP.AbstractMonomial,
+    bounds::DegreeBounds,
+)
     return MP.divides(bounds.variablewise_mindegree, mono) &&
-        MP.divides(mono, bounds.variablewise_maxdegree)
+           MP.divides(mono, bounds.variablewise_maxdegree)
 end
 
-within_bounds(mono, bounds) = within_total_bounds(mono, bounds) && within_variablewise_bounds(mono, bounds)
+function within_bounds(mono, bounds)
+    return within_total_bounds(mono, bounds) &&
+           within_variablewise_bounds(mono, bounds)
+end
 
-function maxdegree_gram_basis(::MB.FullBasis{B}, bounds::DegreeBounds) where {B<:MB.AbstractMonomial}
+function maxdegree_gram_basis(
+    ::MB.FullBasis{B},
+    bounds::DegreeBounds,
+) where {B<:MB.AbstractMonomial}
     variables = MP.variables(bounds.variablewise_maxdegree)
     return MB.SubBasis{B}(
-        MP.monomials(variables, bounds.mindegree:bounds.maxdegree, Base.Fix2(within_variablewise_bounds, bounds)),
+        MP.monomials(
+            variables,
+            bounds.mindegree:bounds.maxdegree,
+            Base.Fix2(within_variablewise_bounds, bounds),
+        ),
     )
 end
 

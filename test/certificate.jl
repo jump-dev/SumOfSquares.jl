@@ -30,10 +30,7 @@ function _monomials_half_newton_polytope(_monos, filter)
     basis = MB.FullBasis{MB.Monomial,eltype(monos)}()
     return SumOfSquares.Certificate.half_newton_polytope(
         MB.algebra_element(
-            SA.SparseCoefficients(
-                monos,
-                ones(length(monos)),
-            ),
+            SA.SparseCoefficients(monos, ones(length(monos))),
             basis,
         ),
         SumOfSquares.Certificate._weight_type(Bool, typeof(basis))[],
@@ -71,20 +68,9 @@ end
     end
     uni = Certificate.NewtonDegreeBounds(tuple())
     @testset "Unipartite" begin
-        @test _monomials_half_newton_polytope(
-            [x * y, y^2],
-            uni,
-        ) == [y]
-        @test isempty(
-            _monomials_half_newton_polytope(
-                [x, y],
-                uni,
-            ),
-        )
-        @test _monomials_half_newton_polytope(
-            [x^2, y^2],
-            uni,
-        ) == [x, y]
+        @test _monomials_half_newton_polytope([x * y, y^2], uni) == [y]
+        @test isempty(_monomials_half_newton_polytope([x, y], uni))
+        @test _monomials_half_newton_polytope([x^2, y^2], uni) == [x, y]
         @test _monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([x, y],)),
@@ -215,11 +201,7 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
     poly = x + 1
     domain = @set x == 1
     basis = MB.SubBasis{MB.Monomial}(MP.monomials(poly))
-    @test Certificate.reduced_polynomial(
-        certificate,
-        poly,
-        domain,
-    ) isa Tuple
+    @test Certificate.reduced_polynomial(certificate, poly, domain) isa Tuple
     _basis_check(
         Certificate.gram_basis(certificate, basis),
         Certificate.gram_basis_type(typeof(certificate)),

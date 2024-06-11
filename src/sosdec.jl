@@ -7,12 +7,16 @@ Represents a Sum-of-Squares decomposition without domain.
 """
 struct SOSDecomposition{A,T,V,U} <: AbstractDecomposition{U}
     ps::Vector{SA.AlgebraElement{A,T,V}} # TODO rename `elements`
-    function SOSDecomposition{A,T,V,U}(ps::Vector{SA.AlgebraElement{A,T,V}}) where {A,T,V,U}
+    function SOSDecomposition{A,T,V,U}(
+        ps::Vector{SA.AlgebraElement{A,T,V}},
+    ) where {A,T,V,U}
         return new(ps)
     end
 end
 
-function SOSDecomposition(elements::Vector{SA.AlgebraElement{A,T,V}}) where {A,T,V}
+function SOSDecomposition(
+    elements::Vector{SA.AlgebraElement{A,T,V}},
+) where {A,T,V}
     return SOSDecomposition{A,T,V,_promote_add_mul(T)}(elements)
 end
 function MP.polynomial_type(
@@ -50,20 +54,19 @@ function SOSDecomposition(
 )
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
-    ldlt = MultivariateMoments.low_rank_ldlt(
-        Matrix(value_matrix(p)),
-        dec,
-        ranktol,
-    )
+    ldlt =
+        MultivariateMoments.low_rank_ldlt(Matrix(value_matrix(p)), dec, ranktol)
     # The Sum-of-Squares decomposition is
     # ∑ adjoint(u_i) * u_i
     # and we have `L` of the LDL* so we need to take the adjoint.
-    return SOSDecomposition(map(axes(ldlt.L, 2)) do i
-        MB.algebra_element(
-            √ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]),
-            p.basis,
-        )
-    end)
+    return SOSDecomposition(
+        map(axes(ldlt.L, 2)) do i
+            return MB.algebra_element(
+                √ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]),
+                p.basis,
+            )
+        end,
+    )
 end
 # Without LDL^T, we need to do float(T)
 #SOSDecomposition(p::GramMatrix{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)

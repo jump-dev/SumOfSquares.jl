@@ -61,7 +61,8 @@ function quadratic_test(
     p = gram_matrix(cref)
     if basis === Chebyshev && bivariate
         # See https://github.com/jump-dev/SumOfSquares.jl/issues/357
-        @test value_matrix(p) ≈ [zeros(1, 3); zeros(2) ones(2, 2)] atol = atol rtol = rtol
+        @test value_matrix(p) ≈ [zeros(1, 3); zeros(2) ones(2, 2)] atol = atol rtol =
+            rtol
     else
         @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     end
@@ -76,9 +77,12 @@ function quadratic_test(
     else
         b = a
     end
-    @test b[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol = atol rtol = rtol
+    @test b[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol =
+        atol rtol = rtol
     @test b[1] + b[3] ≈ 2.0 atol = atol rtol = rtol
-    @test μ[2].polynomial == MB.Polynomial{basis}(bivariate ? (basis === MB.Chebyshev ? y^2 : x * y) : x^1)
+    @test μ[2].polynomial == MB.Polynomial{basis}(
+        bivariate ? (basis === MB.Chebyshev ? y^2 : x * y) : x^1,
+    )
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     _test_moments(dual(cref), monos) do vals
