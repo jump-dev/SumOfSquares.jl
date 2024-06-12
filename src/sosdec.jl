@@ -150,8 +150,10 @@ function SOSDecompositionWithDomain(
     vps::Vector{SOSDecomposition{A2,T2,V2,U2}},
     set::AbstractSemialgebraicSet,
 ) where {A1,A2,T1,T2,V1,V2,U1,U2}
-    ptype =
-        promote_type(SOSDecomposition{A1,T1,V1,U1}, SOSDecomposition{A2,T2,V2,U2})
+    ptype = promote_type(
+        SOSDecomposition{A1,T1,V1,U1},
+        SOSDecomposition{A2,T2,V2,U2},
+    )
     return SOSDecompositionWithDomain(
         convert(ptype, ps),
         convert(Vector{ptype}, vps),

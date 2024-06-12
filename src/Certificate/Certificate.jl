@@ -54,7 +54,7 @@ function _divides(a, b)
     vars = unique!(sort(MP.variables(a)))
     comm = is_commutative(vars)
     return all(vars) do v
-        _degree(a, v, comm) <= _degree(b, v, comm)
+        return _degree(a, v, comm) <= _degree(b, v, comm)
     end
 end
 

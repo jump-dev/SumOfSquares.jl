@@ -2,7 +2,10 @@ using LinearAlgebra, Test, SumOfSquares
 
 function _algebra_element(poly)
     return MB.algebra_element(
-        SA.SparseCoefficients(collect(MP.monomials(poly)), collect(MP.coefficients(poly))),
+        SA.SparseCoefficients(
+            collect(MP.monomials(poly)),
+            collect(MP.coefficients(poly)),
+        ),
         MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
     )
 end
@@ -129,25 +132,15 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
         P = GramMatrix{Int}((i, j) -> i + j, [x^2, x * y, y^2])
         @test polynomial_type(SOSDecomposition(P)) <: AbstractPolynomialLike
         @test sprint(show, _sos_dec([x + y, x - y])) ==
-            "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2"
-        @test polynomial(_sos_dec([x + y, x - y])) ==
-              (x + y)^2 + (x - y)^2
+              "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2"
+        @test polynomial(_sos_dec([x + y, x - y])) == (x + y)^2 + (x - y)^2
         @test polynomial(_sos_dec([x + y, x - y]), Float64) ==
               (x + y)^2 + (x - y)^2
         @testset "SOSDecomposition equality" begin
             @polyvar x y
-            @test !isapprox(
-                _sos_dec([x + y, x - y]),
-                _sos_dec([x + y]),
-            )
-            @test !isapprox(
-                _sos_dec([x + y, x - y]),
-                _sos_dec([x + y, x + y]),
-            )
-            @test isapprox(
-                _sos_dec([x + y, x - y]),
-                _sos_dec([x + y, x - y]),
-            )
+            @test !isapprox(_sos_dec([x + y, x - y]), _sos_dec([x + y]))
+            @test !isapprox(_sos_dec([x + y, x - y]), _sos_dec([x + y, x + y]))
+            @test isapprox(_sos_dec([x + y, x - y]), _sos_dec([x + y, x - y]))
             @test isapprox(
                 _sos_dec([x + y, x - y]),
                 _sos_dec([x - y, x + y + 1e-8]),
@@ -176,23 +169,14 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
         M = typeof(x * y)
         @test [ps, ps1] isa Vector{
             SOSDecomposition{
-                MB.Algebra{
-                    MB.FullBasis{MB.Monomial,M},
-                    MB.Monomial,
-                    M,
-                },
+                MB.Algebra{MB.FullBasis{MB.Monomial,M},MB.Monomial,M},
                 Int,
-                SA.SparseCoefficients{
-                    M,
-                    Int,
-                    Vector{M},
-                    Vector{Int64},
-                },
+                SA.SparseCoefficients{M,Int,Vector{M},Vector{Int64}},
                 Int,
             },
         }
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) ==
-            "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2 + (1⋅x)^2 * (1 - x^2) + (1⋅y)^2 * (1 - y^2)"
+              "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2 + (1⋅x)^2 * (1 - x^2) + (1⋅y)^2 * (1 - y^2)"
 
         @testset "SOSDecompositionWithDomain equality" begin
             @polyvar x y
