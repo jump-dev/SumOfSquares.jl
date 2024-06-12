@@ -41,6 +41,7 @@ function MP.variables(v::WithVariables)
     return v.variables
 end
 SA.basis(v::WithVariables) = SA.basis(v.inner)
+MB.explicit_basis(v::WithVariables) = MB.explicit_basis(v.inner)
 _algebra_element(v::WithVariables) = v.inner
 _algebra_element(a::SA.AlgebraElement) = a
 
@@ -94,7 +95,7 @@ function with_fixed_basis(
     return WithFixedBases(
         v.inner,
         half_newton_polytope(
-            p,
+            _algebra_element(p),
             SemialgebraicSets.inequalities(domain),
             v.variables,
             maxdegree,

@@ -47,11 +47,12 @@ function chordal_csp_graph(
 end
 
 function sparsity(
-    basis::MB.SubBasis{MB.Monomial},
+    poly,
     domain::BasicSemialgebraicSet,
     ::Variable,
     certificate::SumOfSquares.Certificate.Putinar,
 )
+    basis = MB.explicit_basis(poly)
     H, cliques = chordal_csp_graph(basis, domain)
     function bases(q)
         return [

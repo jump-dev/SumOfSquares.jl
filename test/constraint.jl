@@ -20,17 +20,17 @@ end
     model = SOSModel()
     @variable(model, a)
     cref = @constraint(model, a * x^2 >= 1)
-    @test sprint(show, MIME"text/plain"(), cref) == "(-1) + (a)x² is SOS"
+    @test sprint(show, MIME"text/plain"(), cref) == "(-1)⋅1 + (a)⋅x² is SOS"
     @test sprint(show, MIME"text/latex"(), cref) ==
-          "\$\$ (-1) + (a)x^{2} \\text{ is SOS} \$\$"
+          "\$\$ (-1) \\cdot 1 + (a) \\cdot x^{2} \\text{ is SOS} \$\$"
     sdref = @constraint(model, a * x^2 in SDSOSCone())
-    @test sprint(show, MIME"text/plain"(), sdref) == "(a)x² is SDSOS"
+    @test sprint(show, MIME"text/plain"(), sdref) == "(a)⋅x² is SDSOS"
     @test sprint(show, MIME"text/latex"(), sdref) ==
-          "\$\$ (a)x^{2} \\text{ is SDSOS} \$\$"
+          "\$\$ (a) \\cdot x^{2} \\text{ is SDSOS} \$\$"
     dref = @constraint(model, a * x^2 in DSOSCone())
-    @test sprint(show, MIME"text/plain"(), dref) == "(a)x² is DSOS"
+    @test sprint(show, MIME"text/plain"(), dref) == "(a)⋅x² is DSOS"
     @test sprint(show, MIME"text/latex"(), dref) ==
-          "\$\$ (a)x^{2} \\text{ is DSOS} \$\$"
+          "\$\$ (a) \\cdot x^{2} \\text{ is DSOS} \$\$"
     model = Model()
     @variable(model, a)
     for sparsity in [Sparsity.NoPattern(), Sparsity.Variable()]
@@ -42,9 +42,9 @@ end
             sparsity = sparsity
         )
         @test sprint(show, MIME"text/plain"(), cref_fix) ==
-              "(-1) + (a)x² is SOS"
+              "(-1)⋅1 + (a)⋅x² is SOS"
         @test sprint(show, MIME"text/latex"(), cref_fix) ==
-              "\$\$ (-1) + (a)x^{2} \\text{ is SOS} \$\$"
+              "\$\$ (-1) \\cdot 1 + (a) \\cdot x^{2} \\text{ is SOS} \$\$"
         cref_fix = @constraint(
             model,
             a * x^2 >= 1,
@@ -53,9 +53,9 @@ end
             sparsity = sparsity
         )
         @test sprint(show, MIME"text/plain"(), cref_fix) ==
-              "(-1) + (a)x² is SOS"
+              "(-1)⋅1 + (a)⋅x² is SOS"
         @test sprint(show, MIME"text/latex"(), cref_fix) ==
-              "\$\$ (-1) + (a)x^{2} \\text{ is SOS} \$\$"
+              "\$\$ (-1) \\cdot 1 + (a) \\cdot x^{2} \\text{ is SOS} \$\$"
     end
 end
 

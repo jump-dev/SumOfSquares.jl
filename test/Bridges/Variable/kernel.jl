@@ -29,7 +29,7 @@ function test_runtests()
                 }(
                     MB.SubBasis{MB.Monomial}([x^4, x^3 * y, x^2 * y^2, y^4]),
                     [MB.SubBasis{MB.Monomial}([x^2, y^2, x * y])],
-                    [1.0 * x^0 * y^0],
+                    [MB.algebra_element(1.0 * x^0 * y^0)],
                 ),
             )
         end,

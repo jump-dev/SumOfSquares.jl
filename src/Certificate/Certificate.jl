@@ -49,12 +49,21 @@ function within_total_bounds(mono::MP.AbstractMonomial, bounds::DegreeBounds)
     return bounds.mindegree <= MP.degree(mono) <= bounds.maxdegree
 end
 
+function _divides(a, b)
+    # `MP.divides(a, b)` is not implemented yet for noncommutative
+    vars = unique!(sort(MP.variables(a)))
+    comm = is_commutative(vars)
+    return all(vars) do v
+        _degree(a, v, comm) <= _degree(b, v, comm)
+    end
+end
+
 function within_variablewise_bounds(
     mono::MP.AbstractMonomial,
     bounds::DegreeBounds,
 )
-    return MP.divides(bounds.variablewise_mindegree, mono) &&
-           MP.divides(mono, bounds.variablewise_maxdegree)
+    return _divides(bounds.variablewise_mindegree, mono) &&
+           _divides(mono, bounds.variablewise_maxdegree)
 end
 
 function within_bounds(mono, bounds)

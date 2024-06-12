@@ -10,6 +10,7 @@ struct NewtonDegreeBounds{NPT} <: AbstractNewtonPolytopeApproximation
     variable_groups::NPT
 end
 
+
 # Filters out points ouside the Newton polytope from the
 # outer approximation given by `outer_approximation`.
 struct NewtonFilter{N<:AbstractNewtonPolytopeApproximation} <:
@@ -22,6 +23,37 @@ struct DegreeBounds{M}
     maxdegree::Int
     variablewise_mindegree::M
     variablewise_maxdegree::M
+end
+
+function __chip(cur, i, vars, exps, n, op)
+    if n > 0
+        exp = min(exps[i], n)
+        next = iszero(exp) ? cur : op(cur, vars[i]^exp)
+        return __chip(next, i + 1, vars, exps, n - exp, op)
+    else
+        return cur
+    end
+end
+function _chip(mono, n)
+    vars = MP.variables(mono)
+    exps = MP.exponents(mono)
+    if n < 0
+        vars = reverse(vars)
+        exps = reverse(exps)
+        op(a, b) = b * a
+    else
+        op = *
+    end
+    return __chip(MP.constant_monomial(mono), 1, vars, exps, abs(n), op)
+end
+
+function _is_hermitian_square(mono)
+    d = MP.degree(mono)
+    if isodd(d)
+        return false
+    end
+    n = div(d, 2)
+    return _chip(mono, n) == _chip(mono, -n)
 end
 
 # TODO add to MP
@@ -203,35 +235,47 @@ function deg_range(deg, p, gs, gram_deg, range::UnitRange)
 end
 
 #_mindegree(p::MP.AbstractPolynomialLike) = MP.mindegree(p)
-function _mindegree(a::SA.AlgebraElement, vars)
-    return minimum(Base.Fix2(_mindegree, vars), SA.supp(a))
-end
-function _maxdegree(a::SA.AlgebraElement, vars)
-    return maximum(Base.Fix2(_maxdegree, vars), SA.supp(a), init = 0)
-end
+_mindegree(a::SA.AlgebraElement, vars) = minimum(Base.Fix2(_mindegree, vars), SA.supp(a))
+_maxdegree(a::SA.AlgebraElement, vars) = maximum(Base.Fix2(_maxdegree, vars), SA.supp(a), init = 0)
 #_mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
 #_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
 function _mindegree(p::MB.Polynomial{B}, vars) where {B}
     if _is_monomial_basis(B)
-        _sub_degree(p.monomial, vars)
+        _sum_degree(p.monomial, vars)
     else
         error("TODO $B")
     end
 end
-_maxdegree(p::MB.Polynomial, vars) = _sub_degree(p.monomial, vars)
-_sub_degree(mono, vars) = sum(var -> MP.degree(mono, var), vars)
+_maxdegree(p::MB.Polynomial, vars) = _sum_degree(p.monomial, vars)
+function _degree(mono, var::MP.AbstractVariable, comm::Bool)
+    if comm
+        return MP.degree(mono, var)
+    else
+        vars = MP.variables(mono)
+        return mapreduce(
+            j -> vars[j] == var ? MP.exponents(mono)[j] : 0,
+            +,
+            eachindex(vars),
+            init = 0,
+        )
+    end
+end
+function _sum_degree(mono, vars)
+    comm = is_commutative(vars)
+    return sum(var -> _degree(mono, var, comm), vars)
+end
 
 _is_monomial_basis(::Type{<:MB.AbstractMonomialIndexed}) = false
 _is_monomial_basis(::Type{<:Union{MB.Monomial,MB.ScaledMonomial}}) = true
-function _is_monomial_basis(
-    ::Type{<:SA.AlgebraElement{<:MB.Algebra{BT,B}}},
-) where {BT,B}
-    return _is_monomial_basis(B)
-end
+_is_monomial_basis(::Type{<:SA.AlgebraElement{<:MB.Algebra{BT,B}}}) where {BT,B} = _is_monomial_basis(B)
 
 # Minimum degree of a gram basis for a gram matrix `s`
 # such that the minimum degree of `s * g` is at least `mindegree`.
-function _multiplier_mindegree(mindegree, g::SA.AlgebraElement, vars)
+function _multiplier_mindegree(
+    mindegree,
+    g::SA.AlgebraElement,
+    vars,
+)
     if _is_monomial_basis(typeof(g))
         return _min_half(min_shift(mindegree, _mindegree(g, vars)))
     else
@@ -254,11 +298,7 @@ function _multiplier_maxdegree(maxdegree, g::SA.AlgebraElement, vars)
 end
 
 function _multiplier_deg_range(range, g::SA.AlgebraElement, vars)
-    return _multiplier_mindegree(minimum(range), g, vars):_multiplier_maxdegree(
-        maximum(range),
-        g,
-        vars,
-    )
+    return _multiplier_mindegree(minimum(range), g, vars):_multiplier_maxdegree(maximum(range), g, vars)
 end
 
 # Cheap approximation of the convex hull as the approximation of:
@@ -292,13 +332,7 @@ function putinar_degree_bounds(
     minus_degrange(g) = (-).(degrange(g))
     # The multiplier will have degree `0:2fld(maxdegree - _maxdegree(g), 2)`
     mindegree = if _is_monomial_basis(typeof(p))
-        d = deg_range(
-            (-) ∘ Base.Fix2(_mindegree, vars),
-            p,
-            gs,
-            minus_degrange,
-            -maxdegree:0,
-        )
+        d = deg_range((-) ∘ Base.Fix2(_mindegree, vars), p, gs, minus_degrange, -maxdegree:0)
         isnothing(d) ? d : -d
     else
         0
@@ -306,8 +340,7 @@ function putinar_degree_bounds(
     if isnothing(mindegree)
         return
     end
-    maxdegree =
-        deg_range(Base.Fix2(_maxdegree, vars), p, gs, degrange, 0:maxdegree)
+    maxdegree = deg_range(Base.Fix2(_maxdegree, vars), p, gs, degrange, 0:maxdegree)
     if isnothing(maxdegree)
         return
     end
@@ -343,10 +376,7 @@ function putinar_degree_bounds(
     )
 end
 
-function multiplier_basis(
-    g::SA.AlgebraElement{<:MB.Algebra{BT,B}},
-    bounds::DegreeBounds,
-) where {BT,B}
+function multiplier_basis(g::SA.AlgebraElement{<:MB.Algebra{BT,B}}, bounds::DegreeBounds) where {BT,B}
     return maxdegree_gram_basis(
         MB.FullBasis{B,MP.monomial_type(typeof(g))}(),
         _half(minus_shift(bounds, g)),
@@ -356,17 +386,13 @@ end
 # Cartesian product of the newton polytopes of the different parts
 function _cartesian_product(bases::Vector{<:MB.SubBasis{B}}, bounds) where {B}
     monos = [b.monomials for b in bases]
-    basis = MB.SubBasis{B}(
-        vec([prod(monos) for monos in Iterators.product(monos...)]),
-    )
+    basis = MB.SubBasis{B}(vec([prod(monos) for monos in Iterators.product(monos...)]))
     # We know that the degree inequalities are satisfied variable-wise and
     # part-wise but for all variables together so we filter with that
     if isnothing(bounds)
         return MB.empty_basis(typeof(basis))
     else
-        return MB.SubBasis{B}(
-            filter(Base.Fix2(within_bounds, _half(bounds)), basis.monomials),
-        )
+        return MB.SubBasis{B}(filter(Base.Fix2(within_bounds, _half(bounds)), basis.monomials))
     end
 end
 
@@ -405,32 +431,12 @@ function half_newton_polytope(
     end
     if length(all_parts) == 1
         # all variables on same part, fallback to shortcut
-        return half_newton_polytope(
-            p,
-            gs,
-            vars,
-            maxdegree,
-            NewtonDegreeBounds(tuple()),
-        )
+        return half_newton_polytope(p, gs, vars, maxdegree, NewtonDegreeBounds(tuple()))
     end
-    bases = map(
-        part -> half_newton_polytope(
-            p,
-            gs,
-            part,
-            maxdegree,
-            NewtonDegreeBounds(tuple()),
-        ),
-        all_parts,
-    )
+    bases = map(part -> half_newton_polytope(p, gs, part, maxdegree, NewtonDegreeBounds(tuple())), all_parts)
     bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
     return _cartesian_product([b[1] for b in bases], bounds),
-    [
-        _cartesian_product(
-            [b[2][i] for b in bases],
-            minus_shift(bounds, gs[i]),
-        ) for i in eachindex(first(bases)[2])
-    ]
+        [_cartesian_product([b[2][i] for b in bases], minus_shift(bounds, gs[i])) for i in eachindex(first(bases)[2])]
 end
 
 function half_newton_polytope(
@@ -440,13 +446,38 @@ function half_newton_polytope(
     maxdegree,
     ::NewtonDegreeBounds{Tuple{}},
 ) where {BT,B,M}
-    # TODO take `variable_groups` into account
-    bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
-    full = MB.FullBasis{B,M}()
-    return maxdegree_gram_basis(full, _half(bounds)),
-    MB.explicit_basis_type(typeof(full))[
-        multiplier_basis(g, bounds) for g in gs
-    ]
+    if is_commutative(vars)
+        # TODO take `variable_groups` into account
+        bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
+        full = MB.FullBasis{B,M}()
+        return maxdegree_gram_basis(full, _half(bounds)),
+            MB.explicit_basis_type(typeof(full))[multiplier_basis(g, bounds) for g in gs]
+   else
+        if !isempty(gs)
+            error("Inequalities constraints not supported with noncommutative variables")
+        end
+        # Non-commutative variables
+        # We use Newton chip method of [Section 2.3, BKP16].
+        #
+        # [BKP16] Sabine Burgdorf, Igor Klep, and Janez Povh.
+        # *Optimization of polynomials in non-commuting variables*.
+        # Berlin: Springer, 2016.
+        vars = unique!(sort(vars))
+        bounds = _half(putinar_degree_bounds(p, gs, vars, maxdegree))
+        monos = MP.monomial_type(typeof(p))[]
+        for mono in MB.explicit_basis(p).monomials
+            if _is_hermitian_square(mono)
+                for i in 1:div(MP.degree(mono), 2)
+                    w = _chip(mono, -i)
+                    if within_bounds(w, bounds)
+                        push!(monos, w)
+                    end
+                end
+            end
+        end
+        basis = MB.SubBasis{B}(monos)
+        return basis, typeof(basis)[]
+    end
 end
 
 function half_newton_polytope(
@@ -458,12 +489,7 @@ function half_newton_polytope(
 )
     return half_newton_polytope(
         p,
-        [
-            MB.algebra_element(
-                MP.coefficients(g),
-                MB.SubBasis{MB.Monomial}(MP.monomials(g)),
-            ) for g in gs
-        ],
+        [MB.algebra_element(MP.coefficients(g), MB.SubBasis{MB.Monomial}(MP.monomials(g))) for g in gs],
         vars,
         maxdegree,
         filter,
@@ -477,18 +503,11 @@ function half_newton_polytope(
     maxdegree,
     filter::NewtonFilter{<:NewtonDegreeBounds},
 )
-    basis, multipliers_bases =
-        half_newton_polytope(p, gs, vars, maxdegree, filter.outer_approximation)
+    basis, multipliers_bases = half_newton_polytope(p, gs, vars, maxdegree, filter.outer_approximation)
     bases = copy(multipliers_bases)
     push!(bases, basis)
     gs = copy(gs)
-    push!(
-        gs,
-        MB.constant_algebra_element(
-            MA.promote_operation(SA.basis, eltype(gs)),
-            eltype(eltype(gs)),
-        ),
-    )
+    push!(gs, MB.constant_algebra_element(MA.promote_operation(SA.basis, eltype(gs)), eltype(eltype(gs))))
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
     return filtered_bases[end], filtered_bases[1:(end-1)]
@@ -523,12 +542,9 @@ function _sign(c::SignCount)
 end
 
 function Base.:+(a::SignCount, b::SignCount)
-    return SignCount(
-        a.unknown + b.unknown,
-        a.positive + b.positive,
-        a.negative + b.negative,
-    )
+    return SignCount(a.unknown + b.unknown, a.positive + b.positive, a.negative + b.negative)
 end
+
 
 function Base.:+(c::SignCount, a::SignChange{Missing})
     @assert c.unknown >= -a.Δ
@@ -566,7 +582,7 @@ function increase(cache, counter, generator_sign, monos, mult)
             MA.operate!(
                 SA.UnsafeAddMul(*),
                 counter,
-                SignChange((a != b) ? missing : generator_sign, 1),
+                SignChange((a != b) ? missing : generator_sign, 1,),
                 cache,
             )
         end
@@ -614,18 +630,11 @@ end
 # [L23] Legat, Benoît
 # *Exploiting the Structure of a Polynomial Optimization Problem*
 # SIAM Conference on Applications of Dynamical Systems, 2023
-function post_filter(
-    poly::SA.AlgebraElement,
-    generators,
-    multipliers_gram_monos,
-)
+function post_filter(poly::SA.AlgebraElement, generators, multipliers_gram_monos)
     # We use `_DictCoefficients` instead `SA.SparseCoefficients` because
     # we need to keep it canonicalized (without duplicate actually)
     # and don't care about the list of monomials being ordered
-    counter = MB.algebra_element(
-        _DictCoefficients(Dict{MP.monomial_type(typeof(poly)),SignCount}()),
-        MB.implicit_basis(SA.basis(poly)),
-    )
+    counter = MB.algebra_element(_DictCoefficients(Dict{MP.monomial_type(typeof(poly)),SignCount}()), MB.implicit_basis(SA.basis(poly)))
     cache = zero(Float64, SA.algebra(MB.implicit_basis(SA.basis(poly))))
     for (mono, v) in SA.nonzero_pairs(poly)
         MA.operate!(
@@ -654,8 +663,7 @@ function post_filter(
             count_sign = _sign(count)
             # This means the `counter` has a sign and it didn't have a sign before
             # so we need to delete back edges
-            if !ismissing(count_sign) &&
-               (ismissing(count) || count != count_sign)
+            if !ismissing(count_sign) && (ismissing(count) || count != count_sign)
                 # TODO could see later if deleting the counter improves perf
                 if haskey(back, mono)
                     for (i, j) in back[mono]
@@ -696,9 +704,7 @@ function post_filter(
                     MB.algebra_element(mono),
                 )
                 for w in SA.supp(cache)
-                    if ismissing(
-                        _sign(SA.coeffs(counter)[SA.basis(counter)[w]]),
-                    )
+                    if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
                         push!(get!(back, w, Tuple{Int,Int}[]), (i, j))
                     else
                         delete(i, j)

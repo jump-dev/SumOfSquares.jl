@@ -3,6 +3,13 @@ import Combinatorics
 using SumOfSquares
 import MultivariateBases as MB
 
+function _algebra_element(monos)
+    return MB.algebra_element(
+        SA.SparseCoefficients(monos, ones(length(monos))),
+        MB.FullBasis{MB.Monomial,eltype(monos)}(),
+    )
+end
+
 function _xor_complement_test(
     exps,
     expected,
@@ -48,6 +55,8 @@ function wml19()
     )
     @testset "Example 4.2" begin
         f = 1 + x[1]^4 + x[2]^4 + x[3]^4 + prod(x) + x[2]
+        alg_el = MB.algebra_element(MB.sparse_coefficients(f), MB.FullBasis{MB.Monomial,MP.monomial_type(f)}())
+        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         expected_1_false = Set(
             monomial_vector.([
                 [x[3]^2],
@@ -91,7 +100,7 @@ function wml19()
                 [x[1], x[2] * x[3], x[3], x[1] * x[2]],
             ]),
         )
-        @testset "$completion $k $use_all_monomials" for completion in [
+        @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in [
                 ClusterCompletion(),
                 ChordalCompletion(),
             ],
@@ -112,7 +121,7 @@ function wml19()
             end
             @test set_monos(
                 Certificate.Sparsity.sparsity(
-                    f,
+                    with_var,
                     Sparsity.Monomial(completion, k, use_all_monomials),
                     certificate,
                 ),
@@ -125,10 +134,10 @@ function wml19()
             ]),
         )
         @test set_monos(
-            Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
+            Certificate.Sparsity.sparsity(with_var, SignSymmetry(), certificate),
         ) == expected
     end
-    @testset "Example 5.4 $(typeof(ideal_certificate))" for ideal_certificate in
+    @testset "Example 5.4 $(nameof(typeof(ideal_certificate)))" for ideal_certificate in
                                                             [
         Certificate.MaxDegree(
             SOSCone(),
@@ -151,8 +160,9 @@ function wml19()
             4,
         )
         f = x[1]^4 + x[2]^4 + x[1] * x[2]
+        alg_el = MB.algebra_element(MB.sparse_coefficients(f), MB.FullBasis{MB.Monomial,MP.monomial_type(f)}())
         K = @set 1 - 2x[1]^2 - x[2]^2 >= 0
-        @testset "$completion $k $use_all_monomials" for completion in [
+        @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in [
                 ClusterCompletion(),
                 ChordalCompletion(),
             ],
@@ -160,7 +170,7 @@ function wml19()
             use_all_monomials in [false, true]
 
             basis, preorder_bases = Certificate.Sparsity.sparsity(
-                f,
+                alg_el,
                 K,
                 Sparsity.Monomial(completion, k, use_all_monomials),
                 preorder_certificate,
@@ -213,8 +223,10 @@ function wml19()
         f =
             1 + x[1]^2 * x[2]^4 + x[1]^4 * x[2]^2 + x[1]^4 * x[2]^4 -
             x[1] * x[2]^2 - 3x[1]^2 * x[2]^2
+        alg_el = MB.algebra_element(MB.sparse_coefficients(f), MB.FullBasis{MB.Monomial,MP.monomial_type(f)}())
+        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         basis = MB.SubBasis{MB.Monomial}(MP.monomials(f))
-        @testset "$completion $k $use_all_monomials" for completion in [
+        @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in [
                 ClusterCompletion(),
                 ChordalCompletion(),
             ],
@@ -241,18 +253,17 @@ function wml19()
             end
             @test set_monos(
                 Certificate.Sparsity.sparsity(
-                    basis,
+                    with_var,
                     Sparsity.Monomial(completion, k, use_all_monomials),
                     certificate,
                 ),
             ) == expected
         end
         @test set_monos(
-            Certificate.Sparsity.sparsity(basis, SignSymmetry(), certificate),
+            Certificate.Sparsity.sparsity(with_var, SignSymmetry(), certificate),
         ) == Set(
             monomial_vector.([
-                [x[1]^2 * x[2]^2, x[1] * x[2]^2, 1],
-                [x[1]^2 * x[2], x[1] * x[2]],
+                [x[1]^2 * x[2]^2, x[1] * x[2]^2, 1, x[1]^2 * x[2], x[1] * x[2]],
             ]),
         )
     end
@@ -274,8 +285,10 @@ function l09()
     )
     @testset "Example 1 and 2" begin
         f = 1 + x[1]^4 * x[2]^2 + x[1]^2 * x[2]^4
+        alg_el = MB.algebra_element(MB.sparse_coefficients(f), MB.FullBasis{MB.Monomial,MP.monomial_type(f)}())
+        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         newt = Certificate.NewtonDegreeBounds(tuple())
-        @test Certificate.monomials_half_newton_polytope(monomials(f), newt) ==
+        @test SOS._monomials_half_newton_polytope(monomials(f), newt) ==
               [
             x[1]^2 * x[2],
             x[1] * x[2]^2,
@@ -286,7 +299,7 @@ function l09()
             x[2],
             1,
         ]
-        @test Certificate.monomials_half_newton_polytope(
+        @test SOS._monomials_half_newton_polytope(
             monomials(f),
             Certificate.NewtonFilter(newt),
         ) == [x[1]^2 * x[2], x[1] * x[2]^2, 1]
@@ -300,18 +313,26 @@ function l09()
         for i in 0:2
             @test set_monos(
                 Certificate.Sparsity.sparsity(
-                    f,
+                    with_var,
                     Sparsity.Monomial(ChordalCompletion(), i),
                     certificate,
                 ),
             ) == expected
         end
+        expected = Set(
+            monomial_vector.([
+                [x[1]^2 * x[2]],
+                [x[1] * x[2]^2, constant_monomial(x[1] * x[2])],
+            ]),
+        )
         @test set_monos(
-            Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
+            Certificate.Sparsity.sparsity(with_var, SignSymmetry(), certificate),
         ) == expected
     end
     @testset "Example 3 and 4" begin
         f = 1 + x[1]^4 + x[1] * x[2] + x[2]^4 + x[3]^2
+        alg_el = MB.algebra_element(MB.sparse_coefficients(f), MB.FullBasis{MB.Monomial,MP.monomial_type(f)}())
+        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         @testset "$k $use_all_monomials" for k in 0:2,
             use_all_monomials in [false, true]
 
@@ -319,7 +340,7 @@ function l09()
                 if use_all_monomials
                     @test set_monos(
                         Certificate.Sparsity.sparsity(
-                            f,
+                            with_var,
                             Sparsity.Monomial(
                                 ChordalCompletion(),
                                 k,
@@ -338,7 +359,7 @@ function l09()
                 else
                     @test set_monos(
                         Certificate.Sparsity.sparsity(
-                            f,
+                            with_var,
                             Sparsity.Monomial(
                                 ChordalCompletion(),
                                 k,
@@ -359,7 +380,7 @@ function l09()
             else
                 @test set_monos(
                     Certificate.Sparsity.sparsity(
-                        f,
+                        with_var,
                         Sparsity.Monomial(
                             ChordalCompletion(),
                             k,
@@ -378,7 +399,7 @@ function l09()
             end
         end
         @test set_monos(
-            Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
+            Certificate.Sparsity.sparsity(SumOfSquares.Certificate.WithVariables(alg_el, x), SignSymmetry(), certificate),
         ) == Set(
             monomial_vector.([
                 [x[1], x[2]],
@@ -398,12 +419,13 @@ function square_domain(ideal_certificate, d)
     preorder_certificate =
         Certificate.Putinar(mult_cert, ideal_certificate(typeof(x * y)), d)
     f = x^2 * y^4 + x^4 * y^2 - 3 * x^2 * y * 2 + 1
+    alg_el = MB.algebra_element(MB.sparse_coefficients(f), MB.FullBasis{MB.Monomial,MP.monomial_type(f)}())
     K = @set(1 - x^2 >= 0 && 1 - y^2 >= 0)
     @testset "Square domain $k $use_all_monomials" for k in 0:4,
         use_all_monomials in [false, true]
 
         basis, preorder_bases = Certificate.Sparsity.sparsity(
-            f,
+            alg_el,
             K,
             Sparsity.Monomial(ChordalCompletion(), k, use_all_monomials),
             preorder_certificate,
@@ -510,6 +532,7 @@ function sum_square(n)
             tuple(),
         )
         f = sum((x[1:2:(2n-1)] .- x[2:2:(2n)]) .^ 2)
+        alg_el = MB.algebra_element(MB.sparse_coefficients(f), MB.FullBasis{MB.Monomial,MP.monomial_type(f)}())
         expected = Set(
             monomial_vector.([
                 monomial_vector([x[(2i-1)], x[2i], 1]) for i in 1:n
@@ -517,7 +540,7 @@ function sum_square(n)
         )
         @test set_monos(
             Certificate.Sparsity.sparsity(
-                f,
+                alg_el,
                 Sparsity.Variable(),
                 Certificate.MaxDegree(
                     SOSCone(),
@@ -528,7 +551,7 @@ function sum_square(n)
         ) == expected
         expected = Set(monomial_vector.([[x[(2i-1)], x[2i]] for i in 1:n]))
         @test set_monos(
-            Certificate.Sparsity.sparsity(f, SignSymmetry(), certificate),
+            Certificate.Sparsity.sparsity(SumOfSquares.Certificate.WithVariables(alg_el, x), SignSymmetry(), certificate),
         ) == expected
     end
 end
@@ -536,6 +559,7 @@ function drop_monomials()
     @testset "Drop monomials" begin
         @polyvar x
         basis = MB.SubBasis{MB.Monomial}([x^2])
+        alg_el = _algebra_element([x^2])
         certificate = Certificate.MaxDegree(
             SOSCone(),
             MB.FullBasis{MB.Monomial,typeof(x^2)}(),
@@ -552,7 +576,7 @@ function drop_monomials()
             end
             @test set_monos(
                 Certificate.Sparsity.sparsity(
-                    basis,
+                    SumOfSquares.Certificate.WithVariables(alg_el, [x]),
                     Sparsity.Monomial(
                         ChordalCompletion(),
                         k,
@@ -562,7 +586,7 @@ function drop_monomials()
                 ),
             ) == expected
         end
-        @testset "$(typeof(ideal_certificate))" for ideal_certificate in [
+        @testset "$(nameof(typeof(ideal_certificate)))" for ideal_certificate in [
             Certificate.MaxDegree(
                 SOSCone(),
                 MB.FullBasis{MB.Monomial,typeof(x^2)}(),
@@ -588,7 +612,7 @@ function drop_monomials()
                 use_all_monomials in [false, true]
 
                 basis, preorder_bases = Certificate.Sparsity.sparsity(
-                    MB.SubBasis{MB.Monomial}([x^3]),
+                    _algebra_element([x^3]),
                     K,
                     Sparsity.Monomial(
                         ChordalCompletion(),

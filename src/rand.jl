@@ -8,6 +8,19 @@ function randpsd(n; r = n, eps = 0.1)
     return Q' * Diagonal(d) * Q
 end
 
+function _monomials_half_newton_polytope(_monos, filter)
+    monos = MP.monomial_vector(_monos)
+    basis = MB.FullBasis{MB.Monomial,eltype(monos)}()
+    return SumOfSquares.Certificate._half_newton_polytope(
+        MB.algebra_element(
+            SA.SparseCoefficients(monos, ones(length(monos))),
+            basis,
+        ),
+        MP.variables(monos),
+        filter,
+    ).monomials
+end
+
 function _randsos(
     X::AbstractVector{<:MP.AbstractMonomial};
     r = -1,
@@ -15,7 +28,7 @@ function _randsos(
     eps = 0.1,
 )
     if monotype == :Classic
-        x = Certificate.monomials_half_newton_polytope(
+        x = _monomials_half_newton_polytope(
             X,
             Certificate.NewtonDegreeBounds(tuple()),
         )

@@ -1,5 +1,14 @@
 using LinearAlgebra, Test, SumOfSquares
 
+function _algebra_element(poly)
+    return MB.algebra_element(
+        SA.SparseCoefficients(collect(MP.monomials(poly)), collect(MP.coefficients(poly))),
+        MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
+    )
+end
+
+_sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
+
 @testset "GramMatrix tests" begin
     @testset "GramMatrix" begin
         @polyvar x y
@@ -119,29 +128,29 @@ using LinearAlgebra, Test, SumOfSquares
         #       @test isapprox(GramMatrix(SOSDecomposition(P)), P)
         P = GramMatrix{Int}((i, j) -> i + j, [x^2, x * y, y^2])
         @test polynomial_type(SOSDecomposition(P)) <: AbstractPolynomialLike
-        @test sprint(show, SOSDecomposition([x + y, x - y])) ==
-              "(y + x)^2 + (-y + x)^2"
-        @test polynomial(SOSDecomposition([x + y, x - y])) ==
+        @test sprint(show, _sos_dec([x + y, x - y])) ==
+            "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2"
+        @test polynomial(_sos_dec([x + y, x - y])) ==
               (x + y)^2 + (x - y)^2
-        @test polynomial(SOSDecomposition([x + y, x - y]), Float64) ==
+        @test polynomial(_sos_dec([x + y, x - y]), Float64) ==
               (x + y)^2 + (x - y)^2
         @testset "SOSDecomposition equality" begin
             @polyvar x y
             @test !isapprox(
-                SOSDecomposition([x + y, x - y]),
-                SOSDecomposition([x + y]),
+                _sos_dec([x + y, x - y]),
+                _sos_dec([x + y]),
             )
             @test !isapprox(
-                SOSDecomposition([x + y, x - y]),
-                SOSDecomposition([x + y, x + y]),
+                _sos_dec([x + y, x - y]),
+                _sos_dec([x + y, x + y]),
             )
             @test isapprox(
-                SOSDecomposition([x + y, x - y]),
-                SOSDecomposition([x + y, x - y]),
+                _sos_dec([x + y, x - y]),
+                _sos_dec([x + y, x - y]),
             )
             @test isapprox(
-                SOSDecomposition([x + y, x - y]),
-                SOSDecomposition([x - y, x + y + 1e-8]),
+                _sos_dec([x + y, x - y]),
+                _sos_dec([x - y, x + y + 1e-8]),
                 ztol = 1e-7,
             )
         end
@@ -149,7 +158,7 @@ using LinearAlgebra, Test, SumOfSquares
             a = MOI.VariableIndex(1)
             p = polynomial([a], [x])
             q = polynomial([a], [y])
-            s = SOSDecomposition([p, q])
+            s = _sos_dec([p, q])
             U = MOI.ScalarQuadraticFunction{Float64}
             @test coefficient_type(s) == U
             @test s isa AbstractPolynomialLike{U}
@@ -161,22 +170,37 @@ using LinearAlgebra, Test, SumOfSquares
     @testset "SOSDecompositionWithDomain" begin
         @polyvar x y
         K = @set 1 - x^2 >= 0 && 1 - y^2 >= 0
-        ps = SOSDecomposition([x + y, x - y])
-        ps1 = SOSDecomposition([x])
-        ps2 = SOSDecomposition([y])
+        ps = _sos_dec([x + y, x - y])
+        ps1 = _sos_dec([x])
+        ps2 = _sos_dec([y])
+        M = typeof(x * y)
         @test [ps, ps1] isa Vector{
-            SOSDecomposition{Int,T,Int},
-        } where {T<:AbstractPolynomialLike}
+            SOSDecomposition{
+                MB.Algebra{
+                    MB.FullBasis{MB.Monomial,M},
+                    MB.Monomial,
+                    M,
+                },
+                Int,
+                SA.SparseCoefficients{
+                    M,
+                    Int,
+                    Vector{M},
+                    Vector{Int64},
+                },
+                Int,
+            },
+        }
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) ==
-              "(y + x)^2 + (-y + x)^2 + (x)^2 * (1 - x^2) + (y)^2 * (1 - y^2)"
+            "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2 + (1⋅x)^2 * (1 - x^2) + (1⋅y)^2 * (1 - y^2)"
 
         @testset "SOSDecompositionWithDomain equality" begin
             @polyvar x y
             K = @set 1 - x^2 >= 0 && 1 - y^2 >= 0
             B = @set 1 - x >= 0 && 1 - y >= 0
-            ps = SOSDecomposition([x + y, x - y])
-            ps1 = SOSDecomposition([x + y, x^2 - y])
-            ps2 = SOSDecomposition([x + y, y^2 - x])
+            ps = _sos_dec([x + y, x - y])
+            ps1 = _sos_dec([x + y, x^2 - y])
+            ps2 = _sos_dec([x + y, y^2 - x])
             sosdec = SOSDecompositionWithDomain(ps, [ps1, ps2], K)
             @test typeof(polynomial(sosdec)) <: AbstractPolynomialLike
             @test isapprox(sosdec, sosdec)

@@ -189,16 +189,22 @@ function _weight_type(::Type{T}, ::Type{BT}) where {T,BT}
     }
 end
 
-function gram_basis(certificate::Newton, poly)
-    a = _algebra_element(poly)
-    vars = MP.variables(poly)
+function _half_newton_polytope(a::SA.AlgebraElement, vars, filter)
     return half_newton_polytope(
         a,
-        _weight_type(Bool, typeof(SA.basis(poly)))[],
+        _weight_type(Bool, typeof(SA.basis(a)))[],
         vars,
         _maxdegree(a, vars),
-        certificate.newton,
+        filter,
     )[1]
+end
+
+function gram_basis(certificate::Newton, poly)
+    return _half_newton_polytope(
+        _algebra_element(poly),
+        MP.variables(poly),
+        certificate.newton,
+    )
 end
 
 function gram_basis_type(::Type{<:Newton{C,B}}) where {C,B}

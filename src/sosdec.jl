@@ -1,7 +1,7 @@
 export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
 """
-    struct SOSDecomposition{T, PT}
+    struct SOSDecomposition{A,T,V,U}
 
 Represents a Sum-of-Squares decomposition without domain.
 """
@@ -102,45 +102,56 @@ function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
 end
 
 function Base.promote_rule(
-    ::Type{SOSDecomposition{T1,PT1,U1}},
-    ::Type{SOSDecomposition{T2,PT2,U2}},
-) where {T1,T2,PT1<:_APL{T1},PT2<:_APL{T2},U1,U2}
+    ::Type{SOSDecomposition{A,T1,V1,U1}},
+    ::Type{SOSDecomposition{A,T2,V2,U2}},
+) where {A,T1,T2,V1,V2,U1,U2}
     T = promote_type(T1, T2)
-    return SOSDecomposition{T,promote_type(PT1, PT2),_promote_add_mul(T)}
+    V = MA.promote_operation(similar, V1, T)
+    return SOSDecomposition{A,T,V,_promote_add_mul(T)}
 end
 
 function Base.convert(
-    ::Type{SOSDecomposition{T,PT,U}},
+    ::Type{SOSDecomposition{A,T,V,U}},
     p::SOSDecomposition,
-) where {T,PT,U}
-    return SOSDecomposition(convert(Vector{PT}, p.ps))
+) where {A,T,V,U}
+    return SOSDecomposition(convert(Vector{SA.AlgebraElement{A,T,V}}, p.ps))
 end
 
-function MP.polynomial(decomp::SOSDecomposition)
-    return sum(decomp.ps .^ 2)
+function MP.polynomial(d::SOSDecomposition)
+    return MP.polynomial(MB.algebra_element(d))
 end
+
+function MB.algebra_element(decomp::SOSDecomposition)
+    res = zero(first(decomp.ps))
+    for p in decomp.ps
+        MA.operate!(SA.UnsafeAddMul(*), res, SA.star(p), p)
+    end
+    MA.operate!(SA.canonical, SA.coeffs(res))
+    return res
+end
+
 function MP.polynomial(decomp::SOSDecomposition, T::Type)
     return MP.polynomial(MP.polynomial(decomp), T)
 end
 
 """
-    struct SOSDecompositionWithDomain{T, PT, S}
+    struct SOSDecompositionWithDomain{A,T,V,U,S}
 
 Represents a Sum-of-Squares decomposition on a basic semi-algebraic domain.
 """
-struct SOSDecompositionWithDomain{T,PT<:_APL{T},U,S<:AbstractSemialgebraicSet}
-    sos::SOSDecomposition{T,PT,U}
-    sosj::Vector{SOSDecomposition{T,PT,U}}
+struct SOSDecompositionWithDomain{A,T,V,U,S<:AbstractSemialgebraicSet}
+    sos::SOSDecomposition{A,T,V,U}
+    sosj::Vector{SOSDecomposition{A,T,V,U}}
     domain::S
 end
 
 function SOSDecompositionWithDomain(
-    ps::SOSDecomposition{T1,PT1,U1},
-    vps::Vector{SOSDecomposition{T2,PT2,U2}},
+    ps::SOSDecomposition{A1,T1,V1,U1},
+    vps::Vector{SOSDecomposition{A2,T2,V2,U2}},
     set::AbstractSemialgebraicSet,
-) where {T1,T2,PT1,PT2,U1,U2}
+) where {A1,A2,T1,T2,V1,V2,U1,U2}
     ptype =
-        promote_type(SOSDecomposition{T1,PT1,U1}, SOSDecomposition{T2,PT2,U2})
+        promote_type(SOSDecomposition{A1,T1,V1,U1}, SOSDecomposition{A2,T2,V2,U2})
     return SOSDecompositionWithDomain(
         convert(ptype, ps),
         convert(Vector{ptype}, vps),

@@ -36,10 +36,11 @@ function Ideal(
 end
 
 function sparsity(
-    basis::MB.SubBasis{MB.Monomial},
+    poly,
     ::Variable,
     certificate::SumOfSquares.Certificate.MaxDegree,
 )
+    basis = MB.explicit_basis(poly)
     H, cliques = chordal_csp_graph(basis, SemialgebraicSets.FullSpace())
     return map(cliques) do clique
         return SumOfSquares.Certificate.maxdegree_gram_basis(
@@ -56,26 +57,16 @@ function sparsity(
 )
     return MB.SubBasis{MB.Monomial}.(sparsity(monos, sp, gram_basis.monomials))
 end
-# Backward compatibility, we may remove this at some time
-function sparsity(p::MP.AbstractPolynomialLike, args...)
-    return sparsity(MB.SubBasis{MB.Monomial}(MP.monomials(p)), args...)
-end
 function sparsity(
-    basis::MB.SubBasis{MB.Monomial},
+    poly,
     sp::Union{SignSymmetry,Monomial},
     certificate::SumOfSquares.Certificate.AbstractIdealCertificate,
 )
     return sparsity(
-        basis.monomials,
+        MB.explicit_basis(poly).monomials,
         sp,
-        SumOfSquares.Certificate.gram_basis(certificate, basis),
+        SumOfSquares.Certificate.gram_basis(certificate, poly),
     )
-end
-function sparsity(a::SA.AlgebraElement, sp, certificate)
-    return sparsity(MB.explicit_basis(a), sp, certificate)
-end
-function sparsity(v::SumOfSquares.Certificate.WithVariables, sp, certificate)
-    return sparsity(v.inner, sp, certificate)
 end
 function SumOfSquares.Certificate.gram_basis(certificate::Ideal, poly)
     return sparsity(poly, certificate.sparsity, certificate.certificate)

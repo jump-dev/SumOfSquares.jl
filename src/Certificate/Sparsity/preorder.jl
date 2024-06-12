@@ -32,7 +32,8 @@ function SumOfSquares.Certificate.preprocessed_domain(
     p,
 )
     _, preorder_bases = sparsity(
-        MB.explicit_basis(p),
+        p,
+        #MB.explicit_basis(SumOfSquares.Certificate._algebra_element(p)),
         domain,
         certificate.sparsity,
         certificate.certificate,
