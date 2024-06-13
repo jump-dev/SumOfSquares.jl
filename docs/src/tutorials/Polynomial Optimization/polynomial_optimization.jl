@@ -31,7 +31,7 @@ model = Model(Ipopt.Optimizer)
 @variable(model, a >= 0)
 @variable(model, b >= 0)
 @constraint(model, a + b >= 1)
-@NLobjective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
+@objective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
 optimize!(model)
 
 # As we can see below, the termination status is `LOCALLY_SOLVED` and not of `OPTIMAL`
@@ -88,6 +88,37 @@ solution_summary(gmodel)
 @test value(a) ≈ 0.5 rtol=1e-5 #src
 @test value(b) ≈ 0.5 rtol=1e-5 #src
 value(a), value(b)
+
+# ## QCQP approach
+
+import Alpine, HiGHS, Ipopt, Pavito
+ipopt = optimizer_with_attributes(
+    Ipopt.Optimizer,
+    MOI.Silent() => true,
+)
+highs = optimizer_with_attributes(
+    HiGHS.Optimizer,
+    "presolve" => "on",
+    "log_to_console" => false,
+)
+pavito = optimizer_with_attributes(
+    Pavito.Optimizer,
+    MOI.Silent() => true,
+    "mip_solver" => highs,
+    "cont_solver" => ipopt,
+    "mip_solver_drives" => false,
+)
+alpine = optimizer_with_attributes(
+    Alpine.Optimizer,
+    "nlp_solver" => ipopt,
+    "mip_solver" => pavito,
+)
+set_optimizer(model, () -> PolyJuMP.QCQP.Optimizer(MOI.instantiate(alpine)))
+optimize!(model)
+
+# We can see that it found the optimal solution
+
+termination_status(model), value(a), value(b)
 
 # ## Sum-of-Squares approach
 
