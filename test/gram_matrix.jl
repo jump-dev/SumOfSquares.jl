@@ -132,7 +132,7 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
         P = GramMatrix{Int}((i, j) -> i + j, [x^2, x * y, y^2])
         @test polynomial_type(SOSDecomposition(P)) <: AbstractPolynomialLike
         @test sprint(show, _sos_dec([x + y, x - y])) ==
-              "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2"
+              "(1·y + 1·x)^2 + (-1·y + 1·x)^2"
         @test polynomial(_sos_dec([x + y, x - y])) == (x + y)^2 + (x - y)^2
         @test polynomial(_sos_dec([x + y, x - y]), Float64) ==
               (x + y)^2 + (x - y)^2
@@ -176,7 +176,7 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
             },
         }
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) ==
-              "(1⋅y + 1⋅x)^2 + (-1⋅y + 1⋅x)^2 + (1⋅x)^2 * (1 - x^2) + (1⋅y)^2 * (1 - y^2)"
+              "(1·y + 1·x)^2 + (-1·y + 1·x)^2 + (1·x)^2 * (1 - x^2) + (1·y)^2 * (1 - y^2)"
 
         @testset "SOSDecompositionWithDomain equality" begin
             @polyvar x y

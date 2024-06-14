@@ -642,7 +642,7 @@ function increase(cache, counter, generator_sign, monos, mult)
             MA.operate!(
                 SA.UnsafeAddMul(*),
                 counter,
-                SignChange((a != b) ? missing : generator_sign, 1),
+                _term_constant_monomial(SignChange((a != b) ? missing : generator_sign, 1), mult),
                 cache,
             )
         end
@@ -665,6 +665,14 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
         value
     end
     return c
+end
+
+function _term(α, p::MB.Polynomial{B,M}) where {B,M}
+    return MB.algebra_element(MP.term(α, p.monomial), MB.FullBasis{B,M}())
+end
+
+function _term_constant_monomial(α, ::MB.Polynomial{B,M}) where {B,M}
+    return _term(α, MB.Polynomial{B}(MP.constant_monomial(M)))
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
@@ -707,8 +715,7 @@ function post_filter(
         MA.operate!(
             SA.UnsafeAddMul(*),
             counter,
-            SignChange(_sign(v), 1),
-            MB.algebra_element(mono),
+            _term(SignChange(_sign(v), 1), mono),
         )
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
@@ -724,7 +731,7 @@ function post_filter(
             MB.algebra_element(b),
             MB.algebra_element(c),
         )
-        MA.operate!(SA.UnsafeAddMul(*), counter, SignChange(sign, -1), cache)
+        MA.operate!(SA.UnsafeAddMul(*), counter, _term_constant_monomial(SignChange(sign, -1), a), cache)
         for mono in SA.supp(cache)
             count = SA.coeffs(counter)[SA.basis(counter)[mono]]
             count_sign = _sign(count)
