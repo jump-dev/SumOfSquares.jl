@@ -548,23 +548,17 @@ end
 
 function half_newton_polytope(
     p::SA.AlgebraElement,
-    gs::AbstractVector{<:SA.AlgebraElement},
+    gs::AbstractVector{<:SA.AlgebraElement{<:MB.Algebra{B},T}},
     vars,
     maxdegree,
     filter::NewtonFilter{<:NewtonDegreeBounds},
-)
+) where {B,T}
     basis, multipliers_bases =
         half_newton_polytope(p, gs, vars, maxdegree, filter.outer_approximation)
     bases = copy(multipliers_bases)
     push!(bases, basis)
     gs = copy(gs)
-    push!(
-        gs,
-        MB.constant_algebra_element(
-            MA.promote_operation(SA.basis, eltype(gs)),
-            eltype(eltype(gs)),
-        ),
-    )
+    push!(gs, MB.constant_algebra_element(B, T))
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
     return filtered_bases[end], filtered_bases[1:(end-1)]
@@ -710,17 +704,17 @@ function post_filter(
         _DictCoefficients(Dict{MP.monomial_type(typeof(poly)),SignCount}()),
         MB.implicit_basis(SA.basis(poly)),
     )
-    cache = zero(Float64, SA.algebra(MB.implicit_basis(SA.basis(poly))))
-    for (mono, v) in SA.nonzero_pairs(poly)
+    cache = zero(Float64, MB.algebra(MB.implicit_basis(SA.basis(poly))))
+    for (mono, v) in SA.nonzero_pairs(SA.coeffs(poly))
         MA.operate!(
             SA.UnsafeAddMul(*),
             counter,
-            _term(SignChange(_sign(v), 1), mono),
+            _term(SignChange(_sign(v), 1), SA.basis(poly)[mono]),
         )
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
-        for (mono, v) in SA.nonzero_pairs(mult)
-            increase(cache, counter, -_sign(v), gram_monos, mono)
+        for (mono, v) in SA.nonzero_pairs(SA.coeffs(mult))
+            increase(cache, counter, -_sign(v), gram_monos, SA.basis(mult)[mono])
         end
     end
     function decrease(sign, a, b, c)

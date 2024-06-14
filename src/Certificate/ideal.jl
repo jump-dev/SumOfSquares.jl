@@ -19,7 +19,7 @@ function _combine_with_gram(
     gram_bases::AbstractVector{<:MB.SubBasis},
     weights,
 ) where {B,M}
-    p = zero(_NonZero, SA.algebra(MB.FullBasis{B,M}()))
+    p = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
     for mono in basis
         MA.operate!(SA.UnsafeAddMul(*), p, _term_constant_monomial(_NonZero(), mono), MB.algebra_element(mono))
     end
@@ -178,7 +178,7 @@ end
 function _weight_type(::Type{T}, ::Type{BT}) where {T,BT}
     return SA.AlgebraElement{
         MA.promote_operation(
-            SA.algebra,
+            MB.algebra,
             MA.promote_operation(MB.implicit_basis, BT),
         ),
         T,

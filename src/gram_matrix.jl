@@ -285,7 +285,7 @@ function MP.polynomial(
     g::Union{GramMatrix,BlockDiagonalGramMatrix},
     ::Type{T},
 ) where {T}
-    p = zero(T, SA.algebra(MB.implicit_basis(g)))
+    p = zero(T, MB.algebra(MB.implicit_basis(g)))
     MA.operate!(SA.UnsafeAddMul(*), p, g)
     MA.operate!(SA.canonical, SA.coeffs(p))
     return MP.polynomial(

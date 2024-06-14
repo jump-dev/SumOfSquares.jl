@@ -14,7 +14,7 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
     constraints = MOI.ConstraintIndex{MOI.VectorOfVariables}[]
     acc = zero(
         MOI.ScalarAffineFunction{T},
-        SA.algebra(MB.implicit_basis(set.basis)),
+        MB.algebra(MB.implicit_basis(set.basis)),
     )
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
         gram, vars, con = SOS.add_gram_matrix(model, M, gram_basis, T)
