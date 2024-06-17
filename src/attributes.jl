@@ -21,7 +21,7 @@ The gram matrix of a Sum-of-Squares polynomial ``s_i(x)`` is the
 the positive semidefinite matrix ``Q`` such that ``s_i(x) = b_i(x)^\\top Q b_i(x)``
 where ``b_i(x)`` is the gram basis.
 """
-@kwdef struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute
+Base.@kwdef struct GramMatrixAttribute <: MOI.AbstractConstraintAttribute
     multiplier_index::Int = 0
     result_index::Int = 1
 end
@@ -39,7 +39,7 @@ By default, it is computed using
 `SOSDecomposition(gram, ranktol, dec)` where `gram` is the value of the
 [`GramMatrixAttribute`](@ref).
 """
-@kwdef struct SOSDecompositionAttribute <: MOI.AbstractConstraintAttribute
+Base.@kwdef struct SOSDecompositionAttribute <: MOI.AbstractConstraintAttribute
     multiplier_index::Int = 0
     ranktol::Real
     dec::MultivariateMoments.LowRankLDLTAlgorithm
@@ -69,7 +69,7 @@ p(x) = s_0(x) + w_1(x) s_1(x) + \\cdots + w_m(x) s_m(x)
 It corresponds to the dual of the Sum-of-Squares constraint for the constraint
 for ``s_i(x)`` to be a Sum-of-Squares.
 """
-@kwdef struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
+Base.@kwdef struct MomentMatrixAttribute <: MOI.AbstractConstraintAttribute
     multiplier_index::Int = 0
     result_index::Int = 1
 end
