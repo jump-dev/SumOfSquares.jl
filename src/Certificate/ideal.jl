@@ -21,7 +21,12 @@ function _combine_with_gram(
 ) where {B,M}
     p = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
     for mono in basis
-        MA.operate!(SA.UnsafeAddMul(*), p, _term_constant_monomial(_NonZero(), mono), MB.algebra_element(mono))
+        MA.operate!(
+            SA.UnsafeAddMul(*),
+            p,
+            _term_constant_monomial(_NonZero(), mono),
+            MB.algebra_element(mono),
+        )
     end
     for (gram, weight) in zip(gram_bases, weights)
         MA.operate!(

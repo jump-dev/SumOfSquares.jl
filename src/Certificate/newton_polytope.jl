@@ -636,7 +636,10 @@ function increase(cache, counter, generator_sign, monos, mult)
             MA.operate!(
                 SA.UnsafeAddMul(*),
                 counter,
-                _term_constant_monomial(SignChange((a != b) ? missing : generator_sign, 1), mult),
+                _term_constant_monomial(
+                    SignChange((a != b) ? missing : generator_sign, 1),
+                    mult,
+                ),
                 cache,
             )
         end
@@ -714,7 +717,13 @@ function post_filter(
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
         for (mono, v) in SA.nonzero_pairs(SA.coeffs(mult))
-            increase(cache, counter, -_sign(v), gram_monos, SA.basis(mult)[mono])
+            increase(
+                cache,
+                counter,
+                -_sign(v),
+                gram_monos,
+                SA.basis(mult)[mono],
+            )
         end
     end
     function decrease(sign, a, b, c)
@@ -725,7 +734,12 @@ function post_filter(
             MB.algebra_element(b),
             MB.algebra_element(c),
         )
-        MA.operate!(SA.UnsafeAddMul(*), counter, _term_constant_monomial(SignChange(sign, -1), a), cache)
+        MA.operate!(
+            SA.UnsafeAddMul(*),
+            counter,
+            _term_constant_monomial(SignChange(sign, -1), a),
+            cache,
+        )
         for mono in SA.supp(cache)
             count = SA.coeffs(counter)[SA.basis(counter)[mono]]
             count_sign = _sign(count)
