@@ -29,7 +29,14 @@ function MOI.get(
         Constraint.SOSPolynomialInSemialgebraicSetBridge,
     },
 )
-    gram = MOI.get(model, SOS.GramMatrixAttribute(; multiplier_index = attr.multiplier_index, result_index = attr.result_index), bridge)
+    gram = MOI.get(
+        model,
+        SOS.GramMatrixAttribute(;
+            multiplier_index = attr.multiplier_index,
+            result_index = attr.result_index,
+        ),
+        bridge,
+    )
     return SOS.SOSDecomposition(gram, attr.ranktol, attr.dec)
 end
 
