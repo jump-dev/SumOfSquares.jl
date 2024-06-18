@@ -175,15 +175,34 @@ end
 
 function _get(
     model::MOI.ModelLike,
-    attr,
+    attr::SOS.SOSDecompositionAttribute,
     constraint::MOI.ConstraintIndex,
     index::Int,
 )
     return MOI.get(
         model,
         typeof(attr)(;
-            attr.ranktol,
-            attr.dec,
+            ranktol = attr.ranktol,
+            dec = attr.dec,
+            multiplier_index = index,
+            result_index = attr.result_index,
+        ),
+        constraint,
+    )
+end
+
+function _get(
+    model::MOI.ModelLike,
+    attr::Union{
+        SOS.GramMatrixAttribute,
+        SOS.MomentMatrixAttribute,
+    },
+    constraint::MOI.ConstraintIndex,
+    index::Int,
+)
+    return MOI.get(
+        model,
+        typeof(attr)(;
             multiplier_index = index,
             result_index = attr.result_index,
         ),

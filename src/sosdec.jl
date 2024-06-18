@@ -121,10 +121,12 @@ function MP.polynomial(d::SOSDecomposition)
     return MP.polynomial(MB.algebra_element(d))
 end
 
-function MB.algebra_element(decomp::SOSDecomposition)
-    res = zero(first(decomp.ps))
+function MB.algebra_element(decomp::SOSDecomposition{A,T,V,U}) where {A,T,V,U}
+    basis = MB.implicit_basis(SA.basis(first(decomp.ps)))
+    res = zero(U, MB.algebra(basis))
     for p in decomp.ps
-        MA.operate!(SA.UnsafeAddMul(*), res, SA.star(p), p)
+        implicit = MB.algebra_element(SA.coeffs(p, basis), basis)
+        MA.operate!(SA.UnsafeAddMul(*), res, SA.star(implicit), implicit)
     end
     MA.operate!(SA.canonical, SA.coeffs(res))
     return res

@@ -35,7 +35,7 @@ end
         err = ArgumentError(
             "Multipartite Newton polytope not supported with noncommutative variables.",
         )
-        @test_throws err SOS._monomials_half_newton_polytope(
+        @test_throws err SOS.Certificate.monomials_half_newton_polytope(
             [a * b, b^2],
             Certificate.NewtonDegreeBounds(parts),
         )
@@ -48,39 +48,39 @@ end
         err = ArgumentError(
             "Parts are not disjoint in multipartite Newton polytope estimation: $parts.",
         )
-        @test_throws err SOS._monomials_half_newton_polytope(
+        @test_throws err SOS.Certificate.monomials_half_newton_polytope(
             [x * y, y^2],
             Certificate.NewtonDegreeBounds(parts),
         )
     end
     uni = Certificate.NewtonDegreeBounds(tuple())
     @testset "Unipartite" begin
-        @test SOS._monomials_half_newton_polytope([x * y, y^2], uni) == [y]
-        @test isempty(SOS._monomials_half_newton_polytope([x, y], uni))
-        @test SOS._monomials_half_newton_polytope([x^2, y^2], uni) == [x, y]
-        @test SOS._monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope([x * y, y^2], uni) == [y]
+        @test isempty(SOS.Certificate.monomials_half_newton_polytope([x, y], uni))
+        @test SOS.Certificate.monomials_half_newton_polytope([x^2, y^2], uni) == [x, y]
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([x, y],)),
         ) == [x, y]
-        @test SOS._monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([y, x],)),
         ) == [x, y]
-        @test SOS._monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
             uni,
         ) == [x^2 * y^2, x, x * y, x^2, x * y^2, x^2 * y]
-        @test SOS._monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
             Certificate.NewtonFilter(uni),
         ) == [x^2 * y^2, x]
     end
     @testset "Non-commutative" begin
-        @test SOS._monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [a^4, a^3 * b, a * b * a^2, a * b * a * b],
             uni,
         ) == [a^2, a * b]
-        @test SOS._monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [
                 a^2,
                 a^10 * b^20 * a^11,
@@ -93,26 +93,26 @@ end
     @testset "Multipartite" begin
         # In the part [y, z], the degree is between 0 and 2
         X = [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z]
-        @test SOS._monomials_half_newton_polytope(X, uni) ==
+        @test SOS.Certificate.monomials_half_newton_polytope(X, uni) ==
               [x^2, x * y, x * z, y * z, x, y, z]
         function full_test(X, Y, part1, part2)
-            @test SOS._monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part1,)),
             ) == Y
-            @test SOS._monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part2,)),
             ) == Y
-            a = SOS._monomials_half_newton_polytope(
+            a = SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part2,)),
             )
-            @test SOS._monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part1, part2)),
             ) == Y
-            @test SOS._monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part2, part1)),
             ) == Y
@@ -131,7 +131,7 @@ end
             [x, y],
         )
         # FIXME: With recursive merging, it should give [x^2, x*y, x*z, x]
-        @test SOS._monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z],
             Certificate.NewtonDegreeBounds(([x], [y], [z])),
         ) == [x^2, x * y, x * z, y * z, x, y, z]

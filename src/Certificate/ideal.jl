@@ -180,32 +180,8 @@ function Newton(cone, basis, variable_groups::Tuple)
     )
 end
 
-function _weight_type(::Type{T}, ::Type{BT}) where {T,BT}
-    return SA.AlgebraElement{
-        MA.promote_operation(
-            MB.algebra,
-            MA.promote_operation(MB.implicit_basis, BT),
-        ),
-        T,
-        MA.promote_operation(
-            MB.sparse_coefficients,
-            MP.polynomial_type(MP.monomial_type(BT), T),
-        ),
-    }
-end
-
-function _half_newton_polytope(a::SA.AlgebraElement, vars, filter)
-    return half_newton_polytope(
-        a,
-        _weight_type(Bool, typeof(SA.basis(a)))[],
-        vars,
-        _maxdegree(a, vars),
-        filter,
-    )[1]
-end
-
 function gram_basis(certificate::Newton, poly)
-    return _half_newton_polytope(
+    return half_newton_polytope(
         _algebra_element(poly),
         MP.variables(poly),
         certificate.newton,

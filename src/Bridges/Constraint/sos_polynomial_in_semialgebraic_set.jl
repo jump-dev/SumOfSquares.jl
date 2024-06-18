@@ -286,6 +286,17 @@ function MOI.get(
 )
     return MOI.get(model, attr, bridge.constraint)
 end
+
+function _gram(
+    f::Function,
+    Q::Vector{MOI.VariableIndex},
+    gram_basis,
+    T::Type,
+    MCT,
+)
+    return SOS.build_gram_matrix(convert(Vector{T}, f(Q)), gram_basis, MCT, T)
+end
+
 function _gram(
     f::Function,
     Qs::Vector{Vector{MOI.VariableIndex}},

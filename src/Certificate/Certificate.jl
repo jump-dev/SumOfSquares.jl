@@ -49,9 +49,13 @@ function within_total_bounds(mono::MP.AbstractMonomial, bounds::DegreeBounds)
     return bounds.mindegree <= MP.degree(mono) <= bounds.maxdegree
 end
 
+_vec(v::AbstractVector) = v
+# For `TypedPolynomials`
+_vec(v::Tuple) = MP.variable_union_type(first(v))[v...]
+
 function _divides(a, b)
     # `MP.divides(a, b)` is not implemented yet for noncommutative
-    vars = unique!(sort(MP.variables(a)))
+    vars = unique!(sort(_vec(MP.variables(a))))
     comm = is_commutative(vars)
     return all(vars) do v
         return _degree(a, v, comm) <= _degree(b, v, comm)

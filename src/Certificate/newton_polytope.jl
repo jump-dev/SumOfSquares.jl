@@ -807,3 +807,46 @@ end
 function _sub(basis::SubBasis{B}, I) where {B}
     return SubBasis{B}(basis.monomials[I])
 end
+
+function _weight_type(::Type{T}, ::Type{BT}) where {T,BT}
+    return SA.AlgebraElement{
+        MA.promote_operation(
+            MB.algebra,
+            MA.promote_operation(MB.implicit_basis, BT),
+        ),
+        T,
+        MA.promote_operation(
+            MB.sparse_coefficients,
+            MP.polynomial_type(MP.monomial_type(BT), T),
+        ),
+    }
+end
+
+function half_newton_polytope(a::SA.AlgebraElement, vars, filter)
+    return half_newton_polytope(
+        a,
+        _weight_type(Bool, typeof(SA.basis(a)))[],
+        vars,
+        _maxdegree(a, vars),
+        filter,
+    )[1]
+end
+
+function half_newton_polytope(a::SA.AlgebraElement, filter)
+    return half_newton_polytope(a, MP.variables(a), filter)
+end
+
+function half_newton_polytope(basis::MB.SubBasis, args...)
+    a = MB.algebra_element(
+        SA.SparseCoefficients(basis.monomials, ones(length(basis))),
+        MB.implicit_basis(basis),
+    )
+    return half_newton_polytope(a, args...)
+end
+
+function monomials_half_newton_polytope(monos, args...)
+    return half_newton_polytope(
+        MB.SubBasis{MB.Monomial}(monos),
+        args...,
+    ).monomials
+end

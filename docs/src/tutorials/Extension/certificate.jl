@@ -50,6 +50,7 @@ solution_summary(model)
 
 # We now define the Schmüdgen's certificate:
 
+import StarAlgebras as SA
 import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
@@ -79,7 +80,7 @@ function SOSC.multiplier_basis(certificate::Schmüdgen, index::SOSC.PreorderInde
     return SOSC.maxdegree_gram_basis(certificate.basis, variables(domain), SOSC.multiplier_maxdegree(certificate.maxdegree, q))
 end
 function SOSC.multiplier_basis_type(::Type{Schmüdgen{IC, CT, BT}}, ::Type{M}) where {IC,CT,BT,M}
-    return MB.similar_type(BT, M)
+    return MB.explicit_basis_type(BT)
 end
 
 function SOSC.generator(::Schmüdgen, index::SOSC.PreorderIndex, domain::SOSC.WithVariables)
@@ -97,8 +98,9 @@ SOS.matrix_cone_type(::Type{<:Schmüdgen{IC, CT}}) where {IC, CT} = SOS.matrix_c
 model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
-ideal_certificate = SOSC.Newton(SOSCone(), MB.MonomialBasis, tuple())
-certificate = Schmüdgen(ideal_certificate, SOSCone(), MB.MonomialBasis, maxdegree(p))
+basis = MB.FullBasis{MB.Monomial,typeof(x * y)}()
+ideal_certificate = SOSC.Newton(SOSCone(), basis, tuple())
+certificate = Schmüdgen(ideal_certificate, SOSCone(), basis, maxdegree(p))
 @constraint(model, c, p >= α, domain = S, certificate = certificate)
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
