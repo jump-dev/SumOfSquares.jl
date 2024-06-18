@@ -40,10 +40,10 @@ jobs:
               PackageSpec(name="MathOptInterface", rev="bl/set_map_type"),
               PackageSpec(name="StarAlgebras", rev="main"),
               PackageSpec(name="SymbolicWedderburn", rev="mk/StarAlgebras_0_3"),
-              PackageSpec(name="MultivariateBases", rev="bl/sos"),
+              PackageSpec(name="MultivariateBases", rev="master"),
               PackageSpec(name="SemialgebraicSets", rev="master"),
-              PackageSpec(name="MultivariateMoments", rev="bl/exp"),
-              PackageSpec(name="PolyJuMP", rev="bl/sos"),
+              PackageSpec(name="MultivariateMoments", rev="master"),
+              PackageSpec(name="PolyJuMP", rev="master"),
           ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
