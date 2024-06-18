@@ -311,7 +311,10 @@ function l09()
         )
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         newt = Certificate.NewtonDegreeBounds(tuple())
-        @test SOS.Certificate.monomials_half_newton_polytope(monomials(f), newt) == [
+        @test SOS.Certificate.monomials_half_newton_polytope(
+            monomials(f),
+            newt,
+        ) == [
             x[1]^2 * x[2],
             x[1] * x[2]^2,
             x[1]^2,

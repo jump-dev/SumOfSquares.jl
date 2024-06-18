@@ -55,9 +55,15 @@ end
     end
     uni = Certificate.NewtonDegreeBounds(tuple())
     @testset "Unipartite" begin
-        @test SOS.Certificate.monomials_half_newton_polytope([x * y, y^2], uni) == [y]
-        @test isempty(SOS.Certificate.monomials_half_newton_polytope([x, y], uni))
-        @test SOS.Certificate.monomials_half_newton_polytope([x^2, y^2], uni) == [x, y]
+        @test SOS.Certificate.monomials_half_newton_polytope(
+            [x * y, y^2],
+            uni,
+        ) == [y]
+        @test isempty(
+            SOS.Certificate.monomials_half_newton_polytope([x, y], uni),
+        )
+        @test SOS.Certificate.monomials_half_newton_polytope([x^2, y^2], uni) ==
+              [x, y]
         @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([x, y],)),

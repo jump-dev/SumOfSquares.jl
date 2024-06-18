@@ -193,10 +193,7 @@ end
 
 function _get(
     model::MOI.ModelLike,
-    attr::Union{
-        SOS.GramMatrixAttribute,
-        SOS.MomentMatrixAttribute,
-    },
+    attr::Union{SOS.GramMatrixAttribute,SOS.MomentMatrixAttribute},
     constraint::MOI.ConstraintIndex,
     index::Int,
 )
