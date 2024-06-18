@@ -498,7 +498,7 @@ function sos_decomposition(
     ranktol::Real = 0.0,
     dec::MultivariateMoments.LowRankLDLTAlgorithm = SVDLDLT(),
 )
-    return MOI.get(cref.model, SOSDecompositionAttribute(ranktol, dec), cref)
+    return MOI.get(cref.model, SOSDecompositionAttribute(; ranktol, dec), cref)
 end
 
 """

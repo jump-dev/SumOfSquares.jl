@@ -90,7 +90,7 @@ end
 
 function check_multiplier_index_bounds(attr, range)
     if !(attr.multiplier_index in range)
-        throw(MultiplierIndexBoundsError(attr, range))
+        throw(MultiplierIndexBoundsError(attr, UnitRange(range)))
     end
 end
 
@@ -144,6 +144,8 @@ function MOI.Bridges.unbridged_function(
         Vector{<:GramMatrix{T}},
         BlockDiagonalGramMatrix{T},
         Vector{<:BlockDiagonalGramMatrix{T}},
+        SOSDecomposition{<:Any,T},
+        SOSDecompositionWithDomain{<:Any,T},
         MultivariateMoments.MomentMatrix{T},
         MultivariateMoments.BlockDiagonalMomentMatrix{T},
         MultivariateMoments.MomentVector{T},
@@ -156,7 +158,8 @@ end
 # This is type piracy but we tolerate it.
 const ObjectWithoutIndex = Union{
     AbstractGramMatrix{<:MOI.Utilities.ObjectWithoutIndex},
-    SOSDecomposition{<:MOI.Utilities.ObjectWithoutIndex},
+    SOSDecomposition{<:Any,<:MOI.Utilities.ObjectWithoutIndex},
+    SOSDecompositionWithDomain{<:Any,<:MOI.Utilities.ObjectWithoutIndex},
 }
 const ObjectOrTupleWithoutIndex =
     Union{ObjectWithoutIndex,Tuple{Vararg{ObjectWithoutIndex}}}

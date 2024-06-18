@@ -181,7 +181,9 @@ function _get(
 )
     return MOI.get(
         model,
-        typeof(attr)(
+        typeof(attr)(;
+            attr.ranktol,
+            attr.dec,
             multiplier_index = index,
             result_index = attr.result_index,
         ),
