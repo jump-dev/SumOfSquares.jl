@@ -43,3 +43,5 @@ include("solvers.jl")
 include("sospoly.jl")
 include("sosquartic.jl")
 include("equalitypolyconstr.jl")
+
+@info "Long live Lea and Benoît!"
