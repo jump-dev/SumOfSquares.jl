@@ -129,7 +129,11 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
 end
 
 function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
-    throw(MOI.Bridges.MapNotInvertible("The linear map is not invertible for some basis transformation, use a `CachingOptimizer` layer"))
+    throw(
+        MOI.Bridges.MapNotInvertible(
+            "The linear map is not invertible for some basis transformation, use a `CachingOptimizer` layer",
+        ),
+    )
     # Does not work with QuotientBasis
     #return SA.coeffs(MP.polynomial(f, bridge.new_basis), bridge.set.basis)
 end

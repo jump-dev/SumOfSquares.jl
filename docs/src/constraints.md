@@ -41,13 +41,13 @@ CachingOptimizer state: NO_OPTIMIZER
 Solver name: No optimizer attached.
 
 julia> @variable(model, p, Poly(X))
-(_[1]) + (_[2])x₃ + (_[3])x₂ + (_[4])x₁ + (_[5])x₃² + (_[6])x₂x₃ + (_[7])x₂² + (_[8])x₁x₃ + (_[9])x₁x₂ + (_[10])x₁²
+(_[1])·1 + (_[2])·x₃ + (_[3])·x₂ + (_[4])·x₁ + (_[5])·x₃² + (_[6])·x₂x₃ + (_[7])·x₂² + (_[8])·x₁x₃ + (_[9])·x₁x₂ + (_[10])·x₁²
 
 julia> @variable(model, q, Poly(X))
-(_[11]) + (_[12])x₃ + (_[13])x₂ + (_[14])x₁ + (_[15])x₃² + (_[16])x₂x₃ + (_[17])x₂² + (_[18])x₁x₃ + (_[19])x₁x₂ + (_[20])x₁²
+(_[11])·1 + (_[12])·x₃ + (_[13])·x₂ + (_[14])·x₁ + (_[15])·x₃² + (_[16])·x₂x₃ + (_[17])·x₂² + (_[18])·x₁x₃ + (_[19])·x₁x₂ + (_[20])·x₁²
 
 julia> @constraint(model, p + q == 1)
-(_[1] + _[11] - 1) + (_[2] + _[12])x₃ + (_[3] + _[13])x₂ + (_[4] + _[14])x₁ + (_[5] + _[15])x₃² + (_[6] + _[16])x₂x₃ + (_[7] + _[17])x₂² + (_[8] + _[18])x₁x₃ + (_[9] + _[19])x₁x₂ + (_[10] + _[20])x₁² ∈ PolyJuMP.ZeroPoly()
+(_[1] + _[11] - 1)·1 + (_[2] + _[12])·x₃ + (_[3] + _[13])·x₂ + (_[4] + _[14])·x₁ + (_[5] + _[15])·x₃² + (_[6] + _[16])·x₂x₃ + (_[7] + _[17])·x₂² + (_[8] + _[18])·x₁x₃ + (_[9] + _[19])·x₁x₂ + (_[10] + _[20])·x₁² ∈ PolyJuMP.ZeroPoly()
 ```
 
 Vectorized constraints can also be used as well as vector of constraints,
@@ -66,7 +66,7 @@ Polynomials can be constrained to be sum-of-squares with the `in` syntax.
 For instance, to constrain a polynomial `p` to be sum-of-squares, do
 ```jldoctest constraint-pq
 julia> @constraint(model, p in SOSCone())
-(_[1]) + (_[2])x₃ + (_[3])x₂ + (_[4])x₁ + (_[5])x₃² + (_[6])x₂x₃ + (_[7])x₂² + (_[8])x₁x₃ + (_[9])x₁x₂ + (_[10])x₁² is SOS
+(_[1])·1 + (_[2])·x₃ + (_[3])·x₂ + (_[4])·x₁ + (_[5])·x₃² + (_[6])·x₂x₃ + (_[7])·x₂² + (_[8])·x₁x₃ + (_[9])·x₁x₂ + (_[10])·x₁² is SOS
 ```
 
 ### Automatically interpreting polynomial nonnegativity as a sum-of-squares constraint
@@ -147,7 +147,7 @@ julia> @variable(model, β)
 β
 
 julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y)
-(β)y² + (-α + β)xy + (α)x² is SOS
+(β)·y² + (-α + β)·xy + (α)·x² is SOS
 ```
 where `α` and `β` are JuMP decision variables and `x` and `y` are polynomial
 variables. Since the polynomial is a quadratic form, the sum-of-squares
@@ -165,7 +165,7 @@ only the basis *type* needs to be given. For instance, to use the scaled monomia
 basis in the example above, use
 ```jldoctest constraint-xy
 julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y, basis = ScaledMonomial)
-(β)y² + (-α + β)xy + (α)x² is SOS
+(β)·ScaledMonomial(y²) + (-0.7071067811865475 α + 0.7071067811865475 β)·ScaledMonomial(xy) + (α)·ScaledMonomial(x²) is SOS
 ```
 
 ## Polynomial nonnegativity on a subset of the space
@@ -173,7 +173,7 @@ julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y, basis = Sca
 By default, the constraint
 ```jldoctest constraint-xy
 julia> @constraint(model, x^3 - x^2 + 2x*y -y^2 + y^3 >= α)
-(-α) + (-1)y² + (2)xy + (-1)x² + (1)y³ + (1)x³ is SOS
+(-α)·1 + (-1)·y² + (2)·xy + (-1)·x² + (1)·y³ + (1)·x³ is SOS
 ```
 constrains the polynomial to be nonnegative for every real numbers `x` and `y`.
 However, the set of points `(x, y)` for which the polynomial is constrained
@@ -182,7 +182,7 @@ to be nonnegative can be specified by the `domain` keyword:
 julia> S = @set x >= 0 && y >= 0 && x + y >= 1;
 
 julia> @constraint(model, x^3 - x^2 + 2x*y -y^2 + y^3 >= α, domain = S)
-(-α) + (-1)y² + (2)xy + (-1)x² + (1)y³ + (1)x³ is SOS
+(-α)·1 + (-1)·y² + (2)·xy + (-1)·x² + (1)·y³ + (1)·x³ is SOS
 ```
 See [this notebook](https://github.com/jump-dev/SumOfSquares.jl/blob/master/examples/Polynomial_Optimization.ipynb)
 for a detailed example.
