@@ -1,3 +1,4 @@
+config = MOI.Test.Config()
 function optimize!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
