@@ -37,7 +37,6 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="MathOptInterface", rev="bl/set_map_type"),
               PackageSpec(name="StarAlgebras", rev="main"),
               PackageSpec(name="SymbolicWedderburn", rev="mk/StarAlgebras_0_3"),
               PackageSpec(name="MultivariateBases", rev="master"),

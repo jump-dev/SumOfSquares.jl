@@ -234,6 +234,18 @@ function MOI.get(
 end
 
 # Indices
+function _delete_variables(model, Q::Vector{MOI.VariableIndex})
+    if !isempty(Q)
+        # FIXME Since there is not variables in the list, we cannot
+        # identify the `EmptyBridge` to delete
+        MOI.delete(model, Q)
+    end
+end
+function _delete_variables(model, Qs::Vector{Vector{MOI.VariableIndex}})
+    for Q in Qs
+        _delete_variables(model, Q)
+    end
+end
 function MOI.delete(
     model::MOI.ModelLike,
     bridge::SOSPolynomialInSemialgebraicSetBridge,
