@@ -64,6 +64,7 @@ S.I.algo
 # However, we still need to divide polynomials by the Gröbner basis
 # which can be simplified in this case.
 
+import MutableArithmetics as MA
 const MP = MultivariatePolynomials
 const SS = SemialgebraicSets
 struct HypercubeIdeal{V} <: SS.AbstractPolynomialIdeal
@@ -76,6 +77,10 @@ MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
 Base.similar(set::HypercubeSet, ::Type) = set
 SS.ideal(set::HypercubeSet) = set.ideal
+function MA.promote_operation(::typeof(SS.ideal), ::Type{HypercubeSet{V}}) where {V}
+    return HypercubeIdeal{V}
+end
+SS.similar_type(S::Type{<:HypercubeSet}, ::Type) = S
 function Base.rem(p, set::HypercubeIdeal)
     return MP.polynomial(map(MP.terms(p)) do term
         mono = MP.monomial(term)

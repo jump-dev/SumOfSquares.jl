@@ -28,10 +28,18 @@ function MP.term_type(
 ) where {T,B,U}
     return MP.term_type(MP.polynomial_type(p))
 end
+
 function MP.polynomial_type(
     ::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
+    ::Type{S},
+) where {T,B,U,S}
+    return MP.polynomial_type(B, S)
+end
+
+function MP.polynomial_type(
+    G::Union{AbstractGramMatrix{T,B,U},Type{<:AbstractGramMatrix{T,B,U}}},
 ) where {T,B,U}
-    return MP.polynomial_type(B, U)
+    return MP.polynomial_type(G, U)
 end
 
 Base.:(==)(p::_APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
@@ -53,13 +61,13 @@ end
 function GramMatrix{T,B,U}(
     Q::AbstractMatrix{T},
     basis::B,
-) where {T,B<:AbstractPolynomialBasis,U}
+) where {T,B<:SA.ExplicitBasis,U}
     return GramMatrix{T,B,U,typeof(Q)}(Q, basis)
 end
 function GramMatrix{T,B}(
     Q::AbstractMatrix{T},
     basis::B,
-) where {T,B<:AbstractPolynomialBasis}
+) where {T,B<:SA.ExplicitBasis}
     return GramMatrix{T,B,_promote_sum(T)}(Q, basis)
 end
 function GramMatrix(
@@ -68,7 +76,7 @@ function GramMatrix(
         MultivariateMoments.SymMatrix{T},
         MultivariateMoments.VectorizedHermitianMatrix{T},
     },
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
 ) where {T}
     return GramMatrix{T,typeof(basis)}(Q, basis)
 end
@@ -81,6 +89,8 @@ function MP.similar_type(
     MS = MP.similar_type(MT, S)
     return GramMatrix{S,B,US,MS}
 end
+
+MB.implicit_basis(g::GramMatrix) = MB.implicit_basis(g.basis)
 
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
 MP.constant_monomial(p::GramMatrix) = MP.constant_monomial(MP.monomial_type(p))
@@ -102,7 +112,7 @@ MultivariateMoments.value_matrix(p::GramMatrix{T}) where {T} = p.Q
 
 function GramMatrix{T}(
     f::Function,
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     σ = 1:length(basis),
 ) where {T}
     return GramMatrix{T,typeof(basis)}(
@@ -112,40 +122,46 @@ function GramMatrix{T}(
 end
 function GramMatrix{T}(f::Function, monos::AbstractVector) where {T}
     σ, sorted_monos = MP.sort_monomial_vector(monos)
-    return GramMatrix{T}(f, MonomialBasis(sorted_monos), σ)
+    return GramMatrix{T}(f, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
 function GramMatrix(
     Q::AbstractMatrix{T},
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     σ = 1:length(basis),
 ) where {T}
     return GramMatrix{T}((i, j) -> Q[σ[i], σ[j]], basis)
 end
 function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
     σ, sorted_monos = MP.sort_monomial_vector(monos)
-    return GramMatrix(Q, MonomialBasis(sorted_monos), σ)
+    return GramMatrix(Q, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
-#function Base.convert{T, PT <: AbstractPolynomial{T}}(::Type{PT}, p::GramMatrix)
-#    # coefficient_type(p) may be different than T and MP.polynomial(p) may be different than PT (different module)
-#    convert(PT, MP.polynomial(p))
-#end
-function MP.polynomial(p::GramMatrix{T,B,U}) where {T,B,U}
-    return MP.polynomial(p, U)
-end
-function MP.polynomial(p::GramMatrix, ::Type{S}) where {S}
-    return MP.polynomial(value_matrix(p), p.basis, S)
+function _term_element(α, p::MB.Polynomial{B,M}) where {B,M}
+    return MB.algebra_element(
+        MB.sparse_coefficients(MP.term(α, p.monomial)),
+        MB.FullBasis{B,M}(),
+    )
 end
 
-function change_basis(
-    p::GramMatrix{T,B},
-    ::Type{B},
-) where {T,B<:AbstractPolynomialBasis}
+function MA.operate!(
+    op::SA.UnsafeAddMul{typeof(*)},
+    p::SA.AlgebraElement,
+    g::GramMatrix,
+    args::Vararg{Any,N},
+) where {N}
+    for col in eachindex(g.basis)
+        for row in eachindex(g.basis)
+            MA.operate!(
+                op,
+                p,
+                _term_element(true, SA.star(g.basis[row])),
+                _term_element(g.Q[row, col], g.basis[col]),
+                args...,
+            )
+        end
+    end
     return p
-end
-function change_basis(p::GramMatrix, B::Type{<:AbstractPolynomialBasis})
-    return GramMatrix(MultivariateBases.change_basis(p.Q, p.basis, B)...)
 end
 
 """
@@ -188,14 +204,6 @@ function gram_operate(
     end
     return GramMatrix(Q, basis)
 end
-function gram_operate(
-    ::typeof(+),
-    p::GramMatrix{S,Bp},
-    q::GramMatrix{T,Bq},
-) where {S,T,Bp,Bq}
-    B = promote_type(Bp, Bq)
-    return gram_operate(+, change_basis(p, B), change_basis(q, B))
-end
 
 """
     gram_operate(/, p::GramMatrix, α)
@@ -221,6 +229,14 @@ struct BlockDiagonalGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
     blocks::Vector{GramMatrix{T,B,U,MT}}
 end
 
+function MB.implicit_basis(g::BlockDiagonalGramMatrix)
+    return MB.implicit_basis(first(g.blocks))
+end
+
+function MultivariateMoments.block_diagonal(blocks::Vector{<:GramMatrix})
+    return BlockDiagonalGramMatrix(blocks)
+end
+
 function _sparse_type(::Type{GramMatrix{T,B,U,MT}}) where {T,B,U,MT}
     return BlockDiagonalGramMatrix{T,B,U,MT}
 end
@@ -235,17 +251,44 @@ end
 function Base.zero(::Type{BlockDiagonalGramMatrix{T,B,U,MT}}) where {T,B,U,MT}
     return BlockDiagonalGramMatrix(GramMatrix{T,B,U,MT}[])
 end
-function MP.polynomial(p::BlockDiagonalGramMatrix)
-    return mapreduce(
-        identity,
-        MA.add!!,
-        p.blocks,
-        init = zero(MP.polynomial_type(p)),
-    )
+
+function MA.operate!(
+    op::SA.UnsafeAddMul{typeof(*)},
+    p::SA.AlgebraElement,
+    g::BlockDiagonalGramMatrix,
+    args::Vararg{Any,N},
+) where {N}
+    for block in g.blocks
+        MA.operate!(op, p, block, args...)
+    end
+    return p
 end
 
 function Base.show(io::IO, M::BlockDiagonalGramMatrix)
     print(io, "BlockDiagonalGramMatrix")
     MultivariateMoments.show_basis_indexed_blocks(io, M.blocks)
     return
+end
+
+#function Base.convert{T, PT <: AbstractPolynomial{T}}(::Type{PT}, p::GramMatrix)
+#    # coefficient_type(p) may be different than T and MP.polynomial(p) may be different than PT (different module)
+#    convert(PT, MP.polynomial(p))
+#end
+
+function MP.polynomial(
+    p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
+) where {T,B,U}
+    return MP.polynomial(p, U)
+end
+
+function MP.polynomial(
+    g::Union{GramMatrix,BlockDiagonalGramMatrix},
+    ::Type{T},
+) where {T}
+    p = zero(T, MB.algebra(MB.implicit_basis(g)))
+    MA.operate!(SA.UnsafeAddMul(*), p, g)
+    MA.operate!(SA.canonical, SA.coeffs(p))
+    return MP.polynomial(
+        SA.coeffs(p, MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()),
+    )
 end

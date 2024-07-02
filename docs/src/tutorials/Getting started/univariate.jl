@@ -76,7 +76,7 @@ Q12 = η1.Q * η.atoms[1].weight + η2.Q * η.atoms[2].weight
 
 model = SOSModel(CSDP.Optimizer)
 @variable(model, σ)
-@constraint(model, cheby_cref, p >= σ, basis = ChebyshevBasisFirstKind)
+@constraint(model, cheby_cref, p >= σ, basis = Chebyshev)
 @objective(model, Max, σ)
 optimize!(model)
 solution_summary(model)

@@ -50,8 +50,16 @@ function lyapunov_switched_system_test(
     # and sum it with a strictly positive `q`.
     # Since the problem is homogeneous (i.e. given any `λ > 0`, `p` is
     # feasible iff `λp` is feasible), this is wlog.
-    p0 = @variable(model, variable_type = SOSPoly(basis(monomials(x, degree))))
-    q = GramMatrix(SOSDecomposition(x .^ degree))
+    p0 = @variable(
+        model,
+        variable_type = SOSPoly(MB.SubBasis{basis}(monomials(x, degree)))
+    )
+    q = GramMatrix(
+        SOSDecomposition([
+            MB.algebra_element([1], MB.SubBasis{basis}([var^degree])) for
+            var in x
+        ]),
+    )
 
     # Keep `p` in a `GramMatrix` form while `q + p0` would transform it to
     # a polynomial. It is not mandatory to keep it in its `GramMatrix` form
@@ -75,12 +83,12 @@ function lyapunov_switched_system_test(
         @test JuMP.termination_status(model) == MOI.OPTIMAL
         @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
         @test all(eigvals(Matrix(value_matrix(JuMP.value(p0)))) .≥ -atol)
-        @test JuMP.value(p0).basis isa basis
+        @test JuMP.value(p0).basis isa MB.SubBasis{basis}
         @test value_matrix(JuMP.value(p)) ≈
               value_matrix(gram_operate(+, q, JuMP.value(p0))) atol = atol rtol =
             rtol
-        @test gram_matrix(c1).basis isa basis
-        @test gram_matrix(c2).basis isa basis
+        @test gram_matrix(c1).basis isa MB.SubBasis{basis}
+        @test gram_matrix(c2).basis isa MB.SubBasis{basis}
     else
         @test JuMP.termination_status(model) == MOI.INFEASIBLE
         @test JuMP.dual_status(model) == MOI.INFEASIBILITY_CERTIFICATE
@@ -92,8 +100,8 @@ function lyapunov_switched_system_test(
             rhs = dot(μ1, q) + dot(μ2, q)
             @test atol + rtol * max(abs(lhs), abs(rhs)) + lhs >= rhs
         end
-        @test moment_matrix(c1).basis isa basis
-        @test moment_matrix(c2).basis isa basis
+        @test moment_matrix(c1).basis isa SubBasis{basis}
+        @test moment_matrix(c2).basis isa SubBasis{basis}
     end
 end
 
@@ -108,7 +116,7 @@ function quadratic_infeasible_lyapunov_switched_system_test(
         1,
         √2 - ε,
         false,
-        MonomialBasis,
+        MB.Monomial,
     )
 end
 sd_tests["quadratic_infeasible_lyapunov_switched_system"] =
@@ -124,7 +132,7 @@ function quadratic_infeasible_scaled_lyapunov_switched_system_test(
         1,
         √2 - ε,
         false,
-        ScaledMonomialBasis,
+        ScaledMonomial,
     )
 end
 sd_tests["quadratic_infeasible_scaled_lyapunov_switched_system"] =
@@ -140,7 +148,7 @@ function quadratic_feasible_lyapunov_switched_system_test(
         1,
         √2 + ε,
         true,
-        MonomialBasis,
+        MB.Monomial,
     )
 end
 sd_tests["quadratic_feasible_lyapunov_switched_system"] =
@@ -156,7 +164,7 @@ function quadratic_feasible_scaled_lyapunov_switched_system_test(
         1,
         √2 + ε,
         true,
-        ScaledMonomialBasis,
+        ScaledMonomial,
     )
 end
 sd_tests["quadratic_feasible_scaled_lyapunov_switched_system"] =
@@ -172,7 +180,7 @@ function quartic_infeasible_lyapunov_switched_system_test(
         2,
         1 - ε,
         false,
-        MonomialBasis,
+        MB.Monomial,
     )
 end
 sd_tests["quartic_infeasible_lyapunov_switched_system"] =
@@ -188,7 +196,7 @@ function quartic_infeasible_scaled_lyapunov_switched_system_test(
         2,
         1 - ε,
         false,
-        ScaledMonomialBasis,
+        ScaledMonomial,
     )
 end
 sd_tests["quartic_infeasible_scaled_lyapunov_switched_system"] =
@@ -204,7 +212,7 @@ function quartic_feasible_lyapunov_switched_system_test(
         2,
         1 + ε,
         true,
-        MonomialBasis,
+        MB.Monomial,
     )
 end
 sd_tests["quartic_feasible_lyapunov_switched_system"] =
@@ -220,7 +228,7 @@ function quartic_feasible_scaled_lyapunov_switched_system_test(
         2,
         1 + ε,
         true,
-        ScaledMonomialBasis,
+        ScaledMonomial,
     )
 end
 sd_tests["quartic_feasible_scaled_lyapunov_switched_system"] =

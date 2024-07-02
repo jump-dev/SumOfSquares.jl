@@ -1,6 +1,7 @@
 module TestVariableKernel
 
 using Test
+import MultivariateBases as MB
 using DynamicPolynomials
 using SumOfSquares
 
@@ -26,9 +27,15 @@ function test_runtests()
                 SumOfSquares.WeightedSOSCone{
                     MOI.PositiveSemidefiniteConeTriangle,
                 }(
-                    MonomialBasis([x^4, x^3 * y, x^2 * y^2, y^4]),
-                    [MonomialBasis([x^2, y^2, x * y])],
-                    [1.0 * x^0 * y^0],
+                    MB.SubBasis{MB.Monomial}([
+                        x^4,
+                        x^3 * y,
+                        x^2 * y^2,
+                        x * y^3,
+                        y^4,
+                    ]),
+                    [MB.SubBasis{MB.Monomial}([x^2, y^2, x * y])],
+                    [MB.algebra_element(1.0 * x^0 * y^0)],
                 ),
             )
         end,

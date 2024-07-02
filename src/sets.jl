@@ -111,8 +111,8 @@ end
 """
     struct WeightedSOSCone{
         M,
-        B<:AbstractPolynomialBasis,
-        G<:AbstractPolynomialBasis,
+        B<:SA.ExplicitBasis,
+        G<:SA.ExplicitBasis,
         W<:MP.AbstractPolynomialLike,
     } <: MOI.AbstractVectorSet
         basis::B
@@ -130,19 +130,19 @@ See [Papp2017; Section 1.1](@cite) and [Kapelevich2023; Section 1](@cite).
 """
 struct WeightedSOSCone{
     M,
-    B<:AbstractPolynomialBasis,
-    G<:AbstractPolynomialBasis,
-    W<:MP.AbstractPolynomialLike,
+    B<:SA.ExplicitBasis,
+    G<:SA.ExplicitBasis,
+    W<:SA.AlgebraElement,
 } <: MOI.AbstractVectorSet
     basis::B
     gram_bases::Vector{G}
     weights::Vector{W}
 end
 function WeightedSOSCone{M}(
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     gram_bases::Vector{G},
     weights::Vector{W},
-) where {M,G<:AbstractPolynomialBasis,W<:MP.AbstractPolynomialLike}
+) where {M,G<:SA.ExplicitBasis,W<:SA.AlgebraElement}
     return WeightedSOSCone{M,typeof(basis),G,W}(basis, gram_bases, weights)
 end
 MOI.dimension(set::WeightedSOSCone) = length(set.basis)
@@ -155,28 +155,26 @@ end
 
 """
     struct SOSPolynomialSet{
-        DT<:AbstractSemialgebraicSet,
-        MT<:MP.AbstractMonomial,
-        MVT<:AbstractVector{MT},
-        CT<:Certificate.AbstractCertificate,
+        D<:AbstractSemialgebraicSet,
+        B<:SA.ExplicitBasis,
+        C<:Certificate.AbstractCertificate,
     } <: MOI.AbstractVectorSet
-        domain::DT
-        monomials::MVT
-        certificate::CT
+        domain::D
+        basis::B
+        certificate::C
     end
 
-The sum-of-squares cone is the set of vectors of coefficients `a` for monomials `monomials`
+The Sum-of-Squares cone is the set of vectors of coefficients `a` for `basis`
 for which the polynomial is a sum-of-squares `certificate` over `domain`.
 """
 struct SOSPolynomialSet{
-    DT<:AbstractSemialgebraicSet,
-    MT<:MP.AbstractMonomial,
-    MVT<:AbstractVector{MT},
-    CT<:Certificate.AbstractCertificate,
+    D<:AbstractSemialgebraicSet,
+    B<:SA.ExplicitBasis,
+    C<:Certificate.AbstractCertificate,
 } <: MOI.AbstractVectorSet
-    domain::DT
-    monomials::MVT
-    certificate::CT
+    domain::D
+    basis::B
+    certificate::C
 end
-MOI.dimension(set::SOSPolynomialSet) = length(set.monomials)
+MOI.dimension(set::SOSPolynomialSet) = length(set.basis)
 Base.copy(set::SOSPolynomialSet) = set

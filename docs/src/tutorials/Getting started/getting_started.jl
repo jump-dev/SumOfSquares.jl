@@ -40,7 +40,7 @@ Q = value_matrix(q) #src
 
 sosdec = SOSDecomposition(q)
 @test isapprox(sosdec, sos_decomposition(con_ref)) #src
-@test isapprox(sum(sosdec.ps.^2), p; rtol=1e-4, ztol=1e-6) #src
+@test isapprox(polynomial(sosdec), p; rtol=1e-4, ztol=1e-6) #src
 
 # We now seek for the SOS decomposition of the following polynomial:
 

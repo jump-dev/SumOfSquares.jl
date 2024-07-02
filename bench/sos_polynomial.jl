@@ -5,7 +5,7 @@ function sos_polynomial(n)
     @polyvar x
     monos = monomials(x, 0:2n)
     set = SumOfSquares.SOSPolynomialSet(
-        SumOfSquares.FullSpace(), monos,
+        SumOfSquares.FullSpace(), MB.SubBasis{MB.Monomial}(monos),
         SumOfSquares.Certificate.Remainder(
             SumOfSquares.SOSCone(),
             SumOfSquares.MonomialBasis,

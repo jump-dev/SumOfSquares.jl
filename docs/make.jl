@@ -13,7 +13,7 @@ const _TUTORIAL_SUBDIR = [
     "Other Applications",
     "Noncommutative and Hermitian",
     "Sparsity",
-    "Symmetry",
+    #"Symmetry",
     "Extension",
 ]
 

@@ -19,6 +19,7 @@ module MyUnivariateSolver
 import LinearAlgebra
 import MathOptInterface as MOI
 import MultivariatePolynomials as MP
+import MultivariateBases as MB
 import SumOfSquares as SOS
 
 function decompose(p::MP.AbstractPolynomial, tol=1e-6)
@@ -56,7 +57,7 @@ function decompose(p::MP.AbstractPolynomial, tol=1e-6)
     end
     q1 = MP.map_coefficients(real, q)
     q2 = MP.map_coefficients(imag, q)
-    return SOS.SOSDecomposition([q1, q2])
+    return SOS.SOSDecomposition([MB.algebra_element(q1), MB.algebra_element(q2)])
 end
 
 mutable struct Optimizer <: MOI.AbstractOptimizer
@@ -84,7 +85,7 @@ function MOI.add_constraint(optimizer::Optimizer, func::MOI.VectorAffineFunction
     if !isempty(func.terms)
         error("Only supports constant polynomials")
     end
-    optimizer.p = MP.polynomial(func.constants, set.monomials)
+    optimizer.p = MP.polynomial(MB.algebra_element(func.constants, set.basis))
     return MOI.ConstraintIndex{typeof(func),typeof(set)}(1) # There will be only ever one constraint so the index does not matter.
 end
 

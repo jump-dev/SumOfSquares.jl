@@ -1,6 +1,8 @@
+import StarAlgebras as SA
 import MultivariatePolynomials as MP
-
 import MultivariateBases as MB
+
+const SOS = SumOfSquares
 
 @testset "_merge_sorted" begin
     @test SumOfSquares.Certificate._merge_sorted([4, 1], [3, 0]) == [4, 3, 1, 0]
@@ -33,7 +35,7 @@ end
         err = ArgumentError(
             "Multipartite Newton polytope not supported with noncommutative variables.",
         )
-        @test_throws err SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test_throws err SOS.Certificate.monomials_half_newton_polytope(
             [a * b, b^2],
             Certificate.NewtonDegreeBounds(parts),
         )
@@ -46,50 +48,45 @@ end
         err = ArgumentError(
             "Parts are not disjoint in multipartite Newton polytope estimation: $parts.",
         )
-        @test_throws err SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test_throws err SOS.Certificate.monomials_half_newton_polytope(
             [x * y, y^2],
             Certificate.NewtonDegreeBounds(parts),
         )
     end
     uni = Certificate.NewtonDegreeBounds(tuple())
     @testset "Unipartite" begin
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x * y, y^2],
             uni,
         ) == [y]
         @test isempty(
-            SumOfSquares.Certificate.monomials_half_newton_polytope(
-                [x, y],
-                uni,
-            ),
+            SOS.Certificate.monomials_half_newton_polytope([x, y], uni),
         )
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
-            [x^2, y^2],
-            uni,
-        ) == [x, y]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope([x^2, y^2], uni) ==
+              [x, y]
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([x, y],)),
         ) == [x, y]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([y, x],)),
         ) == [x, y]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
             uni,
         ) == [x^2 * y^2, x, x * y, x^2, x * y^2, x^2 * y]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
             Certificate.NewtonFilter(uni),
         ) == [x^2 * y^2, x]
     end
     @testset "Non-commutative" begin
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [a^4, a^3 * b, a * b * a^2, a * b * a * b],
             uni,
         ) == [a^2, a * b]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [
                 a^2,
                 a^10 * b^20 * a^11,
@@ -102,26 +99,26 @@ end
     @testset "Multipartite" begin
         # In the part [y, z], the degree is between 0 and 2
         X = [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(X, uni) ==
+        @test SOS.Certificate.monomials_half_newton_polytope(X, uni) ==
               [x^2, x * y, x * z, y * z, x, y, z]
         function full_test(X, Y, part1, part2)
-            @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part1,)),
             ) == Y
-            @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part2,)),
             ) == Y
-            a = SumOfSquares.Certificate.monomials_half_newton_polytope(
+            a = SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part2,)),
             )
-            @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part1, part2)),
             ) == Y
-            @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+            @test SOS.Certificate.monomials_half_newton_polytope(
                 X,
                 Certificate.NewtonDegreeBounds((part2, part1)),
             ) == Y
@@ -140,7 +137,7 @@ end
             [x, y],
         )
         # FIXME: With recursive merging, it should give [x^2, x*y, x*z, x]
-        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
+        @test SOS.Certificate.monomials_half_newton_polytope(
             [x^4, x^2 * y^2, x^2 * z^2, x^2 * y * z, y * z],
             Certificate.NewtonDegreeBounds(([x], [y], [z])),
         ) == [x^2, x * y, x * z, y * z, x, y, z]
@@ -165,9 +162,8 @@ function _certificate_api(certificate::Certificate.AbstractCertificate)
     @test SumOfSquares.matrix_cone_type(typeof(certificate)) <:
           MOI.AbstractVectorSet
 end
-function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
-    @test basis isa basis_type
-    if basis isa MB.AbstractMonomialBasis
+function _basis_check_each(basis::SA.ExplicitBasis, basis_type)
+    if basis isa MB.SubBasis
         # This fails if `basis` is `Vector{<:Monomial}` instead of `MonomialVector`
         # for DynamicPolynomials. This is important as
         # `polynomial(::AbstractMatrix, ::MonomialVector, ::Type)` is implemented but
@@ -181,14 +177,11 @@ function _basis_check_each(basis::MB.AbstractPolynomialBasis, basis_type)
     end
 end
 function _basis_check(basis, basis_type)
-    @test basis isa MB.AbstractPolynomialBasis ||
-          basis isa Vector{<:MB.AbstractPolynomialBasis}
+    @test basis isa SA.ExplicitBasis || basis isa Vector{<:SA.ExplicitBasis}
+    @test basis isa basis_type
     if basis isa Vector
-        # FIXME `basis_type` is `Vector{MB.MonomialBasis}` instead of `Vector{MB.MonomialBasis{...}}`
-        # Once this is fixed, we should check
-        # @test basis isa basis_type
         for b in basis
-            _basis_check_each(b, eltype(basis_type))
+            _basis_check_each(b, basis_type)
         end
     else
         _basis_check_each(basis, basis_type)
@@ -200,15 +193,22 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
     @polyvar x
     poly = x + 1
     domain = @set x == 1
-    @test Certificate.reduced_polynomial(certificate, poly, domain) isa
-          MP.AbstractPolynomial
+    a = MB.algebra_element(
+        MB.sparse_coefficients(poly),
+        MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
+    )
+    @test Certificate.reduced_polynomial(certificate, a, domain) isa
+          SA.AlgebraElement
     _basis_check(
-        Certificate.gram_basis(certificate, poly),
+        Certificate.gram_basis(
+            certificate,
+            Certificate.WithVariables(a, MP.variables(poly)),
+        ),
         Certificate.gram_basis_type(typeof(certificate)),
     )
     zbasis = Certificate.zero_basis(certificate)
-    @test zbasis <: MB.AbstractPolynomialBasis
-    @test zbasis == Certificate.zero_basis_type(typeof(certificate))
+    @test zbasis isa SA.AbstractBasis
+    @test zbasis isa Certificate.zero_basis_type(typeof(certificate))
 end
 
 function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
@@ -216,11 +216,22 @@ function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
     @polyvar x
     poly = x + 1
     domain = @set x >= 1
-    processed = Certificate.preprocessed_domain(certificate, domain, poly)
+    a = MB.algebra_element(
+        MB.sparse_coefficients(poly),
+        MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
+    )
+    processed = Certificate.preprocessed_domain(
+        certificate,
+        domain,
+        Certificate.WithVariables(a, MP.variables(poly)),
+    )
     for idx in Certificate.preorder_indices(certificate, processed)
         _basis_check(
             Certificate.multiplier_basis(certificate, idx, processed),
-            Certificate.multiplier_basis_type(typeof(certificate)),
+            Certificate.multiplier_basis_type(
+                typeof(certificate),
+                MP.monomial_type(x),
+            ),
         )
         @test Certificate.generator(certificate, idx, processed) isa
               MP.AbstractPolynomial
@@ -233,7 +244,8 @@ end
 @testset "API" begin
     @polyvar x
     cone = SumOfSquares.SOSCone()
-    BT = MB.MonomialBasis
+    B = MB.Monomial
+    full_basis = MB.FullBasis{B,MP.monomial_type(x)}()
     maxdegree = 2
     function _test(certificate::Certificate.AbstractIdealCertificate)
         certificate_api(certificate)
@@ -245,7 +257,7 @@ end
             mult_cert = mult_cert.gram_certificate
         end
         if mult_cert isa Certificate.FixedBasis # FIXME not supported yet
-            mult_cert = Certificate.MaxDegree(cone, BT, maxdegree)
+            mult_cert = Certificate.MaxDegree(cone, full_basis, maxdegree)
         end
         preorder = Certificate.Putinar(mult_cert, certificate, maxdegree)
         certificate_api(preorder)
@@ -257,18 +269,18 @@ end
             certificate_api(Certificate.Sparsity.Preorder(sparsity, preorder))
         end
     end
-    basis = BT(monomial_vector([x^2, x]))
-    @testset "$(typeof(certificate))" for certificate in [
-        Certificate.MaxDegree(cone, BT, maxdegree),
+    basis = MB.SubBasis{B}(monomial_vector([x^2, x]))
+    @testset "$(nameof(typeof(certificate)))" for certificate in [
+        Certificate.MaxDegree(cone, full_basis, maxdegree),
         Certificate.FixedBasis(cone, basis),
-        Certificate.Newton(cone, BT, tuple()),
+        Certificate.Newton(cone, full_basis, tuple()),
     ]
         _test(certificate)
         _test(Certificate.Remainder(certificate))
         if certificate isa Certificate.MaxDegree
             _test(Certificate.Sparsity.Ideal(Sparsity.Variable(), certificate))
         end
-        @testset "$(typeof(sparsity))" for sparsity in [
+        @testset "$(nameof(typeof(sparsity)))" for sparsity in [
             SignSymmetry(),
             Sparsity.Monomial(ChordalCompletion(), 1),
         ]
@@ -289,16 +301,29 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
     domain = @set y^(2k + 1) >= 0
     if default
         certificate =
-            JuMP.moi_set(SOSCone(), monomials(poly); domain).certificate
+            JuMP.moi_set(
+                SOSCone(),
+                MB.SubBasis{MB.Monomial}(monomials(poly)),
+                MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}();
+                domain,
+            ).certificate
     else
         newton = Certificate.NewtonDegreeBounds(tuple())
         if post_filter
             newton = Certificate.NewtonFilter(newton)
         end
-        cert = Certificate.Newton(SOSCone(), MB.MonomialBasis, newton)
+        cert = Certificate.Newton(
+            SOSCone(),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(),
+            newton,
+        )
         certificate = Certificate.Putinar(cert, cert, max(2i, 2j + 1, 2k + 1))
     end
-    processed = Certificate.preprocessed_domain(certificate, domain, poly)
+    alg_el = MB.algebra_element(
+        MB.sparse_coefficients(poly),
+        MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
+    )
+    processed = Certificate.preprocessed_domain(certificate, domain, alg_el)
     for idx in Certificate.preorder_indices(certificate, processed)
         monos =
             Certificate.multiplier_basis(certificate, idx, processed).monomials
@@ -306,7 +331,10 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
             @test isempty(monos)
         else
             w = post_filter ? v[2:2] : v
-            @test monos == MP.monomials(w, max(0, min(i, j) - k):(j-k))
+            @test monos == MP.monomials(
+                w,
+                max(0, (post_filter ? j : min(i, j)) - k):(j-k),
+            )
         end
     end
     icert = Certificate.ideal_certificate(certificate)

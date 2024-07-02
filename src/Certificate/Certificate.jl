@@ -1,6 +1,7 @@
 module Certificate
 
 import MutableArithmetics as MA
+import StarAlgebras as SA
 import MultivariatePolynomials as MP
 import MultivariateBases as MB
 using SemialgebraicSets
@@ -44,24 +45,65 @@ function multiplier_basis_type end
 
 abstract type AbstractCertificate end
 
-function maxdegree_gram_basis(
-    B::Type{<:MB.AbstractMonomialBasis},
+function within_total_bounds(mono::MP.AbstractMonomial, bounds::DegreeBounds)
+    return bounds.mindegree <= MP.degree(mono) <= bounds.maxdegree
+end
+
+_vec(v::AbstractVector) = v
+# For `TypedPolynomials`
+_vec(v::Tuple) = MP.variable_union_type(first(v))[v...]
+
+function _divides(a, b)
+    # `MP.divides(a, b)` is not implemented yet for noncommutative
+    vars = unique!(sort(_vec(MP.variables(a))))
+    comm = is_commutative(vars)
+    return all(vars) do v
+        return _degree(a, v, comm) <= _degree(b, v, comm)
+    end
+end
+
+function within_variablewise_bounds(
+    mono::MP.AbstractMonomial,
     bounds::DegreeBounds,
 )
-    variables = MP.variables(bounds.variablewise_maxdegree)
-    function filter(mono)
-        return MP.divides(bounds.variablewise_mindegree, mono) &&
-               MP.divides(mono, bounds.variablewise_maxdegree)
-    end
-    return B(MP.monomials(variables, bounds.mindegree:bounds.maxdegree, filter))
+    return _divides(bounds.variablewise_mindegree, mono) &&
+           _divides(mono, bounds.variablewise_maxdegree)
 end
-function maxdegree_gram_basis(B::Type, bounds::DegreeBounds)
+
+function within_bounds(mono, bounds)
+    return within_total_bounds(mono, bounds) &&
+           within_variablewise_bounds(mono, bounds)
+end
+
+function maxdegree_gram_basis(
+    ::MB.FullBasis{B},
+    bounds::DegreeBounds,
+) where {B<:MB.AbstractMonomial}
+    variables = MP.variables(bounds.variablewise_maxdegree)
+    return MB.SubBasis{B}(
+        MP.monomials(
+            variables,
+            bounds.mindegree:bounds.maxdegree,
+            Base.Fix2(within_variablewise_bounds, bounds),
+        ),
+    )
+end
+
+function maxdegree_gram_basis(basis::SA.AbstractBasis, ::Nothing)
+    return MB.empty_basis(MB.explicit_basis_type(typeof(basis)))
+end
+
+function maxdegree_gram_basis(basis::SA.AbstractBasis, bounds::DegreeBounds)
     # TODO use bounds here too
     variables = MP.variables(bounds.variablewise_maxdegree)
-    return maxdegree_gram_basis(B, variables, bounds.maxdegree)
+    return MB.maxdegree_basis(basis, variables, bounds.maxdegree)
 end
-function maxdegree_gram_basis(B::Type, variables, maxdegree::Int)
-    return MB.maxdegree_basis(B, variables, fld(maxdegree, 2))
+function maxdegree_gram_basis(
+    basis::SA.AbstractBasis,
+    variables,
+    maxdegree::Int,
+)
+    return MB.maxdegree_basis(basis, variables, fld(maxdegree, 2))
 end
 
 include("ideal.jl")
