@@ -61,8 +61,12 @@ function bridged_mock(
 )
     mock = MOI.Utilities.MockOptimizer(model)
     bridged = MOI.Bridges.full_bridge_optimizer(mock, Float64)
+    cached = MOI.Utilities.CachingOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}()),
+        bridged,
+    )
     MOI.Utilities.set_mock_optimize!(mock, mock_optimize!...)
-    return bridged
+    return cached
 end
 
 function cached_mock(
@@ -75,18 +79,14 @@ function cached_mock(
     # mode so that it's copied at `optimize!` to test that `copy_to` works.
     # If we just return `cached`, it will be emptied in `_model` and the state
     # will be `MOI.Utilities.ATTACHED_OPTIMIZER` which is not what we want. For this
-    # reason we return a `JuMP.OptimizerFactory` which returns `cached` instead.
-    return (
-        () -> begin
-            cached = MOI.Utilities.CachingOptimizer(
-                cache(),
-                MOI.Utilities.AUTOMATIC,
-            )
-            optimizer = bridged_mock(args...; kws...)
-            MOI.Utilities.reset_optimizer(cached, optimizer)
-            return cached
-        end
-    )
+    # reason we return an function that returns `cached` instead.
+    return () -> begin
+        cached =
+            MOI.Utilities.CachingOptimizer(cache(), MOI.Utilities.AUTOMATIC)
+        optimizer = bridged_mock(args...; kws...)
+        MOI.Utilities.reset_optimizer(cached, optimizer)
+        return cached
+    end
 end
 
 function mocks(args...; kws...)
