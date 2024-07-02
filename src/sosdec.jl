@@ -106,7 +106,7 @@ function Base.promote_rule(
     ::Type{SOSDecomposition{A,T2,V2,U2}},
 ) where {A,T1,T2,V1,V2,U1,U2}
     T = promote_type(T1, T2)
-    V = MA.promote_operation(similar, V1, T)
+    V = SA.similar_type(V1, T)
     return SOSDecomposition{A,T,V,_promote_add_mul(T)}
 end
 
