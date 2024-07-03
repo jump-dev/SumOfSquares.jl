@@ -303,31 +303,19 @@ function PolyJuMP.bridges(
 end
 
 function PolyJuMP.bridges(
-    ::Type{<:MOI.AbstractVectorFunction},
+    F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:ScaledDiagonallyDominantConeTriangle},
-)
-    return [(Bridges.Constraint.ScaledDiagonallyDominantBridge, Float64)]
-end
-
-function _bridge_coefficient_type(::Type{<:WeightedSOSCone{M}}) where {M}
-    return _complex(Float64, M)
-end
-
-function _bridge_coefficient_type(::Type{SOSPolynomialSet{D,B,C}}) where {D,B,C}
-    return _complex(Float64, matrix_cone_type(C))
-end
-
-function PolyJuMP.bridges(S::Type{<:WeightedSOSCone})
+) # Needed so that `Variable.ScaledDiagonallyDominantBridge` is added as well
     return Tuple{Type,Type}[(
-        Bridges.Variable.KernelBridge,
-        _bridge_coefficient_type(S),
+        MOI.Bridges.Constraint.VectorSlackBridge,
+        PolyJuMP.coefficient_type_or_float(F),
     )]
 end
 
 function PolyJuMP.bridges(
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:WeightedSOSCone},
-) # Needed so that `KernelBridge` is added as well
+) # Needed so that `Variable.KernelBridge` is added as well
     return Tuple{Type,Type}[(
         MOI.Bridges.Constraint.VectorSlackBridge,
         PolyJuMP.coefficient_type_or_float(F),

@@ -19,7 +19,6 @@ const Certificate = SOS.Certificate
 include("empty.jl")
 include("psd2x2.jl")
 include("diagonally_dominant.jl")
-include("scaled_diagonally_dominant.jl")
 
 # SOS polynomial bridges
 include("utilities.jl")

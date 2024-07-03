@@ -1,5 +1,20 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
+function _bridge_coefficient_type(::Type{<:WeightedSOSCone{M}}) where {M}
+    return _complex(Float64, M)
+end
+
+function _bridge_coefficient_type(::Type{SOSPolynomialSet{D,B,C}}) where {D,B,C}
+    return _complex(Float64, matrix_cone_type(C))
+end
+
+function PolyJuMP.bridges(S::Type{<:WeightedSOSCone})
+    return Tuple{Type,Type}[(
+        Bridges.Variable.KernelBridge,
+        _bridge_coefficient_type(S),
+    )]
+end
+
 function PolyJuMP.bridges(::Type{<:PositiveSemidefinite2x2ConeTriangle})
     return [(Bridges.Variable.PositiveSemidefinite2x2Bridge, Float64)]
 end
