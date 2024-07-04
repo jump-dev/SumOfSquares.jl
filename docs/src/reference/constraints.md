@@ -20,6 +20,7 @@ SOSDecomposition
 SOSDecompositionWithDomain
 SumOfSquares.SOSDecompositionAttribute
 sos_decomposition
+SumOfSquares.MultiplierIndexBoundsError
 ```
 
 SAGE decomposition attribute:
