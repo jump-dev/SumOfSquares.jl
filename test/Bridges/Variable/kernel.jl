@@ -49,7 +49,7 @@ function test_runtests()
             a = float.(1:length(q))
             MOI.add_constraint(model, MOI.Utilities.vectorize([1.0 * q[1] + 2.0 * q[3] + 4.0 * (1.0q[4] + 1.0q[6]) + 6.0 * q[5]]), MOI.Zeros(1))
         end;
-        allow_outer_constraint_function_error = true,
+        cannot_unbridge = true,
     )
     return
 end
