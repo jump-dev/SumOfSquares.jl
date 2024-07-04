@@ -39,7 +39,7 @@ primal_status(model)
 value(deno)
 
 using RecipesBase
-@recipe function f(x::AbstractVector, y::AbstractVector, p::Polynomial)
+@recipe function f(x::AbstractVector, y::AbstractVector, p::AbstractPolynomial)
     x, y, (x, y) -> p(variables(p) => [x, y])
 end
 import Plots
