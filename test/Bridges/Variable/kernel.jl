@@ -55,7 +55,7 @@ function test_runtests()
                 model,
                 MOI.Utilities.vectorize([
                     1.0 * q[1] +
-                    4.0 * q[2] + 
+                    4.0 * q[2] +
                     3.0 * (1.0q[3] + 2.0q[4]) +
                     8.0 * q[5] +
                     5.0 * q[6],
