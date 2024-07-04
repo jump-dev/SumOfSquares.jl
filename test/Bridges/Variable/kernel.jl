@@ -39,7 +39,11 @@ function test_runtests()
                 ),
             )
             a = float.(1:length(p))
-            MOI.add_constraint(model, MOI.Utilities.vectorize([a' * p]), MOI.Zeros(1))
+            MOI.add_constraint(
+                model,
+                MOI.Utilities.vectorize([a' * p]),
+                MOI.Zeros(1),
+            )
         end,
         model -> begin
             q, _ = MOI.add_constrained_variables(
@@ -47,7 +51,16 @@ function test_runtests()
                 MOI.PositiveSemidefiniteConeTriangle(3),
             )
             a = float.(1:length(q))
-            MOI.add_constraint(model, MOI.Utilities.vectorize([1.0 * q[1] + 2.0 * q[3] + 4.0 * (1.0q[4] + 1.0q[6]) + 6.0 * q[5]]), MOI.Zeros(1))
+            MOI.add_constraint(
+                model,
+                MOI.Utilities.vectorize([
+                    1.0 * q[1] +
+                    2.0 * q[3] +
+                    4.0 * (1.0q[4] + 1.0q[6]) +
+                    6.0 * q[5],
+                ]),
+                MOI.Zeros(1),
+            )
         end;
         cannot_unbridge = true,
     )
