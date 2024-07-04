@@ -99,7 +99,7 @@ end
 function default_ideal_certificate(
     ::AbstractAlgebraicSet,
     ::Certificate.Sparsity.NoPattern,
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     cone,
     args...,
 )
@@ -151,7 +151,10 @@ function default_ideal_certificate(
 end
 
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
-    return default_ideal_certificate(domain.V, args...)
+    return default_ideal_certificate(
+        SemialgebraicSets.algebraic_set(domain),
+        args...,
+    )
 end
 
 function default_certificate(
@@ -198,7 +201,7 @@ function default_certificate(
     # that wouldn't work if `ideal_certificate` is `Remainder`,
     # `Sparseity.Ideal` or `Symmetry.Ideal`
     multipliers_certificate = default_ideal_certificate(
-        domain.V,
+        SemialgebraicSets.algebraic_set(domain),
         basis,
         cone,
         maxdegree,
@@ -222,11 +225,14 @@ _max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init = 0)
 _maxdegree(domain) = 0
 
 function _maxdegree(domain::AlgebraicSet)
-    return _max_maxdegree(domain.I.p)
+    return _max_maxdegree(SemialgebraicSets.equalities(domain))
 end
 
 function _maxdegree(domain::BasicSemialgebraicSet)
-    return max(_max_maxdegree(domain.p), _maxdegree(domain.V))
+    return max(
+        _max_maxdegree(SemialgebraicSets.inequalities(domain)),
+        _maxdegree(SemialgebraicSets.algebraic_set(domain)),
+    )
 end
 
 """
@@ -244,11 +250,11 @@ end
 
 function JuMP.moi_set(
     cone::SOSLikeCone,
-    monos::AbstractVector{<:MP.AbstractMonomial};
+    basis::SA.ExplicitBasis,
+    gram_basis::SA.AbstractBasis;
     domain::AbstractSemialgebraicSet = FullSpace(),
-    basis = MonomialBasis,
     newton_polytope::Union{Nothing,Tuple} = tuple(),
-    maxdegree::Union{Nothing,Int} = default_maxdegree(monos, domain),
+    maxdegree::Union{Nothing,Int} = default_maxdegree(basis, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
     newton_of_remainder::Bool = false,
@@ -257,7 +263,7 @@ function JuMP.moi_set(
         newton_of_remainder,
         symmetry,
         sparsity,
-        basis,
+        gram_basis,
         cone,
         maxdegree,
         newton_polytope,
@@ -267,15 +273,12 @@ function JuMP.moi_set(
         sparsity,
         ideal_certificate,
         cone,
-        basis,
+        gram_basis,
         maxdegree,
         newton_polytope,
     ),
 )
-    # For terms, `monomials` is `OneOrZeroElementVector`
-    # so we convert it with `monomial_vector`
-    # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
-    return SOSPolynomialSet(domain, MP.monomial_vector(monos), certificate)
+    return SOSPolynomialSet(domain, basis, certificate)
 end
 
 function PolyJuMP.bridges(
@@ -300,16 +303,23 @@ function PolyJuMP.bridges(
 end
 
 function PolyJuMP.bridges(
-    ::Type{<:MOI.AbstractVectorFunction},
+    F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:ScaledDiagonallyDominantConeTriangle},
-)
-    return [(Bridges.Constraint.ScaledDiagonallyDominantBridge, Float64)]
+) # Needed so that `Variable.ScaledDiagonallyDominantBridge` is added as well
+    return Tuple{Type,Type}[(
+        MOI.Bridges.Constraint.VectorSlackBridge,
+        PolyJuMP.coefficient_type_or_float(F),
+    )]
 end
 
-function _bridge_coefficient_type(
-    ::Type{SOSPolynomialSet{S,M,MV,C}},
-) where {S,M,MV,C}
-    return _complex(Float64, matrix_cone_type(C))
+function PolyJuMP.bridges(
+    F::Type{<:MOI.AbstractVectorFunction},
+    ::Type{<:WeightedSOSCone},
+) # Needed so that `Variable.KernelBridge` is added as well
+    return Tuple{Type,Type}[(
+        MOI.Bridges.Constraint.VectorSlackBridge,
+        PolyJuMP.coefficient_type_or_float(F),
+    )]
 end
 
 function PolyJuMP.bridges(
@@ -346,15 +356,92 @@ end
 _promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
 _promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
 
-function JuMP.build_constraint(_error::Function, p, cone::SOSLikeCone; kws...)
-    monos = MP.monomials(p)
-    set = JuMP.moi_set(cone, monos; kws...)
-    _coefs = PolyJuMP.non_constant_coefficients(p)
+function _default_basis(
+    coeffs,
+    basis::MB.SubBasis{B},
+    gram_basis::MB.MonomialIndexedBasis{G},
+) where {B,G}
+    if B === G
+        return coeffs, basis
+    else
+        return _default_basis(
+            SA.SparseCoefficients(basis.monomials, coeffs),
+            MB.implicit_basis(basis),
+            gram_basis,
+        )
+    end
+end
+
+function _default_basis(
+    p::SA.AbstractCoefficients,
+    basis::MB.FullBasis{B},
+    gram_basis::MB.MonomialIndexedBasis{G},
+) where {B,G}
+    if B === G
+        return _default_basis(
+            collect(SA.values(p)),
+            MB.SubBasis{B}(collect(SA.keys(p))),
+            gram_basis,
+        )
+    else
+        new_basis = MB.FullBasis{G,MP.monomial_type(typeof(basis))}()
+        return _default_basis(
+            SA.coeffs(p, basis, new_basis),
+            new_basis,
+            gram_basis,
+        )
+    end
+end
+
+function _default_gram_basis(
+    ::MB.MonomialIndexedBasis{B,M},
+    ::Nothing,
+) where {B,M}
+    return MB.FullBasis{B,M}()
+end
+
+function _default_gram_basis(
+    ::MB.MonomialIndexedBasis{_B,M},
+    ::Type{B},
+) where {_B,B,M}
+    return MB.FullBasis{B,M}()
+end
+
+function _default_gram_basis(_, basis::MB.MonomialIndexedBasis)
+    return basis
+end
+
+function _default_basis(a::SA.AlgebraElement, basis)
+    b = SA.basis(a)
+    gram = _default_gram_basis(b, basis)
+    return _default_basis(SA.coeffs(a), b, gram)..., gram
+end
+
+function _default_basis(p::MP.AbstractPolynomialLike, basis)
+    return _default_basis(
+        MB.algebra_element(
+            MB.sparse_coefficients(p),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
+        ),
+        basis,
+    )
+end
+
+function JuMP.build_constraint(
+    _error::Function,
+    p,
+    cone::SOSLikeCone;
+    basis = nothing,
+    kws...,
+)
+    __coefs, basis, gram_basis = _default_basis(p, basis)
+    set = JuMP.moi_set(cone, basis, gram_basis; kws...)
+    _coefs = PolyJuMP.non_constant(__coefs)
     # If a polynomial with real coefficients is used with the Hermitian SOS
     # cone, we want to promote the coefficients to complex
     T = _bridge_coefficient_type(typeof(set))
     coefs = convert(Vector{_promote_coef_type(eltype(_coefs), T)}, _coefs)
-    shape = PolyJuMP.PolynomialShape(monos)
+    shape = PolyJuMP.PolynomialShape(basis)
     return PolyJuMP.bridgeable(
         JuMP.VectorConstraint(coefs, set, shape),
         JuMP.moi_function_type(typeof(coefs)),
@@ -399,7 +486,7 @@ function sos_decomposition(
     ranktol::Real = 0.0,
     dec::MultivariateMoments.LowRankLDLTAlgorithm = SVDLDLT(),
 )
-    return MOI.get(cref.model, SOSDecompositionAttribute(ranktol, dec), cref)
+    return MOI.get(cref.model, SOSDecompositionAttribute(; ranktol, dec), cref)
 end
 
 """
@@ -441,13 +528,13 @@ end
     certificate_monomials(cref::JuMP.ConstraintRef)
 
 Return the monomials of [`certificate_basis`](@ref). If the basis if not
-`MultivariateBases.AbstractMonomialBasis`, an error is thrown.
+`MultivariateBases.SubBasis`, an error is thrown.
 """
 function certificate_monomials(cref::JuMP.ConstraintRef)
     return basis_monomials(certificate_basis(cref))
 end
-basis_monomials(basis::AbstractMonomialBasis) = basis.monomials
-function basis_monomials(basis::AbstractPolynomialBasis)
+basis_monomials(basis::MB.SubBasis) = basis.monomials
+function basis_monomials(basis::SA.AbstractBasis)
     return error(
         "`certificate_monomials` is not supported with `$(typeof(basis))`, use `certificate_basis` instead.",
     )

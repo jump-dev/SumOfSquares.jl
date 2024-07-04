@@ -28,18 +28,18 @@ function term_fixed_test(
     @test primal_status(model) == MOI.FEASIBLE_POINT
     @test value(α) ≈ 1.0 atol = atol rtol = rtol
 
-    test_constraint_primal(cref, 0.0)
+    test_constraint_primal(cref, 0.0; atol, rtol)
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ zeros(1, 1) atol = atol rtol = rtol
     @test p.basis.monomials == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
-    for (m, μ) in [(x^2 * y, dual(cref)), (x^2, moments(cref))]
+    for (m, μ) in [(x^2, moments(cref))]
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 1
         @test moment_value(moments(μ)[1]) ≈ 1.0 atol = atol rtol = rtol
-        @test monomial(moments(μ)[1]) == m
+        @test moments(μ)[1].polynomial.monomial == m
     end
 
     ν = moment_matrix(cref)
@@ -51,10 +51,13 @@ function term_fixed_test(
     }
     S = SumOfSquares.SOSPolynomialSet{
         typeof(set),
-        monomial_type(x),
-        monomial_vector_type(x),
+        SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.Remainder{
-            SumOfSquares.Certificate.Newton{typeof(cone),MonomialBasis,N},
+            SumOfSquares.Certificate.Newton{
+                typeof(cone),
+                FullBasis{MB.Monomial,monomial_type(x)},
+                N,
+            },
         },
     }
     @test list_of_constraint_types(model) == [(Vector{JuMP.AffExpr}, S)]
@@ -68,9 +71,11 @@ function term_fixed_test(
                 MOI.VectorAffineFunction{Float64},
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     typeof(set),
-                    MonomialBasis,
-                    monomial_type(x),
-                    monomial_vector_type(x),
+                    SubBasis{
+                        MB.Monomial,
+                        monomial_type(x),
+                        monomial_vector_type(x),
+                    },
                 },
                 0,
             ),

@@ -1,47 +1,47 @@
 export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
 """
-    struct SOSDecomposition{T, PT}
+    struct SOSDecomposition{A,T,V,U}
 
 Represents a Sum-of-Squares decomposition without domain.
 """
-struct SOSDecomposition{T,PT<:_APL{T},U} <: AbstractDecomposition{U}
-    ps::Vector{PT}
-    function SOSDecomposition{T,PT,U}(ps::Vector{PT}) where {T,PT,U}
+struct SOSDecomposition{A,T,V,U} <: AbstractDecomposition{U}
+    ps::Vector{SA.AlgebraElement{A,T,V}} # TODO rename `elements`
+    function SOSDecomposition{A,T,V,U}(
+        ps::Vector{SA.AlgebraElement{A,T,V}},
+    ) where {A,T,V,U}
         return new(ps)
     end
 end
 
-function SOSDecomposition(ps::Vector{PT}) where {T,PT<:_APL{T}}
-    return SOSDecomposition{T,PT,_promote_add_mul(T)}(ps)
+function SOSDecomposition(
+    elements::Vector{SA.AlgebraElement{A,T,V}},
+) where {A,T,V}
+    return SOSDecomposition{A,T,V,_promote_add_mul(T)}(elements)
 end
 function MP.polynomial_type(
-    ::Union{SOSDecomposition{T,PT,U},Type{SOSDecomposition{T,PT,U}}},
-) where {T,PT,U}
-    return MP.polynomial_type(PT, U)
+    ::Union{SOSDecomposition{A,T,V,U},Type{SOSDecomposition{A,T,V,U}}},
+) where {A,T,V,U}
+    return MP.polynomial_type(MP.polynomial_type(SA.AlgebraElement{A,T,V}), U)
 end
 
-#function SOSDecomposition(ps::Vector)
-#    T = reduce(promote_type, Int, map(eltype, ps))
-#    SOSDecomposition{T}(ps)
-#end
-
-function GramMatrix(p::SOSDecomposition{T}) where {T}
-    X = MP.merge_monomial_vectors(map(MP.monomials, p))
-    m = length(p)
-    n = length(X)
+function GramMatrix(p::SOSDecomposition{A,T}) where {A,T}
+    basis = mapreduce(SA.basis, (b1, b2) -> MB.merge_bases(b1, b2)[1], p.ps)
+    m = length(p.ps)
+    n = length(basis)
     Q = zeros(T, m, n)
     for i in 1:m
         j = 1
-        for t in MP.terms(p[i])
-            while X[j] != MP.monomial(t)
+        for (k, v) in SA.nonzero_pairs(SA.coeffs(p.ps[i]))
+            poly = SA.basis(p.ps[i])[k]
+            while j in eachindex(basis) && basis[j] != poly
                 j += 1
             end
-            Q[i, j] = MP.coefficient(t)
+            Q[i, j] = v
             j += 1
         end
     end
-    return GramMatrix(Q' * Q, X)
+    return GramMatrix(Q' * Q, basis)
 end
 
 _lazy_adjoint(x::AbstractVector{<:Real}) = x
@@ -52,7 +52,6 @@ function SOSDecomposition(
     ranktol = 0.0,
     dec::MultivariateMoments.LowRankLDLTAlgorithm = SVDLDLT(),
 )
-    n = length(p.basis)
     # TODO LDL^T factorization for SDP is missing in Julia
     # it would be nice to have though
     ldlt =
@@ -60,13 +59,14 @@ function SOSDecomposition(
     # The Sum-of-Squares decomposition is
     # ∑ adjoint(u_i) * u_i
     # and we have `L` of the LDL* so we need to take the adjoint.
-    ps = [
-        MP.polynomial(
-            √ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]),
-            p.basis,
-        ) for i in axes(ldlt.L, 2)
-    ]
-    return SOSDecomposition(ps)
+    return SOSDecomposition(
+        map(axes(ldlt.L, 2)) do i
+            return MB.algebra_element(
+                √ldlt.singular_values[i] * _lazy_adjoint(ldlt.L[:, i]),
+                p.basis,
+            )
+        end,
+    )
 end
 # Without LDL^T, we need to do float(T)
 #SOSDecomposition(p::GramMatrix{C, T}) where {C, T} = SOSDecomposition{C, float(T)}(p)
@@ -102,45 +102,60 @@ function Base.isapprox(p::SOSDecomposition, q::SOSDecomposition; kwargs...)
 end
 
 function Base.promote_rule(
-    ::Type{SOSDecomposition{T1,PT1,U1}},
-    ::Type{SOSDecomposition{T2,PT2,U2}},
-) where {T1,T2,PT1<:_APL{T1},PT2<:_APL{T2},U1,U2}
+    ::Type{SOSDecomposition{A,T1,V1,U1}},
+    ::Type{SOSDecomposition{A,T2,V2,U2}},
+) where {A,T1,T2,V1,V2,U1,U2}
     T = promote_type(T1, T2)
-    return SOSDecomposition{T,promote_type(PT1, PT2),_promote_add_mul(T)}
+    V = SA.similar_type(V1, T)
+    return SOSDecomposition{A,T,V,_promote_add_mul(T)}
 end
 
 function Base.convert(
-    ::Type{SOSDecomposition{T,PT,U}},
+    ::Type{SOSDecomposition{A,T,V,U}},
     p::SOSDecomposition,
-) where {T,PT,U}
-    return SOSDecomposition(convert(Vector{PT}, p.ps))
+) where {A,T,V,U}
+    return SOSDecomposition(convert(Vector{SA.AlgebraElement{A,T,V}}, p.ps))
 end
 
-function MP.polynomial(decomp::SOSDecomposition)
-    return sum(decomp.ps .^ 2)
+function MP.polynomial(d::SOSDecomposition)
+    return MP.polynomial(MB.algebra_element(d))
 end
+
+function MB.algebra_element(decomp::SOSDecomposition{A,T,V,U}) where {A,T,V,U}
+    basis = MB.implicit_basis(SA.basis(first(decomp.ps)))
+    res = zero(U, MB.algebra(basis))
+    for p in decomp.ps
+        implicit = MB.algebra_element(SA.coeffs(p, basis), basis)
+        MA.operate!(SA.UnsafeAddMul(*), res, SA.star(implicit), implicit)
+    end
+    MA.operate!(SA.canonical, SA.coeffs(res))
+    return res
+end
+
 function MP.polynomial(decomp::SOSDecomposition, T::Type)
     return MP.polynomial(MP.polynomial(decomp), T)
 end
 
 """
-    struct SOSDecompositionWithDomain{T, PT, S}
+    struct SOSDecompositionWithDomain{A,T,V,U,S}
 
 Represents a Sum-of-Squares decomposition on a basic semi-algebraic domain.
 """
-struct SOSDecompositionWithDomain{T,PT<:_APL{T},U,S<:AbstractSemialgebraicSet}
-    sos::SOSDecomposition{T,PT,U}
-    sosj::Vector{SOSDecomposition{T,PT,U}}
+struct SOSDecompositionWithDomain{A,T,V,U,S<:AbstractSemialgebraicSet}
+    sos::SOSDecomposition{A,T,V,U}
+    sosj::Vector{SOSDecomposition{A,T,V,U}}
     domain::S
 end
 
 function SOSDecompositionWithDomain(
-    ps::SOSDecomposition{T1,PT1,U1},
-    vps::Vector{SOSDecomposition{T2,PT2,U2}},
+    ps::SOSDecomposition{A1,T1,V1,U1},
+    vps::Vector{SOSDecomposition{A2,T2,V2,U2}},
     set::AbstractSemialgebraicSet,
-) where {T1,T2,PT1,PT2,U1,U2}
-    ptype =
-        promote_type(SOSDecomposition{T1,PT1,U1}, SOSDecomposition{T2,PT2,U2})
+) where {A1,A2,T1,T2,V1,V2,U1,U2}
+    ptype = promote_type(
+        SOSDecomposition{A1,T1,V1,U1},
+        SOSDecomposition{A2,T2,V2,U2},
+    )
     return SOSDecompositionWithDomain(
         convert(ptype, ps),
         convert(Vector{ptype}, vps),

@@ -30,7 +30,7 @@ end
 # Need these two methods to avoid ambiguity
 function build_gram_matrix(
     q::Vector,
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     matrix_cone_type,
     T::Type,
 )
@@ -71,7 +71,7 @@ end
 
 function build_matrix(
     Q::Function,
-    bases::Vector{<:AbstractPolynomialBasis},
+    bases::Vector{<:SA.ExplicitBasis},
     f::Function,
 )
     return map(eachindex(bases)) do i
@@ -80,7 +80,7 @@ function build_matrix(
 end
 function build_matrix(
     Q::Function,
-    bases::Vector{<:Vector{<:AbstractPolynomialBasis}},
+    bases::Vector{<:Vector{<:SA.ExplicitBasis}},
     f::Function,
 )
     return [
@@ -117,7 +117,7 @@ end
 function add_gram_matrix(
     model::MOI.ModelLike,
     matrix_cone_type::Type,
-    basis::AbstractPolynomialBasis,
+    basis::SA.ExplicitBasis,
     T::Type,
 )
     Q, cQ = MOI.add_constrained_variables(
@@ -127,7 +127,7 @@ function add_gram_matrix(
     q = build_gram_matrix(Q, basis, matrix_cone_type, T)
     return q, Q, cQ
 end
-_first(b::AbstractPolynomialBasis) = b
+_first(b::SA.ExplicitBasis) = b
 _first(b::Vector) = first(b)
 function add_gram_matrix(
     model::MOI.ModelLike,
@@ -158,6 +158,6 @@ function add_gram_matrix(
     return g, Qs, cQs
 end
 
-function build_moment_matrix(q::Vector, basis::AbstractPolynomialBasis)
+function build_moment_matrix(q::Vector, basis::SA.ExplicitBasis)
     return MomentMatrix(MultivariateMoments.SymMatrix(q, length(basis)), basis)
 end

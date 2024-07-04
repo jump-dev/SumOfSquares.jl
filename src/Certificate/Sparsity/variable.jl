@@ -9,33 +9,36 @@ struct Variable <: Pattern end
 
 const CEG = ChordalExtensionGraph
 
-function csp_graph(poly::_APL, ::FullSpace)
-    G = CEG.LabelledGraph{MP.variable_union_type(poly)}()
-    for mono in MP.monomials(poly)
+function csp_graph(basis::MB.SubBasis{MB.Monomial}, ::FullSpace)
+    G = CEG.LabelledGraph{MP.variable_union_type(eltype(basis.monomials))}()
+    for mono in basis.monomials
         CEG.add_clique!(G, MP.effective_variables(mono))
     end
     return G
 end
 
-function csp_graph(poly::_APL, domain::AbstractAlgebraicSet)
-    G = csp_graph(poly, FullSpace())
+function csp_graph(basis::MB.SubBasis, domain::AbstractAlgebraicSet)
+    G = csp_graph(basis, FullSpace())
     for p in equalities(domain)
         CEG.add_clique!(G, MP.effective_variables(p))
     end
     return G
 end
 
-function csp_graph(poly::_APL, domain::BasicSemialgebraicSet)
-    G = csp_graph(poly, domain.V)
+function csp_graph(basis::MB.SubBasis, domain::BasicSemialgebraicSet)
+    G = csp_graph(basis, domain.V)
     for p in inequalities(domain)
         CEG.add_clique!(G, MP.effective_variables(p))
     end
     return G
 end
 
-function chordal_csp_graph(poly::_APL, domain::AbstractBasicSemialgebraicSet)
+function chordal_csp_graph(
+    basis::MB.SubBasis,
+    domain::AbstractBasicSemialgebraicSet,
+)
     H, cliques =
-        CEG.chordal_extension(csp_graph(poly, domain), CEG.GreedyFillIn())
+        CEG.chordal_extension(csp_graph(basis, domain), CEG.GreedyFillIn())
     for clique in cliques
         sort!(clique, rev = true)
         unique!(clique)
@@ -44,12 +47,13 @@ function chordal_csp_graph(poly::_APL, domain::AbstractBasicSemialgebraicSet)
 end
 
 function sparsity(
-    poly::MP.AbstractPolynomial,
+    poly,
     domain::BasicSemialgebraicSet,
-    sp::Variable,
+    ::Variable,
     certificate::SumOfSquares.Certificate.Putinar,
 )
-    H, cliques = chordal_csp_graph(poly, domain)
+    basis = MB.explicit_basis(poly)
+    H, cliques = chordal_csp_graph(basis, domain)
     function bases(q)
         return [
             SumOfSquares.Certificate.maxdegree_gram_basis(
@@ -62,5 +66,5 @@ function sparsity(
             ) for clique in cliques if MP.variables(q) ⊆ clique
         ]
     end
-    return bases(poly), map(bases, domain.p)
+    return bases(basis), map(bases, domain.p)
 end

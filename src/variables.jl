@@ -1,5 +1,20 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
+function _bridge_coefficient_type(::Type{<:WeightedSOSCone{M}}) where {M}
+    return _complex(Float64, M)
+end
+
+function _bridge_coefficient_type(::Type{SOSPolynomialSet{D,B,C}}) where {D,B,C}
+    return _complex(Float64, matrix_cone_type(C))
+end
+
+function PolyJuMP.bridges(S::Type{<:WeightedSOSCone})
+    return Tuple{Type,Type}[(
+        Bridges.Variable.KernelBridge,
+        _bridge_coefficient_type(S),
+    )]
+end
+
 function PolyJuMP.bridges(::Type{<:PositiveSemidefinite2x2ConeTriangle})
     return [(Bridges.Variable.PositiveSemidefinite2x2Bridge, Float64)]
 end
@@ -16,10 +31,11 @@ end
 
 for poly in (:DSOSPoly, :SDSOSPoly, :SOSPoly)
     @eval begin
-        struct $poly{PB<:AbstractPolynomialBasis} <: PolyJuMP.AbstractPoly
-            polynomial_basis::PB
+        struct $poly{B<:SA.ExplicitBasis} <: PolyJuMP.AbstractPoly
+            basis::B
         end
-        $poly(x::AbstractVector{<:_APL}) = $poly(MonomialBasis(x))
+        $poly(monos::AbstractVector{<:_APL}) =
+            $poly(MB.SubBasis{MB.Monomial}(monos))
     end
 end
 
@@ -55,7 +71,7 @@ function JuMP.add_variable(
     ::String = "",
 )
     MCT = matrix_cone_type(v.p)
-    set = matrix_cone(MCT, length(v.p.polynomial_basis))
+    set = matrix_cone(MCT, length(v.p.basis))
     # FIXME There is no variable bridge mechanism yet:
     #       https://github.com/jump-dev/MathOptInterface.jl/issues/710
     #       so there is no equivalent to `BridgeableConstraint`.
@@ -72,7 +88,7 @@ function JuMP.add_variable(
     Q = moi_add_variable(backend(model), set, v.binary, v.integer)
     return build_gram_matrix(
         JuMP.VariableRef[JuMP.VariableRef(model, vi) for vi in Q],
-        v.p.polynomial_basis,
+        v.p.basis,
         MCT,
         Float64,
     )

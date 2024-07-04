@@ -27,7 +27,7 @@ jobs:
 #            arch: x64
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
@@ -37,8 +37,12 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
+              PackageSpec(name="StarAlgebras", rev="main"),
+              PackageSpec(name="SymbolicWedderburn", rev="mk/StarAlgebras_0_3"),
               PackageSpec(name="MultivariateBases", rev="master"),
-              PackageSpec(name="MathOptInterface", rev="master"),
+              PackageSpec(name="SemialgebraicSets", rev="master"),
+              PackageSpec(name="MultivariateMoments", rev="master"),
+              PackageSpec(name="PolyJuMP", rev="master"),
           ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1

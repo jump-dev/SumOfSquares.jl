@@ -5,12 +5,14 @@ using LinearAlgebra
 import Reexport
 
 import MutableArithmetics as MA
+import StarAlgebras as SA
 
 # MultivariatePolynomials extension
 
 import MultivariatePolynomials as MP
 const _APL = MP.AbstractPolynomialLike
 Reexport.@reexport using MultivariateBases
+const MB = MultivariateBases
 # @set assumes that `SemialgebraicSets` is defined
 Reexport.@reexport using SemialgebraicSets
 Reexport.@reexport using MultivariateMoments

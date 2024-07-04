@@ -37,16 +37,17 @@ struct WithVariables{S,V}
     variables::V
 end
 
-struct WithFixedBases{S,B}
-    inner::S
-    bases::Vector{B}
-end
-
 function MP.variables(v::WithVariables)
     return v.variables
 end
-function MP.monomials(v::WithVariables)
-    return MP.monomials(v.inner)
+SA.basis(v::WithVariables) = SA.basis(v.inner)
+MB.explicit_basis(v::WithVariables) = MB.explicit_basis(v.inner)
+_algebra_element(v::WithVariables) = v.inner
+_algebra_element(a::SA.AlgebraElement) = a
+
+struct WithFixedBases{S,B}
+    inner::S
+    bases::Vector{B}
 end
 
 _merge_sorted(a::Vector, ::Tuple{}) = a
@@ -71,6 +72,13 @@ function _merge_sorted(a::Tuple, b::Tuple)
 end
 
 _vars(::SemialgebraicSets.FullSpace) = tuple()
+function _vars(x::SA.AlgebraElement)
+    if SA.basis(x) isa SA.ImplicitBasis
+        return MP.variables(SA.coeffs(x))
+    else
+        return MP.variables(SA.basis(x))
+    end
+end
 _vars(x) = MP.variables(x)
 
 function with_variables(inner, outer)
@@ -86,7 +94,13 @@ function with_fixed_basis(
     v = with_variables(domain, p)
     return WithFixedBases(
         v.inner,
-        half_newton_polytope(p, domain.p, v.variables, maxdegree, newton),
+        half_newton_polytope(
+            _algebra_element(p),
+            SemialgebraicSets.inequalities(domain),
+            v.variables,
+            maxdegree,
+            newton,
+        )[2],
     )
 end
 
@@ -133,13 +147,13 @@ function multiplier_basis(
     )
 end
 function multiplier_basis(
-    certificate::Putinar{<:Newton},
+    ::Putinar{<:Newton},
     index::PreorderIndex,
     domain::WithFixedBases,
 )
     return domain.bases[index.value]
 end
-function multiplier_basis_type(::Type{<:Putinar{MC}}) where {MC}
+function multiplier_basis_type(::Type{<:Putinar{MC}}, ::Type) where {MC}
     return gram_basis_type(MC)
 end
 

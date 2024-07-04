@@ -15,7 +15,7 @@ struct SOSPolynomialInSemialgebraicSetBridge{
     F<:MOI.AbstractVectorFunction,
     DT<:SemialgebraicSets.AbstractSemialgebraicSet,
     CT<:Certificate.AbstractIdealCertificate,
-    B<:Union{Vector{<:MB.AbstractPolynomialBasis},MB.AbstractPolynomialBasis},
+    B<:Union{Vector{<:MB.SA.ExplicitBasis},MB.SA.ExplicitBasis},
     UMCT<:Union{
         Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
         MOI.ConstraintIndex{MOI.VectorOfVariables},
@@ -30,7 +30,10 @@ struct SOSPolynomialInSemialgebraicSetBridge{
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}},
     }
     lagrangian_constraints::Vector{UMCT}
-    constraint::MOI.ConstraintIndex{F,SOS.SOSPolynomialSet{DT,MT,MVT,CT}}
+    constraint::MOI.ConstraintIndex{
+        F,
+        SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    }
     monomials::MVT
 end
 
@@ -42,11 +45,18 @@ function MOI.Bridges.Constraint.bridge_constraint(
     f::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet},
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
-    @assert MOI.output_dimension(f) == length(set.monomials)
+    @assert MOI.output_dimension(f) == length(set.basis)
     # MOI does not modify the coefficients of the functions so we can modify `p`.
     # without altering `f`.
     # The monomials may be copied by MA however so we need to copy it.
-    p = MP.polynomial(MOI.Utilities.scalarize(f), copy(set.monomials))
+    # TODO remove `collect` when `DynamicPolynomials.MonomialVector` can be used as keys
+    p = MB.algebra_element(
+        SA.SparseCoefficients(
+            copy(collect(set.basis.monomials)),
+            MOI.Utilities.scalarize(f),
+        ),
+        MB.implicit_basis(set.basis),
+    )
     λ_bases = B[]
     λ_variables =
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}}[]
@@ -70,19 +80,28 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
         g = Certificate.generator(set.certificate, index, preprocessed)
         # TODO replace with `MA.sub_mul` when it works.
-        p = MA.operate!!(MA.add_mul, p, -one(T), λ, similar(g, T))
+        p = MA.operate!(
+            SA.UnsafeAddMul(*),
+            p,
+            λ,
+            MB.algebra_element(
+                MB.sparse_coefficients(-one(T) * similar(g, T)),
+                MB.FullBasis{MB.Monomial,MP.monomial_type(g)}(),
+            ),
+        )
     end
+    MA.operate!(SA.canonical, SA.coeffs(p))
     new_set = SOS.SOSPolynomialSet(
         set.domain.V,
         # For terms, `monomials` is `OneOrZeroElementVector`
         # so we convert it with `monomial_vector`
         # Later, we'll use `MP.MonomialBasis` which is going to do that anyway
-        MP.monomial_vector(MP.monomials(p)),
+        MB.SubBasis{MB.Monomial}(MP.monomial_vector(SA.keys(SA.coeffs(p)))),
         Certificate.ideal_certificate(set.certificate),
     )
     constraint = MOI.add_constraint(
         model,
-        MOI.Utilities.vectorize(MP.coefficients(p)),
+        MOI.Utilities.vectorize(SA.values(SA.coeffs(p))),
         new_set,
     )
 
@@ -102,7 +121,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         λ_variables,
         λ_constraints,
         constraint,
-        set.monomials,
+        set.basis.monomials,
     )
 end
 
@@ -123,7 +142,7 @@ function MOI.Bridges.added_constraint_types(
         SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
     },
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
-    return [(F, SOS.SOSPolynomialSet{DT,MT,MVT,CT})]
+    return [(F, SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT})]
 end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
@@ -131,8 +150,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{
         <:SOS.SOSPolynomialSet{
             SemialgebraicSets.BasicSemialgebraicSet{S,PS,AT},
-            MT,
-            MVT,
+            MB.SubBasis{MB.Monomial,MT,MVT},
             CT,
         },
     },
@@ -142,7 +160,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # for most use cases
     G = MOI.Utilities.promote_operation(-, T, F, MOI.VectorOfVariables)
     MCT = SOS.matrix_cone_type(CT)
-    B = Certificate.multiplier_basis_type(CT)
+    B = Certificate.multiplier_basis_type(CT, MT)
     UMCT = union_constraint_types(MCT)
     UMST = union_set_types(MCT)
     IC = Certificate.ideal_certificate(CT)
@@ -198,18 +216,36 @@ function MOI.get(
 end
 function MOI.get(
     ::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
-    ::MOI.NumberOfConstraints{F,SOS.SOSPolynomialSet{DT,MT,MVT,CT}},
+    ::MOI.NumberOfConstraints{
+        F,
+        SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    },
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
     return 1
 end
 function MOI.get(
     b::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT},
-    ::MOI.ListOfConstraintIndices{F,SOS.SOSPolynomialSet{DT,MT,MVT,CT}},
+    ::MOI.ListOfConstraintIndices{
+        F,
+        SOS.SOSPolynomialSet{DT,MB.SubBasis{MB.Monomial,MT,MVT},CT},
+    },
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,MT,MVT}
     return [b.constraint]
 end
 
 # Indices
+function _delete_variables(model, Q::Vector{MOI.VariableIndex})
+    if !isempty(Q)
+        # FIXME Since there is not variables in the list, we cannot
+        # identify the `EmptyBridge` to delete
+        MOI.delete(model, Q)
+    end
+end
+function _delete_variables(model, Qs::Vector{Vector{MOI.VariableIndex}})
+    for Q in Qs
+        _delete_variables(model, Q)
+    end
+end
 function MOI.delete(
     model::MOI.ModelLike,
     bridge::SOSPolynomialInSemialgebraicSetBridge,
@@ -240,7 +276,7 @@ function MOI.get(
 )
     dual = MOI.get(model, attr, bridge.constraint)
     set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
-    μ = MultivariateMoments.measure(dual, set.monomials)
+    μ = MultivariateMoments.moment_vector(dual, set.basis)
     return [dot(mono, μ) for mono in bridge.monomials]
 end
 function MOI.get(
@@ -261,6 +297,28 @@ function MOI.get(
     bridge::SOSPolynomialInSemialgebraicSetBridge,
 )
     return MOI.get(model, attr, bridge.constraint)
+end
+
+function _gram(
+    f::Function,
+    Q::Vector{MOI.VariableIndex},
+    gram_basis,
+    T::Type,
+    MCT,
+)
+    return SOS.build_gram_matrix(convert(Vector{T}, f(Q)), gram_basis, MCT, T)
+end
+
+function _gram(
+    f::Function,
+    Qs::Vector{Vector{MOI.VariableIndex}},
+    gram_bases,
+    T::Type,
+    MCT,
+)
+    return SOS.build_gram_matrix(gram_bases, MCT, T) do i
+        return convert(Vector{T}, f(Qs[i]))
+    end
 end
 function MOI.get(
     model::MOI.ModelLike,

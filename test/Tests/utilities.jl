@@ -1,4 +1,6 @@
+import StarAlgebras as SA
 using Test, JuMP
+import StarAlgebras as SA
 using SumOfSquares
 
 function _model(optimizer::MOI.AbstractOptimizer)
@@ -30,7 +32,7 @@ macro test_suite(setname, subsets = false)
     testname = Symbol(string(setname) * "_test")
     testdict = Symbol(string(testname) * "s")
     if subsets
-        runtest = :(f(model, config, exclude))
+        runtest = :(f(model, config; exclude))
     else
         runtest = :(f(model, config))
     end
@@ -38,10 +40,12 @@ macro test_suite(setname, subsets = false)
         :(
             function $testname(
                 model, # could be ModelLike or an optimizer constructor
-                config::$MOI.Test.Config,
+                config::$MOI.Test.Config;
+                include::Vector{String} = collect(keys($testdict)),
                 exclude::Vector{String} = String[],
             )
-                for (name, f) in $testdict
+                for name in include
+                    f = $(testdict)[name]
                     if name in exclude
                         continue
                     end
@@ -165,14 +169,16 @@ function inner_inspect(model, atol = 1e-4)
     end
 end
 
-function test_constraint_primal(cref, expected)
+function test_constraint_primal(cref, expected; atol, rtol)
     # If there is a CachingOptimizer, it can use the fallback,
     # otherwise, it should throw `ValueNotSupported`.
     try
         v = value(cref)
-        @test v isa AbstractPolynomial
-        @test v ≈ expected
+        @test v isa SA.AlgebraElement
+        @test v ≈ expected atol = atol rtol = rtol
     catch err
-        @test err isa SumOfSquares.ValueNotSupported
+        if !(err isa SumOfSquares.ValueNotSupported)
+            rethrow(err)
+        end
     end
 end

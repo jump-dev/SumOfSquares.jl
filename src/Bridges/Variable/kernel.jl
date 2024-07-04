@@ -6,21 +6,29 @@ struct KernelBridge{T,M} <: MOI.Bridges.Variable.AbstractBridge
 end
 
 function MOI.Bridges.Variable.bridge_constrained_variable(
-    ::Type{KernelBridge{T}},
+    ::Type{KernelBridge{T,M}},
     model::MOI.ModelLike,
     set::SOS.WeightedSOSCone{M},
 ) where {T,M}
     variables = Vector{MOI.VariableIndex}[]
     constraints = MOI.ConstraintIndex{MOI.VectorOfVariables}[]
-    acc = MA.Zero()
+    acc = zero(
+        MOI.ScalarAffineFunction{T},
+        MB.algebra(MB.implicit_basis(set.basis)),
+    )
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
         gram, vars, con = SOS.add_gram_matrix(model, M, gram_basis, T)
         push!(variables, vars)
         push!(constraints, con)
-        acc = MA.add_mul!!(acc, weight, gram)
+        MA.operate!(SA.UnsafeAddMul(*), acc, gram, weight)
     end
-    affine = MP.coefficients(acc, set.basis)
-    return KernelBridge{T,M}(affine, variables, constraints, set)
+    MA.operate!(SA.canonical, SA.coeffs(acc))
+    return KernelBridge{T,M}(
+        SA.coeffs(acc, set.basis),
+        variables,
+        constraints,
+        set,
+    )
 end
 
 function MOI.Bridges.Variable.supports_constrained_variable(
@@ -38,6 +46,13 @@ end
 
 function MOI.Bridges.added_constraint_types(::Type{<:KernelBridge})
     return Tuple{Type,Type}[]
+end
+
+function MOI.Bridges.Variable.concrete_bridge_type(
+    ::Type{<:KernelBridge{T}},
+    ::Type{<:SOS.WeightedSOSCone{M}},
+) where {T,M}
+    return KernelBridge{T,M}
 end
 
 # Attributes, Bridge acting as a model
@@ -103,9 +118,49 @@ function MOI.get(
     bridge::KernelBridge,
     i::MOI.Bridges.IndexInVector,
 )
-    return MOI.Utilities.eval_variable(bridge.affine[i.value]) do
-        return vi -> MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
+    return MOI.Utilities.eval_variables(bridge.affine[i.value]) do vi
+        return MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
     end
+end
+
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::SOS.GramMatrixAttribute,
+    bridge::KernelBridge{T,M},
+) where {T,M}
+    SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
+    return SOS.build_gram_matrix(
+        convert(
+            Vector{T},
+            MOI.get(
+                model,
+                MOI.VariablePrimal(attr.result_index),
+                bridge.variables[attr.multiplier_index],
+            ),
+        ),
+        bridge.set.gram_bases[attr.multiplier_index],
+        M,
+        T,
+    )
+end
+
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::SOS.MomentMatrixAttribute,
+    bridge::KernelBridge{T,M},
+) where {T,M}
+    SOS.check_multiplier_index_bounds(attr, eachindex(bridge.constraints))
+    return SOS.build_moment_matrix(
+        convert(
+            Vector{T},
+            MOI.get(
+                model,
+                MOI.ConstraintDual(attr.result_index),
+                bridge.constraints[attr.multiplier_index],
+            ),
+        ),
+        bridge.set.gram_bases[attr.multiplier_index],
+    )
 end
 
 function MOI.Bridges.bridged_function(
@@ -116,10 +171,8 @@ function MOI.Bridges.bridged_function(
 end
 
 function MOI.Bridges.Variable.unbridged_map(
-    bridge::KernelBridge{T},
-    coefs::Vector{MOI.VariableIndex},
+    ::KernelBridge{T},
+    ::Vector{MOI.VariableIndex},
 ) where {T}
-    F = MOI.ScalarAffineFunction{T}
-    map = Pair{MOI.VariableIndex,F}[]
     return nothing
 end

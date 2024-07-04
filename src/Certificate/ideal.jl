@@ -4,7 +4,76 @@
 
 abstract type AbstractIdealCertificate <: AbstractCertificate end
 
-abstract type SimpleIdealCertificate{CT,BT} <: AbstractIdealCertificate end
+struct _NonZero <: Number end
+Base.iszero(::_NonZero) = false
+Base.convert(::Type{_NonZero}, ::Number) = _NonZero()
+Base.:*(a::_NonZero, ::Number) = a
+Base.:*(::Number, a::_NonZero) = a
+Base.:*(::_NonZero, a::_NonZero) = a
+Base.:+(a::_NonZero, ::Number) = a
+Base.:+(::Number, a::_NonZero) = a
+Base.:+(::_NonZero, a::_NonZero) = a
+
+function _combine_with_gram(
+    basis::MB.SubBasis{B,M},
+    gram_bases::AbstractVector{<:MB.SubBasis},
+    weights,
+) where {B,M}
+    p = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
+    for mono in basis
+        MA.operate!(
+            SA.UnsafeAddMul(*),
+            p,
+            _term_constant_monomial(_NonZero(), mono),
+            MB.algebra_element(mono),
+        )
+    end
+    for (gram, weight) in zip(gram_bases, weights)
+        MA.operate!(
+            SA.UnsafeAddMul(*),
+            p,
+            GramMatrix{_NonZero}((_, _) -> _NonZero(), gram),
+            weight,
+        )
+    end
+    MA.operate!(SA.canonical, SA.coeffs(p))
+    return MB.SubBasis{B}(keys(SA.coeffs(p)))
+end
+
+_reduce_with_domain(basis::MB.SubBasis, ::FullSpace) = basis
+
+function _reduce_with_domain(basis::MB.SubBasis{B}, domain) where {B}
+    if B !== MB.Monomial
+        error("Only Monomial basis support with an equalities in domain")
+    end
+    I = ideal(domain)
+    # set of standard monomials that are hit
+    standard = Set{eltype(basis.monomials)}()
+    for mono in basis.monomials
+        r = rem(mono, I)
+        union!(standard, MP.monomials(r))
+    end
+    return MB.QuotientBasis(
+        MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))),
+        I,
+    )
+end
+
+function reduced_basis(
+    ::AbstractIdealCertificate,
+    basis,
+    domain,
+    gram_bases,
+    weights,
+)
+    return _reduce_with_domain(
+        _combine_with_gram(basis, gram_bases, weights),
+        domain,
+    )
+end
+
+abstract type SimpleIdealCertificate{C,B} <: AbstractIdealCertificate end
+
 reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
 
 cone(certificate::SimpleIdealCertificate) = certificate.cone
@@ -15,15 +84,15 @@ function SumOfSquares.matrix_cone_type(
 end
 
 # TODO return something else when `PolyJuMP` support other bases.
-zero_basis(::SimpleIdealCertificate) = MB.MonomialBasis
-function zero_basis_type(::Type{<:SimpleIdealCertificate{CT,BT}}) where {CT,BT}
-    return MB.MonomialBasis
+zero_basis(certificate::SimpleIdealCertificate) = certificate.basis # FIXME not used yet
+function zero_basis_type(::Type{<:SimpleIdealCertificate{C,B}}) where {C,B}
+    return B
 end
 
 """
-    struct MaxDegree{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
-        cone::CT
-        basis::Type{BT}
+    struct MaxDegree{C<:SumOfSquares.SOSLikeCone,B<:SA.AbstractBasis} <: SimpleIdealCertificate{C,B}
+        cone::C
+        basis::B
         maxdegree::Int
     end
 
@@ -34,10 +103,10 @@ such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with a basis of type `basis` such that
 the degree of `σ(x)` does not exceed `maxdegree`.
 """
-struct MaxDegree{CT<:SumOfSquares.SOSLikeCone,BT<:MB.AbstractPolynomialBasis} <:
-       SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::Type{BT}
+struct MaxDegree{C<:SumOfSquares.SOSLikeCone,B<:SA.AbstractBasis} <:
+       SimpleIdealCertificate{C,B}
+    cone::C
+    basis::B
     maxdegree::Int
 end
 function gram_basis(certificate::MaxDegree, poly)
@@ -47,12 +116,12 @@ function gram_basis(certificate::MaxDegree, poly)
         certificate.maxdegree,
     )
 end
-function gram_basis_type(::Type{MaxDegree{CT,BT}}) where {CT,BT}
-    return BT
+function gram_basis_type(::Type{MaxDegree{C,B}}) where {C,B}
+    return MB.explicit_basis_type(B)
 end
 
 """
-    struct FixedBasis{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis} <: SimpleIdealCertificate{CT, BT}
+    struct FixedBasis{C<:SumOfSquares.SOSLikeCone,B<:SA.ExplicitBasis} <: SimpleIdealCertificate{C,B}
         cone::CT
         basis::BT
     end
@@ -63,25 +132,25 @@ such that `p(x) - σ(x)` is guaranteed to be zero for all `x`
 such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with basis `basis`.
 """
-struct FixedBasis{
-    CT<:SumOfSquares.SOSLikeCone,
-    BT<:MB.AbstractPolynomialBasis,
-} <: SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::BT
+struct FixedBasis{C<:SumOfSquares.SOSLikeCone,B<:SA.ExplicitBasis} <:
+       SimpleIdealCertificate{C,B}
+    cone::C
+    basis::B
 end
-function gram_basis(certificate::FixedBasis, poly)
+function gram_basis(certificate::FixedBasis, _)
     return certificate.basis
 end
-function gram_basis_type(::Type{FixedBasis{CT,BT}}) where {CT,BT}
-    return BT
-end
+gram_basis_type(::Type{FixedBasis{C,B}}) where {C,B} = B
 
 """
-    struct Newton{CT <: SumOfSquares.SOSLikeCone, BT <: MB.AbstractPolynomialBasis, NPT <: Tuple} <: SimpleIdealCertificate{CT, BT}
-        cone::CT
-        basis::Type{BT}
-        variable_groups::NPT
+    struct Newton{
+        C<:SumOfSquares.SOSLikeCone,
+        B<:SA.AbstractBasis,
+        N<:AbstractNewtonPolytopeApproximation,
+    } <: SimpleIdealCertificate{C,B}
+        cone::C
+        basis::B
+        newton::N
     end
 
 The `Newton` certificate ensures the nonnegativity of `p(x)` for all `x` such that
@@ -94,12 +163,12 @@ If `variable_groups = tuple()` then it falls back to the classical Newton polyto
 with all variables in the same part.
 """
 struct Newton{
-    CT<:SumOfSquares.SOSLikeCone,
-    BT<:MB.AbstractPolynomialBasis,
+    C<:SumOfSquares.SOSLikeCone,
+    B<:SA.AbstractBasis,
     N<:AbstractNewtonPolytopeApproximation,
-} <: SimpleIdealCertificate{CT,BT}
-    cone::CT
-    basis::Type{BT}
+} <: SimpleIdealCertificate{C,B}
+    cone::C
+    basis::B
     newton::N
 end
 
@@ -111,14 +180,16 @@ function Newton(cone, basis, variable_groups::Tuple)
     )
 end
 
-function gram_basis(certificate::Newton{CT,B}, poly) where {CT,B}
-    return MB.basis_covering_monomials(
-        B,
-        monomials_half_newton_polytope(MP.monomials(poly), certificate.newton),
+function gram_basis(certificate::Newton, poly)
+    return half_newton_polytope(
+        _algebra_element(poly),
+        MP.variables(poly),
+        certificate.newton,
     )
 end
-function gram_basis_type(::Type{<:Newton{CT,BT}}) where {CT,BT}
-    return BT
+
+function gram_basis_type(::Type{<:Newton{C,B}}) where {C,B}
+    return MB.explicit_basis_type(B)
 end
 
 """
@@ -141,13 +212,20 @@ struct Remainder{GCT<:AbstractIdealCertificate} <: AbstractIdealCertificate
     gram_certificate::GCT
 end
 
-function reduced_polynomial(::Remainder, poly, domain)
-    return convert(typeof(poly), rem(poly, ideal(domain)))
+function _rem(coeffs, basis::MB.FullBasis{MB.Monomial}, I)
+    poly = MP.polynomial(SA.values(coeffs), SA.keys(coeffs))
+    r = convert(typeof(poly), rem(poly, I))
+    return MB.algebra_element(MB.sparse_coefficients(r), basis)
+end
+
+function reduced_polynomial(::Remainder, a::SA.AlgebraElement, domain)
+    return _rem(SA.coeffs(a), SA.basis(a), ideal(domain))
 end
 
 function gram_basis(certificate::Remainder, poly)
     return gram_basis(certificate.gram_certificate, poly)
 end
+
 function gram_basis_type(::Type{Remainder{GCT}}) where {GCT}
     return gram_basis_type(GCT)
 end
@@ -158,3 +236,37 @@ function SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT}
 end
 zero_basis(certificate::Remainder) = zero_basis(certificate.gram_certificate)
 zero_basis_type(::Type{Remainder{GCT}}) where {GCT} = zero_basis_type(GCT)
+
+function _quotient_basis_type(
+    ::Type{B},
+    ::Type{D},
+) where {T,I,B<:SA.AbstractBasis{T,I},D}
+    return MB.QuotientBasis{
+        T,
+        I,
+        B,
+        MA.promote_operation(SemialgebraicSets.ideal, D),
+    }
+end
+
+function MA.promote_operation(
+    ::typeof(reduced_basis),
+    ::Type{<:Union{SimpleIdealCertificate,Remainder}},
+    ::Type{B},
+    ::Type{SemialgebraicSets.FullSpace},
+    ::Type,
+    ::Type,
+) where {B}
+    return B
+end
+
+function MA.promote_operation(
+    ::typeof(reduced_basis),
+    ::Type{<:Union{SimpleIdealCertificate,Remainder}},
+    ::Type{B},
+    ::Type{D},
+    ::Type,
+    ::Type,
+) where {B,D}
+    return _quotient_basis_type(B, D)
+end

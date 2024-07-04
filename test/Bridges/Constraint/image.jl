@@ -1,6 +1,7 @@
 module TestConstraintImage
 
 using Test
+import MultivariateBases as MB
 using DynamicPolynomials
 using SumOfSquares
 
@@ -31,9 +32,9 @@ function test_runtests()
                 SumOfSquares.WeightedSOSCone{
                     MOI.PositiveSemidefiniteConeTriangle,
                 }(
-                    MonomialBasis([y^4, x^2 * y^2, x^3 * y, x^4]),
-                    [MonomialBasis([y^2, x * y, x^2])],
-                    [one(T) * x^0 * y^0],
+                    MB.SubBasis{MB.Monomial}([y^4, x^2 * y^2, x^3 * y, x^4]),
+                    [MB.SubBasis{MB.Monomial}([y^2, x * y, x^2])],
+                    [MB.algebra_element(one(T) * x^0 * y^0)],
                 ),
             )
         end,

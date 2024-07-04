@@ -29,9 +29,11 @@ PolyJuMP = "ddf597a6-d67e-5340-b84c-e37d84115374"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+StarAlgebras = "0c0c59c1-dc5f-42e9-9a8b-b5dc384a6cd1"
 SumOfSquares = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 TypedPolynomials = "afbbf031-7a57-5f58-a1b9-b774a0fad08d"
 
 [compat]
 Documenter = "1"
+DynamicPolynomials = "0.6"

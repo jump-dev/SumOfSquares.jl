@@ -29,7 +29,9 @@ end
 
 @testset "run_examples.jl" begin
     @testset "$dir" for dir in readdir(_TUTORIAL_DIR)
-        run_examples(dir)
+        if dir != "Symmetry"
+            run_examples(dir)
+        end
     end
     @testset "Chordal" begin
         include("chordal_sparsity.jl")

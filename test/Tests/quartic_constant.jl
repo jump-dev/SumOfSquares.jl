@@ -1,4 +1,5 @@
 using Test
+import MultivariateBases as MB
 using SumOfSquares
 using DynamicPolynomials
 
@@ -17,7 +18,7 @@ function quartic_constant_test(
     @variable(model, γ)
 
     cref =
-        @constraint(model, p - γ in cone, basis = FixedPolynomialBasis([x^2]))
+        @constraint(model, p - γ in cone, basis = SubBasis{MB.Monomial}([x^2]))
 
     @objective(model, Max, γ)
 
@@ -32,13 +33,12 @@ function quartic_constant_test(
     p = gram_matrix(cref)
     @test p isa SumOfSquares.GramMatrix
     @test value_matrix(p) ≈ ones(1, 1) atol = atol rtol = rtol
-    @test p.basis isa FixedPolynomialBasis
-    @test p.basis.polynomials == [x^2]
+    @test p.basis isa MB.SubBasis{MB.Monomial}
+    @test p.basis.monomials == [x^2]
 
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        monomial_type(x),
-        monomial_vector_type(x),
+        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
         SumOfSquares.Certificate.FixedBasis{typeof(cone),typeof(p.basis)},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]

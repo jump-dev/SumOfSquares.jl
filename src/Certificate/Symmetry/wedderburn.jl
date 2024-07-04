@@ -12,7 +12,7 @@ end
 
 function SymbolicWedderburn.ExtensionHomomorphism(
     action::SymbolicWedderburn.Action,
-    basis::MB.MonomialBasis,
+    basis::MB.SubBasis{MB.Monomial},
 )
     monos = collect(basis.monomials)
     return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
@@ -53,17 +53,6 @@ function SymbolicWedderburn.action(
     ])
 end
 
-# TODO Move it to MultivariateBases
-function MP.polynomial_type(
-    ::Type{<:MB.AbstractPolynomialVectorBasis{PT}},
-    T::Type,
-) where {PT}
-    C = MP.coefficient_type(PT)
-    U = MA.promote_operation(*, C, T)
-    V = MA.promote_operation(+, U, U)
-    return MP.polynomial_type(PT, V)
-end
-
 """
     struct Symmetry.Ideal{C,GT,AT<:SymbolicWedderburn.Action} <: SumOfSquares.Certificate.AbstractIdealCertificate
         pattern::Symmetry.Pattern{GT,AT}
@@ -89,8 +78,8 @@ end
 function SumOfSquares.Certificate.gram_basis_type(::Type{<:Ideal})
     return Vector{Vector{MB.FixedPolynomialBasis}}
 end
-SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.MonomialBasis
-SumOfSquares.Certificate.zero_basis(::Ideal) = MB.MonomialBasis
+SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.Monomial
+SumOfSquares.Certificate.zero_basis(::Ideal) = MB.Monomial
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
     poly,
@@ -100,6 +89,38 @@ function SumOfSquares.Certificate.reduced_polynomial(
         certificate.certificate,
         poly,
         domain,
+    )
+end
+function SumOfSquares.Certificate.reduced_basis(
+    certificate::Ideal,
+    basis,
+    domain,
+    gram_bases,
+    weights,
+)
+    return SumOfSquares.Certificate.reduced_basis(
+        certificate.certificate,
+        basis,
+        domain,
+        gram_bases,
+        weights,
+    )
+end
+function MA.promote_operation(
+    ::typeof(SumOfSquares.Certificate.reduced_basis),
+    ::Type{Ideal{S,C}},
+    ::Type{B},
+    ::Type{D},
+    ::Type{G},
+    ::Type{W},
+) where {S,C,B,D,G,W}
+    return MA.promote_operation(
+        SumOfSquares.Certificate.reduced_basis,
+        C,
+        B,
+        D,
+        G,
+        W,
     )
 end
 
