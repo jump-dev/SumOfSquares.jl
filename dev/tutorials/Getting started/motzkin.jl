@@ -90,7 +90,7 @@ value(deno)
 # We can easily extend `Plots` by adding a recipe to plot bivariate polynomials.
 
 using RecipesBase
-@recipe function f(x::AbstractVector, y::AbstractVector, p::Polynomial)
+@recipe function f(x::AbstractVector, y::AbstractVector, p::AbstractPolynomial)
     x, y, (x, y) -> p(variables(p) => [x, y])
 end
 import Plots
