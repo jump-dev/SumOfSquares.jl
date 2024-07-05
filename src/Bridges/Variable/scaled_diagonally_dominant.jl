@@ -67,7 +67,7 @@ end
 function MOI.Bridges.added_constrained_variable_types(
     ::Type{<:ScaledDiagonallyDominantBridge},
 )
-    return [(SOS.PositiveSemidefinite2x2ConeTriangle,)]
+    return Tuple{Type}[(SOS.PositiveSemidefinite2x2ConeTriangle,)]
 end
 function MOI.Bridges.added_constraint_types(
     ::Type{<:ScaledDiagonallyDominantBridge},
@@ -86,7 +86,7 @@ function MOI.get(
     bridge::ScaledDiagonallyDominantBridge,
     ::MOI.ListOfVariableIndices,
 )
-    return Iterators.flatten(bridge.variables)
+    return collect(Iterators.flatten(bridge.variables))
 end
 function MOI.get(
     bridge::ScaledDiagonallyDominantBridge,
@@ -137,7 +137,7 @@ function MOI.get(
     bridge::ScaledDiagonallyDominantBridge{T},
     i::MOI.Bridges.IndexInVector,
 ) where {T}
-    i, j = matrix_indices(i.value)
+    i, j = MOI.Utilities.inverse_trimap(i.value)
     if i == j
         value = zero(T)
         for k in 1:(i-1)
@@ -159,7 +159,7 @@ function MOI.Bridges.bridged_function(
     bridge::ScaledDiagonallyDominantBridge{T},
     i::MOI.Bridges.IndexInVector,
 ) where {T}
-    i, j = matrix_indices(i.value)
+    i, j = MOI.Utilities.inverse_trimap(i.value)
     if i == j
         func = zero(MOI.ScalarAffineFunction{T})
         for k in 1:(i-1)
