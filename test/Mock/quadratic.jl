@@ -41,10 +41,7 @@ function optimize!(mock)
             [[0.0, 0.0, 0.0, 2.0, -1.0, 2.0]],
     )
 end
-for mock in [
-    bridged_mock(optimize!),
-    cached_mock(optimize!),
-]
+for mock in [bridged_mock(optimize!), cached_mock(optimize!)]
     Tests.sos_cheby_bivariate_quadratic_test(mock, config)
 end
 #Tests.sdsos_cheby_bivariate_quadratic_test(mock, config)
