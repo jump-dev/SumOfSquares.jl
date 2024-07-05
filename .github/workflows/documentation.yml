@@ -22,9 +22,8 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(url="https://github.com/blegat/HomotopyContinuation.jl", rev="dynamicpolynomials_v0.6"),
               PackageSpec(name="StarAlgebras", rev="main"),
-              PackageSpec(name="SymbolicWedderburn", rev="mk/StarAlgebras_0_3"),
+              PackageSpec(name="SymbolicWedderburn", rev="master"),
               PackageSpec(name="MultivariateBases", rev="master"),
               PackageSpec(name="SemialgebraicSets", rev="master"),
               PackageSpec(name="MultivariateMoments", rev="master"),
