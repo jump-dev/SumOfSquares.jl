@@ -12,9 +12,9 @@ using Test, JuMP
 #@testset "Quartic constant" begin
 #    include("quartic_constant.jl")
 #end
-#@testset "Quadratic" begin
-#    include("quadratic.jl")
-#end
+@testset "Quadratic" begin
+    include("quadratic.jl")
+end
 @testset "Quartic ideal" begin
     include("quartic_ideal.jl")
 end

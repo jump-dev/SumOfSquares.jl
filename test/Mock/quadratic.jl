@@ -27,10 +27,27 @@ for mock in [bridged_mock(optimize_bridged!), cached_mock(optimize_cached!)]
     Tests.sdsos_scaled_univariate_quadratic_test(mock, config)
     Tests.sdsos_scaled_bivariate_quadratic_test(mock, config)
     Tests.sos_cheby_univariate_quadratic_test(mock, config)
-    Tests.sos_cheby_bivariate_quadratic_test(mock, config)
     Tests.sdsos_cheby_univariate_quadratic_test(mock, config)
-    Tests.sdsos_cheby_bivariate_quadratic_test(mock, config)
 end
+function optimize!(mock)
+    return MOI.Utilities.mock_optimize!(
+        mock,
+        [2.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0],
+        (
+            MOI.VectorOfVariables,
+            MOI.MathOptInterface.PositiveSemidefiniteConeTriangle,
+        ) => [[0.0, 0.0, 1.0, 0.0, -1.0, 1.0]],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) =>
+            [[0.0, 0.0, 0.0, 2.0, -1.0, 2.0]],
+    )
+end
+for mock in [
+    bridged_mock(optimize!),
+    cached_mock(optimize!),
+]
+    Tests.sos_cheby_bivariate_quadratic_test(mock, config)
+end
+#Tests.sdsos_cheby_bivariate_quadratic_test(mock, config)
 function optimize!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
