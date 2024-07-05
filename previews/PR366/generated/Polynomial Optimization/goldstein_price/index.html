@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Goldstein-price function · SumOfSquares</title><meta name="title" content="Goldstein-price function · SumOfSquares"/><meta property="og:title" content="Goldstein-price function · SumOfSquares"/><meta property="twitter:title" content="Goldstein-price function · SumOfSquares"/><meta name="description" content="Documentation for SumOfSquares."/><meta property="og:description" content="Documentation for SumOfSquares."/><meta property="twitter:description" content="Documentation for SumOfSquares."/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/citations.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../../../reference/standard_form/">Standard form</a></li><li><a class="tocitem" href="../../../reference/constraints/">Constraints</a></li><li><a class="tocitem" href="../../../reference/certificate/">Certificate</a></li><li><a class="tocitem" href="../../../reference/internal/">Internal functions</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-6-1" type="checkbox"/><label class="tocitem" for="menuitem-6-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/circle/">Nonnegative over a variety</a></li><li><a class="tocitem" href="../../Getting started/dualization/">On the importance of Dualization</a></li><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li><li><a class="tocitem" href="../../Getting started/univariate/">Minimization of a univariate polynomial</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-2" type="checkbox" checked/><label class="tocitem" for="menuitem-6-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../bilinear/">Bilinear terms</a></li><li><a class="tocitem" href="../bound_on_global_extremum/">Bound on Global Extremum</a></li><li><a class="tocitem" href="../ellipsoid/">Exterior of ellipsoid</a></li><li class="is-active"><a class="tocitem" href>Goldstein-price function</a></li><li><a class="tocitem" href="../min_univariate/">Maximizing as minimum</a></li><li><a class="tocitem" href="../polynomial_optimization/">Polynomial Optimization</a></li><li><a class="tocitem" href="../qcqp/">Nonconvex quadratically constrained quadratic programs</a></li><li><a class="tocitem" href="../qp/">Nonconvex QP</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-3" type="checkbox"/><label class="tocitem" for="menuitem-6-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance</a></li><li><a class="tocitem" href="../../Systems and Control/julia_set/">Outer approximation of Julia set</a></li><li><a class="tocitem" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../../Systems and Control/stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-4" type="checkbox"/><label class="tocitem" for="menuitem-6-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Other Applications/bounds_in_probability/">Bounds in Probability</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-5" type="checkbox"/><label class="tocitem" for="menuitem-6-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-6" type="checkbox"/><label class="tocitem" for="menuitem-6-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/sign_symmetry/">Sign symmetry</a></li><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-7" type="checkbox"/><label class="tocitem" for="menuitem-6-7"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Extension/certificate/">Certificate</a></li><li><a class="tocitem" href="../../Extension/hypercube/">Hypercube</a></li><li><a class="tocitem" href="../../Extension/typed/">Multivariate polynomials implementations</a></li><li><a class="tocitem" href="../../Extension/univariate_solver/">Univariate Solver</a></li></ul></li></ul></li><li><a class="tocitem" href="../../../bibliography/">Bibliography</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Polynomial Optimization</a></li><li class="is-active"><a href>Goldstein-price function</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Goldstein-price function</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/master/docs/src/tutorials/Polynomial Optimization/goldstein_price.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Goldstein-price-function"><a class="docs-heading-anchor" href="#Goldstein-price-function">Goldstein-price function</a><a id="Goldstein-price-function-1"></a><a class="docs-heading-anchor-permalink" href="#Goldstein-price-function" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR366/generated/Polynomial Optimization/goldstein_price.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR366/generated/Polynomial Optimization/goldstein_price.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Contributed by</strong>: Benoît Legat</p><p>In this example, we consider the minimization of the <a href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Goldstein-price function</a>.</p><pre><code class="language-julia hljs">using SumOfSquares
+using DynamicPolynomials</code></pre><p>Create <em>symbolic</em> variables (not JuMP <em>decision</em> variables)</p><pre><code class="language-julia hljs">@polyvar x[1:2]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(DynamicPolynomials.Variable{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}[x₁, x₂],)</code></pre><p>To use Sum-of-Squares Programming, we first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import Clarabel
+using Dualization
+model = SOSModel(dual_optimizer(Clarabel.Optimizer))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">A JuMP Model
+Feasibility problem with:
+Variables: 0
+Model mode: AUTOMATIC
+CachingOptimizer state: EMPTY_OPTIMIZER
+Solver name: Dual model with Clarabel attached</code></pre><p>Create a JuMP decision variable for the lower bound</p><pre><code class="language-julia hljs">@variable(model, γ)</code></pre><p class="math-container">\[ γ \]</p><p><code>f(x)</code> is the Goldstein-Price function</p><pre><code class="language-julia hljs">f1 = x[1] + x[2] + 1
+f2 = 19 - 14*x[1] + 3*x[1]^2 - 14*x[2] + 6*x[1]*x[2] + 3*x[2]^2
+f3 = 2*x[1] - 3*x[2]
+f4 = 18 - 32*x[1] + 12*x[1]^2 + 48*x[2] - 36*x[1]*x[2] + 27*x[2]^2
+f = (1 + f1^2*f2) * (30 + f3^2*f4)</code></pre><p class="math-container">\[ 600 + 720x_{2} + 720x_{1} + 3060x_{2}^{2} - 4680x_{1}x_{2} + 1260x_{1}^{2} + 12288x_{2}^{3} - 19296x_{1}x_{2}^{2} + 7344x_{1}^{2}x_{2} - 1072x_{1}^{3} + 14346x_{2}^{4} - 23616x_{1}x_{2}^{3} + 7776x_{1}^{2}x_{2}^{2} + 5784x_{1}^{3}x_{2} - 2454x_{1}^{4} + 1944x_{2}^{5} - 11880x_{1}x_{2}^{4} + 5040x_{1}^{2}x_{2}^{3} + 9840x_{1}^{3}x_{2}^{2} - 7680x_{1}^{4}x_{2} + 1344x_{1}^{5} - 4428x_{2}^{6} - 1188x_{1}x_{2}^{5} + 8730x_{1}^{2}x_{2}^{4} + 1240x_{1}^{3}x_{2}^{3} - 5370x_{1}^{4}x_{2}^{2} - 168x_{1}^{5}x_{2} + 952x_{1}^{6} - 648x_{2}^{7} + 1944x_{1}x_{2}^{6} + 3672x_{1}^{2}x_{2}^{5} - 3480x_{1}^{3}x_{2}^{4} - 4080x_{1}^{4}x_{2}^{3} + 2592x_{1}^{5}x_{2}^{2} + 1344x_{1}^{6}x_{2} - 768x_{1}^{7} + 729x_{2}^{8} + 972x_{1}x_{2}^{7} - 1458x_{1}^{2}x_{2}^{6} - 1836x_{1}^{3}x_{2}^{5} + 1305x_{1}^{4}x_{2}^{4} + 1224x_{1}^{5}x_{2}^{3} - 648x_{1}^{6}x_{2}^{2} - 288x_{1}^{7}x_{2} + 144x_{1}^{8} \]</p><p>Constraints <code>f(x) - γ</code> to be a sum of squares</p><pre><code class="language-julia hljs">con_ref = @constraint(model, f &gt;= γ)
+@objective(model, Max, γ)
+optimize!(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
+           Clarabel.jl v0.9.0  -  Clever Acronym
+                   (c) Paul Goulart
+                University of Oxford, 2022
+-------------------------------------------------------------
+
+problem:
+  variables     = 45
+  constraints   = 121
+  nnz(P)        = 0
+  nnz(A)        = 121
+  cones (total) = 2
+    : Zero        = 1,  numel = 1
+    : PSDTriangle = 1,  numel = 120
+
+settings:
+  linear algebra: direct / qdldl, precision: Float64
+  max iter = 200, time limit = Inf,  max step = 0.990
+  tol_feas = 1.0e-08, tol_gap_abs = 1.0e-08, tol_gap_rel = 1.0e-08,
+  static reg : on, ϵ1 = 1.0e-08, ϵ2 = 4.9e-32
+  dynamic reg: on, ϵ = 1.0e-13, δ = 2.0e-07
+  iter refine: on, reltol = 1.0e-13, abstol = 1.0e-12,
+               max iter = 10, stop ratio = 5.0
+  equilibrate: on, min_scale = 1.0e-04, max_scale = 1.0e+04
+               max iter = 10
+
+iter    pcost        dcost       gap       pres      dres      k/t        μ       step
+---------------------------------------------------------------------------------------------
+  0   6.0000e+02   6.0000e+02  0.00e+00  6.51e-01  4.57e-01  1.00e+00  1.02e+04   ------
+  1  -3.0355e+03  -2.4055e+03  2.62e-01  1.69e-01  1.33e-01  6.30e+02  2.58e+03  8.06e-01
+  2  -4.5486e+02  -2.1780e+02  1.09e+00  2.38e-02  2.39e-02  2.37e+02  5.36e+02  8.67e-01
+  3   3.2891e+01   7.6205e+01  1.32e+00  3.59e-03  3.47e-03  4.33e+01  9.46e+01  8.76e-01
+  4   2.7894e+01   3.5220e+01  2.63e-01  6.65e-04  6.22e-04  7.33e+00  1.84e+01  8.59e-01
+  5   1.2781e+01   1.9102e+01  4.95e-01  3.55e-04  4.58e-04  6.32e+00  1.16e+01  5.36e-01
+  6   5.6656e+00   6.5505e+00  1.56e-01  5.37e-05  7.07e-05  8.85e-01  1.88e+00  8.72e-01
+  7   4.1810e+00   4.5446e+00  8.70e-02  1.90e-05  2.68e-05  3.64e-01  6.80e-01  8.09e-01
+  8   3.4404e+00   3.5519e+00  3.24e-02  6.41e-06  8.82e-06  1.12e-01  2.39e-01  7.54e-01
+  9   3.0921e+00   3.1107e+00  6.02e-03  1.22e-06  1.64e-06  1.86e-02  4.73e-02  9.05e-01
+ 10   3.0441e+00   3.0570e+00  4.23e-03  1.08e-06  8.90e-07  1.29e-02  2.52e-02  7.05e-01
+ 11   3.0055e+00   3.0080e+00  8.18e-04  2.17e-07  1.34e-07  2.46e-03  4.69e-03  8.73e-01
+ 12   3.0054e+00   3.0084e+00  1.01e-03  3.64e-06  1.47e-07  3.04e-03  4.06e-03  6.25e-02
+ 13   3.0024e+00   3.0037e+00  4.15e-04  1.44e-06  6.24e-08  1.25e-03  1.60e-03  7.02e-01
+ 14   3.0020e+00   3.0031e+00  3.63e-04  1.84e-06  5.32e-08  1.09e-03  1.29e-03  1.75e-01
+ 15   3.0004e+00   3.0006e+00  6.79e-05  4.35e-07  9.81e-09  2.04e-04  2.41e-04  8.49e-01
+ 16   3.0001e+00   3.0002e+00  2.22e-05  2.46e-07  3.32e-09  6.66e-05  8.20e-05  7.49e-01
+ 17   3.0000e+00   3.0000e+00  5.29e-06  7.01e-08  8.08e-10  1.59e-05  2.03e-05  8.13e-01
+ 18   3.0000e+00   3.0000e+00  4.03e-06  2.74e-07  6.18e-10  1.21e-05  1.40e-05  2.93e-01
+ 19   3.0000e+00   3.0000e+00  7.60e-07  5.70e-08  1.21e-10  2.28e-06  2.69e-06  8.53e-01
+ 20   3.0000e+00   3.0000e+00  1.85e-07  4.13e-08  3.37e-11  5.56e-07  8.33e-07  9.90e-01
+ 21   3.0000e+00   3.0000e+00  1.85e-07  4.13e-08  3.37e-11  5.56e-07  8.33e-07  0.00e+00
+---------------------------------------------------------------------------------------------
+Terminated with status = solved (reduced accuracy)
+solve time = 16.3ms</code></pre><p>The lower bound found is 3</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with Clarabel attached
+
+* Status
+  Result count       : 1
+  Termination status : ALMOST_OPTIMAL
+  Message from the solver:
+  &quot;ALMOST_SOLVED&quot;
+
+* Candidate solution (result #1)
+  Primal status      : NEARLY_FEASIBLE_POINT
+  Dual status        : NEARLY_FEASIBLE_POINT
+  Objective value    : 3.00000e+00
+  Dual objective value : 3.00000e+00
+
+* Work counters
+  Solve time (sec)   : 1.62621e-02
+  Barrier iterations : 21
+</code></pre><p>The moment matrix is as follows, we can already see the global minimizer <code>[0, -1]</code> from the entries <code>(2, 1)</code> and <code>(3, 1)</code>. This heuristic way to obtain solutions to the polynomial optimization problem is suggested in (<a href="../../../bibliography/#Laurent2008">Laurent, 2008</a>; (6.15)).</p><pre><code class="language-julia hljs">ν = moment_matrix(con_ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
+ SubBasis{Monomial}([1, x[2], x[1], x[2]^2, x[1]*x[2], x[1]^2, x[2]^3, x[1]*x[2]^2, x[1]^2*x[2], x[1]^3, x[2]^4, x[1]*x[2]^3, x[1]^2*x[2]^2, x[1]^3*x[2], x[1]^4])
+And entries in a 15×15 SymMatrix{Float64}:
+  0.9999999997859073     -0.9999988219054464     …   2.5166009647361593e-7
+ -0.9999988219054464      0.9999976841708637         9.47676328056913e-8
+  1.1872461215867367e-6  -1.1600287259108588e-6      4.7451356029855384e-7
+  0.9999976618226798     -0.9999965064454199         4.8965215088882085e-5
+ -1.1599500181679241e-6   1.1855210516213522e-6      4.618762907520152e-5
+  5.8216332622599706e-8   3.0356199948443204e-8  …   9.745535477720552e-5
+ -0.999996513745934       0.9999953642434687        -0.0005565093093445481
+  1.160209683468974e-6   -1.1225671941552976e-6     -0.00032131825703568713
+  2.9745760282044875e-8   1.8377122547470757e-9     -0.0008744279872899929
+  1.1134410809885912e-7   8.327992018483806e-8      -0.0007650100609308081
+  0.9999953885900964     -0.9999942420839988     …   0.6122725920054648
+ -1.0827791561456249e-6   1.1485036921654073e-6      0.014996139527614954
+  2.913694878100692e-8    2.346521794496128e-9       0.9253620565525771
+  8.928243272967077e-8    3.5488281830330126e-8      0.48570399361626404
+  2.5166009647361593e-7   9.47676328056913e-8        1.6309121889456073</code></pre><p>Many entries of the matrix actually have the same moment. We can obtain the following list of these moments without duplicates (ignoring when difference of entries representing the same moments is below <code>1e-5</code>)</p><pre><code class="language-julia hljs">μ = measure(ν, atol = 1e-5)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentVector{Float64, SubBasis{Monomial, DynamicPolynomials.Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}, DynamicPolynomials.MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}}}, Vector{Float64}}([0.9999999997859073, -0.9999988219054464, 1.1872461215867367e-6, 0.9999976618226798, -1.1599500181679241e-6, 5.8216332622599706e-8, -0.999996513745934, 1.160209683468974e-6, 2.9745760282044875e-8, 1.1134410809885912e-7  …  -0.0007650100609308081, 1.412089891519067, -0.28776435809882966, 0.4734587642070385, -0.194381193968364, 0.6122725920054648, 0.014996139527614954, 0.9253620565525771, 0.48570399361626404, 1.6309121889456073], SubBasis{Monomial}([1, x₂, x₁, x₂², x₁x₂, x₁², x₂³, x₁x₂², x₁²x₂, x₁³, x₂⁴, x₁x₂³, x₁²x₂², x₁³x₂, x₁⁴, x₂⁵, x₁x₂⁴, x₁²x₂³, x₁³x₂², x₁⁴x₂, x₁⁵, x₂⁶, x₁x₂⁵, x₁²x₂⁴, x₁³x₂³, x₁⁴x₂², x₁⁵x₂, x₁⁶, x₂⁷, x₁x₂⁶, x₁²x₂⁵, x₁³x₂⁴, x₁⁴x₂³, x₁⁵x₂², x₁⁶x₂, x₁⁷, x₂⁸, x₁x₂⁷, x₁²x₂⁶, x₁³x₂⁵, x₁⁴x₂⁴, x₁⁵x₂³, x₁⁶x₂², x₁⁷x₂, x₁⁸]))</code></pre><p>The truncated moment matrix can then be obtained as follows</p><pre><code class="language-julia hljs">ν_truncated = moment_matrix(μ, monomials(x, 0:3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
+ SubBasis{Monomial}([1, x[2], x[1], x[2]^2, x[1]*x[2], x[1]^2, x[2]^3, x[1]*x[2]^2, x[1]^2*x[2], x[1]^3])
+And entries in a 10×10 SymMatrix{Float64}:
+  0.9999999997859073     -0.9999988219054464     …  1.1134410809885912e-7
+ -0.9999988219054464      0.9999976618226798        8.928243272967077e-8
+  1.1872461215867367e-6  -1.1599500181679241e-6     2.5166009647361593e-7
+  0.9999976618226798     -0.999996513745934         3.5488281830330126e-8
+ -1.1599500181679241e-6   1.160209683468974e-6      9.47676328056913e-8
+  5.8216332622599706e-8   2.9745760282044875e-8  …  4.7451356029855384e-7
+ -0.999996513745934       0.9999953885900964        1.4340818755853253e-5
+  1.160209683468974e-6   -1.0827791561456249e-6     4.8965215088882085e-5
+  2.9745760282044875e-8   2.913694878100692e-8      4.618762907520152e-5
+  1.1134410809885912e-7   8.928243272967077e-8      9.745535477720552e-5</code></pre><p>Let&#39;s check if the flatness property is satisfied. The rank of <code>ν_truncated</code> seems to be 1:</p><pre><code class="language-julia hljs">using LinearAlgebra
+LinearAlgebra.svdvals(Matrix(ν_truncated.Q))
+LinearAlgebra.rank(Matrix(ν_truncated.Q), rtol = 1e-3)
+svdvals(Matrix(ν_truncated.Q))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10-element Vector{Float64}:
+ 3.999990725389048
+ 0.00014941337488010636
+ 3.8463103544774386e-5
+ 5.00647368410897e-7
+ 9.73705614060403e-8
+ 4.8867451285657545e-8
+ 4.067233993284245e-8
+ 3.755056514424653e-8
+ 3.60552441531946e-8
+ 3.139767073098475e-9</code></pre><p>The rank of <code>ν</code> is clearly higher than 1, closer to 3:</p><pre><code class="language-julia hljs">svdvals(Matrix(ν.Q))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">15-element Vector{Float64}:
+ 5.141887449326348
+ 2.4407594264687362
+ 1.4710241419307037
+ 0.0004074855572430628
+ 0.00013845129928262667
+ 3.543119975228378e-5
+ 2.1610651138115324e-5
+ 5.913752227517728e-7
+ 3.0867009566270523e-8
+ 2.783871660796074e-8
+ 4.871621314580938e-9
+ 2.831448387851015e-9
+ 6.916635365345059e-10
+ 3.327529933099593e-10
+ 1.9424275214671552e-11</code></pre><p>Even if the flatness property is not satisfied, we can still try extracting the minimizer with a low rank decomposition of rank 3. We find the optimal solution again doing so:</p><pre><code class="language-julia hljs">atomic_measure(ν, FixedRank(3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x[1], x[2] with 1 atoms:
+ at [1.1821785890260018e-6, -0.999998831548167] with weight 1.0274960457332836</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ellipsoid/">« Exterior of ellipsoid</a><a class="docs-footer-nextpage" href="../min_univariate/">Maximizing as minimum »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Friday 5 July 2024 07:09">Friday 5 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
