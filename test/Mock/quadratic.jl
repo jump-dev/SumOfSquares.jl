@@ -48,8 +48,10 @@ function optimize!(mock)
     return MOI.Utilities.mock_optimize!(
         mock,
         (MOI.FEASIBLE_POINT, [2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, √2]),
-        (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) => [[0.0, 1.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, -√2]],
-        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[0.0, 0.0, 0.0, 2.0, -1.0, 2.0]],
+        (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone) =>
+            [[0.0, 1.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, -√2]],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) =>
+            [[0.0, 0.0, 0.0, 2.0, -1.0, 2.0]],
     )
 end
 for mock in [bridged_mock(optimize!), cached_mock(optimize!)]
