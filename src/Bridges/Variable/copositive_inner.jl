@@ -95,22 +95,12 @@ end
 
 # TODO ConstraintPrimal, ConstraintDual
 
-# See https://jump.dev/MathOptInterface.jl/v0.9.1/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle
-function matrix_indices(k)
-    j = div(1 + isqrt(8k - 7), 2)
-    i = k - div((j - 1) * j, 2)
-    return i, j
-end
-# Vector index for the vectorization of the triangular part.
-function vector_index(i, j)
-    return div((j - 1) * j, 2) + i
-end
 # Vector index for the vectorization of the off-diagonal triangular part.
 function offdiag_vector_index(i, j)
     if i < j
-        return vector_index(i, j - 1)
+        return MOI.Utilities.trimap(i, j - 1)
     else
-        throw(ArgumentError())
+        throw(ArgumentError("Not off-diagonal"))
     end
 end
 
@@ -121,7 +111,7 @@ function MOI.get(
     i::MOI.Bridges.IndexInVector,
 )
     value = MOI.get(model, attr, bridge.matrix_variables[i.value])
-    row, col = matrix_indices(i.value)
+    row, col = MOI.Utilities.inverse_trimap(i.value)
     if row != col
         value += MOI.get(
             model,
@@ -138,13 +128,13 @@ function MOI.Bridges.bridged_function(
 ) where {T}
     func =
         convert(MOI.ScalarAffineFunction{T}, bridge.matrix_variables[i.value])
-    row, col = matrix_indices(i.value)
+    row, col = MOI.Utilities.inverse_trimap(i.value)
     if row != col
         func = MOI.Utilities.operate!(
             +,
             T,
             func,
-            bridge.nonneg_variables[vector_index(row, col - 1)],
+            bridge.nonneg_variables[MOI.Utilities.trimap(row, col - 1)],
         )
     end
     return func
@@ -157,11 +147,11 @@ function MOI.Bridges.Variable.unbridged_map(
     F = MOI.ScalarAffineFunction{T}
     func = convert(F, vi)
     map = bridge.matrix_variables[i.value] => func
-    row, col = matrix_indices(i.value)
+    row, col = MOI.Utilities.inverse_trimap(i.value)
     if row == col
         return (map,)
     else
-        nneg = bridge.nonneg_variables[vector_index(row, col - 1)]
+        nneg = bridge.nonneg_variables[MOI.Utilities.trimap(row, col - 1)]
         return (map, nneg => zero(F))
     end
 end
