@@ -127,17 +127,88 @@ function MOI.get(
     return SOS.ScaledDiagonallyDominantConeTriangle(bridge.side_dimension)
 end
 
-# TODO ConstraintPrimal, ConstraintDual
+# The map `A` is not injective because it maps the entry of several 2x2 matrices
+# into the same index so it is not invertible hence it's unclear how to implemented
+# `set` for `VariablePrimalStart`.
+# The adjoint `A'` is however injective and it is easy to invert.
 
-trimap(i, j) = div(j * (j - 1), 2) + i
+function MOI.supports(
+    model::MOI.ModelLike,
+    attr::MOI.ConstraintDualStart,
+    ::Type{<:ScaledDiagonallyDominantBridge},
+)
+    return MOI.supports(
+        model,
+        attr,
+        MOI.ConstraintIndex{
+            MOI.VectorOfVariables,
+            SOS.PositiveSemidefinite2x2ConeTriangle,
+        },
+    )
+end
+
+function MOI.set(
+    model::MOI.ModelLike,
+    attr::MOI.ConstraintDualStart,
+    bridge::ScaledDiagonallyDominantBridge,
+    value,
+)
+    n = bridge.side_dimension
+    k = 0
+    for j in 1:n
+        for i in 1:(j-1)
+            k += 1
+            # PSD constraints on 2x2 matrices are SOC representable
+            if isnothing(value)
+                dual = nothing
+            else
+                dual = [
+                    value[MOI.Utilities.trimap(i, i)],
+                    value[MOI.Utilities.trimap(i, j)],
+                    value[MOI.Utilities.trimap(j, j)],
+                ]
+            end
+            MOI.set(model, attr, bridge.constraints[k], dual)
+        end
+    end
+    return
+end
+
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
+    bridge::ScaledDiagonallyDominantBridge{T},
+) where {T}
+    n = bridge.side_dimension
+    value = zeros(T, MOI.Utilities.trimap(n, n))
+    k = 0
+    for j in 1:n
+        for i in 1:(j-1)
+            k += 1
+            dual = MOI.get(model, attr, bridge.constraints[k])
+            if isnothing(dual)
+                return nothing
+            end
+            # There are `bridge.side_dimension - 1` possible candidate that should all have
+            # the same `dual` so we take an arbitrary choice
+            if j == i + 1
+                value[MOI.Utilities.trimap(i, i)] = dual[1]
+            elseif i == 1 && j == n
+                value[MOI.Utilities.trimap(j, j)] = dual[3]
+            end
+            value[MOI.Utilities.trimap(i, j)] = dual[2]
+        end
+    end
+    return value
+end
 
 function MOI.get(
     model::MOI.ModelLike,
     attr::MOI.VariablePrimal,
     bridge::ScaledDiagonallyDominantBridge{T},
-    i::MOI.Bridges.IndexInVector,
+    index::MOI.Bridges.IndexInVector,
 ) where {T}
-    i, j = MOI.Utilities.inverse_trimap(i.value)
+    i, j = MOI.Utilities.inverse_trimap(index.value)
     if i == j
         value = zero(T)
         for k in 1:(i-1)
@@ -188,19 +259,28 @@ function MOI.Bridges.Variable.unbridged_map(
     k = 0
     z = zero(SAF)
     saf(i) = convert(SAF, vis[i])
-    # vis[trimap(j, j)] is replaced by a sum of several variables.
+    # vis[MOI.Utilities.trimap(j, j)] is replaced by a sum of several variables.
     # The strategy is to replace all of them by zero except one.
     for j in 1:bridge.side_dimension
         for i in 1:(j-1)
             k += 1
             if i == 1 && j == 2
-                push!(umap, bridge.variables[k][1] => saf(trimap(1, 1)))
+                push!(
+                    umap,
+                    bridge.variables[k][1] => saf(MOI.Utilities.trimap(1, 1)),
+                )
             else
                 push!(umap, bridge.variables[k][1] => z)
             end
-            push!(umap, bridge.variables[k][2] => saf(trimap(i, j)))
+            push!(
+                umap,
+                bridge.variables[k][2] => saf(MOI.Utilities.trimap(i, j)),
+            )
             if i == 1
-                push!(umap, bridge.variables[k][3] => saf(trimap(j, j)))
+                push!(
+                    umap,
+                    bridge.variables[k][3] => saf(MOI.Utilities.trimap(j, j)),
+                )
             else
                 push!(umap, bridge.variables[k][3] => z)
             end
