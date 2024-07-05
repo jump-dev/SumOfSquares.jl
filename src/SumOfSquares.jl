@@ -11,6 +11,8 @@ import StarAlgebras as SA
 
 import MultivariatePolynomials as MP
 const _APL = MP.AbstractPolynomialLike
+const _AE_APL = Union{SA.AlgebraElement,_APL}
+
 Reexport.@reexport using MultivariateBases
 const MB = MultivariateBases
 # @set assumes that `SemialgebraicSets` is defined

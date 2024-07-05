@@ -33,7 +33,7 @@ function generate(test, solver, config)
     )
     MOI.Bridges.add_bridge(
         bridged,
-        SOS.Bridges.Constraint.ScaledDiagonallyDominantBridge{Float64},
+        SOS.Bridges.Variable.ScaledDiagonallyDominantBridge{Float64},
     )
     MOI.Bridges.add_bridge(
         bridged,

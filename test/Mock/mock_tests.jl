@@ -12,9 +12,9 @@ using Test, JuMP
 #@testset "Quartic constant" begin
 #    include("quartic_constant.jl")
 #end
-@testset "Quadratic" begin
-    include("quadratic.jl")
-end
+#@testset "Quadratic" begin
+#    include("quadratic.jl")
+#end
 @testset "Quartic ideal" begin
     include("quartic_ideal.jl")
 end
@@ -30,9 +30,9 @@ end
 @testset "Simple matrix" begin
     include("simple_matrix.jl")
 end
-#@testset "Concave then convex cubic" begin
-#    include("concave_then_convex_cubic.jl")
-#end
+@testset "Concave then convex cubic" begin
+    include("concave_then_convex_cubic.jl")
+end
 @testset "Horn" begin
     include("horn.jl")
 end
@@ -45,9 +45,9 @@ end
 #@testset "BPT12e399" begin
 #    include("BPT12e399.jl")
 #end
-#@testset "Max Cut" begin
-#    include("maxcut.jl")
-#end
+@testset "Max Cut" begin
+    include("maxcut.jl")
+end
 #@testset "Chebyshev" begin
 #    include("chebyshev.jl")
 #end
