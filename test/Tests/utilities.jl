@@ -147,7 +147,7 @@ function inner_variable_value(model, atol = 1e-4)
                 first = false
                 print(MOI.get(inner, MOI.ConstraintDual(), ci))
             end
-            println("])")
+            println("],")
         end
     end
     return println(")")
