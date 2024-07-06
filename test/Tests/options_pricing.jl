@@ -19,7 +19,7 @@ function options_pricing_test(
     @polyvar x y z
     σ = [184.04, 164.88, 164.88, 184.04, 164.88, 184.04]
     X = [x^2, x * y, x * z, y^2, y * z, z^2, x, y, z, 1]
-    μ = measure([σ .+ 44.21^2; 44.21 * ones(3); 1], X)
+    μ = moment_vector([σ .+ 44.21^2; 44.21 * ones(3); 1], X)
 
     cocone = CopositiveInner(cone)
 
