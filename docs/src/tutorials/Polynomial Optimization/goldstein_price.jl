@@ -55,7 +55,7 @@ solution_summary(model)
 # We can obtain the following list of these moments without duplicates
 # (ignoring when difference of entries representing the same moments is below `1e-5`)
 
-μ = measure(ν, atol = 1e-5)
+μ = moment_vector(ν, atol = 1e-5)
 
 # The truncated moment matrix can then be obtained as follows
 

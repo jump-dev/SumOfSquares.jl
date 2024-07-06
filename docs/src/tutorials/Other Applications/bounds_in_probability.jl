@@ -28,7 +28,7 @@ using DynamicPolynomials
 @polyvar x
 monos = [1, x, x^2]
 using SumOfSquares
-μ = measure([μ0, μ1, μ2], monos)
+μ = moment_vector([μ0, μ1, μ2], monos)
 
 # We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
