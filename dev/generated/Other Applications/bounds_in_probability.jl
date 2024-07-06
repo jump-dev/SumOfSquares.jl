@@ -10,7 +10,7 @@ using DynamicPolynomials
 @polyvar x
 monos = [1, x, x^2]
 using SumOfSquares
-μ = measure([μ0, μ1, μ2], monos)
+μ = moment_vector([μ0, μ1, μ2], monos)
 
 using CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
