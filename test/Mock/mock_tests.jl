@@ -48,9 +48,9 @@ end
 @testset "Max Cut" begin
     include("maxcut.jl")
 end
-#@testset "Chebyshev" begin
-#    include("chebyshev.jl")
-#end
+@testset "Chebyshev" begin
+    include("chebyshev.jl")
+end
 #@testset "Quartic comparison" begin
 #    include("quartic_comparison.jl")
 #end
