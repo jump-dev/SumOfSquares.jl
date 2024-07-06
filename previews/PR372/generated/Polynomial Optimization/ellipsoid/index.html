@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Exterior of ellipsoid · SumOfSquares</title><meta name="title" content="Exterior of ellipsoid · SumOfSquares"/><meta property="og:title" content="Exterior of ellipsoid · SumOfSquares"/><meta property="twitter:title" content="Exterior of ellipsoid · SumOfSquares"/><meta name="description" content="Documentation for SumOfSquares."/><meta property="og:description" content="Documentation for SumOfSquares."/><meta property="twitter:description" content="Documentation for SumOfSquares."/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/citations.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../../../reference/standard_form/">Standard form</a></li><li><a class="tocitem" href="../../../reference/constraints/">Constraints</a></li><li><a class="tocitem" href="../../../reference/certificate/">Certificate</a></li><li><a class="tocitem" href="../../../reference/internal/">Internal functions</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-6-1" type="checkbox"/><label class="tocitem" for="menuitem-6-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/circle/">Nonnegative over a variety</a></li><li><a class="tocitem" href="../../Getting started/dualization/">On the importance of Dualization</a></li><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li><li><a class="tocitem" href="../../Getting started/univariate/">Minimization of a univariate polynomial</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-2" type="checkbox" checked/><label class="tocitem" for="menuitem-6-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../bilinear/">Bilinear terms</a></li><li><a class="tocitem" href="../bound_on_global_extremum/">Bound on Global Extremum</a></li><li class="is-active"><a class="tocitem" href>Exterior of ellipsoid</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li></ul></li><li><a class="tocitem" href="../goldstein_price/">Goldstein-price function</a></li><li><a class="tocitem" href="../min_univariate/">Maximizing as minimum</a></li><li><a class="tocitem" href="../polynomial_optimization/">Polynomial Optimization</a></li><li><a class="tocitem" href="../qcqp/">Nonconvex quadratically constrained quadratic programs</a></li><li><a class="tocitem" href="../qp/">Nonconvex QP</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-3" type="checkbox"/><label class="tocitem" for="menuitem-6-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance</a></li><li><a class="tocitem" href="../../Systems and Control/julia_set/">Outer approximation of Julia set</a></li><li><a class="tocitem" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../../Systems and Control/stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-4" type="checkbox"/><label class="tocitem" for="menuitem-6-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Other Applications/bounds_in_probability/">Bounds in Probability</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-5" type="checkbox"/><label class="tocitem" for="menuitem-6-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-6" type="checkbox"/><label class="tocitem" for="menuitem-6-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/sign_symmetry/">Sign symmetry</a></li><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-7" type="checkbox"/><label class="tocitem" for="menuitem-6-7"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Extension/certificate/">Certificate</a></li><li><a class="tocitem" href="../../Extension/hypercube/">Hypercube</a></li><li><a class="tocitem" href="../../Extension/typed/">Multivariate polynomials implementations</a></li><li><a class="tocitem" href="../../Extension/univariate_solver/">Univariate Solver</a></li></ul></li></ul></li><li><a class="tocitem" href="../../../bibliography/">Bibliography</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Polynomial Optimization</a></li><li class="is-active"><a href>Exterior of ellipsoid</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Exterior of ellipsoid</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/master/docs/src/tutorials/Polynomial Optimization/ellipsoid.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Exterior-of-ellipsoid"><a class="docs-heading-anchor" href="#Exterior-of-ellipsoid">Exterior of ellipsoid</a><a id="Exterior-of-ellipsoid-1"></a><a class="docs-heading-anchor-permalink" href="#Exterior-of-ellipsoid" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR372/generated/Polynomial Optimization/ellipsoid.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR372/generated/Polynomial Optimization/ellipsoid.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Adapted from</strong>: (<a href="../../../bibliography/#Floudas1999">Floudas <em>et al.</em>, 1999</a>; Section 3.5) and (<a href="../../../bibliography/#Lasserre2009">Lasserre, 2009</a>; Table 5.1)</p><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>Consider the polynomial optimization problem from (<a href="../../../bibliography/#Floudas1999">Floudas <em>et al.</em>, 1999</a>; Section 3.5)</p><pre><code class="language-julia hljs">A = [
+     0  0  1
+     0 -1  0
+    -2  1 -1
+]
+bz = [3, 0, -4] - [0, -1, -6]
+y = [1.5, -0.5, -5]
+
+using DynamicPolynomials
+@polyvar x[1:3]
+p = -2x[1] + x[2] - x[3]
+using SumOfSquares
+e = A * x - y
+f = e&#39;e - bz&#39;bz / 4
+K = @set sum(x) &lt;= 4 &amp;&amp; 3x[2] + x[3] &lt;= 6 &amp;&amp; f &gt;= 0 &amp;&amp; 0 &lt;= x[1] &amp;&amp; x[1] &lt;= 2 &amp;&amp; 0 &lt;= x[2] &amp;&amp; 0 &lt;= x[3] &amp;&amp; x[3] &lt;= 3</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Basic semialgebraic Set defined by no equality
+8 inequalities
+ 4.0 - x[3] - x[2] - x[1] ≥ 0
+ 6.0 - x[3] - 3.0*x[2] ≥ 0
+ 24.0 - 13.0*x[3] + 9.0*x[2] - 20.0*x[1] + 2.0*x[3]^2 - 2.0*x[2]*x[3] + 2.0*x[2]^2 + 4.0*x[1]*x[3] - 4.0*x[1]*x[2] + 4.0*x[1]^2 ≥ 0
+ x[1] ≥ 0
+ 2.0 - x[1] ≥ 0
+ x[2] ≥ 0
+ x[3] ≥ 0
+ 3.0 - x[3] ≥ 0
+</code></pre><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import Clarabel
+solver = Clarabel.Optimizer</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Clarabel.MOIwrapper.Optimizer</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following function searches for the largest lower bound and finds zero using the <code>d</code>th level of the hierarchy`.</p><pre><code class="language-julia hljs">function solve(d)
+    model = SOSModel(solver)
+    @variable(model, α)
+    @objective(model, Max, α)
+    @constraint(model, c, p &gt;= α, domain = K, maxdegree = d)
+    optimize!(model)
+    println(solution_summary(model))
+    return model
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solve (generic function with 1 method)</code></pre><p>The first level of the hierarchy gives a lower bound of <code>-7</code>`</p><pre><code class="language-julia hljs">model2 = solve(2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
+           Clarabel.jl v0.9.0  -  Clever Acronym
+                   (c) Paul Goulart
+                University of Oxford, 2022
+-------------------------------------------------------------
+
+problem:
+  variables     = 9
+  constraints   = 12
+  nnz(P)        = 0
+  nnz(A)        = 24
+  cones (total) = 2
+    : Zero        = 1,  numel = 4
+    : Nonnegative = 1,  numel = 8
+
+settings:
+  linear algebra: direct / qdldl, precision: Float64
+  max iter = 200, time limit = Inf,  max step = 0.990
+  tol_feas = 1.0e-08, tol_gap_abs = 1.0e-08, tol_gap_rel = 1.0e-08,
+  static reg : on, ϵ1 = 1.0e-08, ϵ2 = 4.9e-32
+  dynamic reg: on, ϵ = 1.0e-13, δ = 2.0e-07
+  iter refine: on, reltol = 1.0e-13, abstol = 1.0e-12,
+               max iter = 10, stop ratio = 5.0
+  equilibrate: on, min_scale = 1.0e-04, max_scale = 1.0e+04
+               max iter = 10
+
+iter    pcost        dcost       gap       pres      dres      k/t        μ       step
+---------------------------------------------------------------------------------------------
+  0   2.2646e+00   2.2646e+00  0.00e+00  5.04e-01  2.23e-01  1.00e+00  2.84e+00   ------
+  1   4.8146e+00   4.8773e+00  1.30e-02  1.11e-01  3.74e-02  2.33e-01  6.39e-01  8.00e-01
+  2   5.8894e+00   5.8986e+00  1.56e-03  1.43e-02  4.91e-03  3.33e-02  9.41e-02  8.57e-01
+  3   5.9970e+00   5.9972e+00  3.18e-05  2.67e-04  9.33e-05  6.56e-04  1.82e-03  9.81e-01
+  4   6.0000e+00   6.0000e+00  3.18e-07  2.67e-06  9.32e-07  6.56e-06  1.82e-05  9.90e-01
+  5   6.0000e+00   6.0000e+00  3.18e-09  2.67e-08  9.32e-09  6.56e-08  1.82e-07  9.90e-01
+  6   6.0000e+00   6.0000e+00  3.18e-11  2.67e-10  9.32e-11  6.56e-10  1.82e-09  9.90e-01
+---------------------------------------------------------------------------------------------
+Terminated with status = solved
+solve time = 1.09ms
+* Solver : Clarabel
+
+* Status
+  Result count       : 1
+  Termination status : OPTIMAL
+  Message from the solver:
+  &quot;SOLVED&quot;
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : FEASIBLE_POINT
+  Objective value    : -6.00000e+00
+  Dual objective value : -6.00000e+00
+
+* Work counters
+  Solve time (sec)   : 1.09045e-03
+  Barrier iterations : 6</code></pre><p>The second level improves the lower bound</p><pre><code class="language-julia hljs">model4 = solve(4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
+           Clarabel.jl v0.9.0  -  Clever Acronym
+                   (c) Paul Goulart
+                University of Oxford, 2022
+-------------------------------------------------------------
+
+problem:
+  variables     = 82
+  constraints   = 101
+  nnz(P)        = 0
+  nnz(A)        = 242
+  cones (total) = 10
+    : Zero        = 1,  numel = 20
+    : Nonnegative = 1,  numel = 1
+    : PSDTriangle = 8,  numel = (10,10,10,10,...,10)
+
+settings:
+  linear algebra: direct / qdldl, precision: Float64
+  max iter = 200, time limit = Inf,  max step = 0.990
+  tol_feas = 1.0e-08, tol_gap_abs = 1.0e-08, tol_gap_rel = 1.0e-08,
+  static reg : on, ϵ1 = 1.0e-08, ϵ2 = 4.9e-32
+  dynamic reg: on, ϵ = 1.0e-13, δ = 2.0e-07
+  iter refine: on, reltol = 1.0e-13, abstol = 1.0e-12,
+               max iter = 10, stop ratio = 5.0
+  equilibrate: on, min_scale = 1.0e-04, max_scale = 1.0e+04
+               max iter = 10
+
+iter    pcost        dcost       gap       pres      dres      k/t        μ       step
+---------------------------------------------------------------------------------------------
+  0   9.7795e-01   9.7795e-01  1.11e-16  6.53e-01  4.62e-01  1.00e+00  2.05e+00   ------
+  1   1.2254e+00   1.2350e+00  7.85e-03  1.33e-01  7.13e-02  1.75e-01  4.77e-01  7.96e-01
+  2   2.6674e+00   2.7439e+00  2.87e-02  6.88e-02  2.81e-02  1.71e-01  2.05e-01  7.36e-01
+  3   4.3661e+00   4.4172e+00  1.17e-02  1.60e-02  5.48e-03  7.83e-02  4.58e-02  8.30e-01
+  4   5.1102e+00   5.1418e+00  6.18e-03  7.99e-03  2.62e-03  4.73e-02  2.38e-02  5.82e-01
+  5   5.5386e+00   5.5472e+00  1.54e-03  2.33e-03  7.37e-04  1.33e-02  7.23e-03  7.49e-01
+  6   5.6457e+00   5.6476e+00  3.40e-04  5.12e-04  1.62e-04  3.00e-03  1.66e-03  8.07e-01
+  7   5.6906e+00   5.6907e+00  1.34e-05  1.98e-05  6.26e-06  1.19e-04  6.47e-05  9.72e-01
+  8   5.6922e+00   5.6922e+00  8.64e-07  1.27e-06  4.02e-07  7.63e-06  4.16e-06  9.40e-01
+  9   5.6923e+00   5.6923e+00  1.21e-08  1.76e-08  5.58e-09  1.06e-07  5.77e-08  9.87e-01
+ 10   5.6923e+00   5.6923e+00  2.66e-10  3.80e-10  1.21e-10  2.33e-09  1.25e-09  9.78e-01
+---------------------------------------------------------------------------------------------
+Terminated with status = solved
+solve time = 4.80ms
+* Solver : Clarabel
+
+* Status
+  Result count       : 1
+  Termination status : OPTIMAL
+  Message from the solver:
+  &quot;SOLVED&quot;
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : FEASIBLE_POINT
+  Objective value    : -5.69231e+00
+  Dual objective value : -5.69231e+00
+
+* Work counters
+  Solve time (sec)   : 4.80387e-03
+  Barrier iterations : 10</code></pre><p>The third level improves it even further</p><pre><code class="language-julia hljs">model6 = solve(6)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
+           Clarabel.jl v0.9.0  -  Clever Acronym
+                   (c) Paul Goulart
+                University of Oxford, 2022
+-------------------------------------------------------------
+
+problem:
+  variables     = 451
+  constraints   = 506
+  nnz(P)        = 0
+  nnz(A)        = 1376
+  cones (total) = 10
+    : Zero        = 1,  numel = 56
+    : PSDTriangle = 9,  numel = (55,55,10,55,...,55)
+
+settings:
+  linear algebra: direct / qdldl, precision: Float64
+  max iter = 200, time limit = Inf,  max step = 0.990
+  tol_feas = 1.0e-08, tol_gap_abs = 1.0e-08, tol_gap_rel = 1.0e-08,
+  static reg : on, ϵ1 = 1.0e-08, ϵ2 = 4.9e-32
+  dynamic reg: on, ϵ = 1.0e-13, δ = 2.0e-07
+  iter refine: on, reltol = 1.0e-13, abstol = 1.0e-12,
+               max iter = 10, stop ratio = 5.0
+  equilibrate: on, min_scale = 1.0e-04, max_scale = 1.0e+04
+               max iter = 10
+
+iter    pcost        dcost       gap       pres      dres      k/t        μ       step
+---------------------------------------------------------------------------------------------
+  0   6.2703e-01   6.2703e-01  0.00e+00  7.56e-01  5.36e-01  1.00e+00  1.48e+00   ------
+  1   7.4953e-01   7.6135e-01  1.18e-02  1.58e-01  9.97e-02  2.39e-01  4.26e-01  8.06e-01
+  2   1.2333e+00   1.3121e+00  6.39e-02  4.31e-02  2.64e-02  1.73e-01  1.70e-01  8.68e-01
+  3   1.9671e+00   2.0062e+00  1.99e-02  1.22e-02  4.68e-03  6.32e-02  3.87e-02  8.18e-01
+  4   2.7047e+00   2.7536e+00  1.81e-02  8.45e-03  2.26e-03  6.99e-02  1.94e-02  7.43e-01
+  5   3.0495e+00   3.0614e+00  3.90e-03  3.75e-03  9.47e-04  2.13e-02  8.43e-03  9.22e-01
+  6   3.4706e+00   3.4774e+00  1.96e-03  9.59e-04  2.24e-04  9.63e-03  1.95e-03  8.04e-01
+  7   3.7081e+00   3.7129e+00  1.30e-03  4.91e-04  1.15e-04  6.51e-03  9.26e-04  6.34e-01
+  8   3.9158e+00   3.9173e+00  3.71e-04  1.29e-04  3.04e-05  1.93e-03  2.38e-04  8.24e-01
+  9   3.9469e+00   3.9488e+00  4.92e-04  8.66e-05  1.55e-05  2.34e-03  1.30e-04  6.86e-01
+ 10   4.0073e+00   4.0086e+00  3.31e-04  3.98e-05  5.09e-06  1.52e-03  4.86e-05  7.76e-01
+ 11   4.0267e+00   4.0275e+00  1.76e-04  1.93e-05  2.66e-06  8.15e-04  2.55e-05  7.35e-01
+ 12   4.0582e+00   4.0584e+00  3.91e-05  3.52e-06  4.53e-07  1.79e-04  4.47e-06  9.70e-01
+ 13   4.0660e+00   4.0660e+00  1.14e-05  9.59e-07  1.23e-07  5.20e-05  1.22e-06  8.03e-01
+ 14   4.0671e+00   4.0671e+00  6.05e-06  4.79e-07  6.23e-08  2.75e-05  6.16e-07  6.69e-01
+ 15   4.0683e+00   4.0683e+00  7.91e-07  6.17e-08  8.06e-09  3.60e-06  7.98e-08  8.78e-01
+ 16   4.0684e+00   4.0684e+00  3.27e-07  2.44e-08  3.20e-09  1.48e-06  3.17e-08  7.67e-01
+ 17   4.0685e+00   4.0685e+00  6.90e-09  5.15e-10  6.74e-11  3.13e-08  6.67e-10  9.80e-01
+---------------------------------------------------------------------------------------------
+Terminated with status = solved
+solve time = 42.8ms
+* Solver : Clarabel
+
+* Status
+  Result count       : 1
+  Termination status : OPTIMAL
+  Message from the solver:
+  &quot;SOLVED&quot;
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : FEASIBLE_POINT
+  Objective value    : -4.06848e+00
+  Dual objective value : -4.06848e+00
+
+* Work counters
+  Solve time (sec)   : 4.28458e-02
+  Barrier iterations : 17</code></pre><p>The fourth level finds the optimal objective value as lower bound.</p><pre><code class="language-julia hljs">model8 = solve(8)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
+           Clarabel.jl v0.9.0  -  Clever Acronym
+                   (c) Paul Goulart
+                University of Oxford, 2022
+-------------------------------------------------------------
+
+problem:
+  variables     = 1736
+  constraints   = 1855
+  nnz(P)        = 0
+  nnz(A)        = 5436
+  cones (total) = 10
+    : Zero        = 1,  numel = 120
+    : PSDTriangle = 9,  numel = (210,210,55,210,...,210)
+
+settings:
+  linear algebra: direct / qdldl, precision: Float64
+  max iter = 200, time limit = Inf,  max step = 0.990
+  tol_feas = 1.0e-08, tol_gap_abs = 1.0e-08, tol_gap_rel = 1.0e-08,
+  static reg : on, ϵ1 = 1.0e-08, ϵ2 = 4.9e-32
+  dynamic reg: on, ϵ = 1.0e-13, δ = 2.0e-07
+  iter refine: on, reltol = 1.0e-13, abstol = 1.0e-12,
+               max iter = 10, stop ratio = 5.0
+  equilibrate: on, min_scale = 1.0e-04, max_scale = 1.0e+04
+               max iter = 10
+
+iter    pcost        dcost       gap       pres      dres      k/t        μ       step
+---------------------------------------------------------------------------------------------
+  0   5.8462e-01   5.8462e-01  1.44e-15  8.13e-01  7.18e-01  1.00e+00  1.32e+00   ------
+  1   6.6260e-01   6.6529e-01  2.69e-03  1.59e-01  1.35e-01  2.55e-01  4.10e-01  7.95e-01
+  2   8.8639e-01   9.8255e-01  9.62e-02  6.01e-02  5.16e-02  2.42e-01  2.31e-01  7.79e-01
+  3   1.3550e+00   1.3811e+00  1.92e-02  1.27e-02  8.09e-03  5.46e-02  4.98e-02  8.09e-01
+  4   1.9495e+00   1.9837e+00  1.75e-02  7.32e-03  3.23e-03  5.63e-02  2.40e-02  7.05e-01
+  5   2.2256e+00   2.2451e+00  8.77e-03  5.18e-03  1.94e-03  3.46e-02  1.55e-02  5.32e-01
+  6   2.7604e+00   2.7709e+00  3.82e-03  1.60e-03  4.53e-04  1.56e-02  4.09e-03  7.86e-01
+  7   2.9706e+00   2.9778e+00  2.42e-03  1.04e-03  2.68e-04  1.07e-02  2.53e-03  4.62e-01
+  8   3.2375e+00   3.2402e+00  8.29e-04  3.42e-04  7.86e-05  3.90e-03  7.88e-04  8.75e-01
+  9   3.2912e+00   3.2953e+00  1.26e-03  2.64e-04  5.95e-05  5.47e-03  5.55e-04  5.46e-01
+ 10   3.3766e+00   3.3796e+00  8.92e-04  2.04e-04  4.59e-05  4.08e-03  4.36e-04  4.69e-01
+ 11   3.6119e+00   3.6139e+00  5.40e-04  7.41e-05  1.50e-05  2.43e-03  1.46e-04  7.14e-01
+ 12   3.7063e+00   3.7081e+00  4.86e-04  5.04e-05  9.82e-06  2.18e-03  9.52e-05  6.34e-01
+ 13   3.9300e+00   3.9304e+00  1.02e-04  1.12e-05  2.03e-06  4.89e-04  2.08e-05  8.27e-01
+ 14   3.9879e+00   3.9880e+00  1.64e-05  1.86e-06  3.26e-07  8.02e-05  3.48e-06  8.64e-01
+ 15   3.9979e+00   3.9979e+00  3.11e-06  3.04e-07  5.23e-08  1.48e-05  5.72e-07  9.11e-01
+ 16   3.9996e+00   3.9996e+00  7.01e-07  6.20e-08  1.07e-08  3.29e-06  1.18e-07  8.93e-01
+ 17   3.9999e+00   3.9999e+00  1.22e-07  1.07e-08  1.83e-09  5.71e-07  2.03e-08  8.38e-01
+ 18   4.0000e+00   4.0000e+00  2.04e-08  1.38e-08  2.95e-10  9.50e-08  3.25e-09  9.18e-01
+ 19   4.0000e+00   4.0000e+00  3.69e-09  2.46e-09  5.31e-11  1.72e-08  5.87e-10  8.30e-01
+---------------------------------------------------------------------------------------------
+Terminated with status = solved
+solve time =  774ms
+* Solver : Clarabel
+
+* Status
+  Result count       : 1
+  Termination status : OPTIMAL
+  Message from the solver:
+  &quot;SOLVED&quot;
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : FEASIBLE_POINT
+  Objective value    : -4.00000e+00
+  Dual objective value : -4.00000e+00
+
+* Work counters
+  Solve time (sec)   : 7.74474e-01
+  Barrier iterations : 19</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../goldstein_price/">Goldstein-price function »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Saturday 6 July 2024 19:59">Saturday 6 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
