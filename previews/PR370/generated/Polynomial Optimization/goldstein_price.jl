@@ -23,7 +23,7 @@ solution_summary(model)
 
 ν = moment_matrix(con_ref)
 
-μ = measure(ν, atol = 1e-5)
+μ = moment_vector(ν, atol = 1e-5)
 
 ν_truncated = moment_matrix(μ, monomials(x, 0:3))
 
