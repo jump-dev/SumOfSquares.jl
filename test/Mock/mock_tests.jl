@@ -3,9 +3,9 @@ include("utilities.jl")
 
 using Test, JuMP
 
-#@testset "Term" begin
-#    include("term.jl")
-#end
+@testset "Term" begin
+    include("term.jl")
+end
 #@testset "Term fixed" begin
 #    include("term_fixed.jl")
 #end
@@ -60,9 +60,9 @@ end
 @testset "SOSDEMO9" begin
     include("sosdemo9.jl")
 end
-#@testset "SOSDEMO10" begin
-#    include("sosdemo10.jl")
-#end
-#@testset "Options Pricing" begin
-#    include("options_pricing.jl")
-#end
+@testset "SOSDEMO10" begin
+    include("sosdemo10.jl")
+end
+@testset "Options Pricing" begin
+    include("options_pricing.jl")
+end
