@@ -116,15 +116,16 @@ function inner_variable_value(model, atol = 1e-4)
         MOI.VariablePrimal(),
         MOI.get(inner, MOI.ListOfVariableIndices()),
     )
-    println("optimize!(mock) = MOI.Utilities.mock_optimize!(mock,")
-    println(JuMP.termination_status(model))
+    println("function optimize!(mock)")
+    println("    return MOI.Utilities.mock_optimize!(mock,")
+    println("    ", JuMP.termination_status(model), ",")
     if JuMP.primal_status(model) != MOI.NO_SOLUTION
         values = MOI.get(
             inner,
             MOI.VariablePrimal(),
             MOI.get(inner, MOI.ListOfVariableIndices()),
         )
-        print("(MOI.FEASIBLE_POINT, [")
+        print("    (MOI.FEASIBLE_POINT, [")
         for (i, v) in enumerate(values)
             if i > 1
                 print(", ")
@@ -138,7 +139,7 @@ function inner_variable_value(model, atol = 1e-4)
     println(",")
     if JuMP.dual_status(model) != MOI.NO_SOLUTION
         for (F, S) in MOI.get(inner, MOI.ListOfConstraintTypesPresent())
-            print("($F, $S) => [")
+            print("    ($F, $S) => [")
             first = true
             for ci in MOI.get(inner, MOI.ListOfConstraintIndices{F,S}())
                 if !first
@@ -150,7 +151,9 @@ function inner_variable_value(model, atol = 1e-4)
             println("],")
         end
     end
-    return println(")")
+    println("    )")
+    println("end")
+    return
 end
 # Constraint dual values for inner bridged model
 function inner_inspect(model, atol = 1e-4)
