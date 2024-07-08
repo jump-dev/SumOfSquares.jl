@@ -3,6 +3,7 @@ module Symmetry
 import LinearAlgebra
 
 import MutableArithmetics as MA
+import StarAlgebras as SA
 import MultivariatePolynomials as MP
 import MultivariateBases as MB
 

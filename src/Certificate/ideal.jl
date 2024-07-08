@@ -16,7 +16,7 @@ Base.:+(::_NonZero, a::_NonZero) = a
 
 function _combine_with_gram(
     basis::MB.SubBasis{B,M},
-    gram_bases::AbstractVector{<:MB.SubBasis},
+    gram_bases::AbstractVector{<:SA.ExplicitBasis},
     weights,
 ) where {B,M}
     p = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
