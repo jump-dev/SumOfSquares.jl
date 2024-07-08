@@ -1,4 +1,19 @@
 function SymbolicWedderburn.decompose(
+    p::MB.Polynomial,
+    hom::SymbolicWedderburn.InducedActionHomomorphism,
+)
+    return [hom[p]], [1]
+end
+
+function SymbolicWedderburn.decompose(
+    p::SA.AlgebraElement,
+    hom::SymbolicWedderburn.InducedActionHomomorphism,
+)
+    return [hom[k] for k in SA.supp(p)],
+    [v for (_, v) in SA.nonzero_pairs(SA.coeffs(p))]
+end
+
+function SymbolicWedderburn.decompose(
     k::MP.AbstractPolynomialLike,
     hom::SymbolicWedderburn.InducedActionHomomorphism,
 )
@@ -10,13 +25,13 @@ function SymbolicWedderburn.decompose(
     return indcs, coeffs
 end
 
-function SymbolicWedderburn.ExtensionHomomorphism(
-    action::SymbolicWedderburn.Action,
-    basis::MB.SubBasis{MB.Monomial},
-)
-    monos = collect(basis.monomials)
-    return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
-end
+#function SymbolicWedderburn.ExtensionHomomorphism(
+#    action::SymbolicWedderburn.Action,
+#    basis::MB.SubBasis{MB.Monomial},
+#)
+#    monos = collect(basis.monomials)
+#    return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
+#end
 
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
 _map_idx(f, v::AbstractVector) = map(f, eachindex(v))
@@ -35,6 +50,18 @@ function SymbolicWedderburn.action(
 end
 abstract type OnMonomials <: SymbolicWedderburn.ByLinearTransformation end
 
+function SymbolicWedderburn.action(
+    a::Union{VariablePermutation,OnMonomials},
+    el,
+    p::MB.Polynomial{MB.Monomial},
+)
+    res = SymbolicWedderburn.action(a, el, p.monomial)
+    if res isa MP.AbstractMonomial
+        return MB.Polynomial{MB.Monomial}(res)
+    else
+        return MB.algebra_element(res)
+    end
+end
 function SymbolicWedderburn.action(
     a::Union{VariablePermutation,OnMonomials},
     el,
@@ -76,7 +103,7 @@ function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
 function SumOfSquares.Certificate.gram_basis_type(::Type{<:Ideal})
-    return Vector{Vector{MB.FixedPolynomialBasis}}
+    return MB.MultiBasis
 end
 SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.Monomial
 SumOfSquares.Certificate.zero_basis(::Ideal) = MB.Monomial
@@ -108,12 +135,12 @@ function SumOfSquares.Certificate.reduced_basis(
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.reduced_basis),
-    ::Type{Ideal{S,C}},
+    ::Type{<:Ideal{C}},
     ::Type{B},
     ::Type{D},
     ::Type{G},
     ::Type{W},
-) where {S,C,B,D,G,W}
+) where {C,B,D,G,W}
     return MA.promote_operation(
         SumOfSquares.Certificate.reduced_basis,
         C,
@@ -149,6 +176,7 @@ end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
     # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
+    @show T
     summands = SymbolicWedderburn.symmetry_adapted_basis(
         T,
         pattern.group,
@@ -223,14 +251,17 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
             # Moreover, `Q = kron(C, I)` is not block diagonal but we can get a block-diagonal
             # `Q = kron(I, Q)` by permuting the rows and columns:
             # `(U[1:d:(1+d*(m-1))] * F)' * basis.monomials`, `(U[2:d:(2+d*(m-1))] * F)' * basis.monomials`, ...
-            map(1:d) do i
-                return MB.FixedPolynomialBasis(
-                    (transpose(U[:, i:d:(i+d*(m-1))]) * F) * basis.monomials,
-                )
-            end
+            return MB.MultiBasis(
+                map(1:d) do i
+                    return MB.OrthonormalCoefficientsBasis(
+                        transpose(U[:, i:d:(i+d*(m-1))]) * F,
+                        basis,
+                    )
+                end,
+            )
         else
             F = convert(Matrix{T}, R)
-            [MB.FixedPolynomialBasis(F * basis.monomials)]
+            MB.MultiBasis([MB.OrthonormalCoefficientsBasis(F, basis)])
         end
     end
 end
