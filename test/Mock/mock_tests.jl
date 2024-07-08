@@ -6,15 +6,15 @@ using Test, JuMP
 @testset "Term" begin
     include("term.jl")
 end
-#@testset "Term fixed" begin
-#    include("term_fixed.jl")
-#end
-#@testset "Quartic constant" begin
-#    include("quartic_constant.jl")
-#end
-#@testset "Quadratic" begin
-#    include("quadratic.jl")
-#end
+@testset "Term fixed" begin
+    include("term_fixed.jl")
+end
+@testset "Quartic constant" begin
+    include("quartic_constant.jl")
+end
+@testset "Quadratic" begin
+    include("quadratic.jl")
+end
 @testset "Quartic ideal" begin
     include("quartic_ideal.jl")
 end
@@ -42,18 +42,18 @@ end
 @testset "Motzkin" begin
     include("motzkin.jl")
 end
-#@testset "BPT12e399" begin
-#    include("BPT12e399.jl")
-#end
+@testset "BPT12e399" begin
+    include("BPT12e399.jl")
+end
 @testset "Max Cut" begin
     include("maxcut.jl")
 end
 @testset "Chebyshev" begin
     include("chebyshev.jl")
 end
-#@testset "Quartic comparison" begin
-#    include("quartic_comparison.jl")
-#end
+@testset "Quartic comparison" begin
+    include("quartic_comparison.jl")
+end
 @testset "SOSDEMO5" begin
     include("sosdemo5.jl")
 end
