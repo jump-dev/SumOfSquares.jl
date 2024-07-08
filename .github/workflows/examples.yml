@@ -20,7 +20,6 @@ jobs:
               PackageSpec(name="StarAlgebras", rev="main"),
               PackageSpec(name="SymbolicWedderburn", rev="master"),
               PackageSpec(name="MultivariateBases", rev="master"),
-              PackageSpec(name="SemialgebraicSets", rev="master"),
               PackageSpec(name="MultivariateMoments", rev="master"),
               PackageSpec(name="PolyJuMP", rev="master"),
               PackageSpec(path=pwd()),
