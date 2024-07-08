@@ -51,6 +51,7 @@ end
 # `x_1^3*x_2*x_3^4` into `x_1^4*x_2^3*x_3`.
 
 import MultivariatePolynomials as MP
+import MultivariateBases as MB
 
 using SumOfSquares
 
@@ -89,6 +90,19 @@ model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
+#import MultivariateBases as MB
+basis = MB.explicit_basis(MB.algebra_element(poly - t))
+using SymbolicWedderburn
+summands = SymbolicWedderburn.symmetry_adapted_basis(
+    Float64,
+    pattern.group,
+    pattern.action,
+    basis,
+    semisimple = true,
+)
+
+gram_basis = SumOfSquares.Certificate.Symmetry._gram_basis(pattern, basis, Float64)
+
 con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
