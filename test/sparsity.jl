@@ -51,6 +51,7 @@ function wml19()
     certificate = Certificate.Newton(
         SOSCone(),
         MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
+        MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
         tuple(),
     )
     @testset "Example 4.2" begin
@@ -150,10 +151,12 @@ function wml19()
         Certificate.MaxDegree(
             SOSCone(),
             MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
+            MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
             4,
         ),
         Certificate.Newton(
             SOSCone(),
+            MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
             MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
             tuple(),
         ),
@@ -161,6 +164,7 @@ function wml19()
         preorder_certificate = Certificate.Putinar(
             Certificate.MaxDegree(
                 SOSCone(),
+                MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
                 MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
                 4,
             ),
@@ -300,6 +304,7 @@ function l09()
     @polyvar x[1:3]
     certificate = Certificate.Newton(
         SOSCone(),
+        MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
         MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
         tuple(),
     )
@@ -450,6 +455,7 @@ function square_domain(ideal_certificate, d)
     mult_cert = Certificate.MaxDegree(
         SOSCone(),
         MB.FullBasis{MB.Monomial,typeof(x * y)}(),
+        MB.FullBasis{MB.Monomial,typeof(x * y)}(),
         d,
     )
     preorder_certificate =
@@ -568,6 +574,7 @@ function sum_square(n)
         certificate = Certificate.Newton(
             SOSCone(),
             MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
+            MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
             tuple(),
         )
         f = sum((x[1:2:(2n-1)] .- x[2:2:(2n)]) .^ 2)
@@ -586,6 +593,7 @@ function sum_square(n)
                 Sparsity.Variable(),
                 Certificate.MaxDegree(
                     SOSCone(),
+                    MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
                     MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
                     2,
                 ),
@@ -608,6 +616,7 @@ function drop_monomials()
         alg_el = _algebra_element([x^2])
         certificate = Certificate.MaxDegree(
             SOSCone(),
+            MB.FullBasis{MB.Monomial,typeof(x^2)}(),
             MB.FullBasis{MB.Monomial,typeof(x^2)}(),
             2,
         )
@@ -637,10 +646,12 @@ function drop_monomials()
             Certificate.MaxDegree(
                 SOSCone(),
                 MB.FullBasis{MB.Monomial,typeof(x^2)}(),
+                MB.FullBasis{MB.Monomial,typeof(x^2)}(),
                 4,
             ),
             Certificate.Newton(
                 SOSCone(),
+                MB.FullBasis{MB.Monomial,typeof(x^2)}(),
                 MB.FullBasis{MB.Monomial,typeof(x^2)}(),
                 tuple(),
             ),
@@ -648,6 +659,7 @@ function drop_monomials()
             preorder_certificate = Certificate.Putinar(
                 Certificate.MaxDegree(
                     SOSCone(),
+                    MB.FullBasis{MB.Monomial,typeof(x^2)}(),
                     MB.FullBasis{MB.Monomial,typeof(x^2)}(),
                     3,
                 ),
@@ -707,12 +719,18 @@ end
     wml19()
     l09()
     square_domain(
-        M -> Certificate.MaxDegree(SOSCone(), MB.FullBasis{MB.Monomial,M}(), 6),
+        M -> Certificate.MaxDegree(
+            SOSCone(),
+            MB.FullBasis{MB.Monomial,M}(),
+            MB.FullBasis{MB.Monomial,M}(),
+            6,
+        ),
         6,
     )
     square_domain(
         M -> Certificate.Newton(
             SOSCone(),
+            MB.FullBasis{MB.Monomial,M}(),
             MB.FullBasis{MB.Monomial,M}(),
             tuple(),
         ),

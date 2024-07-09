@@ -75,7 +75,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     gram_bases = [gram_basis]
     weights = [MB.constant_algebra_element(typeof(SA.basis(poly)), T)]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
-    new_basis = SOS.Certificate.reduced_basis(
+    new_basis = SOS.Certificate.zero_basis(
         set.certificate,
         MB.explicit_basis(poly),
         domain,
@@ -117,14 +117,14 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     M = SOS.matrix_cone_type(CT)
     W = SOS.Certificate._weight_type(T, BT)
     B = MA.promote_operation(
-        SOS.Certificate.reduced_basis,
+        SOS.Certificate.zero_basis,
         CT,
         BT,
         SemialgebraicSets.similar_type(DT, T),
         Vector{BT},
         Vector{W},
     )
-    G = SOS.Certificate.gram_basis_type(CT)
+    G = MA.promote_operation(SOS.Certificate.gram_basis, CT)
     return SOSPolynomialBridge{T,F,DT,M,BT,B,_eltype(G),CT,W}
 end
 

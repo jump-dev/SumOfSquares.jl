@@ -75,10 +75,18 @@ end
 function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
-function SumOfSquares.Certificate.gram_basis_type(::Type{<:Ideal})
+function MA.promote_operation(
+    ::typeof(SumOfSquares.Certificate.gram_basis),
+    ::Type{<:Ideal},
+)
     return Vector{Vector{MB.FixedPolynomialBasis}}
 end
-SumOfSquares.Certificate.zero_basis_type(::Type{<:Ideal}) = MB.Monomial
+function MA.promote_operation(
+    ::typeof(SumOfSquares.Certificate.zero_basis),
+    ::Type{<:Ideal},
+)
+    return MB.Monomial
+end
 SumOfSquares.Certificate.zero_basis(::Ideal) = MB.Monomial
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
@@ -91,14 +99,14 @@ function SumOfSquares.Certificate.reduced_polynomial(
         domain,
     )
 end
-function SumOfSquares.Certificate.reduced_basis(
+function SumOfSquares.Certificate.zero_basis(
     certificate::Ideal,
     basis,
     domain,
     gram_bases,
     weights,
 )
-    return SumOfSquares.Certificate.reduced_basis(
+    return SumOfSquares.Certificate.zero_basis(
         certificate.certificate,
         basis,
         domain,
@@ -107,7 +115,7 @@ function SumOfSquares.Certificate.reduced_basis(
     )
 end
 function MA.promote_operation(
-    ::typeof(SumOfSquares.Certificate.reduced_basis),
+    ::typeof(SumOfSquares.Certificate.zero_basis),
     ::Type{Ideal{S,C}},
     ::Type{B},
     ::Type{D},
@@ -115,7 +123,7 @@ function MA.promote_operation(
     ::Type{W},
 ) where {S,C,B,D,G,W}
     return MA.promote_operation(
-        SumOfSquares.Certificate.reduced_basis,
+        SumOfSquares.Certificate.zero_basis,
         C,
         B,
         D,

@@ -1,4 +1,5 @@
 import StarAlgebras as SA
+import MutableArithmetics as MA
 import MultivariatePolynomials as MP
 import MultivariateBases as MB
 
@@ -199,16 +200,32 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
     )
     @test Certificate.reduced_polynomial(certificate, a, domain) isa
           SA.AlgebraElement
-    _basis_check(
-        Certificate.gram_basis(
-            certificate,
-            Certificate.WithVariables(a, MP.variables(poly)),
-        ),
-        Certificate.gram_basis_type(typeof(certificate)),
+    gram_basis = Certificate.gram_basis(
+        certificate,
+        Certificate.WithVariables(a, MP.variables(poly)),
     )
-    zbasis = Certificate.zero_basis(certificate)
+    _basis_check(
+        gram_basis,
+        MA.promote_operation(Certificate.gram_basis, typeof(certificate)),
+    )
+    flat_bases, flat_weights, _ =
+        SumOfSquares.Bridges.Constraint._flatten([gram_basis], [a])
+    zbasis = Certificate.zero_basis(
+        certificate,
+        MB.explicit_basis(a),
+        domain,
+        flat_bases,
+        flat_weights,
+    )
     @test zbasis isa SA.AbstractBasis
-    @test zbasis isa Certificate.zero_basis_type(typeof(certificate))
+    @test zbasis isa MA.promote_operation(
+        Certificate.zero_basis,
+        typeof(certificate),
+        typeof(MB.explicit_basis(a)),
+        typeof(domain),
+        typeof(gram_basis),
+        Vector{typeof(a)},
+    )
 end
 
 function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
@@ -257,7 +274,8 @@ end
             mult_cert = mult_cert.gram_certificate
         end
         if mult_cert isa Certificate.FixedBasis # FIXME not supported yet
-            mult_cert = Certificate.MaxDegree(cone, full_basis, maxdegree)
+            mult_cert =
+                Certificate.MaxDegree(cone, full_basis, full_basis, maxdegree)
         end
         preorder = Certificate.Putinar(mult_cert, certificate, maxdegree)
         certificate_api(preorder)
@@ -271,9 +289,9 @@ end
     end
     basis = MB.SubBasis{B}(monomial_vector([x^2, x]))
     @testset "$(nameof(typeof(certificate)))" for certificate in [
-        Certificate.MaxDegree(cone, full_basis, maxdegree),
-        Certificate.FixedBasis(cone, basis),
-        Certificate.Newton(cone, full_basis, tuple()),
+        Certificate.MaxDegree(cone, full_basis, full_basis, maxdegree),
+        Certificate.FixedBasis(cone, basis, full_basis),
+        Certificate.Newton(cone, full_basis, full_basis, tuple()),
     ]
         _test(certificate)
         _test(Certificate.Remainder(certificate))
@@ -304,6 +322,7 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
             JuMP.moi_set(
                 SOSCone(),
                 MB.SubBasis{MB.Monomial}(monomials(poly)),
+                MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
                 MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}();
                 domain,
             ).certificate
@@ -314,6 +333,7 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
         end
         cert = Certificate.Newton(
             SOSCone(),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(),
             MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(),
             newton,
         )

@@ -28,11 +28,9 @@ const Index = Union{PreorderIndex,IdealIndex}
 
 abstract type Attribute end
 
-# For get
 function cone end
+function zero_basis end
 function gram_basis end
-# FIXME currently, this returns `MB.MonomialBasis` instead of `MB.MonomialBasis{MT, MVT}`
-function gram_basis_type end
 function reduced_polynomial end
 function ideal_certificate end
 function preprocessed_domain end

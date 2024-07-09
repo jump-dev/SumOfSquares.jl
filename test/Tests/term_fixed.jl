@@ -56,6 +56,7 @@ function term_fixed_test(
             SumOfSquares.Certificate.Newton{
                 typeof(cone),
                 FullBasis{MB.Monomial,monomial_type(x)},
+                FullBasis{MB.Monomial,monomial_type(x)},
                 N,
             },
         },

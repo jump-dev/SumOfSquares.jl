@@ -133,6 +133,7 @@ function quadratic_test(
         SumOfSquares.Certificate.Newton{
             typeof(cone),
             MB.FullBasis{basis,monomial_type(x)},
+            MB.FullBasis{basis,monomial_type(x)},
             N,
         },
     }

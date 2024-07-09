@@ -140,7 +140,7 @@ function multiplier_basis(
 )
     q = domain.inner.p[index.value]
     return maxdegree_gram_basis(
-        certificate.multipliers_certificate.basis,
+        certificate.multipliers_certificate.gram_basis,
         MP.variables(domain),
         # FIXME we ignore `certificate.multipliers_certificate.maxdegree` as it should be the same anyway
         multiplier_maxdegree(certificate.maxdegree, q),
@@ -154,7 +154,7 @@ function multiplier_basis(
     return domain.bases[index.value]
 end
 function multiplier_basis_type(::Type{<:Putinar{MC}}, ::Type) where {MC}
-    return gram_basis_type(MC)
+    return MA.promote_operation(gram_basis, MC)
 end
 
 function generator(
