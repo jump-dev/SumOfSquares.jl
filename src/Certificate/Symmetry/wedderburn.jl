@@ -75,7 +75,10 @@ end
 function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
-function MA.promote_operation(::typeof(SumOfSquares.Certificate.gram_basis), ::Type{<:Ideal})
+function MA.promote_operation(
+    ::typeof(SumOfSquares.Certificate.gram_basis),
+    ::Type{<:Ideal},
+)
     return Vector{Vector{MB.FixedPolynomialBasis}}
 end
 function MA.promote_operation(

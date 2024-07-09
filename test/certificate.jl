@@ -208,10 +208,24 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate)
         gram_basis,
         MA.promote_operation(Certificate.gram_basis, typeof(certificate)),
     )
-    flat_bases, flat_weights, _ = SumOfSquares.Bridges.Constraint._flatten([gram_basis], [a])
-    zbasis = Certificate.zero_basis(certificate, MB.explicit_basis(a), domain, flat_bases, flat_weights)
+    flat_bases, flat_weights, _ =
+        SumOfSquares.Bridges.Constraint._flatten([gram_basis], [a])
+    zbasis = Certificate.zero_basis(
+        certificate,
+        MB.explicit_basis(a),
+        domain,
+        flat_bases,
+        flat_weights,
+    )
     @test zbasis isa SA.AbstractBasis
-    @test zbasis isa MA.promote_operation(Certificate.zero_basis, typeof(certificate), typeof(MB.explicit_basis(a)), typeof(domain), typeof(gram_basis), Vector{typeof(a)})
+    @test zbasis isa MA.promote_operation(
+        Certificate.zero_basis,
+        typeof(certificate),
+        typeof(MB.explicit_basis(a)),
+        typeof(domain),
+        typeof(gram_basis),
+        Vector{typeof(a)},
+    )
 end
 
 function certificate_api(certificate::Certificate.AbstractPreorderCertificate)
@@ -260,7 +274,8 @@ end
             mult_cert = mult_cert.gram_certificate
         end
         if mult_cert isa Certificate.FixedBasis # FIXME not supported yet
-            mult_cert = Certificate.MaxDegree(cone, full_basis, full_basis, maxdegree)
+            mult_cert =
+                Certificate.MaxDegree(cone, full_basis, full_basis, maxdegree)
         end
         preorder = Certificate.Putinar(mult_cert, certificate, maxdegree)
         certificate_api(preorder)

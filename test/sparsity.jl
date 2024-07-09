@@ -719,7 +719,12 @@ end
     wml19()
     l09()
     square_domain(
-        M -> Certificate.MaxDegree(SOSCone(), MB.FullBasis{MB.Monomial,M}(), MB.FullBasis{MB.Monomial,M}(), 6),
+        M -> Certificate.MaxDegree(
+            SOSCone(),
+            MB.FullBasis{MB.Monomial,M}(),
+            MB.FullBasis{MB.Monomial,M}(),
+            6,
+        ),
         6,
     )
     square_domain(

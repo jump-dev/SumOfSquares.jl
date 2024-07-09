@@ -14,13 +14,35 @@ struct Ideal{S<:Pattern,C<:SumOfSquares.Certificate.AbstractIdealCertificate} <:
     certificate::C
 end
 
-function Ideal(sp::Variable, gram_basis, zero_basis, cone, maxdegree::Nothing, newton_polytope)
+function Ideal(
+    sp::Variable,
+    gram_basis,
+    zero_basis,
+    cone,
+    maxdegree::Nothing,
+    newton_polytope,
+)
     return error(
         "`maxdegree` cannot be `nothing` when `sparsity` is `Sparsity.Variable`.",
     )
 end
-function Ideal(sp::Variable, gram_basis, zero_basis, cone, maxdegree::Integer, newton_polytope)
-    return Ideal(sp, SumOfSquares.Certificate.MaxDegree(cone, gram_basis, zero_basis, maxdegree))
+function Ideal(
+    sp::Variable,
+    gram_basis,
+    zero_basis,
+    cone,
+    maxdegree::Integer,
+    newton_polytope,
+)
+    return Ideal(
+        sp,
+        SumOfSquares.Certificate.MaxDegree(
+            cone,
+            gram_basis,
+            zero_basis,
+            maxdegree,
+        ),
+    )
 end
 function Ideal(
     sp::Union{Monomial,SignSymmetry},
@@ -32,7 +54,12 @@ function Ideal(
 )
     return Ideal(
         sp,
-        SumOfSquares.Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope),
+        SumOfSquares.Certificate.Newton(
+            cone,
+            gram_basis,
+            zero_basis,
+            newton_polytope,
+        ),
     )
 end
 

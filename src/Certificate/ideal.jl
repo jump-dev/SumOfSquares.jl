@@ -83,7 +83,10 @@ function SumOfSquares.matrix_cone_type(
     return SumOfSquares.matrix_cone_type(CT)
 end
 
-function MA.promote_operation(::typeof(gram_basis), ::Type{<:SimpleIdealCertificate{C,G}}) where {C,G}
+function MA.promote_operation(
+    ::typeof(gram_basis),
+    ::Type{<:SimpleIdealCertificate{C,G}},
+) where {C,G}
     return MB.explicit_basis_type(G)
 end
 
@@ -103,8 +106,11 @@ such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with a basis of type `basis` such that
 the degree of `σ(x)` does not exceed `maxdegree`.
 """
-struct MaxDegree{C<:SumOfSquares.SOSLikeCone,G<:SA.AbstractBasis,Z<:SA.AbstractBasis} <:
-       SimpleIdealCertificate{C,G,Z}
+struct MaxDegree{
+    C<:SumOfSquares.SOSLikeCone,
+    G<:SA.AbstractBasis,
+    Z<:SA.AbstractBasis,
+} <: SimpleIdealCertificate{C,G,Z}
     cone::C
     gram_basis::G
     zero_basis::Z
@@ -133,8 +139,11 @@ such that `p(x) - σ(x)` is guaranteed to be zero for all `x`
 such that `h_i(x) = 0`.
 The polynomial `σ(x)` is search over `cone` with basis `basis`.
 """
-struct FixedBasis{C<:SumOfSquares.SOSLikeCone,G<:SA.ExplicitBasis,Z<:SA.AbstractBasis} <:
-       SimpleIdealCertificate{C,G,Z}
+struct FixedBasis{
+    C<:SumOfSquares.SOSLikeCone,
+    G<:SA.ExplicitBasis,
+    Z<:SA.AbstractBasis,
+} <: SimpleIdealCertificate{C,G,Z}
     cone::C
     gram_basis::G
     zero_basis::Z
@@ -144,7 +153,12 @@ function gram_basis(certificate::FixedBasis, _)
     return certificate.gram_basis
 end
 
-MA.promote_operation(::typeof(gram_basis), ::Type{<:FixedBasis{C,G}}) where {C,G} = G
+function MA.promote_operation(
+    ::typeof(gram_basis),
+    ::Type{<:FixedBasis{C,G}},
+) where {C,G}
+    return G
+end
 
 """
     struct Newton{
@@ -231,7 +245,10 @@ function gram_basis(certificate::Remainder, poly)
     return gram_basis(certificate.gram_certificate, poly)
 end
 
-function MA.promote_operation(::typeof(gram_basis), ::Type{Remainder{C}}) where {C}
+function MA.promote_operation(
+    ::typeof(gram_basis),
+    ::Type{Remainder{C}},
+) where {C}
     return MA.promote_operation(gram_basis, C)
 end
 
