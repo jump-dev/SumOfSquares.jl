@@ -42,6 +42,7 @@ function univariate_sum_test(
             SumOfSquares.Certificate.MaxDegree{
                 typeof(cone),
                 MB.FullBasis{MB.Monomial,monomial_type(x)},
+                MB.FullBasis{MB.Monomial,monomial_type(x)},
             },
         },
     }

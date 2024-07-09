@@ -60,50 +60,53 @@ end
 
 function default_ideal_certificate(
     ::AbstractAlgebraicSet,
-    basis,
+    gram_basis::SA.ImplicitBasis,
+    zero_basis,
     cone,
     maxdegree,
     newton_polytope,
 )
     if maxdegree === nothing
-        return Certificate.Newton(cone, basis, newton_polytope)
+        return Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope)
     else
-        return Certificate.MaxDegree(cone, basis, maxdegree)
+        return Certificate.MaxDegree(cone, gram_basis, zero_basis, maxdegree)
     end
 end
 function default_ideal_certificate(
     ::FixedVariablesSet,
-    basis,
+    gram_basis::SA.ImplicitBasis,
+    zero_basis,
     cone,
     maxdegree,
     newton_polytope,
 )
     return Certificate.Remainder(
-        Certificate.Newton(cone, basis, newton_polytope),
+        Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope),
     )
 end
 function default_ideal_certificate(
     ::FullSpace,
-    basis,
+    gram_basis::SA.ImplicitBasis,
+    zero_basis,
     cone,
     maxdegree,
     newton_polytope,
 )
     if newton_polytope === nothing
-        return Certificate.MaxDegree(cone, basis, maxdegree)
+        return Certificate.MaxDegree(cone, gram_basis, zero_basis, maxdegree)
     else
-        return Certificate.Newton(cone, basis, newton_polytope)
+        return Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope)
     end
 end
 
 function default_ideal_certificate(
     ::AbstractAlgebraicSet,
-    ::Certificate.Sparsity.NoPattern,
-    basis::SA.ExplicitBasis,
+    gram_basis::SA.ExplicitBasis,
+    zero_basis,
     cone,
     args...,
 )
-    return Certificate.FixedBasis(cone, basis)
+    return Certificate.FixedBasis(cone, gram_basis, zero_basis)
 end
 function default_ideal_certificate(
     domain::AbstractAlgebraicSet,
@@ -162,7 +165,8 @@ function default_certificate(
     sparsity,
     ideal_certificate,
     cone,
-    basis,
+    gram_basis,
+    zero_basis,
     maxdegree,
     newton_polytope,
 )
@@ -173,7 +177,8 @@ function default_certificate(
     sparsity::Certificate.Sparsity.Pattern,
     ideal_certificate::Certificate.Sparsity.Ideal,
     cone,
-    basis,
+    gram_basis,
+    zero_basis,
     maxdegree,
     newton_polytope,
 )
@@ -182,7 +187,8 @@ function default_certificate(
         Certificate.Sparsity.NoPattern(),
         ideal_certificate.certificate,
         cone,
-        basis,
+        gram_basis,
+        zero_basis,
         maxdegree,
         newton_polytope,
     )
@@ -193,7 +199,8 @@ function default_certificate(
     ::Certificate.Sparsity.NoPattern,
     ideal_certificate,
     cone,
-    basis,
+    gram_basis,
+    zero_basis,
     maxdegree,
     newton_polytope,
 )
@@ -202,7 +209,8 @@ function default_certificate(
     # `Sparseity.Ideal` or `Symmetry.Ideal`
     multipliers_certificate = default_ideal_certificate(
         SemialgebraicSets.algebraic_set(domain),
-        basis,
+        gram_basis,
+        zero_basis,
         cone,
         maxdegree,
         newton_polytope,
@@ -251,7 +259,8 @@ end
 function JuMP.moi_set(
     cone::SOSLikeCone,
     basis::SA.ExplicitBasis,
-    gram_basis::SA.AbstractBasis;
+    gram_basis::SA.AbstractBasis,
+    zero_basis::SA.AbstractBasis;
     domain::AbstractSemialgebraicSet = FullSpace(),
     newton_polytope::Union{Nothing,Tuple} = tuple(),
     maxdegree::Union{Nothing,Int} = default_maxdegree(basis, domain),
@@ -264,6 +273,7 @@ function JuMP.moi_set(
         symmetry,
         sparsity,
         gram_basis,
+        zero_basis,
         cone,
         maxdegree,
         newton_polytope,
@@ -274,6 +284,7 @@ function JuMP.moi_set(
         ideal_certificate,
         cone,
         gram_basis,
+        zero_basis,
         maxdegree,
         newton_polytope,
     ),
@@ -432,10 +443,14 @@ function JuMP.build_constraint(
     p,
     cone::SOSLikeCone;
     basis = nothing,
+    zero_basis = nothing,
     kws...,
 )
     __coefs, basis, gram_basis = _default_basis(p, basis)
-    set = JuMP.moi_set(cone, basis, gram_basis; kws...)
+    if isnothing(zero_basis)
+        zero_basis = MB.implicit_basis(basis)
+    end
+    set = JuMP.moi_set(cone, basis, gram_basis, zero_basis; kws...)
     _coefs = PolyJuMP.non_constant(__coefs)
     # If a polynomial with real coefficients is used with the Hermitian SOS
     # cone, we want to promote the coefficients to complex

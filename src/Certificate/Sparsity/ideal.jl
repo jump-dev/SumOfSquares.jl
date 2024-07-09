@@ -14,24 +14,25 @@ struct Ideal{S<:Pattern,C<:SumOfSquares.Certificate.AbstractIdealCertificate} <:
     certificate::C
 end
 
-function Ideal(sp::Variable, basis, cone, maxdegree::Nothing, newton_polytope)
+function Ideal(sp::Variable, gram_basis, zero_basis, cone, maxdegree::Nothing, newton_polytope)
     return error(
         "`maxdegree` cannot be `nothing` when `sparsity` is `Sparsity.Variable`.",
     )
 end
-function Ideal(sp::Variable, basis, cone, maxdegree::Integer, newton_polytope)
-    return Ideal(sp, SumOfSquares.Certificate.MaxDegree(cone, basis, maxdegree))
+function Ideal(sp::Variable, gram_basis, zero_basis, cone, maxdegree::Integer, newton_polytope)
+    return Ideal(sp, SumOfSquares.Certificate.MaxDegree(cone, gram_basis, zero_basis, maxdegree))
 end
 function Ideal(
     sp::Union{Monomial,SignSymmetry},
-    basis,
+    gram_basis,
+    zero_basis,
     cone,
     maxdegree,
     newton_polytope,
 )
     return Ideal(
         sp,
-        SumOfSquares.Certificate.Newton(cone, basis, newton_polytope),
+        SumOfSquares.Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope),
     )
 end
 
@@ -44,7 +45,7 @@ function sparsity(
     H, cliques = chordal_csp_graph(basis, SemialgebraicSets.FullSpace())
     return map(cliques) do clique
         return SumOfSquares.Certificate.maxdegree_gram_basis(
-            certificate.basis,
+            certificate.gram_basis,
             clique,
             certificate.maxdegree,
         )
@@ -71,10 +72,11 @@ end
 function SumOfSquares.Certificate.gram_basis(certificate::Ideal, poly)
     return sparsity(poly, certificate.sparsity, certificate.certificate)
 end
-function SumOfSquares.Certificate.gram_basis_type(
+function MA.promote_operation(
+    ::typeof(SumOfSquares.Certificate.gram_basis),
     ::Type{Ideal{S,C}},
 ) where {S,C}
-    return Vector{SumOfSquares.Certificate.gram_basis_type(C)}
+    return Vector{MA.promote_operation(SumOfSquares.Certificate.gram_basis, C)}
 end
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
@@ -87,14 +89,14 @@ function SumOfSquares.Certificate.reduced_polynomial(
         domain,
     )
 end
-function SumOfSquares.Certificate.reduced_basis(
+function SumOfSquares.Certificate.zero_basis(
     certificate::Ideal,
     basis,
     domain,
     gram_bases,
     weights,
 )
-    return SumOfSquares.Certificate.reduced_basis(
+    return SumOfSquares.Certificate.zero_basis(
         certificate.certificate,
         basis,
         domain,
@@ -103,7 +105,7 @@ function SumOfSquares.Certificate.reduced_basis(
     )
 end
 function MA.promote_operation(
-    ::typeof(SumOfSquares.Certificate.reduced_basis),
+    ::typeof(SumOfSquares.Certificate.zero_basis),
     ::Type{Ideal{S,C}},
     ::Type{B},
     ::Type{D},
@@ -111,7 +113,7 @@ function MA.promote_operation(
     ::Type{W},
 ) where {S,C,B,D,G,W}
     return MA.promote_operation(
-        SumOfSquares.Certificate.reduced_basis,
+        SumOfSquares.Certificate.zero_basis,
         C,
         B,
         D,
@@ -129,8 +131,10 @@ end
 function SumOfSquares.Certificate.zero_basis(certificate::Ideal)
     return SumOfSquares.Certificate.zero_basis(certificate.certificate)
 end
-function SumOfSquares.Certificate.zero_basis_type(
+
+function MA.promote_operation(
+    b::typeof(SumOfSquares.Certificate.zero_basis),
     ::Type{Ideal{S,C}},
 ) where {S,C}
-    return SumOfSquares.Certificate.zero_basis_type(C)
+    return MA.promote_operation(b, C)
 end
