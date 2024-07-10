@@ -65,10 +65,6 @@ function _reduce_with_domain(
     )
 end
 
-_zero_basis(c::SimpleIdealCertificate) = c.zero_basis
-
-_zero_basis(c::Remainder) = _zero_basis(c.gram_certificate)
-
 function zero_basis(
     cert::AbstractIdealCertificate,
     basis,
@@ -281,9 +277,13 @@ function _quotient_basis_type(
     }
 end
 
+_zero_basis(c::SimpleIdealCertificate) = c.zero_basis
+
 function _zero_basis_type(::Type{<:SimpleIdealCertificate{C,G,Z}}) where {C,G,Z}
     return Z
 end
+
+_zero_basis(c::Remainder) = _zero_basis(c.gram_certificate)
 
 function _zero_basis_type(::Type{Remainder{C}}) where {C}
     return _zero_basis_type(C)
