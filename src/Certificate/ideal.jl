@@ -44,14 +44,18 @@ function _reduce_with_domain(basis::MB.SubBasis, zero_basis, ::FullSpace)
     return MB.explicit_basis_covering(zero_basis, basis)
 end
 
-function _reduce_with_domain(
-    basis::MB.SubBasis{B},
-    ::MB.FullBasis{B},
+function _reduce_with_domain(basis, zero_basis, domain)
+    return __reduce_with_domain(basis, zero_basis, domain)
+end
+
+function __reduce_with_domain(_, _, _)
+    error("Only Monomial basis support with an equalities in domain")
+end
+function __reduce_with_domain(
+    basis::MB.SubBasis{MB.Monomial},
+    ::MB.FullBasis{MB.Monomial},
     domain,
-) where {B}
-    if B !== MB.Monomial
-        error("Only Monomial basis support with an equalities in domain")
-    end
+)
     I = ideal(domain)
     # set of standard monomials that are hit
     standard = Set{eltype(basis.monomials)}()
