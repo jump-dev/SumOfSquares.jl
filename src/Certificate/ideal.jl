@@ -49,7 +49,7 @@ function _reduce_with_domain(basis, zero_basis, domain)
 end
 
 function __reduce_with_domain(_, _, _)
-    error("Only Monomial basis support with an equalities in domain")
+    return error("Only Monomial basis support with an equalities in domain")
 end
 function __reduce_with_domain(
     basis::MB.SubBasis{MB.Monomial},
