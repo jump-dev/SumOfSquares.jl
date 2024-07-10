@@ -273,15 +273,23 @@ function _quotient_basis_type(
     }
 end
 
+function _zero_basis_type(::Type{<:SimpleIdealCertificate{C,G,Z}}) where {C,G,Z}
+    return Z
+end
+
+function _zero_basis_type(::Type{Remainder{C}}) where {C}
+    return _zero_basis_type(C)
+end
+
 function MA.promote_operation(
     ::typeof(zero_basis),
-    ::Type{<:Union{SimpleIdealCertificate,Remainder}},
-    ::Type{B},
+    C::Type{<:Union{SimpleIdealCertificate,Remainder}},
+    ::Type,
     ::Type{SemialgebraicSets.FullSpace},
     ::Type,
     ::Type,
-) where {B}
-    return B
+)
+    return MB.explicit_basis_type(_zero_basis_type(C))
 end
 
 function MA.promote_operation(

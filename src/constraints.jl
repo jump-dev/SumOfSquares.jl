@@ -439,8 +439,8 @@ function _default_gram_basis(p::MP.AbstractPolynomialLike, basis)
 end
 
 _default_zero_basis(basis, ::Nothing) = MB.implicit_basis(basis)
-function _default_zero_basis(_, nodes::MB.AbstractNodes)
-    return MB.ImplicitLagrangeBasis(nodes)
+function _default_zero_basis(basis, nodes::MB.AbstractNodes)
+    return MB.ImplicitLagrangeBasis(MP.variables(basis), nodes)
 end
 
 function JuMP.build_constraint(
