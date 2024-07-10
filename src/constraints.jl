@@ -367,7 +367,7 @@ end
 _promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
 _promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
 
-function _default_basis(
+function _default_gram_basis(
     coeffs,
     basis::MB.SubBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
@@ -375,7 +375,7 @@ function _default_basis(
     if B === G
         return coeffs, basis
     else
-        return _default_basis(
+        return _default_gram_basis(
             SA.SparseCoefficients(basis.monomials, coeffs),
             MB.implicit_basis(basis),
             gram_basis,
@@ -383,20 +383,20 @@ function _default_basis(
     end
 end
 
-function _default_basis(
+function _default_gram_basis(
     p::SA.AbstractCoefficients,
     basis::MB.FullBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
 ) where {B,G}
     if B === G
-        return _default_basis(
+        return _default_gram_basis(
             collect(SA.values(p)),
             MB.SubBasis{B}(collect(SA.keys(p))),
             gram_basis,
         )
     else
         new_basis = MB.FullBasis{G,MP.monomial_type(typeof(basis))}()
-        return _default_basis(
+        return _default_gram_basis(
             SA.coeffs(p, basis, new_basis),
             new_basis,
             gram_basis,
@@ -422,20 +422,25 @@ function _default_gram_basis(_, basis::MB.MonomialIndexedBasis)
     return basis
 end
 
-function _default_basis(a::SA.AlgebraElement, basis)
+function _default_gram_basis(a::SA.AlgebraElement, basis)
     b = SA.basis(a)
     gram = _default_gram_basis(b, basis)
-    return _default_basis(SA.coeffs(a), b, gram)..., gram
+    return _default_gram_basis(SA.coeffs(a), b, gram)..., gram
 end
 
-function _default_basis(p::MP.AbstractPolynomialLike, basis)
-    return _default_basis(
+function _default_gram_basis(p::MP.AbstractPolynomialLike, basis)
+    return _default_gram_basis(
         MB.algebra_element(
             MB.sparse_coefficients(p),
             MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
         ),
         basis,
     )
+end
+
+_default_zero_basis(basis, ::Nothing) = MB.implicit_basis(basis)
+function _default_zero_basis(_, nodes::MB.AbstractNodes)
+    return MB.ImplicitLagrangeBasis(nodes)
 end
 
 function JuMP.build_constraint(
@@ -446,11 +451,14 @@ function JuMP.build_constraint(
     zero_basis = nothing,
     kws...,
 )
-    __coefs, basis, gram_basis = _default_basis(p, basis)
-    if isnothing(zero_basis)
-        zero_basis = MB.implicit_basis(basis)
-    end
-    set = JuMP.moi_set(cone, basis, gram_basis, zero_basis; kws...)
+    __coefs, basis, gram_basis = _default_gram_basis(p, basis)
+    set = JuMP.moi_set(
+        cone,
+        basis,
+        gram_basis,
+        _default_zero_basis(basis, zero_basis);
+        kws...,
+    )
     _coefs = PolyJuMP.non_constant(__coefs)
     # If a polynomial with real coefficients is used with the Hermitian SOS
     # cone, we want to promote the coefficients to complex

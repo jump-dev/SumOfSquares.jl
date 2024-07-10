@@ -60,15 +60,18 @@ function _reduce_with_domain(basis::MB.SubBasis{B}, domain) where {B}
 end
 
 function zero_basis(
-    ::AbstractIdealCertificate,
+    cert::AbstractIdealCertificate,
     basis,
     domain,
     gram_bases,
     weights,
 )
-    return _reduce_with_domain(
-        _combine_with_gram(basis, gram_bases, weights),
-        domain,
+    return MB.explicit_basis_covering(
+        cert.zero_basis,
+        _reduce_with_domain(
+            _combine_with_gram(basis, gram_bases, weights),
+            domain,
+        ),
     )
 end
 
