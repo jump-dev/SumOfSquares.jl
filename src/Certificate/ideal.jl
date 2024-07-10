@@ -44,7 +44,11 @@ function _reduce_with_domain(basis::MB.SubBasis, zero_basis, ::FullSpace)
     return MB.explicit_basis_covering(zero_basis, basis)
 end
 
-function _reduce_with_domain(basis::MB.SubBasis{B}, zero_basis::MB.FullBasis{B}, domain) where {B}
+function _reduce_with_domain(
+    basis::MB.SubBasis{B},
+    ::MB.FullBasis{B},
+    domain,
+) where {B}
     if B !== MB.Monomial
         error("Only Monomial basis support with an equalities in domain")
     end
