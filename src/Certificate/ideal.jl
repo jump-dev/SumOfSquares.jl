@@ -40,9 +40,11 @@ function _combine_with_gram(
     return MB.SubBasis{B}(keys(SA.coeffs(p)))
 end
 
-_reduce_with_domain(basis::MB.SubBasis, ::FullSpace) = basis
+function _reduce_with_domain(basis::MB.SubBasis, zero_basis, ::FullSpace)
+    return MB.explicit_basis_covering(zero_basis, basis)
+end
 
-function _reduce_with_domain(basis::MB.SubBasis{B}, domain) where {B}
+function _reduce_with_domain(basis::MB.SubBasis{B}, zero_basis::MB.FullBasis{B}, domain) where {B}
     if B !== MB.Monomial
         error("Only Monomial basis support with an equalities in domain")
     end
@@ -59,6 +61,10 @@ function _reduce_with_domain(basis::MB.SubBasis{B}, domain) where {B}
     )
 end
 
+_zero_basis(c::SimpleIdealCertificate) = c.zero_basis
+
+_zero_basis(c::Remainder) = _zero_basis(c.gram_certificate)
+
 function zero_basis(
     cert::AbstractIdealCertificate,
     basis,
@@ -66,12 +72,10 @@ function zero_basis(
     gram_bases,
     weights,
 )
-    return MB.explicit_basis_covering(
-        cert.zero_basis,
-        _reduce_with_domain(
-            _combine_with_gram(basis, gram_bases, weights),
-            domain,
-        ),
+    return _reduce_with_domain(
+        _combine_with_gram(basis, gram_bases, weights),
+        _zero_basis(cert),
+        domain,
     )
 end
 
