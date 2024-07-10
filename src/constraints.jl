@@ -438,6 +438,11 @@ function _default_basis(p::MP.AbstractPolynomialLike, basis)
     )
 end
 
+_default_zero_basis(basis, ::Nothing) = MB.implicit_basis(basis)
+function _default_zero_basis(basis, nodes::MB.AbstractNodes)
+    return MB.ImplicitLagrangeBasis(MP.variables(basis), nodes)
+end
+
 function JuMP.build_constraint(
     _error::Function,
     p,
@@ -447,10 +452,13 @@ function JuMP.build_constraint(
     kws...,
 )
     __coefs, basis, gram_basis = _default_basis(p, basis)
-    if isnothing(zero_basis)
-        zero_basis = MB.implicit_basis(basis)
-    end
-    set = JuMP.moi_set(cone, basis, gram_basis, zero_basis; kws...)
+    set = JuMP.moi_set(
+        cone,
+        basis,
+        gram_basis,
+        _default_zero_basis(basis, zero_basis);
+        kws...,
+    )
     _coefs = PolyJuMP.non_constant(__coefs)
     # If a polynomial with real coefficients is used with the Hermitian SOS
     # cone, we want to promote the coefficients to complex

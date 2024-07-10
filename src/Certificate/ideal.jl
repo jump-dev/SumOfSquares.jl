@@ -40,12 +40,22 @@ function _combine_with_gram(
     return MB.SubBasis{B}(keys(SA.coeffs(p)))
 end
 
-_reduce_with_domain(basis::MB.SubBasis, ::FullSpace) = basis
+function _reduce_with_domain(basis::MB.SubBasis, zero_basis, ::FullSpace)
+    return MB.explicit_basis_covering(zero_basis, basis)
+end
 
-function _reduce_with_domain(basis::MB.SubBasis{B}, domain) where {B}
-    if B !== MB.Monomial
-        error("Only Monomial basis support with an equalities in domain")
-    end
+function _reduce_with_domain(basis, zero_basis, domain)
+    return __reduce_with_domain(basis, zero_basis, domain)
+end
+
+function __reduce_with_domain(_, _, _)
+    return error("Only Monomial basis support with an equalities in domain")
+end
+function __reduce_with_domain(
+    basis::MB.SubBasis{MB.Monomial},
+    ::MB.FullBasis{MB.Monomial},
+    domain,
+)
     I = ideal(domain)
     # set of standard monomials that are hit
     standard = Set{eltype(basis.monomials)}()
@@ -60,7 +70,7 @@ function _reduce_with_domain(basis::MB.SubBasis{B}, domain) where {B}
 end
 
 function zero_basis(
-    ::AbstractIdealCertificate,
+    cert::AbstractIdealCertificate,
     basis,
     domain,
     gram_bases,
@@ -68,6 +78,7 @@ function zero_basis(
 )
     return _reduce_with_domain(
         _combine_with_gram(basis, gram_bases, weights),
+        _zero_basis(cert),
         domain,
     )
 end
@@ -270,15 +281,27 @@ function _quotient_basis_type(
     }
 end
 
+_zero_basis(c::SimpleIdealCertificate) = c.zero_basis
+
+function _zero_basis_type(::Type{<:SimpleIdealCertificate{C,G,Z}}) where {C,G,Z}
+    return Z
+end
+
+_zero_basis(c::Remainder) = _zero_basis(c.gram_certificate)
+
+function _zero_basis_type(::Type{Remainder{C}}) where {C}
+    return _zero_basis_type(C)
+end
+
 function MA.promote_operation(
     ::typeof(zero_basis),
-    ::Type{<:Union{SimpleIdealCertificate,Remainder}},
-    ::Type{B},
+    C::Type{<:Union{SimpleIdealCertificate,Remainder}},
+    ::Type,
     ::Type{SemialgebraicSets.FullSpace},
     ::Type,
     ::Type,
-) where {B}
-    return B
+)
+    return MB.explicit_basis_type(_zero_basis_type(C))
 end
 
 function MA.promote_operation(
