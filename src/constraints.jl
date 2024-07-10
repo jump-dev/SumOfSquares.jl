@@ -367,7 +367,7 @@ end
 _promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
 _promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
 
-function _default_gram_basis(
+function _default_basis(
     coeffs,
     basis::MB.SubBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
@@ -375,7 +375,7 @@ function _default_gram_basis(
     if B === G
         return coeffs, basis
     else
-        return _default_gram_basis(
+        return _default_basis(
             SA.SparseCoefficients(basis.monomials, coeffs),
             MB.implicit_basis(basis),
             gram_basis,
@@ -383,20 +383,20 @@ function _default_gram_basis(
     end
 end
 
-function _default_gram_basis(
+function _default_basis(
     p::SA.AbstractCoefficients,
     basis::MB.FullBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
 ) where {B,G}
     if B === G
-        return _default_gram_basis(
+        return _default_basis(
             collect(SA.values(p)),
             MB.SubBasis{B}(collect(SA.keys(p))),
             gram_basis,
         )
     else
         new_basis = MB.FullBasis{G,MP.monomial_type(typeof(basis))}()
-        return _default_gram_basis(
+        return _default_basis(
             SA.coeffs(p, basis, new_basis),
             new_basis,
             gram_basis,
@@ -422,14 +422,14 @@ function _default_gram_basis(_, basis::MB.MonomialIndexedBasis)
     return basis
 end
 
-function _default_gram_basis(a::SA.AlgebraElement, basis)
+function _default_basis(a::SA.AlgebraElement, basis)
     b = SA.basis(a)
     gram = _default_gram_basis(b, basis)
-    return _default_gram_basis(SA.coeffs(a), b, gram)..., gram
+    return _default_basis(SA.coeffs(a), b, gram)..., gram
 end
 
-function _default_gram_basis(p::MP.AbstractPolynomialLike, basis)
-    return _default_gram_basis(
+function _default_basis(p::MP.AbstractPolynomialLike, basis)
+    return _default_basis(
         MB.algebra_element(
             MB.sparse_coefficients(p),
             MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
