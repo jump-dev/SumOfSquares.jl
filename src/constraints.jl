@@ -451,7 +451,7 @@ function JuMP.build_constraint(
     zero_basis = nothing,
     kws...,
 )
-    __coefs, basis, gram_basis = _default_gram_basis(p, basis)
+    __coefs, basis, gram_basis = _default_basis(p, basis)
     set = JuMP.moi_set(
         cone,
         basis,
