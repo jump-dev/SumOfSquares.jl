@@ -12,5 +12,6 @@ include("psd2x2.jl")
 include("scaled_diagonally_dominant.jl")
 include("copositive_inner.jl")
 include("kernel.jl")
+include("lowrank.jl")
 
 end
