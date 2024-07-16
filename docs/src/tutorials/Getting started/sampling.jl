@@ -44,6 +44,24 @@ test(sdplr)
 test(hypatia)
 test(bmsos, true)
 
+import Random
+import TrigPolys
+# See https://codeocean.com/capsule/8311748/tree/v1
+function random_positive_poly(n; tol=1e-5)
+    Random.seed!(0)
+    p = TrigPolys.random_trig_poly(n)
+    p - minimum(TrigPolys.evaluate(TrigPolys.pad_to(p, 10000000))) + n * tol
+    a = zeros(2n + 1)
+    a[1] = p.a0
+    a[2:2:2n] = p.ac
+    a[3:2:(2n+1)] = p.as
+    return MB.algebra_element(
+        a,
+        MB.SubBasis{MB.Trigonometric}(monomials(x, 0:2n)),
+    )
+end
+random_positive_poly(20)
+
 function test_rand(solver, d, B)
     model = Model(solver)
     set_silent(model)
@@ -53,5 +71,8 @@ function test_rand(solver, d, B)
     return solve_time(model)
 end
 
-test_rand(scs, 2, MultivariateBases.Trigonometric)
-test_rand(bmsos, 4, MultivariateBases.Trigonometric)
+d = 10
+test_rand(scs, d, MultivariateBases.Trigonometric)
+test_rand(hypatia, d, MultivariateBases.Trigonometric)
+test_rand(sdplr, d, MultivariateBases.Trigonometric)
+test_rand(bmsos, d, MultivariateBases.Trigonometric)
