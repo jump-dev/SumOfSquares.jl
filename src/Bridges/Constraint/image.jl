@@ -81,17 +81,18 @@ function MOI.Bridges.Constraint.bridge_constraint(
     @assert MOI.output_dimension(g) == length(set.basis)
     scalars = MOI.Utilities.scalarize(g)
     k = 0
-    found = Dict{eltype(set.basis.monomials),Int}()
+    found = Dict{eltype(set.basis),Int}()
     first = Union{Nothing,Int}[nothing for _ in eachindex(scalars)]
     variables = MOI.VariableIndex[]
     constraints = MOI.ConstraintIndex{F}[]
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
+        # TODO don't ignore weight
         cone = SOS.matrix_cone(M, length(gram_basis))
         f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(cone))
-        for j in eachindex(gram_basis.monomials)
+        for j in eachindex(gram_basis)
             for i in 1:j
                 k += 1
-                mono = gram_basis.monomials[i] * gram_basis.monomials[j]
+                mono = SA.star(gram_basis[i]) * gram_basis[j]
                 is_diag = i == j
                 if haskey(found, mono)
                     var = MOI.add_variable(model)
@@ -119,8 +120,9 @@ function MOI.Bridges.Constraint.bridge_constraint(
                     MOI.Utilities.operate_output_index!(-, T, k, f, var)
                 else
                     found[mono] = k
-                    t = MB.monomial_index(set.basis, mono)
-                    if !isnothing(t)
+                    @show mono, set.basis[mono]
+                    if mono in set.basis
+                        t = set.basis[mono]
                         first[t] = k
                         if is_diag
                             MOI.Utilities.operate_output_index!(
@@ -139,6 +141,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
                                 inv(T(2)) * scalars[t],
                             )
                         end
+                    else
+                        @warn("$mono not in basis")
                     end
                 end
             end
@@ -167,14 +171,8 @@ end
 function MOI.supports_constraint(
     ::Type{ImageBridge{T}},
     ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{
-        <:SOS.WeightedSOSCone{
-            M,
-            <:MB.SubBasis{MB.Monomial},
-            <:MB.SubBasis{MB.Monomial},
-        },
-    },
-) where {T,M}
+    ::Type{<:SOS.WeightedSOSCone},
+) where {T}
     return true
 end
 
