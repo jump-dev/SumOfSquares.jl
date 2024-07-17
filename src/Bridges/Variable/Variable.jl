@@ -12,6 +12,7 @@ include("psd2x2.jl")
 include("scaled_diagonally_dominant.jl")
 include("copositive_inner.jl")
 include("kernel.jl")
+include("lowrank.jl")
 
 function add_all_bridges(model, ::Type{T}) where {T}
     MOI.Bridges.add_bridge(model, PositiveSemidefinite2x2Bridge{T})

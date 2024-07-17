@@ -9,10 +9,11 @@ function _bridge_coefficient_type(::Type{SOSPolynomialSet{D,B,C}}) where {D,B,C}
 end
 
 function PolyJuMP.bridges(S::Type{<:WeightedSOSCone})
-    return Tuple{Type,Type}[(
-        Bridges.Variable.KernelBridge,
-        _bridge_coefficient_type(S),
-    )]
+    T = _bridge_coefficient_type(S)
+    return Tuple{Type,Type}[
+        (Bridges.Variable.KernelBridge, T),
+        (Bridges.Variable.LowRankBridge, T),
+    ]
 end
 
 function PolyJuMP.bridges(::Type{<:PositiveSemidefinite2x2ConeTriangle})
