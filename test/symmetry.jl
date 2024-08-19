@@ -161,29 +161,40 @@ function test_orthogonal_transformation_to()
     end
 end
 
-function test_block_diag()
-    # From `dihedral.jl` example
-    A = [
-        [
-            0 -1 0 0 0 0
-            1 0 0 0 0 0
-            0 0 0 0 0 -1
-            0 0 0 0 1 0
-            0 0 0 -1 0 0
-            0 0 1 0 0 0
-        ],
-        [
-            0 1 0 0 0 0
-            1 0 0 0 0 0
-            0 0 0 0 0 1
-            0 0 0 0 1 0
-            0 0 0 1 0 0
-            0 0 1 0 0 0
-        ],
-    ]
-    d = 2
+function _test_block_diag(A, d)
     U = SumOfSquares.Certificate.Symmetry.ordered_block_diag(A, d)
     @test SumOfSquares.Certificate.Symmetry.ordered_block_check(U, A, d)
+    return
+end
+
+function test_block_diag_dihedral()
+    # From `dihedral.jl` example
+    d = 2
+    A2 = [
+        0 1 0 0 0 0
+        1 0 0 0 0 0
+        0 0 0 0 0 1
+        0 0 0 0 1 0
+        0 0 0 1 0 0
+        0 0 1 0 0 0
+    ]
+    A1 = [
+        0 -1 0 0 0 0
+        1 0 0 0 0 0
+        0 0 0 0 0 -1
+        0 0 0 0 1 0
+        0 0 0 -1 0 0
+        0 0 1 0 0 0
+    ]
+    _test_block_diag([A1, A2], d)
+    # Using `GroupsCore.gens(G::DihedralGroup) = [DihedralElement(G.n, true, 1), DihedralElement(G.n, true, 0)]`, we get
+    # see https://github.com/jump-dev/SumOfSquares.jl/issues/381#issuecomment-2296711306
+    A1 = Matrix(Diagonal([1, -1, 1, -1, 1, -1]))
+    _test_block_diag([A1, A2], d)
+    return
+end
+
+function test_block_diag_alpha()
     α = 0.75
     A = [
         Matrix{Int}(I, 6, 6),
@@ -205,8 +216,52 @@ function test_block_diag()
         ],
     ]
     d = 2
-    U = SumOfSquares.Certificate.Symmetry.ordered_block_diag(A, d)
-    @test SumOfSquares.Certificate.Symmetry.ordered_block_check(U, A, d)
+    _test_block_diag(A, d)
+    return
+end
+
+function test_oeri_goluskin()
+    A1 = Matrix(1.0I, 16, 16)
+    A2 = Matrix(-1.0I, 16, 16)
+    A3 = Float64[
+        1   0  0   0  0   0  0   0  0   0  0   0  0   0  0   0
+        0  -1  0   0  0   0  0   0  0   0  0   0  0   0  0   0
+        0   0  0   0  1   0  0   0  0   0  0   0  0   0  0   0
+        0   0  0   0  0  -1  0   0  0   0  0   0  0   0  0   0
+        0   0  1   0  0   0  0   0  0   0  0   0  0   0  0   0
+        0   0  0  -1  0   0  0   0  0   0  0   0  0   0  0   0
+        0   0  0   0  0   0  1   0  0   0  0   0  0   0  0   0
+        0   0  0   0  0   0  0  -1  0   0  0   0  0   0  0   0
+        0   0  0   0  0   0  0   0  1   0  0   0  0   0  0   0
+        0   0  0   0  0   0  0   0  0  -1  0   0  0   0  0   0
+        0   0  0   0  0   0  0   0  0   0  0   0  1   0  0   0
+        0   0  0   0  0   0  0   0  0   0  0   0  0  -1  0   0
+        0   0  0   0  0   0  0   0  0   0  1   0  0   0  0   0
+        0   0  0   0  0   0  0   0  0   0  0  -1  0   0  0   0
+        0   0  0   0  0   0  0   0  0   0  0   0  0   0  1   0
+        0   0  0   0  0   0  0   0  0   0  0   0  0   0  0  -1
+    ]
+    A4 = sqrt.([
+        1  3  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+        3  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+        0  0  0  0  1  3  0  0  0  0  0  0  0  0  0  0
+        0  0  0  0  3  1  0  0  0  0  0  0  0  0  0  0
+        0  0  1  3  0  0  0  0  0  0  0  0  0  0  0  0
+        0  0  3  1  0  0  0  0  0  0  0  0  0  0  0  0
+        0  0  0  0  0  0  1  3  0  0  0  0  0  0  0  0
+        0  0  0  0  0  0  3  1  0  0  0  0  0  0  0  0
+        0  0  0  0  0  0  0  0  1  3  0  0  0  0  0  0
+        0  0  0  0  0  0  0  0  3  1  0  0  0  0  0  0
+        0  0  0  0  0  0  0  0  0  0  0  0  1  3  0  0
+        0  0  0  0  0  0  0  0  0  0  0  0  3  1  0  0
+        0  0  0  0  0  0  0  0  0  0  1  3  0  0  0  0
+        0  0  0  0  0  0  0  0  0  0  3  1  0  0  0  0
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  3
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  3  1
+    ]) / 2
+    d = 2
+    _test_block_diag([A1, A2, A3, A4], d)
+    return
 end
 
 function runtests()
