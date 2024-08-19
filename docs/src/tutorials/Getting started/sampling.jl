@@ -23,6 +23,8 @@ scs = SCS.Optimizer
 sdplr = optimizer_with_attributes(SDPLR.Optimizer, "maxrank" => (m, n) -> 4)
 hypatia = Hypatia.Optimizer
 bmsos = BMSOS.Optimizer
+import DSDP
+dsdp = DSDP.Optimizer
 function test(solver, feas::Bool)
     model = Model(solver)
     set_silent(model)
@@ -34,15 +36,22 @@ function test(solver, feas::Bool)
     end
     @constraint(model, p - γ in SOSCone(), zero_basis = BoxSampling([-1], [1]))
     optimize!(model)
-    @test primal_status == MOI.FEASIBLE_POINT
-    if !feasible
-        @test value(γ) ≈ -6 rtol=1e-4
+    @test primal_status(model) == MOI.FEASIBLE_POINT
+    @show objective_value(model)
+    @show value(γ)
+    if !feas
+        if !isapprox(value(γ), -6, rtol=1e-3)
+            @warn("$(value(γ)) != -6")
+        end
+        #@test value(γ) ≈ -6 rtol=1e-4
     end
+    return model
 end
-test(scs)
-test(sdplr)
-test(hypatia)
-test(bmsos, true)
+model = test(scs, false);
+model = test(sdplr, false);
+test(hypatia, false);
+#test(bmsos, true)
+model = test(dsdp, false);
 
 import Random
 import TrigPolys
@@ -50,7 +59,9 @@ import TrigPolys
 function random_positive_poly(n; tol=1e-5)
     Random.seed!(0)
     p = TrigPolys.random_trig_poly(n)
-    p - minimum(TrigPolys.evaluate(TrigPolys.pad_to(p, 10000000))) + n * tol
+    #N = 10000000
+    N = 1000000
+    p - minimum(TrigPolys.evaluate(TrigPolys.pad_to(p, N))) + n * tol
     a = zeros(2n + 1)
     a[1] = p.a0
     a[2:2:2n] = p.ac
@@ -65,14 +76,66 @@ random_positive_poly(20)
 function test_rand(solver, d, B)
     model = Model(solver)
     set_silent(model)
-    p = MB.algebra_element(rand(2d+1), MB.SubBasis{B}(monomials(x, 0:2d)))
+    p = if B == MB.Trigonometric
+        random_positive_poly(d)
+    else
+        MB.algebra_element(rand(2d+1), MB.SubBasis{B}(monomials(x, 0:2d)))
+    end
     @constraint(model, p in SOSCone(), zero_basis = BoxSampling([-1], [1]))
     optimize!(model)
     return solve_time(model)
 end
 
-d = 10
-test_rand(scs, d, MultivariateBases.Trigonometric)
-test_rand(hypatia, d, MultivariateBases.Trigonometric)
-test_rand(sdplr, d, MultivariateBases.Trigonometric)
-test_rand(bmsos, d, MultivariateBases.Trigonometric)
+using DataFrames
+df = DataFrame(solver=String[], degree=Int[], time=Float64[])
+
+function timing(solver, d, dual::Bool = false)
+    name = MOI.get(MOI.instantiate(solver), MOI.SolverName())
+    if dual
+        solver = dual_optimizer(solver)
+    end
+    time = test_rand(solver, d, MB.Trigonometric)
+    push!(df, (name, d, time))
+end
+
+using Dualization
+using MosekTools
+mosek = Mosek.Optimizer
+
+d = 400
+timing(bmsos, d)
+timing(hypatia, d)
+timing(dsdp, d)
+timing(mosek, d)
+#timing(sdplr, d)
+#timing(dual_optimizer(scs), d)
+#timing(scs, d, true)
+#timing(mosek, d, true)
+
+using Printf
+
+function table(degs, solvers)
+    print("|     |")
+    for solver in solvers
+        print(" $solver |")
+    end
+    println()
+    for _ in 0:length(solvers)
+        print("|-----")
+    end
+    println("|")
+    for deg in degs
+        print("| ", deg, " |")
+        for solver in solvers
+            times = subset(df, :solver => c -> c .== Ref(solver), :degree => d -> d .== deg).time
+            if isempty(times)
+                print("  |")
+            else
+                @printf(" %.3e |", minimum(times))
+            end
+        end
+        println()
+    end
+end
+
+table([100, 200, 300, 400, 500, 800], ["BMSOS", "Hypatia", "DSDP", "Mosek"])

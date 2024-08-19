@@ -120,7 +120,6 @@ function MOI.Bridges.Constraint.bridge_constraint(
                     MOI.Utilities.operate_output_index!(-, T, k, f, var)
                 else
                     found[mono] = k
-                    @show mono, set.basis[mono]
                     if mono in set.basis
                         t = set.basis[mono]
                         first[t] = k

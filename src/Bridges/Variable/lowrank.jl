@@ -33,7 +33,7 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
             ),
         )
     end
-    return KernelBridge{T,M}(
+    return LowRankBridge{T,M}(
         [
             MOI.ScalarAffineFunction(
                 [MOI.ScalarAffineTerm(one(T), variables[i][j]) for i in eachindex(set.gram_bases)],
@@ -76,4 +76,18 @@ function MOI.Bridges.Variable.concrete_bridge_type(
     ::Type{<:SOS.WeightedSOSCone{M}},
 ) where {T,M}
     return LowRankBridge{T,M}
+end
+
+function MOI.Bridges.bridged_function(
+    bridge::LowRankBridge,
+    i::MOI.Bridges.IndexInVector,
+)
+    return bridge.affine[i.value]
+end
+
+function MOI.Bridges.Variable.unbridged_map(
+    ::LowRankBridge,
+    ::Vector{MOI.VariableIndex},
+)
+    return nothing
 end
