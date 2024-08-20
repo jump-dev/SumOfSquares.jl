@@ -39,9 +39,22 @@ function test_linsolve()
     end
 end
 
-function _test_orthogonal_transformation_to(A, B)
-    U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(A, B)
+function _test_orthogonal_transformation_to(A, B, As, Bs)
+    U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(A, B, As, Bs)
     @test A ≈ U' * B * U
+end
+
+function _test_orthogonal_transformation_to(λ, As, Bs)
+    A = sum(λ[i] * As[i] for i in eachindex(As))
+    B = sum(λ[i] * Bs[i] for i in eachindex(Bs))
+    _test_orthogonal_transformation_to(A, B, As, Bs)
+    return
+end
+
+function _test_orthogonal_transformation_to(A, B)
+    _test_orthogonal_transformation_to(A, B, typeof(A)[], typeof(B)[])
+    _test_orthogonal_transformation_to(A, B, [A], [B])
+    return
 end
 
 function _test_orthogonal_transformation_to(T::Type)
@@ -152,7 +165,23 @@ function _test_orthogonal_transformation_to(T::Type)
         1 1 0
     ]
     _test_orthogonal_transformation_to(A1, A2)
+    A1 = T[1 0; 0 -1]
+    A2 = T[0 1; 1 0]
+    _test_orthogonal_transformation_to([1, 1], [A1, A2], [-A1, A2])
+    _test_orthogonal_transformation_to([2, 1], [A1, A2], [-A1, A2])
+    _test_oeri_goluskin_orth(T)
     return
+end
+
+function _test_oeri_goluskin_orth(T)
+    A1 = T[1 0; 0 1]
+    A2 = T[-1 0; 0 -1]
+    A3 = T[1 0; 0 -1]
+    A4 = T[0.5 1
+          1 0.5]
+    A5 = T[-0.5 1
+          1 -0.5]
+    _test_orthogonal_transformation_to(ones(4), [A1, A2, A3, A4], [A1, A2, -A3, A5])
 end
 
 function test_orthogonal_transformation_to()
@@ -220,6 +249,7 @@ function test_block_diag_alpha()
     return
 end
 
+# See https://github.com/jump-dev/SumOfSquares.jl/issues/381
 function test_oeri_goluskin()
     A1 = Matrix(1.0I, 16, 16)
     A2 = Matrix(-1.0I, 16, 16)

@@ -53,39 +53,48 @@ end
 # We can multiply by `Diagonal(d)` if `d[i] * conj(d[i]) = 1`.
 # So in the real case, `d = ±1` but in the complex case, we have more freedom.
 function _sign_diag(
-    A::AbstractMatrix{T},
-    B::AbstractMatrix{T};
+    As::Vector{<:AbstractMatrix{T}},
+    Bs::Vector{<:AbstractMatrix{T}};
     tol = Base.rtoldefault(real(T)),
 ) where {T}
-    n = LinearAlgebra.checksquare(A)
+    n = LinearAlgebra.checksquare(As[1])
     d = ones(T, n)
     for j in 2:n
         if T <: Real
             minus = zero(real(T))
             not_minus = zero(real(T))
             for i in 1:(j-1)
-                a = A[i, j]
-                b = B[i, j]
-                minus = max(minus, abs(a + b))
-                not_minus = max(not_minus, abs(a - b))
+                for (Ai, Bi) in zip(As, Bs)
+                    a = Ai[i, j]
+                    b = Bi[i, j]
+                    minus = max(minus, abs(a + b))
+                    not_minus = max(not_minus, abs(a - b))
+                end
             end
             if minus < not_minus
                 d[j] = -one(T)
-                B[:, j] = -B[:, j]
-                B[j, :] = -B[j, :]
+                for B in Bs
+                    B[:, j] = -B[:, j]
+                    B[j, :] = -B[j, :]
+                end
             end
         else
-            i = argmax(abs.(B[1:(j-1), j]))
-            if abs(B[i, j]) <= tol
+            k = argmax(eachindex(Bs)) do k
+                maximum(abs.(Bs[k][1:(j-1), j]))
+            end
+            i = argmax(abs.(Bs[k][1:(j-1), j]))
+            if abs(Bs[k][i, j]) <= tol
                 continue
             end
-            rot = A[i, j] / B[i, j]
+            rot = As[k][i, j] / Bs[k][i, j]
             # It should be unitary but there might be small numerical errors
             # so let's normalize
             rot /= abs(rot)
             d[j] = rot
-            B[:, j] *= rot
-            B[j, :] *= conj(rot)
+            for B in Bs
+                B[:, j] *= rot
+                B[j, :] *= conj(rot)
+            end
         end
     end
     return d
@@ -151,10 +160,13 @@ function _rotate_complex(
 end
 
 """
-    orthogonal_transformation_to(A, B)
+    orthogonal_transformation_to(A, B, Ais, Bis)
 
 Return an orthogonal transformation `U` such that
 `A = U' * B * U`
+and
+`Ai[k] = U' * Bi[k] * U`
+for all `(Ai, Bi) in zip(Ais, Bis)`
 
 Given Schur decompositions
 `A = Z_A * S_A * Z_A'`
@@ -162,7 +174,7 @@ Given Schur decompositions
 Since `P' * S_A * P = D' * S_B * D`, we have
 `A = Z_A * P * Z_B' * B * Z_B * P' * Z_A'`
 """
-function orthogonal_transformation_to(A, B)
+function orthogonal_transformation_to(A, B, Ais, Bis)
     As = LinearAlgebra.schur(A)
     _reorder!(As)
     T_A = As.Schur
@@ -173,7 +185,15 @@ function orthogonal_transformation_to(A, B)
     Z_B = Bs.vectors
     P = _rotate_complex(T_A, T_B)
     T_A = P' * T_A * P
-    d = _sign_diag(T_A, T_B)
+    # If `T_A` and `T_B` are diagonal, they don't help
+    # determing the diagonal `d`.
+    # We provide the other matrices of `Ais` and `Bis`
+    # in order to help determine the sign in these cases.
+    Ais = [P' * Z_A' * A * Z_A * P for A in Ais]
+    push!(Ais, T_A)
+    Bis = [Z_B' * B * Z_B for B in Bis]
+    push!(Bis, T_B)
+    d = _sign_diag(Ais, Bis)
     D = LinearAlgebra.Diagonal(d)
     return _try_integer!(Z_B * D * P' * Z_A')
 end
@@ -204,7 +224,7 @@ function ordered_block_diag(As, d)
         # 1997, 133-140
         R = sum(λ .* refs)
         C = sum(λ .* Cs)
-        V = orthogonal_transformation_to(R, C)
+        V = orthogonal_transformation_to(R, C, refs, Cs)
         @assert R ≈ V' * C * V
         for i in eachindex(refs)
             @assert refs[i] ≈ V' * Cs[i] * V
