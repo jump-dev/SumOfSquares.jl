@@ -33,9 +33,11 @@ end
 
 function MOI.Bridges.Variable.supports_constrained_variable(
     ::Type{<:KernelBridge},
-    ::Type{<:SOS.WeightedSOSCone},
-)
-    return true
+    ::Type{<:SOS.WeightedSOSCone{M,B}},
+) where {M,B}
+    # Could be made to work but doesn't work yet so it's best to use
+    # `LowRankBridge` which can then be bridged to classical PSD by MOI's bridge
+    return !(B <: MB.LagrangeBasis)
 end
 
 function MOI.Bridges.added_constrained_variable_types(
