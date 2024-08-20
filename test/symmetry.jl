@@ -40,7 +40,12 @@ function test_linsolve()
 end
 
 function _test_orthogonal_transformation_to(A, B, As, Bs)
-    U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(A, B, As, Bs)
+    U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(
+        A,
+        B,
+        As,
+        Bs,
+    )
     @test A ≈ U' * B * U
 end
 

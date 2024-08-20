@@ -80,7 +80,7 @@ function _sign_diag(
             end
         else
             k = argmax(eachindex(Bs)) do k
-                maximum(abs.(Bs[k][1:(j-1), j]))
+                return maximum(abs.(Bs[k][1:(j-1), j]))
             end
             i = argmax(abs.(Bs[k][1:(j-1), j]))
             if abs(Bs[k][i, j]) <= tol
