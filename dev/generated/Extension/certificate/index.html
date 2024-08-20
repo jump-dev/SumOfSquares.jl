@@ -23,7 +23,7 @@ Real Relative Gap: 0.00e+00
 XZ Relative Gap: 3.63e-10
 DIMACS error measures: 6.34e-17 0.00e+00 5.00e-11 0.00e+00 0.00e+00 3.63e-10
 ------------------------------------------------------------------
-	       SCS v3.2.4 - Splitting Conic Solver
+	       SCS v3.2.6 - Splitting Conic Solver
 	(c) Brendan O&#39;Donoghue, Stanford University, 2012
 ------------------------------------------------------------------
 problem:  variables n: 11, constraints m: 20
@@ -40,12 +40,12 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  1.44e-04
-    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  3.14e-04
+     0| 2.57e+01  1.01e+00  2.83e+06 -1.41e+06  1.00e-01  1.85e-04
+    25| 1.09e+11  3.74e+10  9.51e+18 -4.76e+18  1.00e-01  3.56e-04
 ------------------------------------------------------------------
 status:  unbounded
-timings: total: 3.15e-04s = setup: 5.83e-05s + solve: 2.57e-04s
-	 lin-sys: 1.47e-05s, cones: 1.58e-04s, accel: 1.54e-06s
+timings: total: 3.62e-04s = setup: 6.70e-05s + solve: 2.95e-04s
+	 lin-sys: 1.48e-05s, cones: 1.74e-04s, accel: 2.04e-06s
 ------------------------------------------------------------------
 objective = -inf
 ------------------------------------------------------------------</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with SCS attached
@@ -63,7 +63,7 @@ objective = -inf
   Dual objective value : -1.00000e+00
 
 * Work counters
-  Solve time (sec)   : 3.15120e-04
+  Solve time (sec)   : 3.61732e-04
 </code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
 import MultivariateBases as MB
 const SOS = SumOfSquares
@@ -128,5 +128,5 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 8.28444e-01
 
 * Work counters
-  Solve time (sec)   : 3.95583e-03
-</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 11 July 2024 21:50">Thursday 11 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 3.88999e-03
+</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Sparsity/term_sparsity/">« Term sparsity</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Tuesday 20 August 2024 11:54">Tuesday 20 August 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
