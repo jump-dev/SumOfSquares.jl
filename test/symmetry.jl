@@ -39,9 +39,27 @@ function test_linsolve()
     end
 end
 
-function _test_orthogonal_transformation_to(A, B)
-    U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(A, B)
+function _test_orthogonal_transformation_to(A, B, As, Bs)
+    U = SumOfSquares.Certificate.Symmetry.orthogonal_transformation_to(
+        A,
+        B,
+        As,
+        Bs,
+    )
     @test A ≈ U' * B * U
+end
+
+function _test_orthogonal_transformation_to(λ, As, Bs)
+    A = sum(λ[i] * As[i] for i in eachindex(As))
+    B = sum(λ[i] * Bs[i] for i in eachindex(Bs))
+    _test_orthogonal_transformation_to(A, B, As, Bs)
+    return
+end
+
+function _test_orthogonal_transformation_to(A, B)
+    _test_orthogonal_transformation_to(A, B, typeof(A)[], typeof(B)[])
+    _test_orthogonal_transformation_to(A, B, [A], [B])
+    return
 end
 
 function _test_orthogonal_transformation_to(T::Type)
@@ -152,6 +170,10 @@ function _test_orthogonal_transformation_to(T::Type)
         1 1 0
     ]
     _test_orthogonal_transformation_to(A1, A2)
+    A1 = T[1 0; 0 -1]
+    A2 = T[0 1; 1 0]
+    _test_orthogonal_transformation_to([1, 1], [A1, A2], [-A1, A2])
+    _test_orthogonal_transformation_to([2, 1], [A1, A2], [-A1, A2])
     return
 end
 
@@ -161,29 +183,40 @@ function test_orthogonal_transformation_to()
     end
 end
 
-function test_block_diag()
-    # From `dihedral.jl` example
-    A = [
-        [
-            0 -1 0 0 0 0
-            1 0 0 0 0 0
-            0 0 0 0 0 -1
-            0 0 0 0 1 0
-            0 0 0 -1 0 0
-            0 0 1 0 0 0
-        ],
-        [
-            0 1 0 0 0 0
-            1 0 0 0 0 0
-            0 0 0 0 0 1
-            0 0 0 0 1 0
-            0 0 0 1 0 0
-            0 0 1 0 0 0
-        ],
-    ]
-    d = 2
+function _test_block_diag(A, d)
     U = SumOfSquares.Certificate.Symmetry.ordered_block_diag(A, d)
     @test SumOfSquares.Certificate.Symmetry.ordered_block_check(U, A, d)
+    return
+end
+
+function test_block_diag_dihedral()
+    # From `dihedral.jl` example
+    d = 2
+    A2 = [
+        0 1 0 0 0 0
+        1 0 0 0 0 0
+        0 0 0 0 0 1
+        0 0 0 0 1 0
+        0 0 0 1 0 0
+        0 0 1 0 0 0
+    ]
+    A1 = [
+        0 -1 0 0 0 0
+        1 0 0 0 0 0
+        0 0 0 0 0 -1
+        0 0 0 0 1 0
+        0 0 0 -1 0 0
+        0 0 1 0 0 0
+    ]
+    _test_block_diag([A1, A2], d)
+    # Using `GroupsCore.gens(G::DihedralGroup) = [DihedralElement(G.n, true, 1), DihedralElement(G.n, true, 0)]`, we get
+    # see https://github.com/jump-dev/SumOfSquares.jl/issues/381#issuecomment-2296711306
+    A1 = Matrix(Diagonal([1, -1, 1, -1, 1, -1]))
+    _test_block_diag([A1, A2], d)
+    return
+end
+
+function test_block_diag_alpha()
     α = 0.75
     A = [
         Matrix{Int}(I, 6, 6),
@@ -205,8 +238,8 @@ function test_block_diag()
         ],
     ]
     d = 2
-    U = SumOfSquares.Certificate.Symmetry.ordered_block_diag(A, d)
-    @test SumOfSquares.Certificate.Symmetry.ordered_block_check(U, A, d)
+    _test_block_diag(A, d)
+    return
 end
 
 function runtests()

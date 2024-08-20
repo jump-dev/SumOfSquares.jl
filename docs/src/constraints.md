@@ -32,13 +32,7 @@ julia> X = monomials(x, 0:2)
 
 julia> using SumOfSquares
 
-julia> model = Model()
-A JuMP Model
-Feasibility problem with:
-Variables: 0
-Model mode: AUTOMATIC
-CachingOptimizer state: NO_OPTIMIZER
-Solver name: No optimizer attached.
+julia> model = Model();
 
 julia> @variable(model, p, Poly(X))
 (_[1]) + (_[2])x₃ + (_[3])x₂ + (_[4])x₁ + (_[5])x₃² + (_[6])x₂x₃ + (_[7])x₂² + (_[8])x₁x₃ + (_[9])x₁x₂ + (_[10])x₁²
@@ -132,13 +126,7 @@ julia> @polyvar x y
 
 julia> using SumOfSquares
 
-julia> model = SOSModel()
-A JuMP Model
-Feasibility problem with:
-Variables: 0
-Model mode: AUTOMATIC
-CachingOptimizer state: NO_OPTIMIZER
-Solver name: No optimizer attached.
+julia> model = SOSModel();
 
 julia> @variable(model, α)
 α

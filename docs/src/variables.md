@@ -33,13 +33,7 @@ We can now create our polynomial variable `p` as follows:
 ```jldoctest variables
 julia> using SumOfSquares
 
-julia> model = Model()
-A JuMP Model
-Feasibility problem with:
-Variables: 0
-Model mode: AUTOMATIC
-CachingOptimizer state: NO_OPTIMIZER
-Solver name: No optimizer attached.
+julia> model = Model();
 
 julia> @variable(model, p, Poly(X))
 (_[1]) + (_[2])y + (_[3])x + (_[4])y² + (_[5])xy + (_[6])x²
