@@ -1,7 +1,7 @@
 name = "SumOfSquares"
 uuid = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 repo = "https://github.com/jump-dev/SumOfSquares.jl.git"
-version = "0.7.3"
+version = "0.7.4"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
