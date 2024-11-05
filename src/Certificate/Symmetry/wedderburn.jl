@@ -216,7 +216,7 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
                 U = ordered_block_diag(S, d)
                 if isnothing(U)
                     error(
-                        "Could not simultaneously block-diagonalize into $m identical $dx$d blocks",
+                        "Could not simultaneously block-diagonalize into $m identical $(d)x$d blocks",
                     )
                 end
             else
