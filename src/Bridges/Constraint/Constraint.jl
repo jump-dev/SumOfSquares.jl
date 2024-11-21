@@ -26,4 +26,13 @@ include("image.jl")
 include("sos_polynomial.jl")
 include("sos_polynomial_in_semialgebraic_set.jl")
 
+function add_all_bridges(model, ::Type{T}) where {T}
+    MOI.Bridges.add_bridge(model, EmptyBridge{T})
+    MOI.Bridges.add_bridge(model, PositiveSemidefinite2x2Bridge{T})
+    MOI.Bridges.add_bridge(model, DiagonallyDominantBridge{T})
+    MOI.Bridges.add_bridge(model, ImageBridge{T})
+    MOI.Bridges.add_bridge(model, SOSPolynomialBridge{T})
+    MOI.Bridges.add_bridge(model, SOSPolynomialInSemialgebraicSetBridge{T})
+end
+
 end
