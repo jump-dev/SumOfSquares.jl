@@ -148,7 +148,7 @@ function MA.promote_operation(
     ::Type{D},
     ::Type{G},
     ::Type{W},
-) where {C,B,D,G,W}
+) where {S,C,B,D,G,W}
     return MA.promote_operation(
         SumOfSquares.Certificate.zero_basis,
         C,
