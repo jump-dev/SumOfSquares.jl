@@ -137,11 +137,20 @@ function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
     return GramMatrix(Q, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
-function _term_element(α, p::MB.Polynomial{B,M}) where {B,M}
-    return MB.algebra_element(
-        MB.sparse_coefficients(MP.term(α, p.monomial)),
-        MB.FullBasis{B,M}(),
+function _gram_operate!(op, p, α, row, col, args::Vararg{Any,N}) where {N}
+    return MA.operate!(
+        op,
+        p,
+        true * row, # TODO `*` shouldn't be defined for group elements so this is a hack
+        α * col,
+        args...,
     )
+end
+
+function _gram_operate!(op, p, α, row::MB.MultiPoly, col::MB.MultiPoly, args::Vararg{Any,N}) where {N}
+    for (r, c) in zip(row.polynomials, col.polynomials)
+        _gram_operate!(op, p, α, r, c, args...)
+    end
 end
 
 function MA.operate!(
@@ -150,15 +159,10 @@ function MA.operate!(
     g::GramMatrix,
     args::Vararg{Any,N},
 ) where {N}
-    for col in eachindex(g.basis)
-        for row in eachindex(g.basis)
-            MA.operate!(
-                op,
-                p,
-                _term_element(true, SA.star(g.basis[row])),
-                _term_element(g.Q[row, col], g.basis[col]),
-                args...,
-            )
+    for row in eachindex(g.basis)
+        row_star = SA.star(g.basis[row])
+        for col in eachindex(g.basis)
+            _gram_operate!(op, p, g.Q[row, col], row_star, g.basis[col], args...)
         end
     end
     return p

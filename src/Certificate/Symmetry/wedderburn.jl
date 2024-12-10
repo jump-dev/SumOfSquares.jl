@@ -102,17 +102,47 @@ end
 function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
+function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}) where {B,M}
+    T = Float64
+    SC = SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
+    AE = SA.AlgebraElement{
+        MB.Algebra{MB.FullBasis{B,M},B,M},
+        T,
+        SC,
+    }
+    return Vector{MB.SemisimpleBasis{
+        AE,
+        Int,
+        MB.FixedPolynomialBasis{
+            B,
+            M,
+            T,
+            SC,
+        },
+    }}
+end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.gram_basis),
-    ::Type{<:Ideal},
-)
-    return Vector{Vector{MB.FixedPolynomialBasis}}
+    ::Type{<:Ideal{C}},
+) where {C}
+    return _multi_basis_type(MA.promote_operation(SumOfSquares.Certificate.gram_basis, C))
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.zero_basis),
-    ::Type{<:Ideal},
-)
-    return MB.Monomial
+    ::Type{<:Ideal{C}},
+    ::Type{B},
+    ::Type{D},
+    ::Type{G},
+    ::Type{W},
+) where {C,B,D,G,W}
+    return MA.promote_operation(
+        SumOfSquares.Certificate.zero_basis,
+        C,
+        B,
+        D,
+        G,
+        W,
+    )
 end
 SumOfSquares.Certificate.zero_basis(::Ideal) = MB.Monomial
 function SumOfSquares.Certificate.reduced_polynomial(
@@ -180,6 +210,13 @@ function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
         SumOfSquares.matrix_cone_type(typeof(cert)),
     )
     return _gram_basis(cert.pattern, basis, T)
+end
+
+function _fixed_basis(F, basis)
+    return MB.FixedPolynomialBasis([
+        MB.implicit(MB.algebra_element(row, basis))
+        for row in eachrow(F)
+    ])
 end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
@@ -259,17 +296,16 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
             # Moreover, `Q = kron(C, I)` is not block diagonal but we can get a block-diagonal
             # `Q = kron(I, Q)` by permuting the rows and columns:
             # `(U[1:d:(1+d*(m-1))] * F)' * basis.monomials`, `(U[2:d:(2+d*(m-1))] * F)' * basis.monomials`, ...
-            return MB.MultiBasis(
+            return MB.SemisimpleBasis(
                 map(1:d) do i
-                    return MB.OrthonormalCoefficientsBasis(
+                    return _fixed_basis(
                         transpose(U[:, i:d:(i+d*(m-1))]) * F,
                         basis,
                     )
                 end,
             )
         else
-            F = convert(Matrix{T}, R)
-            MB.MultiBasis([MB.OrthonormalCoefficientsBasis(F, basis)])
+            return MB.SemisimpleBasis([_fixed_basis(convert(Matrix{T}, R), basis)])
         end
     end
 end

@@ -84,13 +84,12 @@ Symmetry.SymbolicWedderburn.action(action, g, poly)
 
 # Let's now find the minimum of `p` by exploiting this symmetry.
 
-import CSDP
-solver = CSDP.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
-#import MultivariateBases as MB
 basis = MB.explicit_basis(MB.algebra_element(poly - t))
 using SymbolicWedderburn
 summands = SymbolicWedderburn.symmetry_adapted_basis(
@@ -112,7 +111,7 @@ solution_summary(model)
 # Let's look at the symmetry adapted basis used.
 
 gram = gram_matrix(con_ref).blocks #src
-@test length(gram) == 3                       #src
+@test length(gram) == 2                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
 @test length(gram[1].basis.polynomials) == 2 #src
 @test gram[1].basis.polynomials[1] == 1 #src
