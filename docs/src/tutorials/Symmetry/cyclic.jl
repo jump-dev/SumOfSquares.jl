@@ -115,7 +115,7 @@ gram = gram_matrix(con_ref).blocks #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
 polys = gram[1].basis.bases[].elements #src
 @test length(polys) == 2 #src
-@test polys[1] ≈ one(sum(x)) #src
+@test polys[1] ≈ 1 #src
 @test polys[2] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] #src
 @test length(gram[2].basis.bases) == 2 #src
@@ -165,17 +165,20 @@ solution_summary(model)
 gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 3                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-@test length(gram[1].basis.polynomials) == 2 #src
-@test gram[1].basis.polynomials[1] == 1 #src
-@test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
+polys = gram[1].basis.bases[].elements #src
+@test length(polys) == 2 #src
+@test polys[1] ≈ 1 #src
+@test polys[2] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] rtol = 1e-6 #src
-@test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (basis[1] - basis[2] * im) / √2  #src
+polys = gram[2].basis.bases[].elements #src
+@test length(polys) == 1 #src
+@test polys[] ≈ (basis[1] + basis[2] * im) / √2  #src
 @test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
-@test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2 #src
+polys = gram[3].basis.bases[].elements #src
+@test length(polys) == 1 #src
+@test polys[] ≈ (basis[1] - basis[2] * im) / √2 #src
 for gram in gram_matrix(con_ref).blocks
-    println(gram.basis.polynomials)
+    println(gram.basis)
     display(gram.Q)
 end
 

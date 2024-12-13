@@ -102,8 +102,8 @@ end
 function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
-function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}) where {B,M}
-    T = Float64
+
+function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}, ::Type{T}) where {B,M,T}
     SC = SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
     AE = SA.AlgebraElement{
         MB.Algebra{MB.FullBasis{B,M},B,M},
@@ -123,9 +123,9 @@ function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}) where {B,M}
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.gram_basis),
-    ::Type{<:Ideal{C}},
-) where {C}
-    return _multi_basis_type(MA.promote_operation(SumOfSquares.Certificate.gram_basis, C))
+    C::Type{<:Ideal{SubC}},
+) where {SubC}
+    return _multi_basis_type(MA.promote_operation(SumOfSquares.Certificate.gram_basis, SubC), _coeff_type(C))
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.zero_basis),
@@ -203,13 +203,17 @@ function matrix_reps(pattern, R, basis, ::Type{T}, form) where {T}
     end
 end
 
+
+function _coeff_type(C::Type{<:Ideal})
+    return SumOfSquares._complex(
+        Float64,
+        SumOfSquares.matrix_cone_type(C),
+    )
+end
+
 function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
     basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
-    T = SumOfSquares._complex(
-        Float64,
-        SumOfSquares.matrix_cone_type(typeof(cert)),
-    )
-    return _gram_basis(cert.pattern, basis, T)
+    return _gram_basis(cert.pattern, basis, _coeff_type(typeof(cert)))
 end
 
 function _fixed_basis(F, basis)
@@ -221,7 +225,6 @@ end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
     # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
-    @show T
     summands = SymbolicWedderburn.symmetry_adapted_basis(
         T,
         pattern.group,
