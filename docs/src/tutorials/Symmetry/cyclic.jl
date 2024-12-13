@@ -123,10 +123,7 @@ polys = gram[2].basis.bases[1].elements #src
 @test polys[] ≈ (x[1] + x[2] - 2x[3])/√6 #src
 polys = gram[2].basis.bases[2].elements #src
 @test polys[] ≈ (x[1] - x[2])/√2 #src
-for gram in gram_matrix(con_ref).blocks
-    println(gram.basis)
-    display(gram.Q)
-end
+gram_matrix(con_ref)
 
 # Let's look into more details at the last two elements of the basis.
 
@@ -177,10 +174,7 @@ polys = gram[2].basis.bases[].elements #src
 polys = gram[3].basis.bases[].elements #src
 @test length(polys) == 1 #src
 @test polys[] ≈ (basis[1] - basis[2] * im) / √2 #src
-for gram in gram_matrix(con_ref).blocks
-    println(gram.basis)
-    display(gram.Q)
-end
+gram_matrix(con_ref)
 
 # We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:
 
