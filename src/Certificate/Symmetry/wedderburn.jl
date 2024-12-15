@@ -25,14 +25,6 @@ function SymbolicWedderburn.decompose(
     return indcs, coeffs
 end
 
-#function SymbolicWedderburn.ExtensionHomomorphism(
-#    action::SymbolicWedderburn.Action,
-#    basis::MB.SubBasis{MB.Monomial},
-#)
-#    monos = collect(basis.monomials)
-#    return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
-#end
-
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
 _map_idx(f, v::AbstractVector) = map(f, eachindex(v))
 _tuple_map_idx(f, ::Tuple{}, i) = tuple()
