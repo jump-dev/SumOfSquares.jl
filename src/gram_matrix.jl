@@ -137,11 +137,54 @@ function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
     return GramMatrix(Q, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
-function _term_element(α, p::MB.Polynomial{B,M}) where {B,M}
-    return MB.algebra_element(
-        MB.sparse_coefficients(MP.term(α, p.monomial)),
-        MB.FullBasis{B,M}(),
+# `_gram_operate!` is a temporary workaround waiting for a cleaner solution
+# in https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/62
+
+function _gram_operate!(
+    op,
+    p,
+    α,
+    row::MB.Polynomial,
+    col::MB.Polynomial,
+    args::Vararg{Any,N},
+) where {N}
+    return MA.operate!(
+        op,
+        p,
+        MB.term_element(true, row), # TODO `*` shouldn't be defined for group elements so this is a hack
+        MB.term_element(α, col),
+        args...,
     )
+end
+
+function _gram_operate!(
+    op,
+    p,
+    α,
+    row::SA.AlgebraElement,
+    col::SA.AlgebraElement,
+    args::Vararg{Any,N},
+) where {N}
+    return MA.operate!(
+        op,
+        p,
+        true * row, # TODO `*` shouldn't be defined for group elements so this is a hack
+        α * col,
+        args...,
+    )
+end
+
+function _gram_operate!(
+    op,
+    p,
+    α,
+    row::MB.SemisimpleElement,
+    col::MB.SemisimpleElement,
+    args::Vararg{Any,N},
+) where {N}
+    for (r, c) in zip(row.elements, col.elements)
+        _gram_operate!(op, p, α, r, c, args...)
+    end
 end
 
 function MA.operate!(
@@ -150,13 +193,15 @@ function MA.operate!(
     g::GramMatrix,
     args::Vararg{Any,N},
 ) where {N}
-    for col in eachindex(g.basis)
-        for row in eachindex(g.basis)
-            MA.operate!(
+    for row in eachindex(g.basis)
+        row_star = SA.star(g.basis[row])
+        for col in eachindex(g.basis)
+            _gram_operate!(
                 op,
                 p,
-                _term_element(true, SA.star(g.basis[row])),
-                _term_element(g.Q[row, col], g.basis[col]),
+                g.Q[row, col],
+                row_star,
+                g.basis[col],
                 args...,
             )
         end

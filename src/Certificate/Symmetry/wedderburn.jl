@@ -1,4 +1,19 @@
 function SymbolicWedderburn.decompose(
+    p::MB.Polynomial,
+    hom::SymbolicWedderburn.InducedActionHomomorphism,
+)
+    return [hom[p]], [1]
+end
+
+function SymbolicWedderburn.decompose(
+    p::SA.AlgebraElement,
+    hom::SymbolicWedderburn.InducedActionHomomorphism,
+)
+    return [hom[k] for k in SA.supp(p)],
+    [v for (_, v) in SA.nonzero_pairs(SA.coeffs(p))]
+end
+
+function SymbolicWedderburn.decompose(
     k::MP.AbstractPolynomialLike,
     hom::SymbolicWedderburn.InducedActionHomomorphism,
 )
@@ -8,14 +23,6 @@ function SymbolicWedderburn.decompose(
     coeffs = MP.coefficients(k)
 
     return indcs, coeffs
-end
-
-function SymbolicWedderburn.ExtensionHomomorphism(
-    action::SymbolicWedderburn.Action,
-    basis::MB.SubBasis{MB.Monomial},
-)
-    monos = collect(basis.monomials)
-    return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
 end
 
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
@@ -35,6 +42,18 @@ function SymbolicWedderburn.action(
 end
 abstract type OnMonomials <: SymbolicWedderburn.ByLinearTransformation end
 
+function SymbolicWedderburn.action(
+    a::Union{VariablePermutation,OnMonomials},
+    el,
+    p::MB.Polynomial{MB.Monomial},
+)
+    res = SymbolicWedderburn.action(a, el, p.monomial)
+    if res isa MP.AbstractMonomial
+        return MB.Polynomial{MB.Monomial}(res)
+    else
+        return MB.algebra_element(res)
+    end
+end
 function SymbolicWedderburn.action(
     a::Union{VariablePermutation,OnMonomials},
     el,
@@ -75,17 +94,37 @@ end
 function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
+
+function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}, ::Type{T}) where {B,M,T}
+    SC = SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
+    AE = SA.AlgebraElement{MB.Algebra{MB.FullBasis{B,M},B,M},T,SC}
+    return Vector{MB.SemisimpleBasis{AE,Int,MB.FixedBasis{B,M,T,SC}}}
+end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.gram_basis),
-    ::Type{<:Ideal},
-)
-    return Vector{Vector{MB.FixedPolynomialBasis}}
+    C::Type{<:Ideal{SubC}},
+) where {SubC}
+    return _multi_basis_type(
+        MA.promote_operation(SumOfSquares.Certificate.gram_basis, SubC),
+        _coeff_type(C),
+    )
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.zero_basis),
-    ::Type{<:Ideal},
-)
-    return MB.Monomial
+    ::Type{<:Ideal{C}},
+    ::Type{B},
+    ::Type{D},
+    ::Type{G},
+    ::Type{W},
+) where {C,B,D,G,W}
+    return MA.promote_operation(
+        SumOfSquares.Certificate.zero_basis,
+        C,
+        B,
+        D,
+        G,
+        W,
+    )
 end
 SumOfSquares.Certificate.zero_basis(::Ideal) = MB.Monomial
 function SumOfSquares.Certificate.reduced_polynomial(
@@ -146,13 +185,19 @@ function matrix_reps(pattern, R, basis, ::Type{T}, form) where {T}
     end
 end
 
+function _coeff_type(C::Type{<:Ideal})
+    return SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(C))
+end
+
 function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
     basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
-    T = SumOfSquares._complex(
-        Float64,
-        SumOfSquares.matrix_cone_type(typeof(cert)),
-    )
-    return _gram_basis(cert.pattern, basis, T)
+    return _gram_basis(cert.pattern, basis, _coeff_type(typeof(cert)))
+end
+
+function _fixed_basis(F, basis)
+    return MB.FixedBasis([
+        MB.implicit(MB.algebra_element(row, basis)) for row in eachrow(F)
+    ])
 end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
@@ -231,14 +276,18 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
             # Moreover, `Q = kron(C, I)` is not block diagonal but we can get a block-diagonal
             # `Q = kron(I, Q)` by permuting the rows and columns:
             # `(U[1:d:(1+d*(m-1))] * F)' * basis.monomials`, `(U[2:d:(2+d*(m-1))] * F)' * basis.monomials`, ...
-            map(1:d) do i
-                return MB.FixedPolynomialBasis(
-                    (transpose(U[:, i:d:(i+d*(m-1))]) * F) * basis.monomials,
-                )
-            end
+            return MB.SemisimpleBasis(
+                map(1:d) do i
+                    return _fixed_basis(
+                        transpose(U[:, i:d:(i+d*(m-1))]) * F,
+                        basis,
+                    )
+                end,
+            )
         else
-            F = convert(Matrix{T}, R)
-            [MB.FixedPolynomialBasis(F * basis.monomials)]
+            return MB.SemisimpleBasis([
+                _fixed_basis(convert(Matrix{T}, R), basis),
+            ])
         end
     end
 end

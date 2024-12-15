@@ -51,6 +51,7 @@ end
 # `x_1^3*x_2*x_3^4` into `x_1^4*x_2^3*x_3`.
 
 import MultivariatePolynomials as MP
+import MultivariateBases as MB
 
 using SumOfSquares
 
@@ -83,12 +84,24 @@ Symmetry.SymbolicWedderburn.action(action, g, poly)
 
 # Let's now find the minimum of `p` by exploiting this symmetry.
 
-import CSDP
-solver = CSDP.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
+basis = MB.explicit_basis(MB.algebra_element(poly - t))
+using SymbolicWedderburn
+summands = SymbolicWedderburn.symmetry_adapted_basis(
+    Float64,
+    pattern.group,
+    pattern.action,
+    basis,
+    semisimple = true,
+)
+
+gram_basis = SumOfSquares.Certificate.Symmetry._gram_basis(pattern, basis, Float64)
+
 con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
@@ -98,21 +111,19 @@ solution_summary(model)
 # Let's look at the symmetry adapted basis used.
 
 gram = gram_matrix(con_ref).blocks #src
-@test length(gram) == 3                       #src
+@test length(gram) == 2                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-@test length(gram[1].basis.polynomials) == 2 #src
-@test gram[1].basis.polynomials[1] == 1 #src
-@test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
+polys = gram[1].basis.bases[].elements #src
+@test length(polys) == 2 #src
+@test polys[1] ≈ 1 #src
+@test polys[2] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] #src
-@test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (x[1] + x[2] - 2x[3])/√6 #src
-@test gram[3].Q == gram[2].Q #src
-@test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (x[1] - x[2])/√2 #src
-for gram in gram_matrix(con_ref).blocks
-    println(gram.basis.polynomials)
-    display(gram.Q)
-end
+@test length(gram[2].basis.bases) == 2 #src
+polys = gram[2].basis.bases[1].elements #src
+@test polys[] ≈ (x[1] + x[2] - 2x[3])/√6 #src
+polys = gram[2].basis.bases[2].elements #src
+@test polys[] ≈ (x[1] - x[2])/√2 #src
+gram_matrix(con_ref)
 
 # Let's look into more details at the last two elements of the basis.
 
@@ -137,8 +148,6 @@ b = √3/2
 
 # In fact, these last two basis comes from the real decomposition of a complex one.
 
-import CSDP
-solver = CSDP.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -153,19 +162,19 @@ solution_summary(model)
 gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 3                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-@test length(gram[1].basis.polynomials) == 2 #src
-@test gram[1].basis.polynomials[1] == 1 #src
-@test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
+polys = gram[1].basis.bases[].elements #src
+@test length(polys) == 2 #src
+@test polys[1] ≈ 1 #src
+@test polys[2] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] rtol = 1e-6 #src
-@test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (basis[1] - basis[2] * im) / √2  #src
+polys = gram[2].basis.bases[].elements #src
+@test length(polys) == 1 #src
+@test polys[] ≈ (basis[1] + basis[2] * im) / √2  #src
 @test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
-@test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2 #src
-for gram in gram_matrix(con_ref).blocks
-    println(gram.basis.polynomials)
-    display(gram.Q)
-end
+polys = gram[3].basis.bases[].elements #src
+@test length(polys) == 1 #src
+@test polys[] ≈ (basis[1] - basis[2] * im) / √2 #src
+gram_matrix(con_ref)
 
 # We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:
 
