@@ -151,8 +151,8 @@ function _gram_operate!(
     op,
     p,
     α,
-    row::MB.MultiPoly,
-    col::MB.MultiPoly,
+    row::MB.SemisimpleElement,
+    col::MB.SemisimpleElement,
     args::Vararg{Any,N},
 ) where {N}
     for (r, c) in zip(row.polynomials, col.polynomials)

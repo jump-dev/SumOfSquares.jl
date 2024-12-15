@@ -98,7 +98,7 @@ end
 function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}, ::Type{T}) where {B,M,T}
     SC = SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
     AE = SA.AlgebraElement{MB.Algebra{MB.FullBasis{B,M},B,M},T,SC}
-    return Vector{MB.SemisimpleBasis{AE,Int,MB.FixedPolynomialBasis{B,M,T,SC}}}
+    return Vector{MB.SemisimpleBasis{AE,Int,MB.FixedBasis{B,M,T,SC}}}
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.gram_basis),
@@ -195,7 +195,7 @@ function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
 end
 
 function _fixed_basis(F, basis)
-    return MB.FixedPolynomialBasis([
+    return MB.FixedBasis([
         MB.implicit(MB.algebra_element(row, basis)) for row in eachrow(F)
     ])
 end
