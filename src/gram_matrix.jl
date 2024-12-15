@@ -147,7 +147,14 @@ function _gram_operate!(op, p, α, row, col, args::Vararg{Any,N}) where {N}
     )
 end
 
-function _gram_operate!(op, p, α, row::MB.MultiPoly, col::MB.MultiPoly, args::Vararg{Any,N}) where {N}
+function _gram_operate!(
+    op,
+    p,
+    α,
+    row::MB.MultiPoly,
+    col::MB.MultiPoly,
+    args::Vararg{Any,N},
+) where {N}
     for (r, c) in zip(row.polynomials, col.polynomials)
         _gram_operate!(op, p, α, r, c, args...)
     end
@@ -162,7 +169,14 @@ function MA.operate!(
     for row in eachindex(g.basis)
         row_star = SA.star(g.basis[row])
         for col in eachindex(g.basis)
-            _gram_operate!(op, p, g.Q[row, col], row_star, g.basis[col], args...)
+            _gram_operate!(
+                op,
+                p,
+                g.Q[row, col],
+                row_star,
+                g.basis[col],
+                args...,
+            )
         end
     end
     return p

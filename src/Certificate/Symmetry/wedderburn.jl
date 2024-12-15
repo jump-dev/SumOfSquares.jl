@@ -97,27 +97,17 @@ end
 
 function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}, ::Type{T}) where {B,M,T}
     SC = SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
-    AE = SA.AlgebraElement{
-        MB.Algebra{MB.FullBasis{B,M},B,M},
-        T,
-        SC,
-    }
-    return Vector{MB.SemisimpleBasis{
-        AE,
-        Int,
-        MB.FixedPolynomialBasis{
-            B,
-            M,
-            T,
-            SC,
-        },
-    }}
+    AE = SA.AlgebraElement{MB.Algebra{MB.FullBasis{B,M},B,M},T,SC}
+    return Vector{MB.SemisimpleBasis{AE,Int,MB.FixedPolynomialBasis{B,M,T,SC}}}
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.gram_basis),
     C::Type{<:Ideal{SubC}},
 ) where {SubC}
-    return _multi_basis_type(MA.promote_operation(SumOfSquares.Certificate.gram_basis, SubC), _coeff_type(C))
+    return _multi_basis_type(
+        MA.promote_operation(SumOfSquares.Certificate.gram_basis, SubC),
+        _coeff_type(C),
+    )
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.zero_basis),
@@ -195,12 +185,8 @@ function matrix_reps(pattern, R, basis, ::Type{T}, form) where {T}
     end
 end
 
-
 function _coeff_type(C::Type{<:Ideal})
-    return SumOfSquares._complex(
-        Float64,
-        SumOfSquares.matrix_cone_type(C),
-    )
+    return SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(C))
 end
 
 function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
@@ -210,8 +196,7 @@ end
 
 function _fixed_basis(F, basis)
     return MB.FixedPolynomialBasis([
-        MB.implicit(MB.algebra_element(row, basis))
-        for row in eachrow(F)
+        MB.implicit(MB.algebra_element(row, basis)) for row in eachrow(F)
     ])
 end
 
@@ -300,7 +285,9 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
                 end,
             )
         else
-            return MB.SemisimpleBasis([_fixed_basis(convert(Matrix{T}, R), basis)])
+            return MB.SemisimpleBasis([
+                _fixed_basis(convert(Matrix{T}, R), basis),
+            ])
         end
     end
 end
