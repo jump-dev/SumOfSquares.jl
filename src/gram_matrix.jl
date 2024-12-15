@@ -140,7 +140,14 @@ end
 # `_gram_operate!` is a temporary workaround waiting for a cleaner solution
 # in https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/62
 
-function _gram_operate!(op, p, α, row::MB.Polynomial, col::MB.Polynomial, args::Vararg{Any,N}) where {N}
+function _gram_operate!(
+    op,
+    p,
+    α,
+    row::MB.Polynomial,
+    col::MB.Polynomial,
+    args::Vararg{Any,N},
+) where {N}
     return MA.operate!(
         op,
         p,
@@ -150,7 +157,14 @@ function _gram_operate!(op, p, α, row::MB.Polynomial, col::MB.Polynomial, args:
     )
 end
 
-function _gram_operate!(op, p, α, row::SA.AlgebraElement, col::SA.AlgebraElement, args::Vararg{Any,N}) where {N}
+function _gram_operate!(
+    op,
+    p,
+    α,
+    row::SA.AlgebraElement,
+    col::SA.AlgebraElement,
+    args::Vararg{Any,N},
+) where {N}
     return MA.operate!(
         op,
         p,
