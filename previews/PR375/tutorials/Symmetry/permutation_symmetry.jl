@@ -32,8 +32,8 @@ G = PermGroup([perm"(1,2,3,4)"])
 
 # We can use this certificate as follows:
 
-import CSDP
-solver = CSDP.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -45,25 +45,28 @@ value(t)
 
 # We indeed find `-1`, let's verify that symmetry was exploited:
 
-g = gram_matrix(con_ref).blocks    #src
-@test length(g) == 4                          #src
-@test length(g[1].basis.polynomials) == 2     #src
-@test g[1].basis.polynomials[1] == 1.0        #src
-@test g[1].basis.polynomials[2] ≈ -0.5 * sum(x) #src
-@test size(g[1].Q) == (2, 2)                  #src
-@test g[1].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-@test g[1].Q[1, 2] ≈ -1.0 atol=1e-6            #src
-@test g[1].Q[2, 2] ≈ 1.0 atol=1e-6            #src
-@test length(g[2].basis.polynomials) == 1     #src
-@test g[2].basis.polynomials[1] ≈ (x[2] - x[4]) / √2 #src
+gram = gram_matrix(con_ref).blocks    #src
+@test length(gram) == 3                          #src
+polys = gram[1].basis.bases[].elements #src
+@test length(polys) == 2     #src
+@test polys[1] ≈ 1        #src
+@test polys[2] ≈ -0.5 * sum(x) #src
+@test size(gram[1].Q) == (2, 2)                  #src
+@test gram[1].Q[1, 1] ≈ 1.0 atol=1e-6            #src
+@test gram[1].Q[1, 2] ≈ -1.0 atol=1e-6            #src
+@test gram[1].Q[2, 2] ≈ 1.0 atol=1e-6            #src
+@test length(gram[2].basis.bases) == 2 #src
+polys = gram[2].basis.bases[1].elements #src
+@test length(polys) == 1     #src
+@test polys[] ≈ (x[2] - x[4]) / √2 #src
 @test size(g[2].Q) == (1, 1)                  #src
 @test g[2].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-@test length(g[3].basis.polynomials) == 1     #src
-@test g[3].basis.polynomials[1] ≈ (x[1] - x[3]) / √2 #src
-@test size(g[3].Q) == (1, 1)                  #src
-@test g[3].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-@test length(g[4].basis.polynomials) == 1     #src
-@test g[4].basis.polynomials[1] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
-@test size(g[4].Q) == (1, 1)                  #src
-@test g[4].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-gram_matrix(con_ref).blocks
+polys = gram[2].basis.bases[2].elements #src
+@test length(polys) == 1     #src
+@test polys[1] ≈ (x[1] - x[3]) / √2 #src
+polys = gram[3].basis.bases[].elements #src
+@test length(polys) == 1     #src
+@test polys[] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
+@test size(gram[3].Q) == (1, 1)                  #src
+@test gram[3].Q[1, 1] ≈ 1.0 atol=1e-6            #src
+gram_matrix(con_ref)

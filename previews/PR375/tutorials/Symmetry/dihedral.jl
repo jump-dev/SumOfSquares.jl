@@ -8,7 +8,6 @@
 # *Symmetry groups, semidefinite programs, and sums of squares*.
 # Journal of Pure and Applied Algebra 192.1-3 (2004): 95-128.
 
-
 using Test #src
 import Random #src
 Random.seed!(0) #src
@@ -134,9 +133,9 @@ end
 
 # We can exploit this symmetry for reducing the problem using the `SymmetricIdeal` certificate as follows:
 
-import CSDP
+import Clarabel
 function solve(G)
-    solver = CSDP.Optimizer
+    solver = Clarabel.Optimizer
     model = Model(solver)
     @variable(model, t)
     @objective(model, Max, t)
@@ -148,37 +147,44 @@ function solve(G)
 
 
     g = gram_matrix(con_ref).blocks #src
-    @test length(g) == 5                       #src
-    @test g[1].basis.polynomials == [y^3, x^2*y, y] #src
-    @test g[2].basis.polynomials == [-x^3, -x*y^2, -x] #src
-    for i in 1:2                        #src
-        I = 3:-1:1                      #src
-        Q = g[i].Q[I, I]                #src
-        @test size(Q) == (3, 3)         #src
-        @test Q[2, 2] ≈  1    rtol=1e-2 #src
-        @test Q[1, 2] ≈  5/8  rtol=1e-2 #src
-        @test Q[2, 3] ≈ -1    rtol=1e-2 #src
-        @test Q[1, 1] ≈ 25/64 rtol=1e-2 #src
-        @test Q[1, 3] ≈ -5/8  rtol=1e-2 #src
-        @test Q[3, 3] ≈  1    rtol=1e-2 #src
-    end #src
-    @test length(g[3].basis.polynomials) == 2 #src
-    @test g[3].basis.polynomials[1] == 1.0 #src
-    @test g[3].basis.polynomials[2] ≈ -(√2/2)x^2 - (√2/2)y^2 #src
-    @test size(g[3].Q) == (2, 2)             #src
-    @test g[3].Q[1, 1] ≈ 7921/4096 rtol=1e-2 #src
-    @test g[3].Q[1, 2] ≈ 0.983 rtol=1e-2  #src
-    @test g[3].Q[2, 2] ≈ 1/2 rtol=1e-2 #src
-    @test g[4].basis.polynomials == [x * y] #src
-    @test size(g[4].Q) == (1, 1)       #src
-    @test g[4].Q[1, 1] ≈ 0   atol=1e-2 #src
-    @test length(g[5].basis.polynomials) == 1 #src
-    @test g[5].basis.polynomials[1] ≈ (√2/2)x^2 - (√2/2)y^2 #src
-    @test size(g[5].Q) == (1, 1)       #src
-    @test g[5].Q[1, 1] ≈ 0   atol=1e-2 #src
-    for g in gram_matrix(con_ref).blocks
-        println(g.basis.polynomials)
-    end
+    @test length(g) == 4            #src
+    @test length(g[4].basis.bases) == 2 #src
+    polys = g[4].basis.bases[1].elements #src
+    @test length(polys) == 3 #src
+    @test polys[1] ≈ y^3 #src
+    @test polys[2] ≈ x^2*y #src
+    @test polys[3] ≈ y #src
+    polys = g[4].basis.bases[2].elements #src
+    @test length(polys) == 3 #src
+    @test polys[1] ≈ -x^3 #src
+    @test polys[2] ≈ -x*y^2 #src
+    @test polys[3] ≈ -x #src
+    I = 3:-1:1                      #src
+    Q = g[4].Q[I, I]                #src
+    @test size(Q) == (3, 3)         #src
+    @test Q[2, 2] ≈  1    rtol=1e-2 #src
+    @test Q[1, 2] ≈  5/8  rtol=1e-2 #src
+    @test Q[2, 3] ≈ -1    rtol=1e-2 #src
+    @test Q[1, 1] ≈ 25/64 rtol=1e-2 #src
+    @test Q[1, 3] ≈ -5/8  rtol=1e-2 #src
+    @test Q[3, 3] ≈  1    rtol=1e-2 #src
+    polys = g[1].basis.bases[].elements #src
+    @test length(polys) == 2 #src
+    @test polys[1] ≈ 1.0 #src
+    @test polys[2] ≈ -(√2/2)x^2 - (√2/2)y^2 #src
+    @test size(g[1].Q) == (2, 2)             #src
+    @test g[1].Q[1, 1] ≈ 7921/4096 rtol=1e-2 #src
+    @test g[1].Q[1, 2] ≈ 0.983 rtol=1e-2  #src
+    @test g[1].Q[2, 2] ≈ 1/2 rtol=1e-2 #src
+    polys = g[2].basis.bases[].elements #src
+    @test polys[] ≈ x * y #src
+    @test size(g[2].Q) == (1, 1)       #src
+    @test g[2].Q[1, 1] ≈ 0   atol=1e-2 #src
+    polys = g[3].basis.bases[].elements #src
+    @test polys[] ≈ (√2/2)x^2 - (√2/2)y^2 #src
+    @test size(g[3].Q) == (1, 1)       #src
+    @test g[3].Q[1, 1] ≈ 0   atol=1e-2 #src
+    gram_matrix(con_ref)
 end
 solve(G)
 
