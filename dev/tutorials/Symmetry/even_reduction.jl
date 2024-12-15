@@ -31,8 +31,8 @@ G = PermGroup([perm"(1,2)"])
 
 # We can exploit the symmetry as follows:
 
-import CSDP
-solver = CSDP.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -45,6 +45,9 @@ value(t)
 # We indeed find `-1`, let's verify that symmetry was exploited:
 
 @test length(gram_matrix(con_ref).blocks) == 2 #src
-@test gram_matrix(con_ref).blocks[1].basis.polynomials == [1, x^2] #src
-@test gram_matrix(con_ref).blocks[2].basis.polynomials == [x] #src
+polys = gram_matrix(con_ref).blocks[1].basis.bases[].elements #src
+@test polys[1] ≈ 1 #src
+@test polys[2] ≈ x^2 #src
+polys = gram_matrix(con_ref).blocks[2].basis.bases[].elements #src
+@test polys[] ≈ x #src
 gram_matrix(con_ref)
