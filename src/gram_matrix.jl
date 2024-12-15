@@ -155,7 +155,7 @@ function _gram_operate!(
     col::MB.SemisimpleElement,
     args::Vararg{Any,N},
 ) where {N}
-    for (r, c) in zip(row.polynomials, col.polynomials)
+    for (r, c) in zip(row.elements, col.elements)
         _gram_operate!(op, p, α, r, c, args...)
     end
 end
