@@ -193,20 +193,7 @@ function MA.operate!(
     g::GramMatrix,
     args::Vararg{Any,N},
 ) where {N}
-    for row in eachindex(g.basis)
-        row_star = SA.star(g.basis[row])
-        for col in eachindex(g.basis)
-            _gram_operate!(
-                op,
-                p,
-                g.Q[row, col],
-                row_star,
-                g.basis[col],
-                args...,
-            )
-        end
-    end
-    return p
+    return MA.operate!(op, p, SA.QuadraticForm(g), args...)
 end
 
 """
