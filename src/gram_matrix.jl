@@ -90,6 +90,7 @@ function MP.similar_type(
     return GramMatrix{S,B,US,MS}
 end
 
+SA.basis(g::GramMatrix) = g.basis
 MB.implicit_basis(g::GramMatrix) = MB.implicit_basis(g.basis)
 
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr

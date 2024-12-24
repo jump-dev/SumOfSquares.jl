@@ -572,6 +572,7 @@ Base.copy(s::SignChange) = s
 Base.iszero(::SignChange) = false
 MA.scaling_convert(::Type, s::SignChange) = s
 Base.:*(s::SignChange, α::Real) = SignChange(s.sign * α, s.Δ)
+Base.:*(α::Real, s::SignChange) = SignChange(α * s.sign, s.Δ)
 
 struct SignCount
     unknown::Int
@@ -710,7 +711,7 @@ function post_filter(
     cache = zero(Float64, MB.algebra(MB.implicit_basis(SA.basis(poly))))
     for (mono, v) in SA.nonzero_pairs(SA.coeffs(poly))
         MA.operate!(
-            SA.UnsafeAddMul(*),
+            SA.UnsafeAdd(),
             counter,
             _term(SignChange(_sign(v), 1), SA.basis(poly)[mono]),
         )
