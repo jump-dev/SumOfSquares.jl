@@ -1,6 +1,6 @@
 # SumOfSquares.jl
 
-[![Build Status](https://github.com/jump-dev/SumOfSquares.jl/workflows/CI/badge.svg?branch=master)](https://github.com/jump-dev/SumOfSquares.jl/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/jump-dev/SumOfSquares.jl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jump-dev/SumOfSquares.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/jump-dev/SumOfSquares.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jump-dev/SumOfSquares.jl)
 [![](https://zenodo.org/badge/DOI/10.5281/zenodo.1208672.svg)](https://doi.org/10.5281/zenodo.1208672)
 
