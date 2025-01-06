@@ -40,12 +40,12 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  1.32e-04
-    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  3.16e-04
+     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  1.74e-04
+    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  3.60e-04
 ------------------------------------------------------------------
 status:  unbounded
-timings: total: 3.17e-04s = setup: 6.09e-05s + solve: 2.56e-04s
-	 lin-sys: 2.84e-05s, cones: 1.64e-04s, accel: 1.59e-06s
+timings: total: 3.61e-04s = setup: 6.62e-05s + solve: 2.95e-04s
+	 lin-sys: 1.44e-05s, cones: 1.76e-04s, accel: 1.51e-06s
 ------------------------------------------------------------------
 objective = -inf
 ------------------------------------------------------------------</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with SCS attached
@@ -63,7 +63,7 @@ objective = -inf
   Dual objective value : -1.00000e+00
 
 * Work counters
-  Solve time (sec)   : 3.17286e-04
+  Solve time (sec)   : 3.60789e-04
 </code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
 import MultivariateBases as MB
 const SOS = SumOfSquares
@@ -128,5 +128,5 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 8.28444e-01
 
 * Work counters
-  Solve time (sec)   : 3.99121e-03
-</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Sunday 15 December 2024 14:42">Sunday 15 December 2024</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 4.02234e-03
+</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Monday 6 January 2025 02:02">Monday 6 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
