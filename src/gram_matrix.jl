@@ -308,6 +308,21 @@ end
 #    convert(PT, MP.polynomial(p))
 #end
 
+function MB.algebra_element(
+    p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
+) where {T,B,U}
+    return MB.algebra_element(p, U)
+end
+
+function MB.algebra_element(
+    g::Union{GramMatrix,BlockDiagonalGramMatrix},
+    ::Type{T},
+) where {T}
+    a = zero(T, MB.algebra(MB.implicit_basis(g)))
+    MA.operate_to!(a, copy, SA.QuadraticForm(g))
+    return a
+end
+
 function MP.polynomial(
     p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
 ) where {T,B,U}
@@ -318,10 +333,5 @@ function MP.polynomial(
     g::Union{GramMatrix,BlockDiagonalGramMatrix},
     ::Type{T},
 ) where {T}
-    p = zero(T, MB.algebra(MB.implicit_basis(g)))
-    MA.operate!(SA.UnsafeAddMul(*), p, g)
-    MA.operate!(SA.canonical, SA.coeffs(p))
-    return MP.polynomial(
-        SA.coeffs(p, MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()),
-    )
+    return MP.polynomial(MB.algebra_element(g, T))
 end
