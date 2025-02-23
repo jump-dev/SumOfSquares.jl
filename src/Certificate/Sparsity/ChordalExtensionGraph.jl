@@ -1,6 +1,9 @@
 module ChordalExtensionGraph
 
+using CliqueTrees
+using CliqueTrees: EliminationAlgorithm
 using DataStructures
+using SparseArrays
 
 export AbstractCompletion, ChordalCompletion, ClusterCompletion
 export LabelledGraph, add_node!, add_edge!, add_clique!, chordal_extension
@@ -15,6 +18,15 @@ end
 ChordalCompletion() = ChordalCompletion(GreedyFillIn())
 
 struct ClusterCompletion <: AbstractCompletion end
+
+struct CliqueTreesCompletion{A<:EliminationAlgorithm} <: AbstractCompletion
+    algo::A
+end
+
+function CliqueTreesCompletion()
+    # the default algorithm is the minimum fill heuristic
+    CliqueTreesCompletion(MF())
+end
 
 # With a `Vector{Vector{Int}}` with unsorted neighbors, computing fill-in
 # would be inefficient.
@@ -364,6 +376,41 @@ function completion(G::Graph, ::ClusterCompletion)
     for clique in cliques
         add_clique!(H, clique)
     end
+    return H, cliques
+end
+
+function completion(G::Graph, comp::CliqueTreesCompletion)
+    # construct a copy H of the graph G
+    H = copy(G)
+
+    # construct adjacency matrix of H
+    matrix = spzeros(Bool, num_nodes(H), num_nodes(H))
+
+    for j in axes(matrix, 2)
+        matrix.colptr[j + 1] = matrix.colptr[j] + length(neighbors(H, j))
+        append!(rowvals(matrix), neighbors(H, j))
+    end
+
+    # sort row indices of adjacency matrix
+    matrix = copy(transpose(matrix))
+
+    # construct tree decomposition of H
+    label, tree = cliquetree(matrix; alg=comp.algo)
+
+    # construct chordal extension of H
+    F = FilledGraph(tree)
+
+    # append fill edges to H
+    for v in CliqueTrees.vertices(F)
+        for w in CliqueTrees.neighbors(F, v)
+            push!(neighbors(H, label[v]), label[w])
+            push!(neighbors(H, label[w]), label[v])
+        end
+    end
+
+    # compute maximal cliques of H
+    cliques = [label[clique] for clique in tree]
+
     return H, cliques
 end
 
