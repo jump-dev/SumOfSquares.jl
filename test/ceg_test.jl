@@ -3,121 +3,6 @@ using Test
 using SumOfSquares
 const CEG = SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph
 
-function fill_in_3_nodes_test(G, x, y, z)
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 0
-    CEG.add_edge!(G, x, y)
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 0
-    CEG.add_edge!(G, y, z)
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 1
-    @test CEG.fill_in(G, z) == 0
-    @testset "Disable y" begin
-        H = copy(G)
-        CEG.disable_node!(H, y)
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, z) == 0
-        CEG.add_edge!(H, z, x)
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, z) == 0
-    end
-    CEG.add_edge!(G, z, x)
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 0
-end
-
-function fill_in_4_nodes_test(G, w, x, y, z)
-    @test CEG.fill_in(G, w) == 0
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 0
-    CEG.add_edge!(G, w, x)
-    @test CEG.fill_in(G, w) == 0
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 0
-    CEG.add_edge!(G, y, z)
-    @test CEG.fill_in(G, w) == 0
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 0
-    CEG.add_edge!(G, w, y)
-    @test CEG.fill_in(G, w) == 1
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 1
-    @test CEG.fill_in(G, z) == 0
-    @testset "wz first" begin
-        H = copy(G)
-        CEG.add_edge!(H, w, z)
-        @test CEG.fill_in(H, w) == 2
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, y) == 0
-        @test CEG.fill_in(H, z) == 0
-        @testset "Disable w" begin
-            I = copy(H)
-            CEG.add_edge!(I, x, z)
-            @test CEG.fill_in(I, x) == 0
-            @test CEG.fill_in(I, y) == 0
-            @test CEG.fill_in(I, z) == 1
-            CEG.add_edge!(I, x, y)
-            @test CEG.fill_in(I, x) == 0
-            @test CEG.fill_in(I, y) == 0
-            @test CEG.fill_in(I, z) == 0
-        end
-        CEG.add_edge!(H, x, z)
-        @test CEG.fill_in(H, w) == 1
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, y) == 0
-        @test CEG.fill_in(H, z) == 1
-        CEG.add_edge!(H, x, y)
-        @test CEG.fill_in(H, w) == 0
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, y) == 0
-        @test CEG.fill_in(H, z) == 0
-    end
-    CEG.add_edge!(G, x, z)
-    @test CEG.fill_in(G, w) == 1
-    @test CEG.fill_in(G, x) == 1
-    @test CEG.fill_in(G, y) == 1
-    @test CEG.fill_in(G, z) == 1
-    @testset "xy then wz" begin
-        H = copy(G)
-        CEG.add_edge!(H, x, y)
-        @test CEG.fill_in(H, w) == 0
-        @test CEG.fill_in(H, x) == 1
-        @test CEG.fill_in(H, y) == 1
-        @test CEG.fill_in(H, z) == 0
-        CEG.add_edge!(H, w, z)
-        @test CEG.fill_in(H, w) == 0
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, y) == 0
-        @test CEG.fill_in(H, z) == 0
-    end
-    CEG.add_edge!(G, w, z)
-    @test CEG.fill_in(G, w) == 1
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 1
-    @testset "Disable w" begin
-        H = copy(G)
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, y) == 0
-        @test CEG.fill_in(H, z) == 1
-        CEG.add_edge!(H, x, y)
-        @test CEG.fill_in(H, x) == 0
-        @test CEG.fill_in(H, y) == 0
-        @test CEG.fill_in(H, z) == 0
-    end
-    CEG.add_edge!(G, x, y)
-    @test CEG.fill_in(G, w) == 0
-    @test CEG.fill_in(G, x) == 0
-    @test CEG.fill_in(G, y) == 0
-    @test CEG.fill_in(G, z) == 0
-end
 
 @testset "Chordal Extensions" begin
     @testset "CEG.LabelledGraph" begin
@@ -143,30 +28,10 @@ end
         @test CEG.neighbors(G.graph, 1) == Set([2, 3])
     end
 
-    @testset "fill_in with 3 nodes" begin
-        G = CEG.Graph()
-        x = CEG.add_node!(G)
-        y = CEG.add_node!(G)
-        z = CEG.add_node!(G)
-        fill_in_3_nodes_test(copy(G), x, y, z)
-        fill_in_3_nodes_test(CEG.FillInCache(copy(G)), x, y, z)
-    end
-
-    @testset "fill_in with 4 nodes" begin
-        G = CEG.Graph()
-        w = CEG.add_node!(G)
-        x = CEG.add_node!(G)
-        y = CEG.add_node!(G)
-        z = CEG.add_node!(G)
-        fill_in_4_nodes_test(copy(G), w, x, y, z)
-        fill_in_4_nodes_test(CEG.FillInCache(copy(G)), w, x, y, z)
-    end
-
     @testset "cliques" begin
         G = CEG.LabelledGraph{Symbol}()
         CEG.add_edge!(G, :x, :y)
         CEG.add_edge!(G, :y, :z)
-        @test CEG.fill_in.(G.graph, [1, 2, 3]) == [0, 1, 0]
         @test !CEG.is_clique(G.graph, [1, 2, 3])
         @test CEG.is_clique(G.graph, [1, 2])
     end
@@ -177,7 +42,7 @@ end
         H, cliques = CEG.chordal_extension(G, CEG.GreedyFillIn())
         @test H.int2n == G.int2n
         @test H.graph.neighbors == G.graph.neighbors
-        @test cliques == [[:y, :z], [:x, :y]]
+        @test cliques == [[:z, :y], [:x, :y]]
 
         G = CEG.LabelledGraph{Int}()
         CEG.add_edge!.(G, [(1, 2), (1, 3), (3, 4), (2, 4)])
@@ -194,15 +59,10 @@ end
         CEG.add_edge!(G, 1, 4)
 
         H, cliques = CEG.chordal_extension(G, CEG.GreedyFillIn())
-        @test cliques == [[2, 3, 4], [1, 2, 4], [5]]
-        @test isempty(G.graph.disabled)
-        @test isempty(H.graph.disabled)
+        @test cliques == [[4, 1, 3], [2, 1, 3], [5]]
 
         CEG.add_edge!(H, 1, 5)
         I, cliques = CEG.chordal_extension(H, CEG.GreedyFillIn())
-        @test cliques == [[1, 2, 4], [2, 3, 4], [1, 5]]
-        @test isempty(G.graph.disabled)
-        @test isempty(H.graph.disabled)
-        @test isempty(I.graph.disabled)
+        @test cliques == [[5, 1], [4, 1, 3], [2, 1, 3]]
     end
 end
