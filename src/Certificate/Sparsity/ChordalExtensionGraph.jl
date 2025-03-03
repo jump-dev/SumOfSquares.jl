@@ -13,7 +13,8 @@ abstract type AbstractCompletion end
 
 struct ClusterCompletion <: AbstractCompletion end
 
-struct ChordalCompletion{A<:CliqueTrees.EliminationAlgorithm} <: AbstractCompletion
+struct ChordalCompletion{A<:CliqueTrees.EliminationAlgorithm} <:
+       AbstractCompletion
     algo::A
 end
 
@@ -21,7 +22,7 @@ end
 const GreedyFillIn = CliqueTrees.MF
 
 function ChordalCompletion()
-    ChordalCompletion(GreedyFillIn())
+    return ChordalCompletion(GreedyFillIn())
 end
 
 # With a `Vector{Vector{Int}}` with unsorted neighbors, computing fill-in
@@ -231,7 +232,8 @@ function completion(G::Graph, comp::ChordalCompletion)
 
     for j in axes(matrix, 2)
         list = neighbors(H, j)
-        SparseArrays.getcolptr(matrix)[j + 1] = SparseArrays.getcolptr(matrix)[j] + length(list)
+        SparseArrays.getcolptr(matrix)[j+1] =
+            SparseArrays.getcolptr(matrix)[j] + length(list)
         append!(SparseArrays.rowvals(matrix), list)
         append!(SparseArrays.nonzeros(matrix), zeros(Bool, length(list)))
     end
@@ -240,7 +242,7 @@ function completion(G::Graph, comp::ChordalCompletion)
     matrix = copy(transpose(matrix))
 
     # construct tree decomposition of H
-    label, tree = CliqueTrees.cliquetree(matrix; alg=comp.algo)
+    label, tree = CliqueTrees.cliquetree(matrix; alg = comp.algo)
 
     # construct vector of cliques and append fill edges to H
     cliques = Vector{Vector{Int}}(undef, length(tree))

@@ -3,7 +3,6 @@ using Test
 using SumOfSquares
 const CEG = SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph
 
-
 @testset "Chordal Extensions" begin
     @testset "CEG.LabelledGraph" begin
         @test CEG.LabelledGraph{Int}() isa CEG.LabelledGraph{Int}
