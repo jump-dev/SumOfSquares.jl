@@ -32,7 +32,6 @@ SumOfSquares.Certificate.Sparsity.Preorder
 Chordal extension:
 ```@docs
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.neighbors
-SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.fill_in
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.is_clique
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.LabelledGraph
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_node!
