@@ -10,7 +10,7 @@ S = @set x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x^2 + y^2 &gt;= 2</code></pre
  -2 + y^2 + x^2 ≥ 0
 </code></pre><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices. Note that SumOfSquares generates a <em>standard form</em> SDP (i.e., SDP variables and equality constraints) while SCS expects a <em>geometric form</em> SDP (i.e., free variables and symmetric matrices depending affinely on these variables constrained to belong to the PSD cone). JuMP will transform the standard from to the geometric form will create the PSD variables as free variables and then constrain then to be PSD. While this will work, since the dual of a standard from is in in geometric form, dualizing the problem will generate a smaller SDP. We use therefore <code>Dualization.dual_optimizer</code> so that SCS solves the dual problem.</p><pre><code class="language-julia hljs">import SCS
 using Dualization
-solver = dual_optimizer(SCS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#11 (generic function with 1 method)</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following program searches for the largest lower bound.</p><pre><code class="language-julia hljs">model = SOSModel(solver)
+solver = dual_optimizer(SCS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#12 (generic function with 1 method)</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following program searches for the largest lower bound.</p><pre><code class="language-julia hljs">model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
 @constraint(model, c, p &gt;= α, domain = S)
@@ -40,12 +40,12 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  1.40e-04
-    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  3.11e-04
+     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  1.36e-04
+    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  3.31e-04
 ------------------------------------------------------------------
 status:  unbounded
-timings: total: 3.12e-04s = setup: 6.38e-05s + solve: 2.49e-04s
-	 lin-sys: 1.44e-05s, cones: 1.65e-04s, accel: 1.60e-06s
+timings: total: 3.33e-04s = setup: 6.25e-05s + solve: 2.70e-04s
+	 lin-sys: 1.42e-05s, cones: 1.63e-04s, accel: 1.41e-06s
 ------------------------------------------------------------------
 objective = -inf
 ------------------------------------------------------------------</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with SCS attached
@@ -63,7 +63,7 @@ objective = -inf
   Dual objective value : -1.00000e+00
 
 * Work counters
-  Solve time (sec)   : 3.12483e-04
+  Solve time (sec)   : 3.32513e-04
 </code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
 import MultivariateBases as MB
 const SOS = SumOfSquares
@@ -128,5 +128,5 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 8.28444e-01
 
 * Work counters
-  Solve time (sec)   : 3.98849e-03
-</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.1 on <span class="colophon-date" title="Monday 24 February 2025 09:52">Monday 24 February 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 3.96405e-03
+</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.1 on <span class="colophon-date" title="Friday 7 March 2025 09:06">Friday 7 March 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
