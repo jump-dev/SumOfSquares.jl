@@ -1,6 +1,8 @@
 module ChordalExtensionGraph
 
-using DataStructures
+import CliqueTrees
+import DataStructures
+import SparseArrays
 
 export AbstractCompletion, ChordalCompletion, ClusterCompletion
 export LabelledGraph, add_node!, add_edge!, add_clique!, chordal_extension
@@ -9,26 +11,31 @@ abstract type AbstractGreedyAlgorithm end
 
 abstract type AbstractCompletion end
 
-struct ChordalCompletion{A<:AbstractGreedyAlgorithm} <: AbstractCompletion
+struct ClusterCompletion <: AbstractCompletion end
+
+struct ChordalCompletion{A<:CliqueTrees.EliminationAlgorithm} <:
+       AbstractCompletion
     algo::A
 end
-ChordalCompletion() = ChordalCompletion(GreedyFillIn())
 
-struct ClusterCompletion <: AbstractCompletion end
+# the default algorithm is the greedy minimum fill heuristic
+const GreedyFillIn = CliqueTrees.MF
+
+function ChordalCompletion()
+    return ChordalCompletion(GreedyFillIn())
+end
 
 # With a `Vector{Vector{Int}}` with unsorted neighbors, computing fill-in
 # would be inefficient.
 # With a `Vector{Vector{Int}}` with sorted neighbors, adding an edge would be
 # inefficient.
 # With `Vector{Set{Int}}` both adding edges and computing fill-in is efficient.
-
 struct Graph
     neighbors::Vector{Set{Int}}
-    disabled::BitSet
 end
-Graph() = Graph(Set{Int}[], BitSet())
+Graph() = Graph(Set{Int}[])
 Base.broadcastable(g::Graph) = Ref(g)
-Base.copy(G::Graph) = Graph(deepcopy(G.neighbors), copy(G.disabled))
+Base.copy(G::Graph) = Graph(deepcopy(G.neighbors))
 function add_node!(G::Graph)
     push!(G.neighbors, Set{Int}())
     return length(G.neighbors)
@@ -42,15 +49,14 @@ function add_edge!(G::Graph, i::Int, j::Int)
     return (i, j)
 end
 function add_clique!(G::Graph, nodes::Vector{Int})
-    for i in 1:(length(nodes)-1)
-        for j in (i+1):length(nodes)
+    n = length(nodes)
+
+    for i in 1:(n-1)
+        for j in (i+1):n
             add_edge!(G, nodes[i], nodes[j])
         end
     end
 end
-disable_node!(G::Graph, node::Int) = push!(G.disabled, node)
-is_enabled(G::Graph, node::Int) = !(node in G.disabled)
-enable_all_nodes!(G::Graph) = empty!(G.disabled)
 
 """
     neighbors(G::Graph, node::Int}
@@ -61,94 +67,24 @@ function neighbors(G::Graph, node::Int)
     return G.neighbors[node]
 end
 
-function _num_edges_subgraph(
-    G::Graph,
-    nodes::Union{Vector{Int},Set{Int}},
-    node::Int,
-)
-    neighs = neighbors(G, node)
-    return count(nodes) do node
-        return is_enabled(G, node) && node in neighs
-    end
-end
-function num_edges_subgraph(G::Graph, nodes::Union{Vector{Int},Set{Int}})
-    return mapreduce(+, nodes; init = 0) do node
-        return is_enabled(G, node) ? _num_edges_subgraph(G, nodes, node) : 0
-    end
-end
-
-function num_missing_edges_subgraph(
-    G::Graph,
-    nodes::Union{Vector{Int},Set{Int}},
-)
-    n = count(node -> is_enabled(G, node), nodes)
-    # A clique is a completely connected graph. As such it has n*(n-1)/2 undirected
-    # or equivalently n*(n-1) directed edges.
-    return div(n * (n - 1) - num_edges_subgraph(G, nodes), 2)
-end
-
-"""
-    fill_in(G::Graph{T}, i::T}
-
-Return number of edges that need to be added to make the neighbors of `i` a clique.
-"""
-function fill_in(G::Graph, node::Int)
-    return num_missing_edges_subgraph(G, neighbors(G, node))
-end
-
 """
     is_clique(G::Graph{T}, x::Vector{T})
 
 Return a `Bool` indication whether `x` is a clique in `G`.
 """
 function is_clique(G::Graph, nodes::Vector{Int})
-    return iszero(num_missing_edges_subgraph(G, nodes))
-end
+    n = length(nodes)
 
-struct FillInCache
-    graph::Graph
-    fill_in::Vector{Int}
-end
-function FillInCache(graph::Graph)
-    return FillInCache(graph, [fill_in(graph, i) for i in 1:num_nodes(graph)])
-end
-Base.copy(G::FillInCache) = FillInCache(copy(G.graph), copy(G.fill_in))
-
-num_nodes(G::FillInCache) = num_nodes(G.graph)
-neighbors(G::FillInCache, node::Int) = neighbors(G.graph, node)
-function add_edge!(G::FillInCache, i::Int, j::Int)
-    ni = neighbors(G, i)
-    nj = neighbors(G, j)
-    if i in nj
-        @assert j in ni
-        return
-    end
-    @assert !(j in ni)
-    for node in ni
-        @assert node != i
-        @assert node != j
-        if node in nj
-            G.fill_in[node] -= 1
+    for i in 1:(n-1)
+        for j in (i+1):n
+            if nodes[j] ∉ neighbors(G, nodes[i])
+                return false
+            end
         end
     end
-    G.fill_in[i] +=
-        count(k -> is_enabled(G.graph, k), ni) -
-        _num_edges_subgraph(G.graph, ni, j)
-    G.fill_in[j] +=
-        count(k -> is_enabled(G.graph, k), nj) -
-        _num_edges_subgraph(G.graph, nj, i)
-    return add_edge!(G.graph, i, j)
+
+    return true
 end
-fill_in(G::FillInCache, node::Int) = G.fill_in[node]
-function disable_node!(G::FillInCache, node::Int)
-    for neighbor in neighbors(G, node)
-        nodes = neighbors(G, neighbor)
-        G.fill_in[neighbor] -=
-            (length(nodes) - 1) - _num_edges_subgraph(G.graph, nodes, node)
-    end
-    return disable_node!(G.graph, node)
-end
-is_enabled(G::FillInCache, node::Int) = is_enabled(G.graph, node)
 
 """
     struct LabelledGraph{T}
@@ -244,54 +180,35 @@ function add_clique!(G::LabelledGraph{T}, x::Vector{T}) where {T}
     return add_clique!(G.graph, add_node!.(G, x))
 end
 
-struct GreedyFillIn <: AbstractGreedyAlgorithm end
-cache(G::Graph, ::GreedyFillIn) = FillInCache(G)
-heuristic_value(G::FillInCache, node::Int, ::GreedyFillIn) = fill_in(G, node)
+"""
+    completion(G::Graph, comp::ClusterCompletion)
 
-function _greedy_triangulation!(G, algo::AbstractGreedyAlgorithm)
-    candidate_cliques = Vector{Int}[]
-    for i in 1:num_nodes(G)
-        node = argmin(map(1:num_nodes(G)) do node
-            if is_enabled(G, node)
-                heuristic_value(G, node, algo)
-            else
-                typemax(Int)
-            end
-        end)
-        #=
-                # look at all its neighbors. In G we want the neighbors to form a clique.
-                neighbor_nodes = collect(neighbors(G, node))
-
-                # add neighbors and node as a potentially maximal clique
-                candidate_clique = [neighbor for neighbor in neighbor_nodes if is_enabled(G, neighbor)]
-                push!(candidate_clique, node)
-                push!(candidate_cliques, candidate_clique)
-
-                # add edges to G to make the new candidate_clique at least potentially a clique
-                for i in eachindex(neighbor_nodes)
-                    if is_enabled(G, i)
-                        for j in (i + 1):length(neighbor_nodes)
-                            if is_enabled(G, j)
-                                add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
-                            end
-                        end
-                    end
-                end
-        =#
-        neighbor_nodes = [
-            neighbor for
-            neighbor in neighbors(G, node) if is_enabled(G, neighbor)
-        ]
-        push!(candidate_cliques, [node, neighbor_nodes...])
-        for i in eachindex(neighbor_nodes)
-            for j in (i+1):length(neighbor_nodes)
-                add_edge!(G, neighbor_nodes[i], neighbor_nodes[j])
-            end
+Return a cluster completion of `G` and the corresponding maximal cliques.
+"""
+function completion(G::Graph, ::ClusterCompletion)
+    H = copy(G)
+    union_find = DataStructures.IntDisjointSets(num_nodes(G))
+    for from in 1:num_nodes(G)
+        for to in neighbors(G, from)
+            DataStructures.union!(union_find, from, to)
         end
-
-        disable_node!(G, node)
     end
-    return candidate_cliques
+    cliques = [Int[] for i in 1:DataStructures.num_groups(union_find)]
+    ids = zeros(Int, num_nodes(G))
+    k = 0
+    for node in 1:num_nodes(G)
+        root = DataStructures.find_root!(union_find, node)
+        if iszero(ids[root])
+            k += 1
+            ids[root] = k
+        end
+        push!(cliques[ids[root]], node)
+    end
+    @assert k == length(cliques)
+    for clique in cliques
+        add_clique!(H, clique)
+    end
+    return H, cliques
 end
 
 """
@@ -307,63 +224,34 @@ Information and Computation 208, no. 3 (2010): 259-275.
 Utrecht University, Utrecht, The Netherlands www.cs.uu.nl
 """
 function completion(G::Graph, comp::ChordalCompletion)
+    # construct a copy H of the graph G
     H = copy(G)
 
-    candidate_cliques = _greedy_triangulation!(cache(H, comp.algo), comp.algo)
-    enable_all_nodes!(H)
+    # construct adjacency matrix of H
+    matrix = SparseArrays.spzeros(Bool, num_nodes(H), num_nodes(H))
 
-    sort!.(candidate_cliques)
-    unique!(candidate_cliques)
-
-    # check whether candidate cliques are actually cliques
-    candidate_cliques = candidate_cliques[[
-        is_clique(H, clique) for clique in candidate_cliques
-    ]]
-    sort!(candidate_cliques, by = x -> length(x))
-    reverse!(candidate_cliques) # TODO use `rev=true` in `sort!`.
-
-    maximal_cliques = [first(candidate_cliques)]
-    for clique in Iterators.drop(candidate_cliques, 1)
-        if all(other_clique -> !(clique ⊆ other_clique), maximal_cliques)
-            push!(maximal_cliques, clique)
-        end
+    for j in axes(matrix, 2)
+        list = neighbors(H, j)
+        SparseArrays.getcolptr(matrix)[j+1] =
+            SparseArrays.getcolptr(matrix)[j] + length(list)
+        append!(SparseArrays.rowvals(matrix), list)
+        append!(SparseArrays.nonzeros(matrix), zeros(Bool, length(list)))
     end
 
-    if length(Set(Iterators.flatten(maximal_cliques))) != num_nodes(H)
-        error("Maximal cliques do not cover all nodes.")
-    end
+    # sort row indices of adjacency matrix
+    matrix = copy(transpose(matrix))
 
-    return H, maximal_cliques
-end
+    # construct tree decomposition of H
+    label, tree = CliqueTrees.cliquetree(matrix; alg = comp.algo)
 
-"""
-    completion(G::Graph, comp::ChordalCompletion)
+    # construct vector of cliques and append fill edges to H
+    cliques = Vector{Vector{Int}}(undef, length(tree))
 
-Return a cluster completion of `G` and the corresponding maximal cliques.
-"""
-function completion(G::Graph, ::ClusterCompletion)
-    H = copy(G)
-    union_find = IntDisjointSets(num_nodes(G))
-    for from in 1:num_nodes(G)
-        for to in neighbors(G, from)
-            union!(union_find, from, to)
-        end
-    end
-    cliques = [Int[] for i in 1:num_groups(union_find)]
-    ids = zeros(Int, num_nodes(G))
-    k = 0
-    for node in 1:num_nodes(G)
-        root = find_root!(union_find, node)
-        if iszero(ids[root])
-            k += 1
-            ids[root] = k
-        end
-        push!(cliques[ids[root]], node)
-    end
-    @assert k == length(cliques)
-    for clique in cliques
+    for (i, v) in enumerate(tree)
+        clique = cliques[i] = label[v]
         add_clique!(H, clique)
     end
+
     return H, cliques
 end
 
