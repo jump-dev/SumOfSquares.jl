@@ -29,12 +29,20 @@ function _combine_with_gram(
         )
     end
     for (gram, weight) in zip(gram_bases, weights)
-        MA.operate!(
-            SA.UnsafeAddMul(*),
-            p,
-            GramMatrix{_NonZero}((_, _) -> _NonZero(), gram),
-            weight,
-        )
+        if isone(weight)
+            MA.operate!(
+                SA.UnsafeAdd(),
+                p,
+                SA.QuadraticForm(GramMatrix{_NonZero}((_, _) -> _NonZero(), gram)),
+            )
+        else
+            MA.operate!(
+                SA.UnsafeAddMul(*),
+                p,
+                GramMatrix{_NonZero}((_, _) -> _NonZero(), gram),
+                weight,
+            )
+        end
     end
     MA.operate!(SA.canonical, SA.coeffs(p))
     return MB.SubBasis{B}(keys(SA.coeffs(p)))
