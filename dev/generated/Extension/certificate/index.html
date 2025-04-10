@@ -40,31 +40,27 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  1.70e-04
-    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  3.40e-04
+     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  2.89e-03
+    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  8.89e-03
 ------------------------------------------------------------------
 status:  unbounded
-timings: total: 3.42e-04s = setup: 6.65e-05s + solve: 2.75e-04s
-	 lin-sys: 1.41e-05s, cones: 1.62e-04s, accel: 1.54e-06s
+timings: total: 8.89e-03s = setup: 7.42e-05s + solve: 8.81e-03s
+	 lin-sys: 1.46e-05s, cones: 1.62e-04s, accel: 1.67e-06s
 ------------------------------------------------------------------
 objective = -inf
-------------------------------------------------------------------</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with SCS attached
-
-* Status
-  Result count       : 1
-  Termination status : INFEASIBLE
-  Message from the solver:
-  &quot;unbounded&quot;
-
-* Candidate solution (result #1)
-  Primal status      : INFEASIBLE_POINT
-  Dual status        : INFEASIBILITY_CERTIFICATE
-  Objective value    : NaN
-  Dual objective value : -1.00000e+00
-
-* Work counters
-  Solve time (sec)   : 3.41517e-04
-</code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
+------------------------------------------------------------------</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Dual model with SCS attached
+├ Termination
+│ ├ termination_status : INFEASIBLE
+│ ├ result_count       : 1
+│ └ raw_status         : unbounded
+├ Solution (result = 1)
+│ ├ primal_status        : INFEASIBLE_POINT
+│ ├ dual_status          : INFEASIBILITY_CERTIFICATE
+│ ├ objective_value      : NaN
+│ └ dual_objective_value : -1.00000e+00
+└ Work counters
+  └ solve_time (sec)   : 8.88857e-03</code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
 import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
@@ -113,20 +109,16 @@ ideal_certificate = SOSC.Newton(SOSCone(), basis, basis, tuple())
 certificate = Schmüdgen(ideal_certificate, SOSCone(), basis, maxdegree(p))
 @constraint(model, c, p &gt;= α, domain = S, certificate = certificate)
 optimize!(model)
-solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with SCS attached
-
-* Status
-  Result count       : 1
-  Termination status : OPTIMAL
-  Message from the solver:
-  &quot;solved&quot;
-
-* Candidate solution (result #1)
-  Primal status      : FEASIBLE_POINT
-  Dual status        : FEASIBLE_POINT
-  Objective value    : 8.28436e-01
-  Dual objective value : 8.28444e-01
-
-* Work counters
-  Solve time (sec)   : 4.15250e-03
-</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.9.0 on <span class="colophon-date" title="Wednesday 26 March 2025 15:48">Wednesday 26 March 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Dual model with SCS attached
+├ Termination
+│ ├ termination_status : OPTIMAL
+│ ├ result_count       : 1
+│ └ raw_status         : solved
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : FEASIBLE_POINT
+│ ├ objective_value      : 8.28436e-01
+│ └ dual_objective_value : 8.28444e-01
+└ Work counters
+  └ solve_time (sec)   : 3.96250e-03</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Thursday 10 April 2025 09:10">Thursday 10 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

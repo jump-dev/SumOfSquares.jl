@@ -69,26 +69,22 @@ Number of inequality constraint evaluations          = 19
 Number of equality constraint Jacobian evaluations   = 0
 Number of inequality constraint Jacobian evaluations = 1
 Number of Lagrangian Hessian evaluations             = 13
-Total seconds in IPOPT                               = 1.638
+Total seconds in IPOPT                               = 1.545
 
-EXIT: Optimal Solution Found.</code></pre><p>As we can see below, the termination status is <code>LOCALLY_SOLVED</code> and not of <code>OPTIMAL</code> because Ipopt only guarantees <strong>local</strong> optimality.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Ipopt
-
-* Status
-  Result count       : 1
-  Termination status : LOCALLY_SOLVED
-  Message from the solver:
-  &quot;Solve_Succeeded&quot;
-
-* Candidate solution (result #1)
-  Primal status      : FEASIBLE_POINT
-  Dual status        : FEASIBLE_POINT
-  Objective value    : 2.50000e-01
-  Dual objective value : 7.50000e-01
-
-* Work counters
-  Solve time (sec)   : 2.16270e+00
-  Barrier iterations : 13
-</code></pre><p>Indeed, the solution found is not globally optimal:</p><pre><code class="language-julia hljs">value(a), value(b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.49999999667062867, 0.4999999966705758)</code></pre><p>Note that the problem can be written equivalently as follows using <a href="https://jump.dev/JuMP.jl/stable/manual/nlp/#Register-a-function">registered functions</a>. The difference is that the gradient and hessian will be computed via the <em>Symbolic Differentiation</em> provided by MultivariatePolynomials instead of JuMP&#39;s <em>Automatic Differentiation</em>:</p><pre><code class="language-julia hljs">f(a, b) = p(x =&gt; a, y =&gt; b)
+EXIT: Optimal Solution Found.</code></pre><p>As we can see below, the termination status is <code>LOCALLY_SOLVED</code> and not of <code>OPTIMAL</code> because Ipopt only guarantees <strong>local</strong> optimality.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Ipopt
+├ Termination
+│ ├ termination_status : LOCALLY_SOLVED
+│ ├ result_count       : 1
+│ └ raw_status         : Solve_Succeeded
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : FEASIBLE_POINT
+│ ├ objective_value      : 2.50000e-01
+│ └ dual_objective_value : 7.50000e-01
+└ Work counters
+  ├ solve_time (sec)   : 2.06888e+00
+  └ barrier_iterations : 13</code></pre><p>Indeed, the solution found is not globally optimal:</p><pre><code class="language-julia hljs">value(a), value(b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.49999999667062867, 0.4999999966705758)</code></pre><p>Note that the problem can be written equivalently as follows using <a href="https://jump.dev/JuMP.jl/stable/manual/nlp/#Register-a-function">registered functions</a>. The difference is that the gradient and hessian will be computed via the <em>Symbolic Differentiation</em> provided by MultivariatePolynomials instead of JuMP&#39;s <em>Automatic Differentiation</em>:</p><pre><code class="language-julia hljs">f(a, b) = p(x =&gt; a, y =&gt; b)
 ∇p = differentiate(p, [x, y])
 function ∇f(g, a, b)
     for i in eachindex(g)
@@ -161,26 +157,22 @@ Number of inequality constraint evaluations          = 19
 Number of equality constraint Jacobian evaluations   = 0
 Number of inequality constraint Jacobian evaluations = 1
 Number of Lagrangian Hessian evaluations             = 13
-Total seconds in IPOPT                               = 0.063
+Total seconds in IPOPT                               = 0.049
 
-EXIT: Optimal Solution Found.</code></pre><p>Even if we have the algebraic expressions of gradient and hessian, Ipopt is not using these symbolic expressions but only local information hence it can still only provide local guarantees:</p><pre><code class="language-julia hljs">solution_summary(gmodel)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Ipopt
-
-* Status
-  Result count       : 1
-  Termination status : LOCALLY_SOLVED
-  Message from the solver:
-  &quot;Solve_Succeeded&quot;
-
-* Candidate solution (result #1)
-  Primal status      : FEASIBLE_POINT
-  Dual status        : FEASIBLE_POINT
-  Objective value    : 2.50000e-01
-  Dual objective value : 7.50000e-01
-
-* Work counters
-  Solve time (sec)   : 6.36709e-02
-  Barrier iterations : 13
-</code></pre><p>and the same solution is found:</p><pre><code class="language-julia hljs">value(a), value(b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.49999999667062867, 0.4999999966705758)</code></pre><h2 id="Sum-of-Squares-approach"><a class="docs-heading-anchor" href="#Sum-of-Squares-approach">Sum-of-Squares approach</a><a id="Sum-of-Squares-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Sum-of-Squares-approach" title="Permalink"></a></h2><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import SCS
+EXIT: Optimal Solution Found.</code></pre><p>Even if we have the algebraic expressions of gradient and hessian, Ipopt is not using these symbolic expressions but only local information hence it can still only provide local guarantees:</p><pre><code class="language-julia hljs">solution_summary(gmodel)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Ipopt
+├ Termination
+│ ├ termination_status : LOCALLY_SOLVED
+│ ├ result_count       : 1
+│ └ raw_status         : Solve_Succeeded
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : FEASIBLE_POINT
+│ ├ objective_value      : 2.50000e-01
+│ └ dual_objective_value : 7.50000e-01
+└ Work counters
+  ├ solve_time (sec)   : 4.97868e-02
+  └ barrier_iterations : 13</code></pre><p>and the same solution is found:</p><pre><code class="language-julia hljs">value(a), value(b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.49999999667062867, 0.4999999966705758)</code></pre><h2 id="Sum-of-Squares-approach"><a class="docs-heading-anchor" href="#Sum-of-Squares-approach">Sum-of-Squares approach</a><a id="Sum-of-Squares-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Sum-of-Squares-approach" title="Permalink"></a></h2><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import SCS
 scs = SCS.Optimizer
 import Dualization
 dual_scs = Dualization.dual_optimizer(scs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#12 (generic function with 1 method)</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following program searches for the largest lower bound and finds zero.</p><pre><code class="language-julia hljs">model = SOSModel(dual_scs)
@@ -204,31 +196,27 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 1.90e+01  1.01e+00  5.26e+01 -2.61e+01  1.00e-01  1.78e-04
+     0| 1.90e+01  1.01e+00  5.26e+01 -2.61e+01  1.00e-01  1.81e-04
    125| 4.27e-05  3.97e-05  9.70e-06  8.12e-06  8.63e-01  1.20e-03
 ------------------------------------------------------------------
 status:  solved
-timings: total: 1.20e-03s = setup: 8.75e-05s + solve: 1.11e-03s
-	 lin-sys: 7.59e-05s, cones: 8.99e-04s, accel: 7.66e-06s
+timings: total: 1.20e-03s = setup: 7.39e-05s + solve: 1.13e-03s
+	 lin-sys: 8.92e-05s, cones: 9.00e-04s, accel: 7.37e-06s
 ------------------------------------------------------------------
 objective = 0.000008
-------------------------------------------------------------------</code></pre><p>This time, the termination status is <code>OPTIMAL</code> but this does not necessarily mean that we found the optimal solution to the polynomial optimization problem. This only means that CSDP founds an optimal solution to the Sum-of-Squares relaxation.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with SCS attached
-
-* Status
-  Result count       : 1
-  Termination status : OPTIMAL
-  Message from the solver:
-  &quot;solved&quot;
-
-* Candidate solution (result #1)
-  Primal status      : FEASIBLE_POINT
-  Dual status        : FEASIBLE_POINT
-  Objective value    : 1.29679e-05
-  Dual objective value : 3.27176e-06
-
-* Work counters
-  Solve time (sec)   : 1.19693e-03
-</code></pre><p>The feasibility of the primal solution guarantees that the objective value <code>0</code> is a lower bound to the polynomial optimization problem. The optimality means that it&#39;s the best lower bound we can get (at this degree of the hierarcy). Using the solution <span>$(1/2, 1/2)$</span> found by Ipopt of objective value <span>$1/4$</span> and this certificate of lower bound <span>$0$</span> we know that the optimal objective value is in the interval <span>$[0, 1/4]$</span> but we still do not know what it is (if we consider that we did not try the solutions <span>$(1, 0)$</span> and <span>$(0, 1)$</span> as done in the introduction). If the dual of the constraint <code>c3</code> was atomic, its atoms would have given optimal solutions of objective value <span>$0$</span> but that is not the case.</p><pre><code class="language-julia hljs">ν3 = moment_matrix(c3)
+------------------------------------------------------------------</code></pre><p>This time, the termination status is <code>OPTIMAL</code> but this does not necessarily mean that we found the optimal solution to the polynomial optimization problem. This only means that CSDP founds an optimal solution to the Sum-of-Squares relaxation.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Dual model with SCS attached
+├ Termination
+│ ├ termination_status : OPTIMAL
+│ ├ result_count       : 1
+│ └ raw_status         : solved
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : FEASIBLE_POINT
+│ ├ objective_value      : 1.29679e-05
+│ └ dual_objective_value : 3.27176e-06
+└ Work counters
+  └ solve_time (sec)   : 1.20243e-03</code></pre><p>The feasibility of the primal solution guarantees that the objective value <code>0</code> is a lower bound to the polynomial optimization problem. The optimality means that it&#39;s the best lower bound we can get (at this degree of the hierarcy). Using the solution <span>$(1/2, 1/2)$</span> found by Ipopt of objective value <span>$1/4$</span> and this certificate of lower bound <span>$0$</span> we know that the optimal objective value is in the interval <span>$[0, 1/4]$</span> but we still do not know what it is (if we consider that we did not try the solutions <span>$(1, 0)$</span> and <span>$(0, 1)$</span> as done in the introduction). If the dual of the constraint <code>c3</code> was atomic, its atoms would have given optimal solutions of objective value <span>$0$</span> but that is not the case.</p><pre><code class="language-julia hljs">ν3 = moment_matrix(c3)
 atomic_measure(ν3, 1e-3) # Returns nothing as the dual is not atomic</code></pre><p>Fortunately, there is a hierarchy of programs with increasingly better bounds that can be solved until we get one with atom dual variables. This comes from the way the Sum-of-Squares constraint with domain <code>S</code> is formulated. The polynomial <span>$p - \alpha$</span> is guaranteed to be nonnegative over the domain <code>S</code> if there exists Sum-of-Squares polynomials <span>$s_0$</span>, <span>$s_1$</span>, <span>$s_2$</span>, <span>$s_3$</span> such that</p><p class="math-container">\[p - \alpha = s_0 + s_1 x + s_2 y + s_3 (x + y - 1).\]</p><p>Indeed, in the domain <code>S</code>, <span>$x$</span>, <span>$y$</span> and <span>$x + y - 1$</span> are nonnegative so the right-hand side is a sum of squares hence is nonnegative. Once the degrees of <span>$s_1$</span>, <span>$s_2$</span> and <span>$s_3$</span> have been decided, the degree needed for <span>$s_0$</span> will be determined but we have a freedom in choosing the degrees of <span>$s_1$</span>, <span>$s_2$</span> and <span>$s_3$</span>. By default, they are chosen so that the degrees of <span>$s_1 x$</span>, <span>$s_2 y$</span> and <span>$s_3 (x + y - 1)$</span> match those of <span>$p - \alpha$</span> but this can be overwritten using the <code>maxdegree</code> keyword argument.</p><h3 id="The-maxdegree-keyword-argument"><a class="docs-heading-anchor" href="#The-maxdegree-keyword-argument">The maxdegree keyword argument</a><a id="The-maxdegree-keyword-argument-1"></a><a class="docs-heading-anchor-permalink" href="#The-maxdegree-keyword-argument" title="Permalink"></a></h3><p>The maximum total degree (i.e. maximum sum of the exponents of <span>$x$</span> and <span>$y$</span>) of the monomials of <span>$p$</span> is 3 so the constraint in the program above is equivalent to <code>@constraint(model, p &gt;= α, domain = S, maxdegree = 3)</code>. That is, since <span>$x$</span>, <span>$y$</span> and <span>$x + y - 1$</span> have total degree 1, the sum of squares polynomials <span>$s_1$</span>, <span>$s_2$</span> and <span>$s_3$</span> have been chosen with maximum total degree <span>$2$</span>. Since these polynomials are sums of squares, their degree must be even so the next maximum total degree to try is 4. For this reason, the keywords <code>maxdegree = 4</code> and <code>maxdegree = 5</code> have the same effect in this example. In general, if the polynomials in the domain are not all odd or all even, each value of <code>maxdegree</code> has a different effect in the choice of the maximum total degree of some <span>$s_i$</span>.</p><pre><code class="language-julia hljs">model = SOSModel(dual_scs)
 @variable(model, α)
 @objective(model, Max, α)
@@ -250,20 +238,20 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 1.90e+01  1.01e+00  5.26e+01 -2.61e+01  1.00e-01  1.66e-04
-   125| 4.27e-05  3.97e-05  9.70e-06  8.12e-06  8.63e-01  1.18e-03
+     0| 1.90e+01  1.01e+00  5.26e+01 -2.61e+01  1.00e-01  1.69e-04
+   125| 4.27e-05  3.97e-05  9.70e-06  8.12e-06  8.63e-01  1.19e-03
 ------------------------------------------------------------------
 status:  solved
-timings: total: 1.18e-03s = setup: 7.09e-05s + solve: 1.11e-03s
-	 lin-sys: 7.59e-05s, cones: 8.97e-04s, accel: 7.73e-06s
+timings: total: 1.19e-03s = setup: 6.98e-05s + solve: 1.12e-03s
+	 lin-sys: 7.62e-05s, cones: 8.98e-04s, accel: 7.33e-06s
 ------------------------------------------------------------------
 objective = 0.000008
 ------------------------------------------------------------------</code></pre><p>We can see that the basis of the moment matrix didn&#39;t increase:</p><pre><code class="language-julia hljs">moment_matrix(c4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
  SubBasis{Monomial}([1, y, x])
 And entries in a 3×3 SymMatrix{Float64}:
- 0.9999988622359887   0.4999978058971229    0.49999780589712367
- 0.4999978058971229   0.4999205453112076    7.563537032715168e-5
- 0.49999780589712367  7.563537032715168e-5  0.4999205453112081</code></pre><p>This is because of the Newton polytope reduction that determined that gram matrix will be zero for these degrees so it reduced the problem back to the equivalent of <code>maxdegree</code> 3 Let&#39;s turn this off with <code>newton_polytope = nothing</code></p><pre><code class="language-julia hljs">function sos(solver, deg)
+ 0.9999988622359881  0.4999978058971168   0.4999978058971288
+ 0.4999978058971168  0.49992054531120067  7.56353703274272e-5
+ 0.4999978058971288  7.56353703274272e-5  0.4999205453112125</code></pre><p>This is because of the Newton polytope reduction that determined that gram matrix will be zero for these degrees so it reduced the problem back to the equivalent of <code>maxdegree</code> 3 Let&#39;s turn this off with <code>newton_polytope = nothing</code></p><pre><code class="language-julia hljs">function sos(solver, deg)
     model = SOSModel(solver)
     @variable(model, α)
     @objective(model, Max, α)
@@ -288,47 +276,43 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 1.06e+01  4.30e-01  3.19e+01 -1.57e+01  1.00e-01  1.91e-04
-   125| 2.44e-04  2.14e-05  1.20e-05 -4.90e-05  1.00e-01  1.76e-03
+     0| 1.06e+01  4.30e-01  3.19e+01 -1.57e+01  1.00e-01  1.57e-04
+   125| 2.44e-04  2.14e-05  1.20e-05 -4.90e-05  1.00e-01  1.66e-03
 ------------------------------------------------------------------
 status:  solved
-timings: total: 1.76e-03s = setup: 7.33e-05s + solve: 1.69e-03s
-	 lin-sys: 1.11e-04s, cones: 1.35e-03s, accel: 2.48e-05s
+timings: total: 1.66e-03s = setup: 7.00e-05s + solve: 1.59e-03s
+	 lin-sys: 1.10e-04s, cones: 1.33e-03s, accel: 2.54e-05s
 ------------------------------------------------------------------
 objective = -0.000049
-------------------------------------------------------------------</code></pre><p>We see that the lower bound is still 0:</p><pre><code class="language-julia hljs">solution_summary(dual_model4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : Dual model with SCS attached
-
-* Status
-  Result count       : 1
-  Termination status : OPTIMAL
-  Message from the solver:
-  &quot;solved&quot;
-
-* Candidate solution (result #1)
-  Primal status      : FEASIBLE_POINT
-  Dual status        : FEASIBLE_POINT
-  Objective value    : -4.29823e-05
-  Dual objective value : -5.49868e-05
-
-* Work counters
-  Solve time (sec)   : 1.76104e-03
-</code></pre><p>Let&#39;s now look at which solution we can extract from the moment matrix:</p><pre><code class="language-julia hljs">dual_ν4 = moment_matrix(dual_model4[:c])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
+------------------------------------------------------------------</code></pre><p>We see that the lower bound is still 0:</p><pre><code class="language-julia hljs">solution_summary(dual_model4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Dual model with SCS attached
+├ Termination
+│ ├ termination_status : OPTIMAL
+│ ├ result_count       : 1
+│ └ raw_status         : solved
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : FEASIBLE_POINT
+│ ├ objective_value      : -4.29823e-05
+│ └ dual_objective_value : -5.49868e-05
+└ Work counters
+  └ solve_time (sec)   : 1.66126e-03</code></pre><p>Let&#39;s now look at which solution we can extract from the moment matrix:</p><pre><code class="language-julia hljs">dual_ν4 = moment_matrix(dual_model4[:c])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
  SubBasis{Monomial}([1, y, x, y^2, x*y, x^2])
 And entries in a 6×6 SymMatrix{Float64}:
-  1.0000084649794787       0.500111827156392       …   0.5003336181951744
-  0.500111827156392        0.5003460975047762         -8.014565847625894e-5
-  0.500111827156385       -0.00012664913631775954      0.5004463755227909
-  0.500333618195182        0.5004463755227992          1.952914136044321
- -0.00012729223306906265  -9.194362985995285e-5       -1.8561449853463183
-  0.5003336181951744      -8.014565847625894e-5    …   8.524707147814542</code></pre><p>Looking at the singular values, <code>4</code> seems to be a reasonable rank:</p><pre><code class="language-julia hljs">using LinearAlgebra
+  1.0000084649794718     0.5001118271563775      …   0.5003336181951598
+  0.5001118271563775     0.5003460975047461         -8.014565847316335e-5
+  0.5001118271563859    -0.00012664913630241516      0.5004463755227752
+  0.5003336181951528     0.500446375522769           1.952914136044271
+ -0.000127292233055701  -9.194362985453348e-5       -1.8561449853462701
+  0.5003336181951598    -8.014565847316335e-5    …   8.524707147814645</code></pre><p>Looking at the singular values, <code>4</code> seems to be a reasonable rank:</p><pre><code class="language-julia hljs">using LinearAlgebra
 svdvals(Matrix(dual_ν4.Q))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element Vector{Float64}:
- 11.292137082084468
-  6.6127802816305605
-  1.578866177150419
-  1.0597600660609021
-  0.45948547678077883
-  1.2244916727644676e-15</code></pre><p>The solution we extract is <code>(0.5, 0.5)</code> which is the solution found by Ipopt:</p><pre><code class="language-julia hljs">atomic_measure(dual_ν4, FixedRank(4))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x, y with 1 atoms:
- at [0.5000778765242786, 0.5001018243812694] with weight 1.6079422332660982</code></pre><p>This process is quite sensitive numerically so let&#39;s try to solve it without dualization as well:</p><pre><code class="language-julia hljs">model4 = sos(scs, 4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">------------------------------------------------------------------
+ 11.292137082084572
+  6.612780281630741
+  1.5788661771504038
+  1.0597600660608542
+  0.459485476780747
+  7.377412580411612e-16</code></pre><p>The solution we extract is <code>(0.5, 0.5)</code> which is the solution found by Ipopt:</p><pre><code class="language-julia hljs">atomic_measure(dual_ν4, FixedRank(4))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x, y with 1 atoms:
+ at [0.5000778765242866, 0.5001018243812569] with weight 1.607942233266085</code></pre><p>This process is quite sensitive numerically so let&#39;s try to solve it without dualization as well:</p><pre><code class="language-julia hljs">model4 = sos(scs, 4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">------------------------------------------------------------------
 	       SCS v3.2.7 - Splitting Conic Solver
 	(c) Brendan O&#39;Donoghue, Stanford University, 2012
 ------------------------------------------------------------------
@@ -345,31 +329,27 @@ lin-sys:  sparse-direct-amd-qdldl
 ------------------------------------------------------------------
  iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
 ------------------------------------------------------------------
-     0| 2.21e+01  1.35e+00  3.74e+01 -1.86e+01  1.00e-01  1.98e-04
-   175| 7.26e-05  8.28e-06  2.10e-05 -1.57e-05  1.00e-01  2.47e-03
+     0| 2.21e+01  1.35e+00  3.74e+01 -1.86e+01  1.00e-01  2.19e-04
+   175| 7.26e-05  8.28e-06  2.10e-05 -1.57e-05  1.00e-01  2.49e-03
 ------------------------------------------------------------------
 status:  solved
-timings: total: 2.48e-03s = setup: 1.00e-04s + solve: 2.38e-03s
-	 lin-sys: 2.47e-04s, cones: 1.89e-03s, accel: 5.71e-05s
+timings: total: 2.50e-03s = setup: 1.04e-04s + solve: 2.39e-03s
+	 lin-sys: 2.47e-04s, cones: 1.89e-03s, accel: 5.65e-05s
 ------------------------------------------------------------------
 objective = -0.000016
-------------------------------------------------------------------</code></pre><p>We see that the lower bound is again 0:</p><pre><code class="language-julia hljs">solution_summary(model4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">* Solver : SCS
-
-* Status
-  Result count       : 1
-  Termination status : OPTIMAL
-  Message from the solver:
-  &quot;solved&quot;
-
-* Candidate solution (result #1)
-  Primal status      : FEASIBLE_POINT
-  Dual status        : FEASIBLE_POINT
-  Objective value    : 2.61826e-05
-  Dual objective value : 5.20758e-06
-
-* Work counters
-  Solve time (sec)   : 2.47584e-03
-</code></pre><p>The moment matrix is the following</p><pre><code class="language-julia hljs">ν4 = moment_matrix(model4[:c])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
+------------------------------------------------------------------</code></pre><p>We see that the lower bound is again 0:</p><pre><code class="language-julia hljs">solution_summary(model4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : SCS
+├ Termination
+│ ├ termination_status : OPTIMAL
+│ ├ result_count       : 1
+│ └ raw_status         : solved
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : FEASIBLE_POINT
+│ ├ objective_value      : 2.61826e-05
+│ └ dual_objective_value : 5.20758e-06
+└ Work counters
+  └ solve_time (sec)   : 2.49519e-03</code></pre><p>The moment matrix is the following</p><pre><code class="language-julia hljs">ν4 = moment_matrix(model4[:c])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MomentMatrix with row/column basis:
  SubBasis{Monomial}([1, y, x, y^2, x*y, x^2])
 And entries in a 6×6 SymMatrix{Float64}:
  1.0000007181476624     0.49999933411667535   …  0.499983379029577
@@ -384,8 +364,8 @@ And entries in a 6×6 SymMatrix{Float64}:
  0.019380459836853832
  0.016994381823767828
  5.714524905397067e-16</code></pre><p>This time, the dual variable is atomic as it is the moments of the measure <span>$0.5 \delta(x-1, y) + 0.5 \delta(x, y-1)$</span> where <span>$\delta(x, y)$</span> is the dirac measure centered at <span>$(0, 0)$</span>. Therefore the program provides both a certificate that <span>$0$</span> is a lower bound and a certificate that it is also an upper bound since it is attained at the global minimizers <span>$(1, 0)$</span> and <span>$(0, 1)$</span>.</p><pre><code class="language-julia hljs">atomic_measure(ν4, FixedRank(3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x, y with 2 atoms:
- at [0.9946508364409372, 0.005346125382867941] with weight 0.5511753483416818
- at [-0.011834484693471703, 1.0118314465172766] with weight 0.5285747070034233</code></pre><h2 id="A-deeper-look-into-atom-extraction"><a class="docs-heading-anchor" href="#A-deeper-look-into-atom-extraction">A deeper look into atom extraction</a><a id="A-deeper-look-into-atom-extraction-1"></a><a class="docs-heading-anchor-permalink" href="#A-deeper-look-into-atom-extraction" title="Permalink"></a></h2><p>The moment matrix is transformed into a system of polynomials equations whose solutions give the atoms. This transformation uses the SVD decomposition of the moment matrix and discards the equations corresponding to the lowest singular values. When this system of equation has an infinite number of solutions, <code>atomic_measure</code> concludes that the measure is not atomic. For instance, with <code>maxdegree = 3</code>, we obtain the system <span>$x + y = 1$</span> which contains a whole line of solution. This explains <code>atomic_measure</code> returned <code>nothing</code>.</p><pre><code class="language-julia hljs">ν3 = moment_matrix(c3)
+ at [0.9946508364409374, 0.005346125382867863] with weight 0.5511753483416816
+ at [-0.011834484693471814, 1.0118314465172769] with weight 0.528574707003423</code></pre><h2 id="A-deeper-look-into-atom-extraction"><a class="docs-heading-anchor" href="#A-deeper-look-into-atom-extraction">A deeper look into atom extraction</a><a id="A-deeper-look-into-atom-extraction-1"></a><a class="docs-heading-anchor-permalink" href="#A-deeper-look-into-atom-extraction" title="Permalink"></a></h2><p>The moment matrix is transformed into a system of polynomials equations whose solutions give the atoms. This transformation uses the SVD decomposition of the moment matrix and discards the equations corresponding to the lowest singular values. When this system of equation has an infinite number of solutions, <code>atomic_measure</code> concludes that the measure is not atomic. For instance, with <code>maxdegree = 3</code>, we obtain the system <span>$x + y = 1$</span> which contains a whole line of solution. This explains <code>atomic_measure</code> returned <code>nothing</code>.</p><pre><code class="language-julia hljs">ν3 = moment_matrix(c3)
 SumOfSquares.MultivariateMoments.compute_support!(ν3, LeadingRelativeRankTol(1e-3))</code></pre><p>With <code>maxdegree = 4</code>, we obtain the system</p><p class="math-container">\[\begin{aligned}
   x + y &amp; = 1\\
   y^2 &amp; = y\\
@@ -405,47 +385,47 @@ SumOfSquares.MultivariateMoments.compute_support!(ν4, FixedRank(3))</code></pre
  [-0.011834484693471814, 1.0118314465172769]</code></pre><p>The function <code>atomic_measure</code> then reuses the matrix of moments to find the weights <span>$1/2$</span>, <span>$1/2$</span> corresponding to the diracs centered respectively at <span>$(0, 1)$</span> and <span>$(1, 0)$</span>. This details how the function obtained the result <span>$0.5 \delta(x-1, y) + 0.5 \delta(x, y-1)$</span> given in the previous section.</p><h2 id="HomotopyContinuation"><a class="docs-heading-anchor" href="#HomotopyContinuation">HomotopyContinuation</a><a id="HomotopyContinuation-1"></a><a class="docs-heading-anchor-permalink" href="#HomotopyContinuation" title="Permalink"></a></h2><p>As discussed in the previous section, the atom extraction relies on the solution of a system of algebraic equations. The <code>atomic_measure</code> function takes an optional <code>algebraic_solver</code> argument that is used to solve this system of equation. If no solver is provided, the default solver of SemialgebraicSets.jl is used which currently computes the Gröbner basis, then the multiplication matrices and then the Schur decomposition of a random combination of these matrices. As the system of equations is obtained from a numerical solution and is represented using floating point coefficients, homotopy continuation is recommended as it is more numerically robust than Gröbner basis computation. The following uses homotopy continuation to solve the system of equations.</p><pre><code class="language-julia hljs">using HomotopyContinuation
 algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false)
 atomic_measure(ν4, FixedRank(3), Echelon(), algebraic_solver)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x, y with 2 atoms:
- at [1.0078434053862724, 0.005155705034680745] with weight 0.5353840411255694
- at [-0.029422356421551072, 0.9859697799411986] with weight 0.5553252198069121</code></pre><p>As the system has 3 equations for 2 variables and the coefficients of the equations are to be treated with tolerance since they originate from the solution of an SDP, we need to set <code>excess_residual_tol</code> and <code>real_tol</code> to a high tolerance otherwise, HomotopyContinuation would consider that there is no solution. Indeed, as the system is overdetermined (it has more equations than variables) HomotopyContinuation expects to have excess solution hence it filters out excess solution among the solution found. It determines which solution are in excess by comparing the infinity norm of the residuals of the equations at the solution with <code>excess_residual_tol</code>. It also filters out solution for which the absolute value of the imaginary part of one of the entry is larger than <code>real_tol</code> and strips out the imaginary part. The raw solutions obtained by HomotopyContinuation can be obtained as follows:</p><pre><code class="language-julia hljs">F = HomotopyContinuation.System(ν4.support)
+ at [-0.009414695107568012, 1.0061101358511755] with weight 0.537262514439177
+ at [1.011365550472065, 0.0038158887825801907] with weight 0.533109913483571</code></pre><p>As the system has 3 equations for 2 variables and the coefficients of the equations are to be treated with tolerance since they originate from the solution of an SDP, we need to set <code>excess_residual_tol</code> and <code>real_tol</code> to a high tolerance otherwise, HomotopyContinuation would consider that there is no solution. Indeed, as the system is overdetermined (it has more equations than variables) HomotopyContinuation expects to have excess solution hence it filters out excess solution among the solution found. It determines which solution are in excess by comparing the infinity norm of the residuals of the equations at the solution with <code>excess_residual_tol</code>. It also filters out solution for which the absolute value of the imaginary part of one of the entry is larger than <code>real_tol</code> and strips out the imaginary part. The raw solutions obtained by HomotopyContinuation can be obtained as follows:</p><pre><code class="language-julia hljs">F = HomotopyContinuation.System(ν4.support)
 res = HomotopyContinuation.solve(F, algebraic_solver.options...)
 path_results(res)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{HomotopyContinuation.PathResult}:
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[-0.01505357373438641 + 0.009103535870795734im, 0.9755252621901378 - 0.005379557052145674im]
- • accuracy → 0.0397
- • residual → 0.034846
- • condition_jacobian → 11.401
- • steps → 45 / 0
+ • solution → ComplexF64[0.022919810930917595 + 0.013240525454004346im, 1.0122282011315458 - 0.023851318809546947im]
+ • accuracy → 0.050231
+ • residual → 0.037406
+ • condition_jacobian → 12.971
+ • steps → 38 / 0
  • extended_precision → false
  • path_number → 1
 
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[0.48247381009163837 - 0.7703309823010583im, 2.3695054600381162 - 0.6969521703594876im]
- • accuracy → 2.3628
- • residual → 1.131
- • condition_jacobian → 4.6642
- • steps → 56 / 0
+ • solution → ComplexF64[1.02034783463873 - 0.013422597734271114im, 0.010283385001043062 + 0.02112189077994548im]
+ • accuracy → 0.043212
+ • residual → 0.021585
+ • condition_jacobian → 15.979
+ • steps → 25 / 0
  • extended_precision → false
  • path_number → 2
 
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[-16.9382738582595 - 16.357652186964792im, -15.073659958614469 - 16.301649892255167im]
- • accuracy → 46.437
- • residual → 17.624
- • condition_jacobian → 163.5
+ • solution → ComplexF64[0.5022603672881607 - 0.10028878450497564im, 0.5947326180101625 - 0.37468568217490505im]
+ • accuracy → 0.66319
+ • residual → 0.57517
+ • condition_jacobian → 2.3892
  • steps → 26 / 0
  • extended_precision → false
  • path_number → 3
 
  PathResult:
  • return_code → :excess_solution
- • solution → ComplexF64[1.0116223483419529 + 0.002292769148332589im, 0.0007338432073055156 - 0.0024914507732600112im]
- • accuracy → 0.012361
- • residual → 0.005259
- • condition_jacobian → 113.32
- • steps → 38 / 0
+ • solution → ComplexF64[7.833067672328511 + 47.45060795695265im, 7.90460765471605 + 47.17368969339676im]
+ • accuracy → 131.01
+ • residual → 28.841
+ • condition_jacobian → 199.06
+ • steps → 42 / 0
  • extended_precision → false
  • path_number → 4
-</code></pre><p>The printed <code>residual</code> above shows why <code>1e-1</code> allows to filter how the 2 actual solutions from the 2 excess solutions.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../min_univariate/">« Maximizing as minimum</a><a class="docs-footer-nextpage" href="../qcqp/">Nonconvex quadratically constrained quadratic programs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.9.0 on <span class="colophon-date" title="Wednesday 26 March 2025 15:48">Wednesday 26 March 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre><p>The printed <code>residual</code> above shows why <code>1e-1</code> allows to filter how the 2 actual solutions from the 2 excess solutions.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../min_univariate/">« Maximizing as minimum</a><a class="docs-footer-nextpage" href="../qcqp/">Nonconvex quadratically constrained quadratic programs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Thursday 10 April 2025 09:10">Thursday 10 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
