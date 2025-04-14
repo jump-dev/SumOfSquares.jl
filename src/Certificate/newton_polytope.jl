@@ -740,13 +740,6 @@ function post_filter(
     end
     function decrease(sign, a, b, generator)
         MA.operate_to!(
-            cache,
-            *,
-            MB.algebra_element(a),
-            MB.algebra_element(b),
-            generator,
-        )
-        MA.operate_to!(
             cache3,
             *,
             _term(SignChange(sign, -1), a),
@@ -802,21 +795,21 @@ function post_filter(
     for i in eachindex(generators)
         for (j, mono) in enumerate(multipliers_gram_monos[i])
             MA.operate_to!(
-                cache,
+                cache3,
                 *,
                 # Dummy coef to help convert to `SignCount` which is the `eltype` of `cache`
-                _term(1.0, mono),
+                _term(SignChange(1, 1), mono),
                 MB.algebra_element(mono),
             )
             # The `eltype` of `cache` is `SignCount`
             # so there is no risk of term cancellation
             MA.operate_to!(
-                cache2,
+                cache4,
                 *,
-                cache,
+                cache3,
                 generators[i],
             )
-            for w in SA.supp(cache2)
+            for w in SA.supp(cache4)
                 if ismissing(
                     _sign(SA.coeffs(counter)[SA.basis(counter)[w]]),
                 )
