@@ -90,6 +90,7 @@ function MP.similar_type(
     return GramMatrix{S,B,US,MS}
 end
 
+SA.basis(g::GramMatrix) = g.basis
 MB.implicit_basis(g::GramMatrix) = MB.implicit_basis(g.basis)
 
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
@@ -193,20 +194,7 @@ function MA.operate!(
     g::GramMatrix,
     args::Vararg{Any,N},
 ) where {N}
-    for row in eachindex(g.basis)
-        row_star = SA.star(g.basis[row])
-        for col in eachindex(g.basis)
-            _gram_operate!(
-                op,
-                p,
-                g.Q[row, col],
-                row_star,
-                g.basis[col],
-                args...,
-            )
-        end
-    end
-    return p
+    return MA.operate!(op, p, SA.QuadraticForm(g), args...)
 end
 
 """
@@ -320,6 +308,21 @@ end
 #    convert(PT, MP.polynomial(p))
 #end
 
+function MB.algebra_element(
+    p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
+) where {T,B,U}
+    return MB.algebra_element(p, U)
+end
+
+function MB.algebra_element(
+    g::Union{GramMatrix,BlockDiagonalGramMatrix},
+    ::Type{T},
+) where {T}
+    a = zero(T, MB.algebra(MB.implicit_basis(g)))
+    MA.operate_to!(a, +, SA.QuadraticForm(g))
+    return a
+end
+
 function MP.polynomial(
     p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
 ) where {T,B,U}
@@ -330,10 +333,5 @@ function MP.polynomial(
     g::Union{GramMatrix,BlockDiagonalGramMatrix},
     ::Type{T},
 ) where {T}
-    p = zero(T, MB.algebra(MB.implicit_basis(g)))
-    MA.operate!(SA.UnsafeAddMul(*), p, g)
-    MA.operate!(SA.canonical, SA.coeffs(p))
-    return MP.polynomial(
-        SA.coeffs(p, MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()),
-    )
+    return MP.polynomial(MB.algebra_element(g, T))
 end
