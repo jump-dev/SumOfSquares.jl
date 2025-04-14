@@ -308,6 +308,10 @@ end
 #    convert(PT, MP.polynomial(p))
 #end
 
+function MA.operate_to!(a::SA.AlgebraElement, ::typeof(+), g::Union{GramMatrix,BlockDiagonalGramMatrix})
+    return MA.operate_to!(a, +, SA.QuadraticForm(g))
+end
+
 function MB.algebra_element(
     p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
 ) where {T,B,U}
@@ -319,7 +323,7 @@ function MB.algebra_element(
     ::Type{T},
 ) where {T}
     a = zero(T, MB.algebra(MB.implicit_basis(g)))
-    MA.operate_to!(a, +, SA.QuadraticForm(g))
+    MA.operate_to!(a, +, g)
     return a
 end
 

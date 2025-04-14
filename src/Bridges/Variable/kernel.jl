@@ -12,14 +12,14 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
 ) where {T,M}
     variables = Vector{MOI.VariableIndex}[]
     constraints = MOI.ConstraintIndex{MOI.VectorOfVariables}[]
-    acc = zero(
-        MOI.ScalarAffineFunction{T},
-        MB.algebra(MB.implicit_basis(set.basis)),
-    )
+    algebra = MB.algebra(MB.implicit_basis(set.basis))
+    acc = zero(MOI.ScalarAffineFunction{T}, algebra)
+    cache = zero(MOI.ScalarAffineFunction{T}, algebra)
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
         gram, vars, con = SOS.add_gram_matrix(model, M, gram_basis, T)
         push!(variables, vars)
         push!(constraints, con)
+        MA.operate_to!(cache, +, gram)
         MA.operate!(SA.UnsafeAddMul(*), acc, gram, weight)
     end
     MA.operate!(SA.canonical, SA.coeffs(acc))
