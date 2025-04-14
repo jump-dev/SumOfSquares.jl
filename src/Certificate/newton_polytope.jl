@@ -717,7 +717,6 @@ function post_filter(
     )
     algebra = MB.algebra(MB.implicit_basis(SA.basis(poly)))
     cache = zero(Float64, algebra)
-    cache2 = zero(Float64, algebra)
     cache3 = zero(SignCount, algebra)
     cache4 = zero(SignCount, algebra)
     for (mono, v) in SA.nonzero_pairs(SA.coeffs(poly))
