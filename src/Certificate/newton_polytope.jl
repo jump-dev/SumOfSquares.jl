@@ -756,10 +756,6 @@ function post_filter(
             cache4,
         )
         for mono in SA.supp(cache4)
-            if !haskey(SA.coeffs(counter), SA.basis(counter)[mono])
-                @show counter
-                @show SA.basis(counter)[mono]
-            end
             count = SA.coeffs(counter)[SA.basis(counter)[mono]]
             count_sign = _sign(count)
             # This means the `counter` has a sign and it didn't have a sign before
