@@ -17,7 +17,7 @@ K = @set x[1] &gt;= 0 &amp;&amp; x[1] &lt;= 3 &amp;&amp; x[2] &gt;= 0 &amp;&amp;
 using Plots
 plot(xs, f1.(xs), label = &quot;f1&quot;)
 plot!(xs, f2.(xs), label = &quot;f2&quot;)
-plot!(xs, 4 * ones(length(xs)), label = nothing)</code></pre><img src="4a810adb.svg" alt="Example block output"/><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import Clarabel
+plot!(xs, 4 * ones(length(xs)), label = nothing)</code></pre><img src="d4f0429b.svg" alt="Example block output"/><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import Clarabel
 solver = Clarabel.Optimizer</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Clarabel.MOIwrapper.Optimizer</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following function searches for the largest lower bound and finds zero using the <code>d</code>th level of the hierarchy`.</p><pre><code class="language-julia hljs">function solve(d)
     model = SOSModel(solver)
     @variable(model, α)
@@ -81,7 +81,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -7.00000e+00
 │ └ dual_objective_value : -7.00000e+00
 └ Work counters
-  ├ solve_time (sec)   : 2.33405e-03
+  ├ solve_time (sec)   : 2.33238e-03
   └ barrier_iterations : 11</code></pre><p>The second level improves the lower bound</p><pre><code class="language-julia hljs">model5 = solve(5)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.10.0  -  Clever Acronym
                    (c) Paul Goulart
@@ -129,7 +129,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  15   6.6667e+00   6.6667e+00  2.50e-09  5.37e-10  1.67e-12  1.69e-08  2.84e-12  9.37e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 6.66ms
+solve time = 6.87ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -142,7 +142,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -6.66667e+00
 │ └ dual_objective_value : -6.66667e+00
 └ Work counters
-  ├ solve_time (sec)   : 6.66314e-03
+  ├ solve_time (sec)   : 6.86815e-03
   └ barrier_iterations : 15</code></pre><p>The third level finds the optimal objective value as lower bound...</p><pre><code class="language-julia hljs">model7 = solve(7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.10.0  -  Clever Acronym
                    (c) Paul Goulart
@@ -194,7 +194,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  20   5.5080e+00   5.5080e+00  8.03e-10  1.42e-12  3.81e-14  4.43e-09  7.49e-14  9.77e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 30.1ms
+solve time = 32.2ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -207,8 +207,8 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -5.50801e+00
 │ └ dual_objective_value : -5.50801e+00
 └ Work counters
-  ├ solve_time (sec)   : 3.01187e-02
+  ├ solve_time (sec)   : 3.21636e-02
   └ barrier_iterations : 20</code></pre><p>...and proves it by exhibiting the minimizer.</p><pre><code class="language-julia hljs">ν7 = moment_matrix(model7[:c])
 η = atomic_measure(ν7, 1e-3) # Returns nothing as the dual is not atomic</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x[1], x[2] with 1 atoms:
  at [2.3295201628688242, 3.17849313493404] with weight 0.9999999696085651</code></pre><p>We can indeed verify that the objective value at <code>x_opt</code> is equal to the lower bound.</p><pre><code class="language-julia hljs">x_opt = η.atoms[1].center
-p(x_opt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-5.508013297802864</code></pre><p>We can see visualize the solution as follows:</p><pre><code class="language-julia hljs">scatter!([x_opt[1]], [x_opt[2]], markershape = :star, label = nothing)</code></pre><img src="32f92ca1.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../goldstein_price/">« Goldstein-price function</a><a class="docs-footer-nextpage" href="../polynomial_optimization/">Polynomial Optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Thursday 10 April 2025 09:10">Thursday 10 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+p(x_opt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-5.508013297802864</code></pre><p>We can see visualize the solution as follows:</p><pre><code class="language-julia hljs">scatter!([x_opt[1]], [x_opt[2]], markershape = :star, label = nothing)</code></pre><img src="505b495c.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../goldstein_price/">« Goldstein-price function</a><a class="docs-footer-nextpage" href="../polynomial_optimization/">Polynomial Optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 14 April 2025 13:23">Monday 14 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
