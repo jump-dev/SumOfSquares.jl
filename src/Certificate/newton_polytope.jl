@@ -589,7 +589,9 @@ function _sign(c::SignCount)
         return missing
     end
 end
-Base.show(io::IO, c::SignCount) = print(io, "[$(c.unknown)|$(c.positive)|$(c.negative)]")
+function Base.show(io::IO, c::SignCount)
+    return print(io, "[$(c.unknown)|$(c.positive)|$(c.negative)]")
+end
 
 function Base.:*(α, a::SignCount)
     if α > 0
