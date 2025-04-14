@@ -744,17 +744,8 @@ function post_filter(
             _term(SignChange(sign, -1), a),
             MB.algebra_element(b),
         )
-        MA.operate_to!(
-            cache4,
-            *,
-            cache3,
-            generator,
-        )
-        MA.operate!(
-            SA.UnsafeAddMul(*),
-            counter,
-            cache4,
-        )
+        MA.operate_to!(cache4, *, cache3, generator)
+        MA.operate!(SA.UnsafeAddMul(*), counter, cache4)
         for mono in SA.supp(cache4)
             count = SA.coeffs(counter)[SA.basis(counter)[mono]]
             count_sign = _sign(count)
@@ -798,16 +789,9 @@ function post_filter(
             )
             # The `eltype` of `cache` is `SignCount`
             # so there is no risk of term cancellation
-            MA.operate_to!(
-                cache4,
-                *,
-                cache3,
-                generators[i],
-            )
+            MA.operate_to!(cache4, *, cache3, generators[i])
             for w in SA.supp(cache4)
-                if ismissing(
-                    _sign(SA.coeffs(counter)[SA.basis(counter)[w]]),
-                )
+                if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
                     push!(get!(back, w, Tuple{Int,Int}[]), (i, j))
                 else
                     delete(i, j)
