@@ -308,19 +308,11 @@ end
 #    convert(PT, MP.polynomial(p))
 #end
 
-function MA.operate_to!(
-    a::SA.AlgebraElement,
-    ::typeof(+),
-    g::GramMatrix,
-)
+function MA.operate_to!(a::SA.AlgebraElement, ::typeof(+), g::GramMatrix)
     return MA.operate_to!(a, +, SA.QuadraticForm(g))
 end
 
-function MA.operate!(
-    op::SA.UnsafeAdd,
-    a::SA.AlgebraElement,
-    g::GramMatrix,
-)
+function MA.operate!(op::SA.UnsafeAdd, a::SA.AlgebraElement, g::GramMatrix)
     return MA.operate!(op, a, SA.QuadraticForm(g))
 end
 
