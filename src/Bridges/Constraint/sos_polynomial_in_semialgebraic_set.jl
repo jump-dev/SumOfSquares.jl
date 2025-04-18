@@ -63,6 +63,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
     λ_constraints = UMCT[]
     preprocessed =
         Certificate.preprocessed_domain(set.certificate, set.domain, p)
+    implicit_basis = MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()
+    cache = zero(MOI.ScalarAffineFunction{T}, MB.algebra(implicit_basis))
     for index in Certificate.preorder_indices(set.certificate, preprocessed)
         λ, λ_variable, λ_constraint, λ_basis = lagrangian_multiplier(
             model,
@@ -86,7 +88,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
             λ,
             MB.algebra_element(
                 MB.sparse_coefficients(-one(T) * similar(g, T)),
-                MB.FullBasis{MB.Monomial,MP.monomial_type(g)}(),
+                implicit_basis,
             ),
         )
     end
