@@ -37,7 +37,7 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="StarAlgebras", rev="bl/quadratic_form"),
+              PackageSpec(name="StarAlgebras", rev="main"),
               PackageSpec(name="SymbolicWedderburn", rev="master"),
               PackageSpec(name="MultivariateBases", rev="master"),
               PackageSpec(name="MultivariateMoments", rev="master"),
