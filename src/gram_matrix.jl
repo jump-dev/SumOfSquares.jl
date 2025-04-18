@@ -311,9 +311,39 @@ end
 function MA.operate_to!(
     a::SA.AlgebraElement,
     ::typeof(+),
-    g::Union{GramMatrix,BlockDiagonalGramMatrix},
+    g::GramMatrix,
 )
     return MA.operate_to!(a, +, SA.QuadraticForm(g))
+end
+
+function MA.operate!(
+    op::SA.UnsafeAdd,
+    a::SA.AlgebraElement,
+    g::GramMatrix,
+)
+    return MA.operate!(op, a, SA.QuadraticForm(g))
+end
+
+function MA.operate!(
+    op::SA.UnsafeAdd,
+    a::SA.AlgebraElement,
+    g::BlockDiagonalGramMatrix,
+)
+    for block in g.blocks
+        MA.operate!(op, a, block)
+    end
+    return a
+end
+
+function MA.operate_to!(
+    a::SA.AlgebraElement,
+    ::typeof(+),
+    g::BlockDiagonalGramMatrix,
+)
+    MA.operate!(zero, a)
+    MA.operate!(SA.UnsafeAdd(), a, g)
+    MA.operate!(SA.canonical, a)
+    return a
 end
 
 function MB.algebra_element(

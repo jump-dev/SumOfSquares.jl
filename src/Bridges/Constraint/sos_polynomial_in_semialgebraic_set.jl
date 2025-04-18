@@ -63,7 +63,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     λ_constraints = UMCT[]
     preprocessed =
         Certificate.preprocessed_domain(set.certificate, set.domain, p)
-    implicit_basis = MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()
+    implicit_basis = MB.implicit_basis(set.basis)
     cache = zero(MOI.ScalarAffineFunction{T}, MB.algebra(implicit_basis))
     for index in Certificate.preorder_indices(set.certificate, preprocessed)
         λ, λ_variable, λ_constraint, λ_basis = lagrangian_multiplier(
@@ -81,11 +81,12 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
         g = Certificate.generator(set.certificate, index, preprocessed)
+        MA.operate_to!(cache, +, λ)
         # TODO replace with `MA.sub_mul` when it works.
         p = MA.operate!(
             SA.UnsafeAddMul(*),
             p,
-            λ,
+            cache,
             MB.algebra_element(
                 MB.sparse_coefficients(-one(T) * similar(g, T)),
                 implicit_basis,
