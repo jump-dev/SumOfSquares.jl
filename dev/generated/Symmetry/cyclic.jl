@@ -71,18 +71,6 @@ model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
-basis = MB.explicit_basis(MB.algebra_element(poly - t))
-using SymbolicWedderburn
-summands = SymbolicWedderburn.symmetry_adapted_basis(
-    Float64,
-    pattern.group,
-    pattern.action,
-    basis,
-    semisimple = true,
-)
-
-gram_basis = SumOfSquares.Certificate.Symmetry._gram_basis(pattern, basis, Float64)
-
 con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 solution_summary(model)

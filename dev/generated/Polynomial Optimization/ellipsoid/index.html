@@ -69,7 +69,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   6   6.0000e+00   6.0000e+00  3.18e-11  2.02e-10  8.47e-11  6.56e-10  1.82e-09  9.90e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time =  636μs
+solve time =  653μs
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -82,7 +82,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -6.00000e+00
 │ └ dual_objective_value : -6.00000e+00
 └ Work counters
-  ├ solve_time (sec)   : 6.36235e-04
+  ├ solve_time (sec)   : 6.53087e-04
   └ barrier_iterations : 6</code></pre><p>The second level improves the lower bound</p><pre><code class="language-julia hljs">model4 = solve(4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.10.0  -  Clever Acronym
                    (c) Paul Goulart
@@ -125,7 +125,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  10   5.6923e+00   5.6923e+00  2.66e-10  3.50e-10  1.97e-10  2.33e-09  1.25e-09  9.78e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 3.98ms
+solve time = 3.91ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -138,7 +138,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -5.69231e+00
 │ └ dual_objective_value : -5.69231e+00
 └ Work counters
-  ├ solve_time (sec)   : 3.97913e-03
+  ├ solve_time (sec)   : 3.91127e-03
   └ barrier_iterations : 10</code></pre><p>The third level improves it even further</p><pre><code class="language-julia hljs">model6 = solve(6)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.10.0  -  Clever Acronym
                    (c) Paul Goulart
@@ -187,7 +187,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  17   4.0685e+00   4.0685e+00  6.90e-09  6.03e-10  1.09e-10  3.13e-08  6.67e-10  9.80e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 41.3ms
+solve time = 41.0ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -200,7 +200,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -4.06848e+00
 │ └ dual_objective_value : -4.06848e+00
 └ Work counters
-  ├ solve_time (sec)   : 4.13479e-02
+  ├ solve_time (sec)   : 4.10417e-02
   └ barrier_iterations : 17</code></pre><p>The fourth level finds the optimal objective value as lower bound.</p><pre><code class="language-julia hljs">model8 = solve(8)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.10.0  -  Clever Acronym
                    (c) Paul Goulart
@@ -251,7 +251,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  19   4.0000e+00   4.0000e+00  3.69e-09  2.84e-09  8.55e-11  1.72e-08  5.87e-10  8.30e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time =  815ms
+solve time =  797ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -264,5 +264,5 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -4.00000e+00
 │ └ dual_objective_value : -4.00000e+00
 └ Work counters
-  ├ solve_time (sec)   : 8.15041e-01
-  └ barrier_iterations : 19</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../goldstein_price/">Goldstein-price function »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 14 April 2025 13:23">Monday 14 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ├ solve_time (sec)   : 7.97271e-01
+  └ barrier_iterations : 19</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../goldstein_price/">Goldstein-price function »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Saturday 19 April 2025 09:48">Saturday 19 April 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
