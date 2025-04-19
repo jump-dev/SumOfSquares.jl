@@ -144,7 +144,7 @@ function MA.operate!(
     g::GramMatrix,
     args::Vararg{Any,N},
 ) where {N}
-    return MA.operate!(op, p, SA.QuadraticForm(g), args...)
+    return MA.operate!(op, p, SA.QuadraticForm{SA.star}(g), args...)
 end
 
 """
@@ -259,11 +259,11 @@ end
 #end
 
 function MA.operate_to!(a::SA.AlgebraElement, ::typeof(+), g::GramMatrix)
-    return MA.operate_to!(a, +, SA.QuadraticForm(g))
+    return MA.operate_to!(a, +, SA.QuadraticForm{SA.star}(g))
 end
 
 function MA.operate!(op::SA.UnsafeAdd, a::SA.AlgebraElement, g::GramMatrix)
-    return MA.operate!(op, a, SA.QuadraticForm(g))
+    return MA.operate!(op, a, SA.QuadraticForm{SA.star}(g))
 end
 
 function MA.operate!(

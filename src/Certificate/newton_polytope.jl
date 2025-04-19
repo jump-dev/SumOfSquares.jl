@@ -721,7 +721,7 @@ function post_filter(
         )
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
-        MA.operate_to!(cache, +, SA.QuadraticForm(SignGram(-1, gram_monos)))
+        MA.operate_to!(cache, +, SA.QuadraticForm{SA.star}(SignGram(-1, gram_monos)))
         MA.operate!(SA.UnsafeAddMul(*), counter, mult, cache)
     end
     function decrease(sign, a, b, generator)
