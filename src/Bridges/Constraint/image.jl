@@ -271,10 +271,9 @@ function MOI.get(
             MOI.get(model, attr, bridge.zero_constraint),
         )
     end
-    funcs =
-        MOI.Utilities.eachscalar.(
-            MOI.get.(model, MOI.ConstraintFunction(), bridge.constraints)
-        )
+    funcs = MOI.Utilities.eachscalar.(
+        MOI.get.(model, MOI.ConstraintFunction(), bridge.constraints),
+    )
     z_idx = 0
     return MOI.Utilities.vectorize(
         map(eachindex(bridge.first)) do i

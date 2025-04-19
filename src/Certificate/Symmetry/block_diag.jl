@@ -277,7 +277,7 @@ function block_diag(As, d)
                     end
                     V *= _V
                 end
-                U[:, offset.+eachindex(v)] = V
+                U[:, offset .+ eachindex(v)] = V
                 offset += length(v)
             end
             if offset == n

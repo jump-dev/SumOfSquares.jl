@@ -43,7 +43,7 @@ for (gam, expected) in [(0.8723, :Infeasible), (0.8724, :Optimal)]
 
     # -- r's -- : constant sum of squares
     Z = monomials(x, 0)
-    @variable m r[i = 1:4, j = (i+1):4] >= 0
+    @variable m r[i=1:4, j=(i+1):4] >= 0
 
     # Constraint : -sum(Qi(x)*Ai(x)) - sum(rij*Ai(x)*Aj(x)) + I(x) >= 0
     expr = 0

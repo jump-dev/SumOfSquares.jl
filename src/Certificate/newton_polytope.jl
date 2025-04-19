@@ -301,11 +301,11 @@ function _multiplier_maxdegree(maxdegree, g::SA.AlgebraElement, vars)
 end
 
 function _multiplier_deg_range(range, g::SA.AlgebraElement, vars)
-    return _multiplier_mindegree(minimum(range), g, vars):_multiplier_maxdegree(
-        maximum(range),
+    return _multiplier_mindegree(
+        minimum(range),
         g,
         vars,
-    )
+    ):_multiplier_maxdegree(maximum(range), g, vars)
 end
 
 # Cheap approximation of the convex hull as the approximation of:
@@ -344,7 +344,7 @@ function putinar_degree_bounds(
             p,
             gs,
             minus_degrange,
-            -maxdegree:0,
+            (-maxdegree):0,
         )
         isnothing(d) ? d : -d
     else
@@ -365,7 +365,7 @@ function putinar_degree_bounds(
                 p,
                 gs,
                 minus_degrange,
-                -maxdegree:0,
+                (-maxdegree):0,
             )
         else
             0
@@ -837,8 +837,5 @@ function half_newton_polytope(basis::MB.SubBasis, args...)
 end
 
 function monomials_half_newton_polytope(monos, args...)
-    return half_newton_polytope(
-        MB.SubBasis{MB.Monomial}(monos),
-        args...,
-    ).monomials
+    return half_newton_polytope(MB.SubBasis{MB.Monomial}(monos), args...).monomials
 end

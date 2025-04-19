@@ -318,14 +318,13 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
     poly = x^(2i) + y^(2j + 1)
     domain = @set y^(2k + 1) >= 0
     if default
-        certificate =
-            JuMP.moi_set(
-                SOSCone(),
-                MB.SubBasis{MB.Monomial}(monomials(poly)),
-                MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
-                MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}();
-                domain,
-            ).certificate
+        certificate = JuMP.moi_set(
+            SOSCone(),
+            MB.SubBasis{MB.Monomial}(monomials(poly)),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
+            MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}();
+            domain,
+        ).certificate
     else
         newton = Certificate.NewtonDegreeBounds(tuple())
         if post_filter
@@ -351,10 +350,8 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
             @test isempty(monos)
         else
             w = post_filter ? v[2:2] : v
-            @test monos == MP.monomials(
-                w,
-                max(0, (post_filter ? j : min(i, j)) - k):(j-k),
-            )
+            @test monos ==
+                  MP.monomials(w, max(0, (post_filter ? j : min(i, j))-k):(j-k))
         end
     end
     icert = Certificate.ideal_certificate(certificate)
