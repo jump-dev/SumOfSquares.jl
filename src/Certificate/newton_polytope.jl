@@ -605,18 +605,6 @@ end
 
 Base.:*(a::SignCount, α) = α * a
 
-function Base.:*(α, a::SignCount)
-    if α > 0
-        return a
-    elseif α < 0
-        return SignCount(a.unknown, a.negative, a.positive)
-    else
-        error("Cannot multiply `SignCount`` with `$α`")
-    end
-end
-
-Base.:*(a::SignCount, α) = α * a
-
 function Base.:+(a::SignCount, b::SignCount)
     return SignCount(
         a.unknown + b.unknown,

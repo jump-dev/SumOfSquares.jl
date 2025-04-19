@@ -138,56 +138,6 @@ function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
     return GramMatrix(Q, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
-# `_gram_operate!` is a temporary workaround waiting for a cleaner solution
-# in https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/62
-
-function _gram_operate!(
-    op,
-    p,
-    α,
-    row::MB.Polynomial,
-    col::MB.Polynomial,
-    args::Vararg{Any,N},
-) where {N}
-    return MA.operate!(
-        op,
-        p,
-        MB.term_element(true, row), # TODO `*` shouldn't be defined for group elements so this is a hack
-        MB.term_element(α, col),
-        args...,
-    )
-end
-
-function _gram_operate!(
-    op,
-    p,
-    α,
-    row::SA.AlgebraElement,
-    col::SA.AlgebraElement,
-    args::Vararg{Any,N},
-) where {N}
-    return MA.operate!(
-        op,
-        p,
-        true * row, # TODO `*` shouldn't be defined for group elements so this is a hack
-        α * col,
-        args...,
-    )
-end
-
-function _gram_operate!(
-    op,
-    p,
-    α,
-    row::MB.SemisimpleElement,
-    col::MB.SemisimpleElement,
-    args::Vararg{Any,N},
-) where {N}
-    for (r, c) in zip(row.elements, col.elements)
-        _gram_operate!(op, p, α, r, c, args...)
-    end
-end
-
 function MA.operate!(
     op::SA.UnsafeAddMul{typeof(*)},
     p::SA.AlgebraElement,
