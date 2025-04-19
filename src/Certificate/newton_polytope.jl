@@ -567,6 +567,9 @@ Base.copy(s::SignChange) = s
 Base.iszero(::SignChange) = false
 MA.scaling_convert(::Type, s::SignChange) = s
 Base.:*(s::SignChange, α::Real) = SignChange(s.sign * α, s.Δ)
+Base.:*(α::Real, s::SignChange) = SignChange(α * s.sign, s.Δ)
+#Base.convert(::Type{SignChange{T}}, s::SignChange) where {T} = SignChange{T}(s.sign, s.Δ)
+#Base.:+(a::SignChange, b::SignChange) = convert(SignCount, a) + b
 
 struct SignCount
     unknown::Int
@@ -585,6 +588,9 @@ function _sign(c::SignCount)
     else
         return missing
     end
+end
+function Base.show(io::IO, c::SignCount)
+    return print(io, "[$(c.unknown)|$(c.positive)|$(c.negative)]")
 end
 
 function Base.:*(α, a::SignCount)
@@ -630,26 +636,16 @@ end
 
 Base.convert(::Type{SignCount}, Δ::SignChange) = SignCount() + Δ
 
-function increase(cache, counter, generator_sign, monos, mult)
-    for a in monos
-        for b in monos
-            MA.operate_to!(
-                cache,
-                *,
-                MB.algebra_element(mult),
-                MB.algebra_element(a),
-                MB.algebra_element(b),
-            )
-            MA.operate!(
-                SA.UnsafeAddMul(*),
-                counter,
-                _term_constant_monomial(
-                    SignChange((a != b) ? missing : generator_sign, 1),
-                    mult,
-                ),
-                cache,
-            )
-        end
+struct SignGram{T,B}
+    sign::T
+    basis::B
+end
+SA.basis(g::SignGram) = g.basis
+function Base.getindex(g::SignGram, i, j)
+    if i == j
+        return SignChange(g.sign, 1)
+    else
+        return SignChange(missing, 1)
     end
 end
 
@@ -715,38 +711,33 @@ function post_filter(
         _DictCoefficients(Dict{MP.monomial_type(typeof(poly)),SignCount}()),
         MB.implicit_basis(SA.basis(poly)),
     )
-    algebra = MB.algebra(MB.implicit_basis(SA.basis(poly)))
-    cache = zero(Float64, algebra)
-    cache3 = zero(SignCount, algebra)
-    cache4 = zero(SignCount, algebra)
+    cache = zero(SignCount, MB.algebra(MB.implicit_basis(SA.basis(poly))))
+    cache2 = zero(SignCount, MB.algebra(MB.implicit_basis(SA.basis(poly))))
     for (mono, v) in SA.nonzero_pairs(SA.coeffs(poly))
         MA.operate!(
-            SA.UnsafeAddMul(*),
+            SA.UnsafeAdd(),
             counter,
             _term(SignChange(_sign(v), 1), SA.basis(poly)[mono]),
         )
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
-        for (mono, v) in SA.nonzero_pairs(SA.coeffs(mult))
-            increase(
-                cache,
-                counter,
-                -_sign(v),
-                gram_monos,
-                SA.basis(mult)[mono],
-            )
-        end
+        MA.operate_to!(
+            cache,
+            +,
+            SA.QuadraticForm{SA.star}(SignGram(-1, gram_monos)),
+        )
+        MA.operate!(SA.UnsafeAddMul(*), counter, mult, cache)
     end
     function decrease(sign, a, b, generator)
         MA.operate_to!(
-            cache3,
+            cache,
             *,
             _term(SignChange(sign, -1), a),
             MB.algebra_element(b),
         )
-        MA.operate_to!(cache4, *, cache3, generator)
-        MA.operate!(SA.UnsafeAddMul(*), counter, cache4)
-        for mono in SA.supp(cache4)
+        MA.operate_to!(cache2, *, cache, generator)
+        MA.operate!(SA.UnsafeAdd(), counter, cache2)
+        for mono in SA.supp(cache2)
             count = SA.coeffs(counter)[SA.basis(counter)[mono]]
             count_sign = _sign(count)
             # This means the `counter` has a sign and it didn't have a sign before
@@ -781,7 +772,7 @@ function post_filter(
     for i in eachindex(generators)
         for (j, mono) in enumerate(multipliers_gram_monos[i])
             MA.operate_to!(
-                cache3,
+                cache,
                 *,
                 # Dummy coef to help convert to `SignCount` which is the `eltype` of `cache`
                 _term(SignChange(1, 1), mono),
@@ -789,8 +780,8 @@ function post_filter(
             )
             # The `eltype` of `cache` is `SignCount`
             # so there is no risk of term cancellation
-            MA.operate_to!(cache4, *, cache3, generators[i])
-            for w in SA.supp(cache4)
+            MA.operate_to!(cache2, *, cache, generators[i])
+            for w in SA.supp(cache2)
                 if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
                     push!(get!(back, w, Tuple{Int,Int}[]), (i, j))
                 else

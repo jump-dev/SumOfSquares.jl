@@ -90,6 +90,7 @@ function MP.similar_type(
     return GramMatrix{S,B,US,MS}
 end
 
+SA.basis(g::GramMatrix) = g.basis
 MB.implicit_basis(g::GramMatrix) = MB.implicit_basis(g.basis)
 
 # When taking the promotion of a GramMatrix of JuMP.Variable with a Polynomial JuMP.Variable, it should be a Polynomial of AffExpr
@@ -137,76 +138,13 @@ function GramMatrix(Q::AbstractMatrix, monos::AbstractVector)
     return GramMatrix(Q, MB.SubBasis{MB.Monomial}(sorted_monos), σ)
 end
 
-# `_gram_operate!` is a temporary workaround waiting for a cleaner solution
-# in https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/62
-
-function _gram_operate!(
-    op,
-    p,
-    α,
-    row::MB.Polynomial,
-    col::MB.Polynomial,
-    args::Vararg{Any,N},
-) where {N}
-    return MA.operate!(
-        op,
-        p,
-        MB.term_element(true, row), # TODO `*` shouldn't be defined for group elements so this is a hack
-        MB.term_element(α, col),
-        args...,
-    )
-end
-
-function _gram_operate!(
-    op,
-    p,
-    α,
-    row::SA.AlgebraElement,
-    col::SA.AlgebraElement,
-    args::Vararg{Any,N},
-) where {N}
-    return MA.operate!(
-        op,
-        p,
-        true * row, # TODO `*` shouldn't be defined for group elements so this is a hack
-        α * col,
-        args...,
-    )
-end
-
-function _gram_operate!(
-    op,
-    p,
-    α,
-    row::MB.SemisimpleElement,
-    col::MB.SemisimpleElement,
-    args::Vararg{Any,N},
-) where {N}
-    for (r, c) in zip(row.elements, col.elements)
-        _gram_operate!(op, p, α, r, c, args...)
-    end
-end
-
 function MA.operate!(
     op::SA.UnsafeAddMul{typeof(*)},
     p::SA.AlgebraElement,
     g::GramMatrix,
     args::Vararg{Any,N},
 ) where {N}
-    for row in eachindex(g.basis)
-        row_star = SA.star(g.basis[row])
-        for col in eachindex(g.basis)
-            _gram_operate!(
-                op,
-                p,
-                g.Q[row, col],
-                row_star,
-                g.basis[col],
-                args...,
-            )
-        end
-    end
-    return p
+    return MA.operate!(op, p, SA.QuadraticForm{SA.star}(g), args...)
 end
 
 """
@@ -320,6 +258,51 @@ end
 #    convert(PT, MP.polynomial(p))
 #end
 
+function MA.operate_to!(a::SA.AlgebraElement, ::typeof(+), g::GramMatrix)
+    return MA.operate_to!(a, +, SA.QuadraticForm{SA.star}(g))
+end
+
+function MA.operate!(op::SA.UnsafeAdd, a::SA.AlgebraElement, g::GramMatrix)
+    return MA.operate!(op, a, SA.QuadraticForm{SA.star}(g))
+end
+
+function MA.operate!(
+    op::SA.UnsafeAdd,
+    a::SA.AlgebraElement,
+    g::BlockDiagonalGramMatrix,
+)
+    for block in g.blocks
+        MA.operate!(op, a, block)
+    end
+    return a
+end
+
+function MA.operate_to!(
+    a::SA.AlgebraElement,
+    ::typeof(+),
+    g::BlockDiagonalGramMatrix,
+)
+    MA.operate!(zero, a)
+    MA.operate!(SA.UnsafeAdd(), a, g)
+    MA.operate!(SA.canonical, a)
+    return a
+end
+
+function MB.algebra_element(
+    p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
+) where {T,B,U}
+    return MB.algebra_element(p, U)
+end
+
+function MB.algebra_element(
+    g::Union{GramMatrix,BlockDiagonalGramMatrix},
+    ::Type{T},
+) where {T}
+    a = zero(T, MB.algebra(MB.implicit_basis(g)))
+    MA.operate_to!(a, +, g)
+    return a
+end
+
 function MP.polynomial(
     p::Union{GramMatrix{T,B,U},BlockDiagonalGramMatrix{T,B,U}},
 ) where {T,B,U}
@@ -330,10 +313,5 @@ function MP.polynomial(
     g::Union{GramMatrix,BlockDiagonalGramMatrix},
     ::Type{T},
 ) where {T}
-    p = zero(T, MB.algebra(MB.implicit_basis(g)))
-    MA.operate!(SA.UnsafeAddMul(*), p, g)
-    MA.operate!(SA.canonical, SA.coeffs(p))
-    return MP.polynomial(
-        SA.coeffs(p, MB.FullBasis{MB.Monomial,MP.monomial_type(g)}()),
-    )
+    return MP.polynomial(MB.algebra_element(g, T))
 end
