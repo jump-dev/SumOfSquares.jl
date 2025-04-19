@@ -60,7 +60,7 @@ end
 function XORSpace(n)
     return XORSpace{appropriate_type(n)}(n)
 end
-b(x) = bitstring(x)[end-5:end]
+b(x) = bitstring(x)[(end-5):end]
 e_i(T, i) = (one(T) << (i - 1))
 has_bit(x, i) = !iszero(x & e_i(typeof(x), i))
 function Base.push!(xs::XORSpace{T}, x::T) where {T}

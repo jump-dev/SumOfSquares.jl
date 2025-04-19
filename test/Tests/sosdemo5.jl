@@ -48,7 +48,7 @@ function sosdemo5_test(optimizer, config::MOI.Test.Config, feasible::Bool, γ)
     # -- r's -- : constant sum of squares
     Z = monomials(x, 0)
     #r = Matrix{GramMatrix{JuMP.VariableRef}}(4,4) # FIXME doesn't work with 1x1 SDP matrix :(
-    @variable model r[i = 1:4, j = (i+1):4] >= 0
+    @variable model r[i=1:4, j=(i+1):4] >= 0
 
     # Constraint : -sum(Qi(x)*Ai(x)) - sum(rij*Ai(x)*Aj(x)) + I(x) >= 0
     expr = 0

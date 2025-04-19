@@ -11,7 +11,7 @@ function chebyshev_test(optimizer, config::MOI.Test.Config)
 
     @polyvar x
 
-    Z = monomials((x,), 0:ndeg-1)
+    Z = monomials((x,), 0:(ndeg-1))
 
     model = _model(optimizer)
 
