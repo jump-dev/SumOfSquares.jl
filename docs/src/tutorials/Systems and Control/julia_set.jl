@@ -39,7 +39,7 @@ function in_set(x, c, m=2000)
 end
 
 # To sort of minimize a level set of a polynomial we minimize integral of that polynomial.
-# We borrow the following from https://doi.org/10.1080/00029890.2001.11919774
+# We borrow the following from [here](https://doi.org/10.1080/00029890.2001.11919774).
 
 using SpecialFunctions
 using DynamicPolynomials

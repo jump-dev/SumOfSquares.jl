@@ -2,7 +2,7 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Systems and Control/lyapunov_function_search.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Systems and Control/lyapunov_function_search.ipynb)
-# **Adapted from**: SOSTOOLS' SOSDEMO2 (See Section 4.2 of [SOSTOOLS User's Manual](http://sysos.eng.ox.ac.uk/sostools/sostools.pdf))
+# **Adapted from**: SOSTOOLS' SOSDEMO2 (See Section 4.2 of [SOSTOOLS User's Manual](https://github.com/oxfordcontrol/SOSTOOLS/blob/SOSTOOLS400/docs/SOSTOOLS_400.pdf))
 
 using Test #src
 using DynamicPolynomials
