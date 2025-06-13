@@ -335,8 +335,8 @@ end
 
 function _bridge_coefficient_type(
     T::Type,
-    ::Type{SOSPolynomialSet{S,M,MV,C}},
-) where {S,M,MV,C}
+    ::Type{SOSPolynomialSet{S,B,C}},
+) where {S,B,C}
     return _complex(T, matrix_cone_type(C))
 end
 
