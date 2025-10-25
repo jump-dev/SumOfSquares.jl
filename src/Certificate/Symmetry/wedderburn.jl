@@ -132,7 +132,7 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
         T,
         pattern.group,
         pattern.action,
-        basis,
+        collect(basis),
         semisimple = true,
     )
     # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
