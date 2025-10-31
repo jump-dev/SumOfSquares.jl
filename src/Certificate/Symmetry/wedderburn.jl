@@ -11,11 +11,12 @@ function SymbolicWedderburn.decompose(
 end
 
 function SymbolicWedderburn.ExtensionHomomorphism(
+    ::Type{I},
     action::SymbolicWedderburn.Action,
     basis::MB.MonomialBasis,
-)
+) where {I<:Integer}
     monos = collect(basis.monomials)
-    return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
+    return SymbolicWedderburn.ExtensionHomomorphism(I, action, monos)
 end
 
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
@@ -132,7 +133,7 @@ function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
         T,
         pattern.group,
         pattern.action,
-        collect(basis),
+        basis,
         semisimple = true,
     )
     # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
