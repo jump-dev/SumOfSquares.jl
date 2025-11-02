@@ -158,10 +158,10 @@ gram = gram_matrix(con_ref).blocks #src
 @test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] rtol = 1e-6 #src
 @test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (basis[1] - basis[2] * im) / √2  #src
+@test gram[2].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2  #src
 @test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
 @test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2 #src
+@test gram[3].basis.polynomials[1] ≈ (basis[1] - basis[2] * im) / √2 #src
 for gram in gram_matrix(con_ref).blocks
     println(gram.basis.polynomials)
     display(gram.Q)
