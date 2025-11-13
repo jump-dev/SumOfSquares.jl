@@ -1,6 +1,11 @@
 module ChordalExtensionGraph
 
-using DataStructures
+import DataStructures
+if isdefined(DataStructures, :IntDisjointSet)
+    const IntDisjointSet = DataStructures.IntDisjointSet  # changed in DataStructures v0.19.0
+else
+    const IntDisjointSet = DataStructures.IntDisjointSets
+end
 
 export AbstractCompletion, ChordalCompletion, ClusterCompletion
 export LabelledGraph, add_node!, add_edge!, add_clique!, chordal_extension
