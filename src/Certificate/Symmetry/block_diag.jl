@@ -1,4 +1,9 @@
 import DataStructures
+if isdefined(DataStructures, :IntDisjointSet)
+    const IntDisjointSet = DataStructures.IntDisjointSet  # changed in DataStructures v0.19.0
+else
+    const IntDisjointSet = DataStructures.IntDisjointSets
+end
 
 _isapproxless(a::Real, b::Real) = a < b
 function _isapproxless(a::Complex, b::Complex)
@@ -253,7 +258,7 @@ function block_diag(As, d)
         iZ = Z'
         @assert iZ ≈ inv(Z)
         n = LinearAlgebra.checksquare(A)
-        union_find = DataStructures.IntDisjointSets(n)
+        union_find = IntDisjointSet(n)
         Bs = [iZ * A * Z for A in As]
         for B in Bs
             merge_sparsity!(union_find, B)
@@ -287,11 +292,7 @@ function block_diag(As, d)
     end
 end
 
-function merge_sparsity!(
-    union_find::DataStructures.IntDisjointSets,
-    A,
-    tol = 1e-8,
-)
+function merge_sparsity!(union_find::IntDisjointSet, A, tol = 1e-8)
     for I in CartesianIndices(A)
         i, j = I.I
         if abs(A[I]) > tol

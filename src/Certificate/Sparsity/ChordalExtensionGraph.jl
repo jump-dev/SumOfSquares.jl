@@ -2,6 +2,11 @@ module ChordalExtensionGraph
 
 import CliqueTrees
 import DataStructures
+if isdefined(DataStructures, :IntDisjointSet)
+    const IntDisjointSet = DataStructures.IntDisjointSet  # changed in DataStructures v0.19.0
+else
+    const IntDisjointSet = DataStructures.IntDisjointSets
+end
 import SparseArrays
 
 export AbstractCompletion, ChordalCompletion, ClusterCompletion
@@ -187,7 +192,7 @@ Return a cluster completion of `G` and the corresponding maximal cliques.
 """
 function completion(G::Graph, ::ClusterCompletion)
     H = copy(G)
-    union_find = DataStructures.IntDisjointSets(num_nodes(G))
+    union_find = IntDisjointSet(num_nodes(G))
     for from in 1:num_nodes(G)
         for to in neighbors(G, from)
             DataStructures.union!(union_find, from, to)
