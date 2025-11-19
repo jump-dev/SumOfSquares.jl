@@ -96,7 +96,7 @@ For instance, the following code creates a ``3 \times 4`` matrix of
 sum-of-squares polynomial variables:
 ```jldoctest variables
 julia> @variable(model, [1:2], SOSPoly(X))
-2-element Vector{GramMatrix{VariableRef, MonomialBasis{Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, AffExpr, SymMatrix{VariableRef}}}:
+2-element Vector{GramMatrix{VariableRef, MonomialBasis{DynamicPolynomials.Monomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}, MonomialVector{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}}}, AffExpr, SymMatrix{VariableRef}}}:
  GramMatrix with row/column basis:
  MonomialBasis([1, y, x, y^2, x*y, x^2])
 And entries in a 6×6 SymMatrix{VariableRef}:

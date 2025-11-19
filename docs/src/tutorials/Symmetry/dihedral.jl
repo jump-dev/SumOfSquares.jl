@@ -149,9 +149,9 @@ function solve(G)
 
     g = gram_matrix(con_ref).blocks #src
     @test length(g) == 5                       #src
-    @test g[1].basis.polynomials == [y^3, x^2*y, y] #src
-    @test g[2].basis.polynomials == [-x^3, -x*y^2, -x] #src
-    for i in 1:2                        #src
+    @test g[4].basis.polynomials == [y^3, x^2*y, y] #src
+    @test g[5].basis.polynomials == [-x^3, -x*y^2, -x] #src
+    for i in [4, 5]                     #src
         I = 3:-1:1                      #src
         Q = g[i].Q[I, I]                #src
         @test size(Q) == (3, 3)         #src
@@ -162,20 +162,20 @@ function solve(G)
         @test Q[1, 3] ≈ -5/8  rtol=1e-2 #src
         @test Q[3, 3] ≈  1    rtol=1e-2 #src
     end #src
-    @test length(g[3].basis.polynomials) == 2 #src
-    @test g[3].basis.polynomials[1] == 1.0 #src
-    @test g[3].basis.polynomials[2] ≈ -(√2/2)x^2 - (√2/2)y^2 #src
-    @test size(g[3].Q) == (2, 2)             #src
-    @test g[3].Q[1, 1] ≈ 7921/4096 rtol=1e-2 #src
-    @test g[3].Q[1, 2] ≈ 0.983 rtol=1e-2  #src
-    @test g[3].Q[2, 2] ≈ 1/2 rtol=1e-2 #src
-    @test g[4].basis.polynomials == [x * y] #src
-    @test size(g[4].Q) == (1, 1)       #src
-    @test g[4].Q[1, 1] ≈ 0   atol=1e-2 #src
-    @test length(g[5].basis.polynomials) == 1 #src
-    @test g[5].basis.polynomials[1] ≈ (√2/2)x^2 - (√2/2)y^2 #src
-    @test size(g[5].Q) == (1, 1)       #src
-    @test g[5].Q[1, 1] ≈ 0   atol=1e-2 #src
+    @test length(g[1].basis.polynomials) == 2 #src
+    @test g[1].basis.polynomials[1] == 1.0 #src
+    @test g[1].basis.polynomials[2] ≈ -(√2/2)x^2 - (√2/2)y^2 #src
+    @test size(g[1].Q) == (2, 2)             #src
+    @test g[1].Q[1, 1] ≈ 7921/4096 rtol=1e-2 #src
+    @test g[1].Q[1, 2] ≈ 0.983 rtol=1e-2  #src
+    @test g[1].Q[2, 2] ≈ 1/2 rtol=1e-2 #src
+    @test g[2].basis.polynomials == [x * y] #src
+    @test size(g[2].Q) == (1, 1)       #src
+    @test g[2].Q[1, 1] ≈ 0   atol=1e-2 #src
+    @test length(g[3].basis.polynomials) == 1 #src
+    @test g[3].basis.polynomials[1] ≈ (√2/2)x^2 - (√2/2)y^2 #src
+    @test size(g[3].Q) == (1, 1)       #src
+    @test g[3].Q[1, 1] ≈ 0   atol=1e-2 #src
     for g in gram_matrix(con_ref).blocks
         println(g.basis.polynomials)
     end

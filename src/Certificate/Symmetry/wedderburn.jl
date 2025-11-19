@@ -11,11 +11,12 @@ function SymbolicWedderburn.decompose(
 end
 
 function SymbolicWedderburn.ExtensionHomomorphism(
+    ::Type{I},
     action::SymbolicWedderburn.Action,
     basis::MB.MonomialBasis,
-)
+) where {I<:Integer}
     monos = collect(basis.monomials)
-    return SymbolicWedderburn.ExtensionHomomorphism(Int, action, monos)
+    return SymbolicWedderburn.ExtensionHomomorphism(I, action, monos)
 end
 
 struct VariablePermutation <: SymbolicWedderburn.ByPermutations end
