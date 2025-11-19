@@ -354,11 +354,11 @@ function completion(G::Graph, ::ClusterCompletion)
             union!(union_find, from, to)
         end
     end
-    cliques = [Int[] for i in 1:num_groups(union_find)]
+    cliques = [Int[] for i in 1:DataStructures.num_groups(union_find)]
     ids = zeros(Int, num_nodes(G))
     k = 0
     for node in 1:num_nodes(G)
-        root = find_root!(union_find, node)
+        root = DataStructures.find_root!(union_find, node)
         if iszero(ids[root])
             k += 1
             ids[root] = k
