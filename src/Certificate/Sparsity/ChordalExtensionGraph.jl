@@ -1,6 +1,11 @@
 module ChordalExtensionGraph
 
-using DataStructures
+import DataStructures
+if isdefined(DataStructures, :IntDisjointSet)
+    const IntDisjointSet = DataStructures.IntDisjointSet  # changed in DataStructures v0.19.0
+else
+    const IntDisjointSet = DataStructures.IntDisjointSets
+end
 
 export AbstractCompletion, ChordalCompletion, ClusterCompletion
 export LabelledGraph, add_node!, add_edge!, add_clique!, chordal_extension
@@ -343,17 +348,17 @@ Return a cluster completion of `G` and the corresponding maximal cliques.
 """
 function completion(G::Graph, ::ClusterCompletion)
     H = copy(G)
-    union_find = IntDisjointSets(num_nodes(G))
+    union_find = IntDisjointSet(num_nodes(G))
     for from in 1:num_nodes(G)
         for to in neighbors(G, from)
             union!(union_find, from, to)
         end
     end
-    cliques = [Int[] for i in 1:num_groups(union_find)]
+    cliques = [Int[] for i in 1:DataStructures.num_groups(union_find)]
     ids = zeros(Int, num_nodes(G))
     k = 0
     for node in 1:num_nodes(G)
-        root = find_root!(union_find, node)
+        root = DataStructures.find_root!(union_find, node)
         if iszero(ids[root])
             k += 1
             ids[root] = k
