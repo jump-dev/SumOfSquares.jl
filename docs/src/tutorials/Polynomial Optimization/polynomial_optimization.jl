@@ -155,7 +155,7 @@ optimize!(model)
 
 # We can see that the basis of the moment matrix didn't increase:
 
-@test length(moment_matrix(c4).basis.monomials) == 3 #src
+@test length(moment_matrix(c4).basis) == 3 #src
 moment_matrix(c4)
 
 # This is because of the Newton polytope reduction that determined that gram matrix will

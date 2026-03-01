@@ -376,7 +376,7 @@ function _default_basis(
         return coeffs, basis
     else
         return _default_basis(
-            SA.SparseCoefficients(basis.monomials, coeffs),
+            SA.SparseCoefficients(basis.keys, coeffs),
             MB.implicit_basis(basis),
             gram_basis,
         )
@@ -556,7 +556,7 @@ Return the monomials of [`certificate_basis`](@ref). If the basis if not
 function certificate_monomials(cref::JuMP.ConstraintRef)
     return basis_monomials(certificate_basis(cref))
 end
-basis_monomials(basis::MB.SubBasis) = basis.monomials
+basis_monomials(basis::MB.SubBasis) = keys_as_monomials(basis)
 function basis_monomials(basis::SA.AbstractBasis)
     return error(
         "`certificate_monomials` is not supported with `$(typeof(basis))`, use `certificate_basis` instead.",

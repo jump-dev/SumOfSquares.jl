@@ -42,7 +42,7 @@ end
 
 function _poly(coeffs, basis::MB.MonomialIndexedBasis{B,M}) where {B,M}
     return MB.algebra_element(
-        MB.sparse_coefficients(MP.polynomial(coeffs, basis.monomials)),
+        MB.sparse_coefficients(MP.polynomial(coeffs, MB.keys_as_monomials(basis))),
         MB.FullBasis{B,M}(),
     )
 end

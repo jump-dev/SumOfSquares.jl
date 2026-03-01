@@ -95,9 +95,11 @@ function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
 
-function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}, ::Type{T}) where {B,M,T}
-    SC = SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
-    AE = SA.AlgebraElement{MB.Algebra{MB.FullBasis{B,M},B,M},T,SC}
+function _multi_basis_type(::Type{BT}, ::Type{T}) where {BT<:SA.SubBasis,T}
+    AE = MB.algebra_element_type(
+        Vector{T},
+        MA.promote_operation(MB.implicit_basis, BT),
+    )
     return Vector{MB.SemisimpleBasis{AE,Int,MB.FixedBasis{B,M,T,SC}}}
 end
 function MA.promote_operation(
@@ -172,13 +174,13 @@ function MA.promote_operation(
 end
 
 function matrix_reps(pattern, R, basis, ::Type{T}, form) where {T}
-    polys = R * basis.monomials
+    polys = R * MB.keys_as_monomials(basis)
     return map(SymbolicWedderburn.gens(pattern.group)) do g
         S = Matrix{T}(undef, length(polys), length(polys))
         for i in eachindex(polys)
             p = polys[i]
             q = SymbolicWedderburn.action(pattern.action, g, p)
-            coefs = MP.coefficients(q, basis.monomials)
+            coefs = MP.coefficients(q, MB.keys_as_monomials(basis))
             S[:, i] = _linsolve(R, coefs, form)
         end
         return S

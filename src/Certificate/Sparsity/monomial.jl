@@ -183,7 +183,7 @@ function sparsity(
     return _monomial_vector(cliques)
 end
 # This also checks that it is indeed a monomial basis
-_monos(basis::MB.SubBasis{MB.Monomial}) = basis.monomials
+_monos(basis::MB.SubBasis{MB.Monomial}) = MB.keys_as_monomials(basis)
 function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree)
     return _monos(
         SumOfSquares.Certificate.maxdegree_gram_basis(

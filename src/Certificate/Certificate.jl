@@ -93,15 +93,17 @@ end
 
 function maxdegree_gram_basis(basis::SA.AbstractBasis, bounds::DegreeBounds)
     # TODO use bounds here too
-    variables = MP.variables(bounds.variablewise_maxdegree)
-    return MB.maxdegree_basis(basis, variables, bounds.maxdegree)
+    @assert MP.variables(basis) == MP.variables(bounds.variablewise_maxdegree)
+    return MB.maxdegree_basis(basis, bounds.maxdegree)
 end
+
 function maxdegree_gram_basis(
     basis::SA.AbstractBasis,
     variables,
     maxdegree::Int,
 )
-    return MB.maxdegree_basis(basis, variables, fld(maxdegree, 2))
+    @assert MP.variables(basis) == variables
+    return MB.maxdegree_basis(basis, fld(maxdegree, 2))
 end
 
 include("ideal.jl")

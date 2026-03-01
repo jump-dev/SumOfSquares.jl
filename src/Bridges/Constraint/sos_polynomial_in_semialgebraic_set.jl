@@ -52,7 +52,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # TODO remove `collect` when `DynamicPolynomials.MonomialVector` can be used as keys
     p = MB.algebra_element(
         SA.SparseCoefficients(
-            copy(collect(set.basis.monomials)),
+            copy(collect(set.basis.keys)),
             MOI.Utilities.scalarize(f),
         ),
         MB.implicit_basis(set.basis),
@@ -124,7 +124,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         λ_variables,
         λ_constraints,
         constraint,
-        set.basis.monomials,
+        MB.keys_as_monomials(set.basis),
     )
 end
 

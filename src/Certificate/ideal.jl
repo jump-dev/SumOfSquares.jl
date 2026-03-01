@@ -59,8 +59,8 @@ function __reduce_with_domain(
 )
     I = ideal(domain)
     # set of standard monomials that are hit
-    standard = Set{eltype(basis.monomials)}()
-    for mono in basis.monomials
+    standard = Set{MP.monomial_type(basis)}()
+    for mono in MB.keys_as_monomials(basis)
         r = rem(mono, I)
         union!(standard, MP.monomials(r))
     end

@@ -10,8 +10,8 @@ struct Variable <: Pattern end
 const CEG = ChordalExtensionGraph
 
 function csp_graph(basis::MB.SubBasis{MB.Monomial}, ::FullSpace)
-    G = CEG.LabelledGraph{MP.variable_union_type(eltype(basis.monomials))}()
-    for mono in basis.monomials
+    G = CEG.LabelledGraph{MP.variable_union_type(MB.monomial_type(basis))}()
+    for mono in MB.keys_as_monomials(basis)
         CEG.add_clique!(G, MP.effective_variables(mono))
     end
     return G
