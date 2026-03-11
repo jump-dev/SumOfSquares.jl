@@ -95,17 +95,11 @@ function SumOfSquares.matrix_cone_type(::Type{<:Ideal{C}}) where {C}
     return SumOfSquares.matrix_cone_type(C)
 end
 
-<<<<<<< HEAD
 function _multi_basis_type(::Type{BT}, ::Type{T}) where {BT<:SA.SubBasis,T}
     AE = MB.algebra_element_type(
         Vector{T},
         MA.promote_operation(MB.implicit_basis, BT),
     )
-=======
-function _multi_basis_type(::Type{<:MB.SubBasis{B,M}}, ::Type{T}) where {B,M,T}
-    SC = SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
-    AE = SA.AlgebraElement{T,MB.Algebra{MB.FullBasis{B,M},B,M},SC}
->>>>>>> c5e9a452 (Fixes)
     return Vector{MB.SemisimpleBasis{AE,Int,MB.FixedBasis{B,M,T,SC}}}
 end
 function MA.promote_operation(
