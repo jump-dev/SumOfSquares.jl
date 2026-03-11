@@ -169,8 +169,8 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
         M = typeof(x * y)
         @test [ps, ps1] isa Vector{
             SOSDecomposition{
-                MB.Algebra{MB.FullBasis{MB.Monomial,M},MB.Monomial,M},
                 Int,
+                MB.Algebra{MB.FullBasis{MB.Monomial,M},MB.Monomial,M},
                 SA.SparseCoefficients{M,Int,Vector{M},Vector{Int64}},
                 Int,
             },

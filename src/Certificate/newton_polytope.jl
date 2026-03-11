@@ -271,8 +271,13 @@ end
 _is_monomial_basis(::Type{<:MB.AbstractMonomialIndexed}) = false
 _is_monomial_basis(::Type{<:Union{MB.Monomial,MB.ScaledMonomial}}) = true
 function _is_monomial_basis(
+<<<<<<< HEAD
     ::Type{<:Union{MB.FullBasis{B},MB.SubBasis{B}}},
 ) where {B}
+=======
+    ::Type{<:SA.AlgebraElement{T,<:MB.Algebra{BT,B}}},
+) where {T,BT,B}
+>>>>>>> c5e9a452 (Fixes)
     return _is_monomial_basis(B)
 end
 function _is_monomial_basis(
@@ -396,9 +401,15 @@ function putinar_degree_bounds(
 end
 
 function multiplier_basis(
+<<<<<<< HEAD
     g::SA.AlgebraElement,
     bounds::DegreeBounds,
 )
+=======
+    g::SA.AlgebraElement{T,<:MB.Algebra{BT,B}},
+    bounds::DegreeBounds,
+) where {T,BT,B}
+>>>>>>> c5e9a452 (Fixes)
     return maxdegree_gram_basis(
         MB.implicit_basis(SA.basis(q)),
         _half(minus_shift(bounds, g)),
@@ -424,12 +435,20 @@ function _cartesian_product(bases::Vector{<:MB.SubBasis{B}}, bounds) where {B}
 end
 
 function half_newton_polytope(
+<<<<<<< HEAD
     p::SA.AlgebraElement,
+=======
+    p::SA.AlgebraElement{T,<:MB.Algebra{BT,B,M}},
+>>>>>>> c5e9a452 (Fixes)
     gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
     newton::NewtonDegreeBounds,
+<<<<<<< HEAD
 )
+=======
+) where {T,BT,B,M}
+>>>>>>> c5e9a452 (Fixes)
     if !is_commutative(vars)
         throw(
             ArgumentError(
@@ -487,13 +506,21 @@ function half_newton_polytope(
 end
 
 function half_newton_polytope(
+<<<<<<< HEAD
     p::SA.AlgebraElement,
+=======
+    p::SA.AlgebraElement{T,<:MB.Algebra{BT,B,M}},
+>>>>>>> c5e9a452 (Fixes)
     gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
     ::NewtonDegreeBounds{Tuple{}},
+<<<<<<< HEAD
 )
     full = MB.implicit_basis(SA.basis(p))
+=======
+) where {T,BT,B,M}
+>>>>>>> c5e9a452 (Fixes)
     if is_commutative(vars)
         # TODO take `variable_groups` into account
         bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
@@ -549,11 +576,19 @@ end
 
 function half_newton_polytope(
     p::SA.AlgebraElement,
+<<<<<<< HEAD
     gs::AbstractVector{G},
     vars,
     maxdegree,
     filter::NewtonFilter{<:NewtonDegreeBounds},
 ) where {G<:SA.AlgebraElement}
+=======
+    gs::AbstractVector{<:SA.AlgebraElement{T,<:MB.Algebra{B}}},
+    vars,
+    maxdegree,
+    filter::NewtonFilter{<:NewtonDegreeBounds},
+) where {T,B}
+>>>>>>> c5e9a452 (Fixes)
     basis, multipliers_bases =
         half_newton_polytope(p, gs, vars, maxdegree, filter.outer_approximation)
     bases = copy(multipliers_bases)
@@ -804,11 +839,11 @@ end
 
 function _weight_type(::Type{T}, ::Type{BT}) where {T,BT}
     return SA.AlgebraElement{
+        T,
         MA.promote_operation(
             MB.algebra,
             MA.promote_operation(MB.implicit_basis, BT),
         ),
-        T,
         MA.promote_operation(
             MB.sparse_coefficients,
             MP.polynomial_type(MP.monomial_type(BT), T),
