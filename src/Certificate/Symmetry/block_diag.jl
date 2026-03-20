@@ -253,7 +253,7 @@ function block_diag(As, d)
         iZ = Z'
         @assert iZ ≈ inv(Z)
         n = LinearAlgebra.checksquare(A)
-        union_find = DataStructures.IntDisjointSets(n)
+        union_find = DataStructures.IntDisjointSet(n)
         Bs = [iZ * A * Z for A in As]
         for B in Bs
             merge_sparsity!(union_find, B)
@@ -288,7 +288,7 @@ function block_diag(As, d)
 end
 
 function merge_sparsity!(
-    union_find::DataStructures.IntDisjointSets,
+    union_find::DataStructures.IntDisjointSet,
     A,
     tol = 1e-8,
 )
