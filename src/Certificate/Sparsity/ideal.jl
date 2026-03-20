@@ -84,7 +84,7 @@ function sparsity(
     gram_basis::MB.SubBasis{MB.Monomial},
 )
     return MB.SubBasis{MB.Monomial}.(
-        sparsity(monos, sp, MB.keys_as_monomials(gram_basis))
+        sparsity(monos, sp, MB.keys_as_monomials(gram_basis)),
     )
 end
 function sparsity(

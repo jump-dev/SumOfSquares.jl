@@ -275,9 +275,7 @@ function _is_monomial_basis(
 ) where {B}
     return _is_monomial_basis(B)
 end
-function _is_monomial_basis(
-    ::Type{A},
-) where {A<:SA.AlgebraElement}
+function _is_monomial_basis(::Type{A}) where {A<:SA.AlgebraElement}
     return _is_monomial_basis(MA.promote_operation(SA.basis, A))
 end
 
@@ -395,10 +393,7 @@ function putinar_degree_bounds(
     )
 end
 
-function multiplier_basis(
-    g::SA.AlgebraElement,
-    bounds::DegreeBounds,
-)
+function multiplier_basis(g::SA.AlgebraElement, bounds::DegreeBounds)
     return maxdegree_gram_basis(
         MB.implicit_basis(SA.basis(q)),
         _half(minus_shift(bounds, g)),
@@ -416,10 +411,12 @@ function _cartesian_product(bases::Vector{<:MB.SubBasis{B}}, bounds) where {B}
     if isnothing(bounds)
         return MB.empty_basis(typeof(basis))
     else
-        return MB.SubBasis{B}(filter(
-            Base.Fix2(within_bounds, _half(bounds)),
-            MB.keys_as_monomials(basis),
-        ))
+        return MB.SubBasis{B}(
+            filter(
+                Base.Fix2(within_bounds, _half(bounds)),
+                MB.keys_as_monomials(basis),
+            ),
+        )
     end
 end
 
@@ -559,7 +556,10 @@ function half_newton_polytope(
     bases = copy(multipliers_bases)
     push!(bases, basis)
     gs = copy(gs)
-    push!(gs, MB.constant_algebra_element(MB.implicit_basis(SA.basis(p)), eltype(G)))
+    push!(
+        gs,
+        MB.constant_algebra_element(MB.implicit_basis(SA.basis(p)), eltype(G)),
+    )
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
     return filtered_bases[end], filtered_bases[1:(end-1)]
@@ -839,5 +839,7 @@ function half_newton_polytope(basis::MB.SubBasis, args...)
 end
 
 function monomials_half_newton_polytope(monos, args...)
-    return MB.keys_as_monomials(half_newton_polytope(MB.SubBasis{MB.Monomial}(monos), args...))
+    return MB.keys_as_monomials(
+        half_newton_polytope(MB.SubBasis{MB.Monomial}(monos), args...),
+    )
 end
