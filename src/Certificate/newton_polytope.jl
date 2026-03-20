@@ -713,8 +713,9 @@ function post_filter(
     # We use `_DictCoefficients` instead `SA.SparseCoefficients` because
     # we need to keep it canonicalized (without duplicate actually)
     # and don't care about the list of monomials being ordered
+    # TODO Base.promote_op is a bit hacky, MA.promote_operation or MP.exponents_type would be better
     counter = MB.algebra_element(
-        _DictCoefficients(Dict{MP.monomial_type(typeof(poly)),SignCount}()),
+        _DictCoefficients(Dict{Base.promote_op(MP.exponents, MP.monomial_type(typeof(poly))),SignCount}()),
         MB.implicit_basis(SA.basis(poly)),
     )
     cache = zero(SignCount, MB.algebra(MB.implicit_basis(SA.basis(poly))))

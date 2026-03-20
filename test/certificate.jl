@@ -64,19 +64,19 @@ end
             SOS.Certificate.monomials_half_newton_polytope([x, y], uni),
         )
         @test SOS.Certificate.monomials_half_newton_polytope([x^2, y^2], uni) ==
-              [x, y]
+              [y, x]
         @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([x, y],)),
-        ) == [x, y]
+        ) == [y, x]
         @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, y^2],
             Certificate.NewtonDegreeBounds(([y, x],)),
-        ) == [x, y]
+        ) == [y, x]
         @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
             uni,
-        ) == [x^2 * y^2, x, x * y, x^2, x * y^2, x^2 * y]
+        ) == MP.monomial_vector([x^2 * y^2, x, x * y, x^2, x * y^2, x^2 * y])
         @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
             Certificate.NewtonFilter(uni),
