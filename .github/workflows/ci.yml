@@ -42,6 +42,7 @@ jobs:
               PackageSpec(name="MultivariateBases", rev="master"),
               PackageSpec(name="MultivariateMoments", rev="master"),
               PackageSpec(name="PolyJuMP", rev="master"),
+              PackageSpec(name="DynamicPolynomials", rev="blegat-patch-1"),
           ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
