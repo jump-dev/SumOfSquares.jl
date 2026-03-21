@@ -98,7 +98,7 @@ end
 function max_degree(p::SA.AlgebraElement, v)
     return mapreduce(Base.Fix2(max_degree, v), max, SA.supp(p))
 end
-max_degree(p::MB.Polynomial, v) = MP.degree(MP.monomial(p), v)
+max_degree(p::MB.Polynomial, v) = (@show p.variables; MP.degree(MP.monomial(p), v))
 
 function min_shift(d, shift)
     return max(0, d - shift)
