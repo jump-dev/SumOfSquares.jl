@@ -798,7 +798,7 @@ function post_filter(
         end
     end
     return [
-        SubBasis(gram_monos, keep) for
+        SA.sub_basis(gram_monos, keep) for
         (keep, gram_monos) in zip(keep, multipliers_gram_monos)
     ]
 end
