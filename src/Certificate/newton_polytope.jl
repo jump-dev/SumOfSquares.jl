@@ -98,7 +98,7 @@ end
 function max_degree(p::SA.AlgebraElement, v)
     return mapreduce(Base.Fix2(max_degree, v), max, SA.supp(p))
 end
-max_degree(p::MB.Polynomial, v) = (@show p.variables; MP.degree(MP.monomial(p), v))
+max_degree(p::MB.Polynomial, v) = MP.degree(MP.monomial(p), v)
 
 function min_shift(d, shift)
     return max(0, d - shift)
@@ -675,7 +675,7 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
 end
 
 function _term(α, p::MB.Polynomial{B,M}) where {B,M}
-    return MB.algebra_element(MP.term(α, MP.monomial(p)), MB.FullBasis{B,M}())
+    return MB.algebra_element(MP.term(α, MP.monomial(p)), MB.FullBasis{B,M}(MP.variables(p)))
 end
 
 function _term_constant_monomial(α, ::MB.Polynomial{B,M}) where {B,M}

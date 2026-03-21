@@ -45,7 +45,7 @@ function _poly(coeffs, basis::MB.MonomialIndexedBasis{B,M}) where {B,M}
         MB.sparse_coefficients(
             MP.polynomial(coeffs, MB.keys_as_monomials(basis)),
         ),
-        MB.FullBasis{B,M}(),
+        MB.implicit_basis(basis),
     )
 end
 
