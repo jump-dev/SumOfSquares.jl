@@ -675,7 +675,7 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
 end
 
 function _term(α, p::MB.Polynomial{B,M}) where {B,M}
-    return MB.algebra_element(MP.term(α, MP.monomial(p)), MB.FullBasis{B,M}(MP.variables(p)))
+    return MB.algebra_element(MP.term(α, MP.monomial(p)), MB.FullBasis{B}(MP.variables(p)))
 end
 
 function _term_constant_monomial(α, ::MB.Polynomial{B,M}) where {B,M}
