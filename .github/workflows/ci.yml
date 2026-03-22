@@ -37,9 +37,9 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="StarAlgebras", rev="blegat-patch-3"),
+              PackageSpec(name="StarAlgebras", rev="main"),
               PackageSpec(name="SymbolicWedderburn", rev="master"),
-              PackageSpec(name="MultivariateBases", rev="blegat-patch-1"),
+              PackageSpec(name="MultivariateBases", rev="master"),
               PackageSpec(name="MultivariateMoments", rev="master"),
               PackageSpec(name="PolyJuMP", rev="master"),
               PackageSpec(name="DynamicPolynomials", rev="master"),

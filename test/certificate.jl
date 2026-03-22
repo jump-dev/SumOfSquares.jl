@@ -80,7 +80,7 @@ end
         @test SOS.Certificate.monomials_half_newton_polytope(
             [x^2, x^3 * y^2, x^4 * y^4],
             Certificate.NewtonFilter(uni),
-        ) == [x^2 * y^2, x]
+        ) == [x, x^2 * y^2]
     end
     @testset "Non-commutative" begin
         @test SOS.Certificate.monomials_half_newton_polytope(
