@@ -15,12 +15,12 @@ Base.:+(::Number, a::_NonZero) = a
 Base.:+(::_NonZero, a::_NonZero) = a
 
 function _combine_with_gram(
-    basis::MB.SubBasis{B,M},
+    basis::MB.SubBasis{B},
     gram_bases::AbstractVector{<:SA.ExplicitBasis},
     weights,
-) where {B,M}
-    p = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
-    cache = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
+) where {B}
+    p = zero(_NonZero, MB.algebra(parent(basis)))
+    cache = zero(_NonZero, MB.algebra(parent(basis)))
     for mono in basis
         MA.operate!(
             SA.UnsafeAddMul(*),
@@ -38,7 +38,7 @@ function _combine_with_gram(
         MA.operate!(SA.UnsafeAddMul(*), p, cache, weight)
     end
     MA.operate!(SA.canonical, SA.coeffs(p))
-    return MB.SubBasis{B}(keys(SA.coeffs(p)))
+    return SA.sub_basis(parent(basis), keys(SA.coeffs(p)))
 end
 
 function _reduce_with_domain(basis::MB.SubBasis, zero_basis, ::FullSpace)
@@ -244,7 +244,7 @@ struct Remainder{C<:AbstractIdealCertificate} <: AbstractIdealCertificate
 end
 
 function _rem(coeffs, basis::MB.FullBasis{MB.Monomial}, I)
-    poly = MP.polynomial(SA.values(coeffs), SA.keys(coeffs))
+    poly = MP.polynomial(MB.algebra_element(coeffs, basis))
     r = convert(typeof(poly), rem(poly, I))
     return MB.algebra_element(MB.sparse_coefficients(r), basis)
 end

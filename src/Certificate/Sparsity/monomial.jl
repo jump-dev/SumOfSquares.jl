@@ -253,14 +253,14 @@ function sparsity(
             SumOfSquares.Certificate.ideal_certificate(certificate),
             DummyPolynomial(
                 _ideal_monos(
-                    MB.explicit_basis(poly).monomials,
+                    MB.keys_as_monomials(MB.explicit_basis(poly)),
                     multiplier_generator_monos,
                 ),
             ),
         ),
     )
     cliques, multiplier_cliques = sparsity(
-        MB.explicit_basis(poly).monomials,
+        MB.keys_as_monomials(MB.explicit_basis(poly)),
         sp,
         gram_monos,
         multiplier_generator_monos,

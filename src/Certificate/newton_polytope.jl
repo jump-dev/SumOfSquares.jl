@@ -518,11 +518,12 @@ function half_newton_polytope(
                 for i in 1:div(MP.degree(mono), 2)
                     w = _chip(mono, -i)
                     if within_bounds(w, bounds)
-                        push!(keys, MP.exponents(w))
+                        push!(keys, MP.exponents(w, MP.variables(full)))
                     end
                 end
             end
         end
+        unique!(keys)
         basis = SA.SubBasis(full, keys)
         return basis, typeof(basis)[]
     end
@@ -678,8 +679,8 @@ function _term(α, p::MB.Polynomial)
     return MB.term_element(α, p)
 end
 
-function _term_constant_monomial(α, ::MB.Polynomial{B,M}) where {B,M}
-    return _term(α, MB.Polynomial{B}(MP.constant_monomial(M)))
+function _term_constant_monomial(α, p::MB.Polynomial{B,M}) where {B,M}
+    return _term(α, MB.Polynomial{B}(MP.constant_monomial(MP.monomial(p))))
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
