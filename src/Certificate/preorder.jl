@@ -50,39 +50,15 @@ struct WithFixedBases{S,B}
     bases::Vector{B}
 end
 
-_merge_sorted(a::Vector, ::Tuple{}) = a
-function _merge_sorted(a::Vector, b::Vector)
-    vars = sort!(vcat(a, b), rev = true)
-    unique!(vars)
-    return vars
-end
-_merge_sorted(a::Tuple{}, ::Tuple{}) = a
-_merge_sorted(a::Tuple, ::Tuple{}) = a
-_merge_sorted(::Tuple{}, b::Tuple) = b
-function _merge_sorted(a::Tuple, b::Tuple)
-    v = first(a)
-    w = first(b)
-    if v == w
-        return (v, _merge_sorted(Base.tail(a), Base.tail(b))...)
-    elseif v > w
-        return (v, _merge_sorted(Base.tail(a), b)...)
-    else
-        return (w, _merge_sorted(a, Base.tail(b))...)
-    end
-end
-
 _vars(::SemialgebraicSets.FullSpace) = tuple()
 function _vars(x::SA.AlgebraElement)
-    if SA.basis(x) isa SA.ImplicitBasis
-        return MP.variables(SA.coeffs(x))
-    else
-        return MP.variables(SA.basis(x))
-    end
+    return MP.variables(SA.basis(x))
 end
 _vars(x) = MP.variables(x)
 
-function with_variables(inner, outer)
-    return WithVariables(inner, _merge_sorted(_vars(inner), _vars(outer)))
+function with_variables(domain, p)
+    inner, outer = SA.promote_basis(domain, p)
+    return WithVariables(inner, MP.variables(outer))
 end
 
 function with_fixed_basis(
@@ -96,7 +72,7 @@ function with_fixed_basis(
         v.inner,
         half_newton_polytope(
             _algebra_element(p),
-            SemialgebraicSets.inequalities(domain),
+            SemialgebraicSets.inequalities(v.inner),
             v.variables,
             maxdegree,
             newton,

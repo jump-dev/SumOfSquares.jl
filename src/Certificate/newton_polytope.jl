@@ -395,7 +395,7 @@ end
 
 function multiplier_basis(g::SA.AlgebraElement, bounds::DegreeBounds)
     return maxdegree_gram_basis(
-        MB.implicit_basis(SA.basis(q)),
+        MB.implicit_basis(SA.basis(g)),
         _half(minus_shift(bounds, g)),
     )
 end

@@ -5,13 +5,6 @@ import MultivariateBases as MB
 
 const SOS = SumOfSquares
 
-@testset "_merge_sorted" begin
-    @test SumOfSquares.Certificate._merge_sorted([4, 1], [3, 0]) == [4, 3, 1, 0]
-    @test SumOfSquares.Certificate._merge_sorted((4, 1), (3, 0)) == (4, 3, 1, 0)
-    @test SumOfSquares.Certificate._merge_sorted([4, 1], [3, 2]) == [4, 3, 2, 1]
-    @test SumOfSquares.Certificate._merge_sorted((4, 1), (3, 2)) == (4, 3, 2, 1)
-end
-
 @testset "with_variables" begin
     @polyvar x y z
     p = x + z
@@ -321,8 +314,8 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
         certificate = JuMP.moi_set(
             SOSCone(),
             MB.SubBasis{MB.Monomial}(monomials(poly)),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}();
+            MB.FullBasis{MB.Monomial}(poly),
+            MB.FullBasis{MB.Monomial}(poly);
             domain,
         ).certificate
     else
@@ -332,20 +325,20 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
         end
         cert = Certificate.Newton(
             SOSCone(),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(x * y)}(),
+            MB.FullBasis{MB.Monomial}(x * y),
+            MB.FullBasis{MB.Monomial}(x * y),
             newton,
         )
         certificate = Certificate.Putinar(cert, cert, max(2i, 2j + 1, 2k + 1))
     end
     alg_el = MB.algebra_element(
         MB.sparse_coefficients(poly),
-        MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
+        MB.FullBasis{MB.Monomial}(poly),
     )
     processed = Certificate.preprocessed_domain(certificate, domain, alg_el)
     for idx in Certificate.preorder_indices(certificate, processed)
-        monos =
-            Certificate.multiplier_basis(certificate, idx, processed).monomials
+        monos = MB.keys_as_monomials(
+            Certificate.multiplier_basis(certificate, idx, processed))
         if k > j
             @test isempty(monos)
         else
