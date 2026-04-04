@@ -391,7 +391,7 @@ function _default_basis(
     if B === G
         return _default_basis(
             collect(SA.values(p)),
-            MB.SubBasis{B}(collect(SA.keys(p))),
+            SA.sub_basis(basis, collect(SA.keys(p))),
             gram_basis,
         )
     else
@@ -405,17 +405,17 @@ function _default_basis(
 end
 
 function _default_gram_basis(
-    ::MB.MonomialIndexedBasis{B,M},
+    b::MB.MonomialIndexedBasis,
     ::Nothing,
-) where {B,M}
-    return MB.FullBasis{B,M}()
+)
+    return MB.implicit_basis(b)
 end
 
 function _default_gram_basis(
-    ::MB.MonomialIndexedBasis{_B,M},
+    b::MB.MonomialIndexedBasis{_B,M},
     ::Type{B},
 ) where {_B,B,M}
-    return MB.FullBasis{B,M}()
+    return MB.FullBasis{B}(MP.variables(b))
 end
 
 function _default_gram_basis(_, basis::MB.MonomialIndexedBasis)
@@ -432,7 +432,7 @@ function _default_basis(p::MP.AbstractPolynomialLike, basis)
     return _default_basis(
         MB.algebra_element(
             MB.sparse_coefficients(p),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
+            MB.FullBasis{MB.Monomial}(p),
         ),
         basis,
     )

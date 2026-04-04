@@ -52,6 +52,12 @@ struct WithFixedBases{S,B}
     bases::Vector{B}
 end
 
+# TODO temporary workaround because SS doesn't support AlgebraElement yet
+function with_variables(p::SA.AlgebraElement, domain)
+    _, q = SA.promote_bases(domain, MP.polynomial(p))
+    return WithVariables(MB.algebra_element(q), MP.variables(q))
+end
+
 function with_variables(domain, p)
     inner, outer = SA.promote_bases(domain, p)
     return WithVariables(inner, MP.variables(outer))

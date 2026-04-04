@@ -75,7 +75,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         SOS.Certificate.with_variables(poly, set.domain),
     )
     gram_bases = [gram_basis]
-    weights = [MB.constant_algebra_element(typeof(SA.basis(poly)), T)]
+    weights = [MB.constant_algebra_element(SA.basis(poly), T)]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
     new_basis = SOS.Certificate.zero_basis(
         set.certificate,
@@ -117,7 +117,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    W = SOS.Certificate._weight_type(T, BT)
+    W = MB.constant_algebra_element_type(MA.promote_operation(MB.implicit_basis, BT), T)
     B = MA.promote_operation(
         SOS.Certificate.zero_basis,
         CT,
