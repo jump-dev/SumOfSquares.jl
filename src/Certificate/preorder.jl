@@ -63,7 +63,7 @@ function with_variables(p::SA.AlgebraElement, domain)
 end
 
 function with_variables(domain, p)
-    inner, outer = SA.promote_bases(domain, p)
+    inner, outer = SumOfSquares._promote_bases(domain, p)
     return WithVariables(inner, MP.variables(outer))
 end
 
