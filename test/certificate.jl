@@ -5,12 +5,14 @@ import MultivariateBases as MB
 
 const SOS = SumOfSquares
 
-@testset "with_variables" begin
+#@testset "with_variables" begin
     @polyvar x y z
     p = x + z
-    v = SumOfSquares.Certificate.with_variables(p, y)
+    v = SumOfSquares.Certificate.with_variables(p, FullSpace())
     @test v.inner === p
-    @test MP.variables(v.inner) == [x, z]
+    v = SumOfSquares.Certificate.with_variables(p, y)
+    @test v.inner == p
+    @test MP.variables(v.inner) == [x, y, z]
     @test MP.variables(v) == [x, y, z]
 
     @ncpolyvar a b

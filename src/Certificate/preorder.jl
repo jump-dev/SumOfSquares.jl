@@ -32,6 +32,8 @@ end
 
 cone(certificate::Putinar) = cone(certificate.multipliers_certificate)
 
+# SemialgebraicSets.FullSpace does not implement MP.variables so we need this
+# It would be cleaner to make FullSpace have a list of variables though
 struct WithVariables{S,V}
     inner::S
     variables::V
@@ -50,14 +52,8 @@ struct WithFixedBases{S,B}
     bases::Vector{B}
 end
 
-_vars(::SemialgebraicSets.FullSpace) = tuple()
-function _vars(x::SA.AlgebraElement)
-    return MP.variables(SA.basis(x))
-end
-_vars(x) = MP.variables(x)
-
 function with_variables(domain, p)
-    inner, outer = SA.promote_basis(domain, p)
+    inner, outer = SA.promote_bases(domain, p)
     return WithVariables(inner, MP.variables(outer))
 end
 
