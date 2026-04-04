@@ -1,7 +1,3 @@
-function is_commutative(vars)
-    return length(vars) < 2 || prod(vars[1:2]) == prod(reverse(vars[1:2]))
-end
-
 abstract type AbstractNewtonPolytopeApproximation end
 
 # `maxdegree` and `mindegree` on each variable separately
@@ -264,7 +260,7 @@ function _degree(mono, var::MP.AbstractVariable, comm::Bool)
     end
 end
 function _sum_degree(mono, vars)
-    comm = is_commutative(vars)
+    comm = MP.is_commutative(vars)
     return sum(var -> _degree(mono, var, comm), vars)
 end
 
@@ -427,7 +423,7 @@ function half_newton_polytope(
     maxdegree,
     newton::NewtonDegreeBounds,
 )
-    if !is_commutative(vars)
+    if !MP.is_commutative(vars)
         throw(
             ArgumentError(
                 "Multipartite Newton polytope not supported with noncommutative variables.",
@@ -491,7 +487,7 @@ function half_newton_polytope(
     ::NewtonDegreeBounds{Tuple{}},
 )
     full = MB.implicit_basis(SA.basis(p))
-    if is_commutative(vars)
+    if MP.is_commutative(vars)
         # TODO take `variable_groups` into account
         bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
         return maxdegree_gram_basis(full, _half(bounds)),
