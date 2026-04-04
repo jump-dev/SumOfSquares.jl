@@ -65,13 +65,13 @@ p = vec(y)' * P * vec(y)
 
 X = monomials(p)
 unipartite = Certificate.NewtonDegreeBounds(tuple())
-@test Certificate.monomials_half_newton_polytope(X, unipartite) == [x * y[1], x * y[2], y[1] * y[2], x, y[1], y[2]] #src
+@test Certificate.monomials_half_newton_polytope(X, unipartite) == [y[2], y[1], x, y[1] * y[2], x * y[2], x * y[1]] #src
 Certificate.monomials_half_newton_polytope(X, unipartite) #!jl
 
 # Exploiting the multipartite structure gives 4 monomials.
 
 multipartite = Certificate.NewtonDegreeBounds(([x], y))
-@test Certificate.monomials_half_newton_polytope(X, multipartite) == [x * y[1], x * y[2], y[1], y[2]] #src
+@test Certificate.monomials_half_newton_polytope(X, multipartite) == [y[2], y[1], x * y[2], x * y[1]] #src
 Certificate.monomials_half_newton_polytope(X, multipartite) #!jl
 
 # In the example above, there were only 3 monomials, where does the difference come from ?
@@ -81,12 +81,12 @@ Certificate.monomials_half_newton_polytope(X, multipartite) #!jl
 # hence the whole column and row will be zero as well.
 # Therefore, we can remove this monomial.
 
-@test Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(multipartite)) == [x * y[1], x * y[2], y[1]] #src
+@test Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(multipartite)) == [y[1], x * y[2], x * y[1]] #src
 Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(multipartite)) #!jl
 
 # The same reasoning can be used for monomials `y[1]y[2]` and `x` therefore whether
 # we exploit the multipartite structure or not, we get only 3 monomials thanks
 # to this post filter.
 
-@test Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(unipartite)) == [x * y[1], x * y[2], y[1]] #src
+@test Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(unipartite)) == [y[1], x * y[2], x * y[1]] #src
 Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(unipartite)) #!jl

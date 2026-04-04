@@ -53,9 +53,13 @@ struct WithFixedBases{S,B}
 end
 
 # TODO temporary workaround because SS doesn't support AlgebraElement yet
+function with_variables(p::SA.AlgebraElement, ::FullSpace)
+    return WithVariables(p, MP.variables(p))
+end
+
 function with_variables(p::SA.AlgebraElement, domain)
-    _, q = SA.promote_bases(domain, MP.polynomial(p))
-    return WithVariables(MB.algebra_element(q), MP.variables(q))
+    q, _ = SumOfSquares._promote_bases(domain, p)[2]
+    return WithVariables(q, MP.variables(q))
 end
 
 function with_variables(domain, p)

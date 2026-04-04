@@ -19,6 +19,11 @@ function _combine_with_gram(
     gram_bases::AbstractVector{<:SA.ExplicitBasis},
     weights,
 ) where {B}
+    for gram_basis in gram_bases
+        if parent(basis) != parent(gram_basis)
+            error("Bases $(parent(basis)) and $(parent(gram_basis)) are incompatible")
+        end
+    end
     p = zero(_NonZero, MB.algebra(parent(basis)))
     cache = zero(_NonZero, MB.algebra(parent(basis)))
     for mono in basis

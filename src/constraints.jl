@@ -395,7 +395,7 @@ function _default_basis(
             gram_basis,
         )
     else
-        new_basis = MB.FullBasis{G,MP.monomial_type(typeof(basis))}()
+        new_basis = MB.FullBasis{G}(MP.variables(basis))
         return _default_basis(
             SA.coeffs(p, basis, new_basis),
             new_basis,
@@ -443,6 +443,13 @@ function _default_zero_basis(basis, nodes::MB.AbstractNodes)
     return MB.ImplicitLagrangeBasis(MP.variables(basis), nodes)
 end
 
+_promote_bases(domain, p) = SA.promote_bases(domain, p)
+function _promote_bases(domain, p::SA.AlgebraElement)
+    _domain, _ = SA.promote_bases(domain, MP.polynomial(p))
+    _, _p = SA.promote_bases(MB.algebra_element(prod(MP.variables(domain))), p)
+    return _domain, _p
+end
+
 function JuMP.build_constraint(
     _error::Function,
     p,
@@ -452,7 +459,7 @@ function JuMP.build_constraint(
     domain::AbstractSemialgebraicSet = FullSpace(),
     kws...,
 )
-    domain, p = SA.promote_bases(domain, p)
+    domain, p = _promote_bases(domain, p)
     __coefs, basis, gram_basis = _default_basis(p, basis)
     set = JuMP.moi_set(
         cone,
