@@ -67,7 +67,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # MOI does not modify the coefficients of the functions so we can modify `p`.
         # without altering `f`.
         # The basis may be copied by MA however so we need to copy it.
-        _poly(MOI.Utilities.scalarize(func), copy(set.basis)),
+        _poly(MOI.Utilities.scalarize(func), set.basis), # TODO use `copy(set.basis)` once https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/83 is done
         domain,
     )
     gram_basis = SOS.Certificate.gram_basis(
