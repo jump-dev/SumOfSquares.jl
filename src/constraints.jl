@@ -449,14 +449,17 @@ function JuMP.build_constraint(
     cone::SOSLikeCone;
     basis = nothing,
     zero_basis = nothing,
+    domain::AbstractSemialgebraicSet = FullSpace(),
     kws...,
 )
+    domain, p = SA.promote_bases(domain, p)
     __coefs, basis, gram_basis = _default_basis(p, basis)
     set = JuMP.moi_set(
         cone,
         basis,
         gram_basis,
         _default_zero_basis(basis, zero_basis);
+        domain,
         kws...,
     )
     _coefs = PolyJuMP.non_constant(__coefs)
