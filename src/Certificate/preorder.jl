@@ -58,7 +58,7 @@ function with_variables(p::SA.AlgebraElement, ::FullSpace)
 end
 
 function with_variables(p::SA.AlgebraElement, domain)
-    q, _ = SumOfSquares._promote_bases(domain, p)[2]
+    _, q = SumOfSquares._promote_bases(domain, p)
     return WithVariables(q, MP.variables(q))
 end
 
