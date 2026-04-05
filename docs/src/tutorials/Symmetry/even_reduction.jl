@@ -45,9 +45,7 @@ value(t)
 # We indeed find `-1`, let's verify that symmetry was exploited:
 
 @test length(gram_matrix(con_ref).blocks) == 2 #src
-polys = gram_matrix(con_ref).blocks[1].basis.bases[].elements #src
-@test polys[1] ≈ 1 #src
-@test polys[2] ≈ x^2 #src
-polys = gram_matrix(con_ref).blocks[2].basis.bases[].elements #src
-@test polys[] ≈ x #src
+@test gram_matrix(con_ref).blocks[1].basis[1].elements[] ≈ 1 #src
+@test gram_matrix(con_ref).blocks[1].basis[2].elements[] ≈ x^2 #src
+@test gram_matrix(con_ref).blocks[2].basis[1].elements[] ≈ x #src
 gram_matrix(con_ref)
