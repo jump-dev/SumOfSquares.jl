@@ -250,7 +250,7 @@ function wml19()
             MB.sparse_coefficients(f),
             MB.FullBasis{MB.Monomial}(f),
         )
-        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
+        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x[1:2])
         basis = MB.SubBasis{MB.Monomial}(MP.monomials(f))
         @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in
                                                                            [
@@ -297,6 +297,7 @@ function wml19()
                 x[1]^2 * x[2]^2,
                 x[1] * x[2]^2,
                 1,
+            ], [
                 x[1]^2 * x[2],
                 x[1] * x[2],
             ],]),
@@ -312,14 +313,14 @@ Examples of [MWL19].
 [L09] Lofberg, Johan. "Pre-and post-processing sum-of-squares programs in practice." IEEE transactions on automatic control 54.5 (2009): 1007-1011.
 """
 function l09()
-    @polyvar x[1:3]
-    certificate = Certificate.Newton(
-        SOSCone(),
-        MB.FullBasis{MB.Monomial}(x[1:2]),
-        MB.FullBasis{MB.Monomial}(x[1:2]),
-        tuple(),
-    )
     @testset "Example 1 and 2" begin
+        @polyvar x[1:2]
+        certificate = Certificate.Newton(
+            SOSCone(),
+            MB.FullBasis{MB.Monomial}(x),
+            MB.FullBasis{MB.Monomial}(x),
+            tuple(),
+        )
         f = 1 + x[1]^4 * x[2]^2 + x[1]^2 * x[2]^4
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
@@ -363,7 +364,8 @@ function l09()
         expected = Set(
             monomial_vector.([
                 [x[1]^2 * x[2]],
-                [x[1] * x[2]^2, constant_monomial(x[1] * x[2])],
+                [x[1] * x[2]^2],
+                [constant_monomial(x[1] * x[2])],
             ]),
         )
         @test set_monos(
@@ -375,6 +377,13 @@ function l09()
         ) == expected
     end
     @testset "Example 3 and 4" begin
+        @polyvar x[1:3]
+        certificate = Certificate.Newton(
+            SOSCone(),
+            MB.FullBasis{MB.Monomial}(x),
+            MB.FullBasis{MB.Monomial}(x),
+            tuple(),
+        )
         f = 1 + x[1]^4 + x[1] * x[2] + x[2]^4 + x[3]^2
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),

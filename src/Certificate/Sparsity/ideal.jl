@@ -63,6 +63,17 @@ function Ideal(
     )
 end
 
+# `clique has a subset of variables`
+function _maxdegree_basis(ambient_basis::MB.FullBasis{B}, clique, maxdegree) where {B}
+    basis = SumOfSquares.Certificate.maxdegree_gram_basis(
+        MB.FullBasis{B}(clique),
+        clique,
+        maxdegree,
+    )
+    full_basis, _ = SA.promote_bases(basis, ambient_basis)
+    return full_basis
+end
+
 function sparsity(
     poly,
     ::Variable,
@@ -71,7 +82,7 @@ function sparsity(
     basis = MB.explicit_basis(poly)
     H, cliques = chordal_csp_graph(basis, SemialgebraicSets.FullSpace())
     return map(cliques) do clique
-        return SumOfSquares.Certificate.maxdegree_gram_basis(
+        return _maxdegree_basis(
             certificate.gram_basis,
             clique,
             certificate.maxdegree,

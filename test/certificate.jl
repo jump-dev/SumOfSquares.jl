@@ -310,8 +310,7 @@ end
 
 function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
     v = @polyvar x y
-    poly = x^(2i) + y^(2j + 1)
-    domain = @set y^(2k + 1) >= 0
+    domain, poly = SA.promote_bases(@set(y^(2k + 1) >= 0), x^(2i) + y^(2j + 1))
     if default
         certificate = JuMP.moi_set(
             SOSCone(),
