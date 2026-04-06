@@ -4,9 +4,13 @@ using SumOfSquares
 import MultivariateBases as MB
 
 function _algebra_element(monos)
+    basis = MB.FullBasis{MB.Monomial}(MP.variables(monos))
     return MB.algebra_element(
-        SA.SparseCoefficients(monos, ones(length(monos))),
-        MB.FullBasis{MB.Monomial,eltype(monos)}(),
+        SA.SparseCoefficients(
+            [basis.inverse_map(m) for m in monos],
+            ones(length(monos)),
+        ),
+        basis,
     )
 end
 
@@ -36,7 +40,10 @@ function xor_complement_test()
 end
 
 function set_monos(bases::Vector{<:MB.SubBasis})
-    return Set([basis.monomials for basis in bases])
+    return Set([MB.keys_as_monomials(basis) for basis in bases])
+end
+function set_monos(basis::MB.SubBasis)
+    return Set([MB.keys_as_monomials(basis)])
 end
 
 """
@@ -50,15 +57,15 @@ function wml19()
     @polyvar x[1:3]
     certificate = Certificate.Newton(
         SOSCone(),
-        MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
-        MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
+        MB.FullBasis{MB.Monomial}(x),
+        MB.FullBasis{MB.Monomial}(x),
         tuple(),
     )
     @testset "Example 4.2" begin
         f = 1 + x[1]^4 + x[2]^4 + x[3]^4 + prod(x) + x[2]
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(f)}(),
+            MB.FullBasis{MB.Monomial}(f),
         )
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         expected_1_false = Set(
@@ -150,22 +157,22 @@ function wml19()
                                                                     [
         Certificate.MaxDegree(
             SOSCone(),
-            MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
-            MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
+            MB.FullBasis{MB.Monomial}(prod(x[1:2])),
+            MB.FullBasis{MB.Monomial}(prod(x[1:2])),
             4,
         ),
         Certificate.Newton(
             SOSCone(),
-            MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
-            MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
+            MB.FullBasis{MB.Monomial}(prod(x[1:2])),
+            MB.FullBasis{MB.Monomial}(prod(x[1:2])),
             tuple(),
         ),
     ]
         preorder_certificate = Certificate.Putinar(
             Certificate.MaxDegree(
                 SOSCone(),
-                MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
-                MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
+                MB.FullBasis{MB.Monomial}(x[1:2]),
+                MB.FullBasis{MB.Monomial}(x[1:2]),
                 4,
             ),
             ideal_certificate,
@@ -174,7 +181,7 @@ function wml19()
         f = x[1]^4 + x[2]^4 + x[1] * x[2]
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(f)}(),
+            MB.FullBasis{MB.Monomial}(f),
         )
         K = @set 1 - 2x[1]^2 - x[2]^2 >= 0
         @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in
@@ -241,7 +248,7 @@ function wml19()
             x[1] * x[2]^2 - 3x[1]^2 * x[2]^2
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(f)}(),
+            MB.FullBasis{MB.Monomial}(f),
         )
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         basis = MB.SubBasis{MB.Monomial}(MP.monomials(f))
@@ -308,15 +315,15 @@ function l09()
     @polyvar x[1:3]
     certificate = Certificate.Newton(
         SOSCone(),
-        MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
-        MB.FullBasis{MB.Monomial,typeof(prod(x[1:2]))}(),
+        MB.FullBasis{MB.Monomial}(x[1:2]),
+        MB.FullBasis{MB.Monomial}(x[1:2]),
         tuple(),
     )
     @testset "Example 1 and 2" begin
         f = 1 + x[1]^4 * x[2]^2 + x[1]^2 * x[2]^4
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(f)}(),
+            MB.FullBasis{MB.Monomial}(f),
         )
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         newt = Certificate.NewtonDegreeBounds(tuple())
@@ -371,7 +378,7 @@ function l09()
         f = 1 + x[1]^4 + x[1] * x[2] + x[2]^4 + x[3]^2
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(f)}(),
+            MB.FullBasis{MB.Monomial}(f),
         )
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         @testset "$k $use_all_monomials" for k in 0:2,
@@ -458,16 +465,16 @@ function square_domain(ideal_certificate, d)
     @polyvar x y
     mult_cert = Certificate.MaxDegree(
         SOSCone(),
-        MB.FullBasis{MB.Monomial,typeof(x * y)}(),
-        MB.FullBasis{MB.Monomial,typeof(x * y)}(),
+        MB.FullBasis{MB.Monomial}(x * y),
+        MB.FullBasis{MB.Monomial}(x * y),
         d,
     )
     preorder_certificate =
-        Certificate.Putinar(mult_cert, ideal_certificate(typeof(x * y)), d)
+        Certificate.Putinar(mult_cert, ideal_certificate(x * y), d)
     f = x^2 * y^4 + x^4 * y^2 - 3 * x^2 * y * 2 + 1
     alg_el = MB.algebra_element(
         MB.sparse_coefficients(f),
-        MB.FullBasis{MB.Monomial,MP.monomial_type(f)}(),
+        MB.FullBasis{MB.Monomial}(f),
     )
     K = @set(1 - x^2 >= 0 && 1 - y^2 >= 0)
     @testset "Square domain $k $use_all_monomials" for k in 0:4,
@@ -577,14 +584,14 @@ function sum_square(n)
         @polyvar x[1:(2n)]
         certificate = Certificate.Newton(
             SOSCone(),
-            MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
-            MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
+            MB.FullBasis{MB.Monomial}(x),
+            MB.FullBasis{MB.Monomial}(x),
             tuple(),
         )
         f = sum((x[1:2:(2n-1)] .- x[2:2:(2n)]) .^ 2)
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(f)}(),
+            MB.FullBasis{MB.Monomial}(f),
         )
         expected = Set(
             monomial_vector.([
@@ -597,8 +604,8 @@ function sum_square(n)
                 Sparsity.Variable(),
                 Certificate.MaxDegree(
                     SOSCone(),
-                    MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
-                    MB.FullBasis{MB.Monomial,typeof(prod(x))}(),
+                    MB.FullBasis{MB.Monomial}(x),
+                    MB.FullBasis{MB.Monomial}(x),
                     2,
                 ),
             ),
@@ -620,8 +627,8 @@ function drop_monomials()
         alg_el = _algebra_element([x^2])
         certificate = Certificate.MaxDegree(
             SOSCone(),
-            MB.FullBasis{MB.Monomial,typeof(x^2)}(),
-            MB.FullBasis{MB.Monomial,typeof(x^2)}(),
+            MB.FullBasis{MB.Monomial}(x^2),
+            MB.FullBasis{MB.Monomial}(x^2),
             2,
         )
         @testset "$k $use_all_monomials" for k in 0:2,
@@ -649,22 +656,22 @@ function drop_monomials()
                                                             [
             Certificate.MaxDegree(
                 SOSCone(),
-                MB.FullBasis{MB.Monomial,typeof(x^2)}(),
-                MB.FullBasis{MB.Monomial,typeof(x^2)}(),
+                MB.FullBasis{MB.Monomial}(x^2),
+                MB.FullBasis{MB.Monomial}(x^2),
                 4,
             ),
             Certificate.Newton(
                 SOSCone(),
-                MB.FullBasis{MB.Monomial,typeof(x^2)}(),
-                MB.FullBasis{MB.Monomial,typeof(x^2)}(),
+                MB.FullBasis{MB.Monomial}(x^2),
+                MB.FullBasis{MB.Monomial}(x^2),
                 tuple(),
             ),
         ]
             preorder_certificate = Certificate.Putinar(
                 Certificate.MaxDegree(
                     SOSCone(),
-                    MB.FullBasis{MB.Monomial,typeof(x^2)}(),
-                    MB.FullBasis{MB.Monomial,typeof(x^2)}(),
+                    MB.FullBasis{MB.Monomial}(x^2),
+                    MB.FullBasis{MB.Monomial}(x^2),
                     3,
                 ),
                 ideal_certificate,
@@ -723,19 +730,19 @@ end
     wml19()
     l09()
     square_domain(
-        M -> Certificate.MaxDegree(
+        m -> Certificate.MaxDegree(
             SOSCone(),
-            MB.FullBasis{MB.Monomial,M}(),
-            MB.FullBasis{MB.Monomial,M}(),
+            MB.FullBasis{MB.Monomial}(m),
+            MB.FullBasis{MB.Monomial}(m),
             6,
         ),
         6,
     )
     square_domain(
-        M -> Certificate.Newton(
+        m -> Certificate.Newton(
             SOSCone(),
-            MB.FullBasis{MB.Monomial,M}(),
-            MB.FullBasis{MB.Monomial,M}(),
+            MB.FullBasis{MB.Monomial}(m),
+            MB.FullBasis{MB.Monomial}(m),
             tuple(),
         ),
         6,

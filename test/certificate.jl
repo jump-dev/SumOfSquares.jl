@@ -224,7 +224,7 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate, x)
 end
 
 function certificate_api(certificate::Certificate.AbstractPreorderCertificate, x)
-    _certificate_api(certificate, x)
+    _certificate_api(certificate)
     poly = x + 1
     domain = @set x >= 1
     a = MB.algebra_element(

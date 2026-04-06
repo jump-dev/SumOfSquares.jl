@@ -34,7 +34,7 @@ function quartic_constant_test(
     @test p isa SumOfSquares.GramMatrix
     @test value_matrix(p) ≈ ones(1, 1) atol = atol rtol = rtol
     @test p.basis isa MB.SubBasis{MB.Monomial}
-    @test p.basis.monomials == [x^2]
+    @test MB.keys_as_monomials(p.basis) == [x^2]
 
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,

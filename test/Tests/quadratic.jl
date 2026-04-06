@@ -1,4 +1,5 @@
 using Test
+import MultivariatePolynomials as MP
 import MultivariateBases
 using DynamicPolynomials
 
@@ -6,7 +7,7 @@ function _test_moments(test_values, μ, monos)
     @test μ isa AbstractMeasure{Float64}
     @test length(moments(μ)) == length(monos)
     test_values(moment_value.(moments(μ)))
-    @test [m.polynomial.monomial for m in moments(μ)] == monos
+    @test [MP.monomial(m.polynomial) for m in moments(μ)] == monos
 end
 
 function quadratic_test(
@@ -66,7 +67,7 @@ function quadratic_test(
     else
         @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     end
-    @test p.basis.monomials == cert_monos
+    @test MB.keys_as_monomials(p.basis) == cert_monos
 
     μ = moments(dual(cref))
     a = moment_value.(μ)
@@ -122,7 +123,7 @@ function quadratic_test(
         b[1] off
         off b[3]
     ] atol = atol rtol = rtol
-    @test ν.basis.monomials == cert_monos
+    @test MB.keys_as_monomials(ν.basis) == cert_monos
 
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},

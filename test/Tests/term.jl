@@ -1,5 +1,6 @@
 using Test
 import MultivariateBases as MB
+import MultivariatePolynomials as MP
 using SumOfSquares
 using DynamicPolynomials
 
@@ -32,14 +33,14 @@ function term_test(
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ zeros(1, 1) atol = atol rtol = rtol
-    @test p.basis.monomials == [x]
+    @test MB.keys_as_monomials(p.basis) == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     for μ in [dual(cref), moments(cref)]
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 1
         @test moment_value(moments(μ)[1]) ≈ 1.0 atol = atol rtol = rtol
-        @test moments(μ)[1].polynomial.monomial == x^2
+        @test MP.monomial(moments(μ)[1].polynomial) == x^2
     end
 
     ν = moment_matrix(cref)

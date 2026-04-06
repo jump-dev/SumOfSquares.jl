@@ -58,10 +58,10 @@ const CEG = SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph
         CEG.add_edge!(G, 1, 4)
 
         H, cliques = CEG.chordal_extension(G, CEG.GreedyFillIn())
-        @test cliques == [[4, 1, 3], [2, 1, 3], [5]]
+        @test Set(Set.(cliques)) == Set([Set([4, 1, 3]), Set([2, 1, 3]), Set([5])])
 
         CEG.add_edge!(H, 1, 5)
         I, cliques = CEG.chordal_extension(H, CEG.GreedyFillIn())
-        @test cliques == [[5, 1], [4, 1, 3], [2, 1, 3]]
+        @test Set(Set.(cliques)) == Set([Set([5, 1]), Set([4, 1, 3]), Set([2, 1, 3])])
     end
 end
