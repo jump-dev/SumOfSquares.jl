@@ -212,13 +212,21 @@ end
 struct BlockDiagonalGramMatrix{T,B,U,MT} <: AbstractGramMatrix{T,B,U}
     blocks::Vector{GramMatrix{T,B,U,MT}}
 end
+function BlockDiagonalGramMatrix(blocks::Vector{Any})
+    if isempty(blocks)
+        return BlockDiagonalGramMatrix(GramMatrix{Float64,Nothing,Float64,Matrix{Float64}}[])
+    end
+    b1 = first(blocks)::GramMatrix
+    T, B, U, MT = typeof(b1).parameters
+    return BlockDiagonalGramMatrix(convert(Vector{GramMatrix{T,B,U,MT}}, blocks))
+end
 
 function MB.implicit_basis(g::BlockDiagonalGramMatrix)
     return MB.implicit_basis(first(g.blocks))
 end
 
-function MultivariateMoments.block_diagonal(blocks::Vector{<:GramMatrix})
-    return BlockDiagonalGramMatrix(blocks)
+function MultivariateMoments.block_diagonal(blocks::Vector{<:GramMatrix{T,B,U,MT}}) where {T,B,U,MT}
+    return BlockDiagonalGramMatrix(convert(Vector{GramMatrix{T,B,U,MT}}, blocks))
 end
 
 function _sparse_type(::Type{GramMatrix{T,B,U,MT}}) where {T,B,U,MT}

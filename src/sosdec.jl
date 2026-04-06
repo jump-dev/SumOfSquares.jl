@@ -26,19 +26,19 @@ function MP.polynomial_type(
 end
 
 function GramMatrix(p::SOSDecomposition{T}) where {T}
-    basis = mapreduce(SA.basis, (b1, b2) -> SA.merge_bases(SA.promote_bases(b1, b2)...), p.ps)
+    sub_bases = [MB.explicit_basis(a) for a in p.ps]
+    basis = reduce((b1, b2) -> SA.merge_bases(SA.promote_bases(b1, b2)...), sub_bases)
     m = length(p.ps)
     n = length(basis)
     Q = zeros(T, m, n)
     for i in 1:m
-        j = 1
         for (k, v) in SA.nonzero_pairs(SA.coeffs(p.ps[i]))
-            poly = SA.basis(p.ps[i])[k]
-            while j in eachindex(basis) && basis[j] != poly
-                j += 1
+            # k is the key (exponent vector) in the algebra element's basis
+            # Find position j in merged basis with the same key
+            idx = findfirst(==(k), basis.keys)
+            if idx !== nothing
+                Q[i, idx] = v
             end
-            Q[i, j] = v
-            j += 1
         end
     end
     return GramMatrix(Q' * Q, basis)
