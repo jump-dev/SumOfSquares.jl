@@ -731,10 +731,14 @@ function post_filter(
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
         if MP.variables(mult) != MP.variables(poly)
-            error("Generator has variables $(MP.variables(mult)) and poly $(MP.variables(poly))")
+            error(
+                "Generator has variables $(MP.variables(mult)) and poly $(MP.variables(poly))",
+            )
         end
         if MP.variables(gram_monos) != MP.variables(poly)
-            error("Multipliers has variables $(MP.variables(gram_monos)) and poly $(MP.variables(poly))")
+            error(
+                "Multipliers has variables $(MP.variables(gram_monos)) and poly $(MP.variables(poly))",
+            )
         end
         MA.operate_to!(
             cache,

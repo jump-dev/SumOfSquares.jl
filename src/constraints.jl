@@ -404,10 +404,7 @@ function _default_basis(
     end
 end
 
-function _default_gram_basis(
-    b::MB.MonomialIndexedBasis,
-    ::Nothing,
-)
+function _default_gram_basis(b::MB.MonomialIndexedBasis, ::Nothing)
     return MB.implicit_basis(b)
 end
 

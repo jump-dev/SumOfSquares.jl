@@ -198,12 +198,14 @@ function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
 end
 
 function _fixed_basis(F, basis)
-    return MB.SimpleBasis(map(eachrow(F)) do row
-        ae = MB.implicit(MB.algebra_element(collect(row), basis))
-        # Copy coefficients to avoid sharing the basis.keys vector,
-        # which would be mutated by `canonical` (called during hash/==)
-        return SA.AlgebraElement(copy(SA.coeffs(ae)), Base.parent(ae))
-    end)
+    return MB.SimpleBasis(
+        map(eachrow(F)) do row
+            ae = MB.implicit(MB.algebra_element(collect(row), basis))
+            # Copy coefficients to avoid sharing the basis.keys vector,
+            # which would be mutated by `canonical` (called during hash/==)
+            return SA.AlgebraElement(copy(SA.coeffs(ae)), Base.parent(ae))
+        end,
+    )
 end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}

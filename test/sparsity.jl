@@ -293,14 +293,10 @@ function wml19()
                 certificate,
             ),
         ) == Set(
-            monomial_vector.([[
-                x[1]^2 * x[2]^2,
-                x[1] * x[2]^2,
-                1,
-            ], [
-                x[1]^2 * x[2],
-                x[1] * x[2],
-            ],]),
+            monomial_vector.([
+                [x[1]^2 * x[2]^2, x[1] * x[2]^2, 1],
+                [x[1]^2 * x[2], x[1] * x[2]],
+            ]),
         )
     end
 end

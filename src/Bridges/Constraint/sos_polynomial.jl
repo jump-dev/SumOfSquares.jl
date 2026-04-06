@@ -117,7 +117,10 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    W = MB.constant_algebra_element_type(MA.promote_operation(MB.implicit_basis, BT), T)
+    W = MB.constant_algebra_element_type(
+        MA.promote_operation(MB.implicit_basis, BT),
+        T,
+    )
     B = MA.promote_operation(
         SOS.Certificate.zero_basis,
         CT,

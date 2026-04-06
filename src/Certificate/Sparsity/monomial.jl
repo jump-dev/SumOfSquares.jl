@@ -214,7 +214,9 @@ struct DummyPolynomial{M}
     monomials::M
 end
 function SumOfSquares.Certificate._algebra_element(p::DummyPolynomial)
-    return MB.algebra_element(MP.polynomial(ones(length(p.monomials)), p.monomials))
+    return MB.algebra_element(
+        MP.polynomial(ones(length(p.monomials)), p.monomials),
+    )
 end
 MP.monomials(p::DummyPolynomial) = p.monomials
 MP.variables(p::DummyPolynomial) = MP.variables(p.monomials)

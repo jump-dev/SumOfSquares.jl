@@ -21,7 +21,9 @@ function _combine_with_gram(
 ) where {B}
     for gram_basis in gram_bases
         if parent(basis) != parent(gram_basis)
-            error("Bases $(parent(basis)) and $(parent(gram_basis)) are incompatible")
+            error(
+                "Bases $(parent(basis)) and $(parent(gram_basis)) are incompatible",
+            )
         end
     end
     p = zero(_NonZero, MB.algebra(parent(basis)))

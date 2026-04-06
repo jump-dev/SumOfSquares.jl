@@ -29,17 +29,12 @@ struct SOSPolynomialInSemialgebraicSetBridge{
         Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}},
     }
     lagrangian_constraints::Vector{UMCT}
-    constraint::MOI.ConstraintIndex{
-        F,
-        SOS.SOSPolynomialSet{DT,BT,CT},
-    }
+    constraint::MOI.ConstraintIndex{F,SOS.SOSPolynomialSet{DT,BT,CT}}
     basis::BT
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{
-        SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT},
-    },
+    ::Type{SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT}},
     model::MOI.ModelLike,
     f::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet},
@@ -104,17 +99,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         new_set,
     )
 
-    return SOSPolynomialInSemialgebraicSetBridge{
-        T,
-        F,
-        DT,
-        CT,
-        B,
-        UMCT,
-        UMST,
-        MCT,
-        BT,
-    }(
+    return SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT}(
         λ_bases,
         λ_variables,
         λ_constraints,
@@ -136,9 +121,7 @@ function MOI.Bridges.added_constrained_variable_types(
     return constrained_variable_types(SOS.matrix_cone_type(CT))
 end
 function MOI.Bridges.added_constraint_types(
-    ::Type{
-        SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT},
-    },
+    ::Type{SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT}},
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,BT}
     return [(F, SOS.SOSPolynomialSet{DT,BT,CT})]
 end
@@ -163,17 +146,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     UMCT = union_constraint_types(MCT)
     UMST = union_set_types(MCT)
     IC = Certificate.ideal_certificate(CT)
-    return SOSPolynomialInSemialgebraicSetBridge{
-        T,
-        G,
-        AT,
-        IC,
-        B,
-        UMCT,
-        UMST,
-        MCT,
-        BT,
-    }
+    return SOSPolynomialInSemialgebraicSetBridge{T,G,AT,IC,B,UMCT,UMST,MCT,BT}
 end
 
 # Attributes, Bridge acting as an model
@@ -214,19 +187,13 @@ function MOI.get(
 end
 function MOI.get(
     ::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT},
-    ::MOI.NumberOfConstraints{
-        F,
-        SOS.SOSPolynomialSet{DT,BT,CT},
-    },
+    ::MOI.NumberOfConstraints{F,SOS.SOSPolynomialSet{DT,BT,CT}},
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,BT}
     return 1
 end
 function MOI.get(
     b::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT},
-    ::MOI.ListOfConstraintIndices{
-        F,
-        SOS.SOSPolynomialSet{DT,BT,CT},
-    },
+    ::MOI.ListOfConstraintIndices{F,SOS.SOSPolynomialSet{DT,BT,CT}},
 ) where {T,F,DT,CT,B,UMCT,UMST,MCT,BT}
     return [b.constraint]
 end

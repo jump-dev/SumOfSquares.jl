@@ -223,7 +223,10 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate, x)
     )
 end
 
-function certificate_api(certificate::Certificate.AbstractPreorderCertificate, x)
+function certificate_api(
+    certificate::Certificate.AbstractPreorderCertificate,
+    x,
+)
     _certificate_api(certificate)
     poly = x + 1
     domain = @set x >= 1
@@ -278,7 +281,10 @@ end
             push!(sparsities, Sparsity.Monomial(ChordalCompletion(), 1))
         end
         @testset "$(typeof(sparsity))" for sparsity in sparsities
-            certificate_api(Certificate.Sparsity.Preorder(sparsity, preorder), x)
+            certificate_api(
+                Certificate.Sparsity.Preorder(sparsity, preorder),
+                x,
+            )
         end
     end
     basis = MB.SubBasis{B}(monomial_vector([x^2, x]))
@@ -287,7 +293,8 @@ end
         Certificate.FixedBasis(cone, basis, full_basis),
         Certificate.Newton(cone, full_basis, full_basis, tuple()),
     ]
-    certificate = Certificate.MaxDegree(cone, full_basis, full_basis, maxdegree)
+        certificate =
+            Certificate.MaxDegree(cone, full_basis, full_basis, maxdegree)
         _test(certificate)
         _test(Certificate.Remainder(certificate))
         if certificate isa Certificate.MaxDegree
@@ -339,7 +346,8 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
     processed = Certificate.preprocessed_domain(certificate, domain, alg_el)
     for idx in Certificate.preorder_indices(certificate, processed)
         monos = MB.keys_as_monomials(
-            Certificate.multiplier_basis(certificate, idx, processed))
+            Certificate.multiplier_basis(certificate, idx, processed),
+        )
         if k > j
             @test isempty(monos)
         else

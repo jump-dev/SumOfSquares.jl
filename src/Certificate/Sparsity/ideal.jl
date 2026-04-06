@@ -64,7 +64,11 @@ function Ideal(
 end
 
 # `clique has a subset of variables`
-function _maxdegree_basis(ambient_basis::MB.FullBasis{B}, clique, maxdegree) where {B}
+function _maxdegree_basis(
+    ambient_basis::MB.FullBasis{B},
+    clique,
+    maxdegree,
+) where {B}
     basis = SumOfSquares.Certificate.maxdegree_gram_basis(
         MB.FullBasis{B}(clique),
         clique,
