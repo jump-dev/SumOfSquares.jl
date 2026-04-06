@@ -1,16 +1,6 @@
 using LinearAlgebra, Test, SumOfSquares
 
-function _algebra_element(poly)
-    return MB.algebra_element(
-        SA.SparseCoefficients(
-            collect(MP.monomials(poly)),
-            collect(MP.coefficients(poly)),
-        ),
-        MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
-    )
-end
-
-_sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
+_sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
 
 @testset "GramMatrix tests" begin
     @testset "GramMatrix" begin

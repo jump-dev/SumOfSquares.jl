@@ -5,7 +5,7 @@ import MultivariateBases as MB
 
 const SOS = SumOfSquares
 
-#@testset "with_variables" begin
+@testset "with_variables" begin
     @polyvar x y z
     p = x + z
     v = SumOfSquares.Certificate.with_variables(p, FullSpace())

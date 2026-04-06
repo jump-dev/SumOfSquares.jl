@@ -1,4 +1,5 @@
 using Test
+import MultivariatePolynomials as MP
 using SumOfSquares
 using DynamicPolynomials
 
