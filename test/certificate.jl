@@ -1,3 +1,4 @@
+using LinearAlgebra
 import StarAlgebras as SA
 import MutableArithmetics as MA
 import MultivariatePolynomials as MP

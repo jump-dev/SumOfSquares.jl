@@ -88,7 +88,7 @@ function maxdegree_gram_basis(
 end
 
 function maxdegree_gram_basis(basis::SA.AbstractBasis, ::Nothing)
-    return MB.empty_basis(MB.explicit_basis_type(typeof(basis)))
+    return SA.SubBasis(basis, SA.key_type(basis)[])
 end
 
 function maxdegree_gram_basis(basis::SA.AbstractBasis, bounds::DegreeBounds)
