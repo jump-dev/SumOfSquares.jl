@@ -97,7 +97,7 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
                 0 3 2 0
                 7 0 0 5
             ]
-            @test MB.keys_as_monomials(r.basis) == [x * y, x, y, 1]
+            @test MB.keys_as_monomials(r.basis) == [1, y, x, x * y]
         end
         @testset "With VariableIndex" begin
             a = MOI.VariableIndex(1)
@@ -156,15 +156,9 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
         ps = _sos_dec([x + y, x - y])
         ps1 = _sos_dec([x])
         ps2 = _sos_dec([y])
-        M = typeof(x * y)
-        @test [ps, ps1] isa Vector{
-            SOSDecomposition{
-                Int,
-                MB.Algebra{MB.FullBasis{MB.Monomial,M},MB.Monomial,M},
-                SA.SparseCoefficients{M,Int,Vector{M},Vector{Int64}},
-                Int,
-            },
-        }
+        A = typeof(SA.parent(first(ps.ps)))
+        V = typeof(SA.coeffs(first(ps.ps)))
+        @test [ps, ps1] isa Vector{SOSDecomposition{Int,A,V,Int}}
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) ==
               "(1·y + 1·x)^2 + (-1·y + 1·x)^2 + (1·x)^2 * (1 - x^2) + (1·y)^2 * (1 - y^2)"
 

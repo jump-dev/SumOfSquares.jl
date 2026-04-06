@@ -159,7 +159,8 @@ function gram_operate(
     p::GramMatrix{S,B,US,SymMatrix{S}},
     q::GramMatrix{T,B,UT,SymMatrix{T}},
 ) where {S,US,T,UT,B}
-    basis, Ip, Iq = SA.merge_bases(p.basis, q.basis)
+    pb, qb = SA.promote_bases(p.basis, q.basis)
+    basis, Ip, Iq = SA.merge_bases_with_maps(pb, qb)
     U = MA.promote_operation(+, S, T)
     n = length(basis)
     Qvec = Vector{U}(undef, div(n * (n + 1), 2))
