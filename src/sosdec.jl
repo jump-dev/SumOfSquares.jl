@@ -26,7 +26,7 @@ function MP.polynomial_type(
 end
 
 function GramMatrix(p::SOSDecomposition{T}) where {T}
-    basis = mapreduce(SA.basis, (b1, b2) -> MB.merge_bases(b1, b2)[1], p.ps)
+    basis = mapreduce(SA.basis, (b1, b2) -> SA.merge_bases(SA.promote_bases(b1, b2)...), p.ps)
     m = length(p.ps)
     n = length(basis)
     Q = zeros(T, m, n)

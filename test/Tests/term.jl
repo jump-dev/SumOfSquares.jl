@@ -45,18 +45,20 @@ function term_test(
 
     ν = moment_matrix(cref)
     @test value_matrix(ν) ≈ ones(1, 1) atol = atol rtol = rtol
-    @test ν.basis.monomials == [x]
+    @test MB.keys_as_monomials(ν.basis) == [x]
 
+    _FB = typeof(MB.FullBasis{MB.Monomial}(x))
+    _SB = MB.explicit_basis_type(_FB)
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
+        _SB,
         SumOfSquares.Certificate.Newton{
             typeof(cone),
-            FullBasis{MB.Monomial,monomial_type(x)},
-            FullBasis{MB.Monomial,monomial_type(x)},
+            _FB,
+            _FB,
             N,
         },
     }
@@ -71,11 +73,7 @@ function term_test(
                 MOI.VectorAffineFunction{Float64},
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     SumOfSquares.FullSpace,
-                    SubBasis{
-                        MB.Monomial,
-                        monomial_type(x),
-                        monomial_vector_type(x),
-                    },
+                    _SB,
                 },
                 0,
             ),

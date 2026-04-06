@@ -36,13 +36,14 @@ function quartic_constant_test(
     @test p.basis isa MB.SubBasis{MB.Monomial}
     @test MB.keys_as_monomials(p.basis) == [x^2]
 
+    _FB = typeof(MB.FullBasis{MB.Monomial}(x))
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
+        MB.explicit_basis_type(_FB),
         SumOfSquares.Certificate.FixedBasis{
             typeof(cone),
             typeof(p.basis),
-            MB.FullBasis{MB.Monomial,monomial_type(x)},
+            _FB,
         },
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]

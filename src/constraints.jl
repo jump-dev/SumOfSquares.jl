@@ -441,6 +441,7 @@ function _default_zero_basis(basis, nodes::MB.AbstractNodes)
 end
 
 _promote_bases(domain, p) = SA.promote_bases(domain, p)
+_promote_bases(domain::FullSpace, p::SA.AlgebraElement) = domain, p
 function _promote_bases(domain, p::SA.AlgebraElement)
     _domain, _ = SA.promote_bases(domain, MP.polynomial(p))
     _, _p = SA.promote_bases(MB.algebra_element(prod(MP.variables(domain))), p)

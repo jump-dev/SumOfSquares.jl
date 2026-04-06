@@ -34,15 +34,17 @@ function univariate_sum_test(
     @test value_matrix(p.blocks[2]) ≈ ones(2, 2) atol = atol rtol = rtol
     @test MB.keys_as_monomials(p.blocks[2].basis) == [1, y]
 
+    _FB = typeof(MB.FullBasis{MB.Monomial}(x))
+    _SB = MB.explicit_basis_type(_FB)
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
+        _SB,
         SumOfSquares.Certificate.Sparsity.Ideal{
             Sparsity.Variable,
             SumOfSquares.Certificate.MaxDegree{
                 typeof(cone),
-                MB.FullBasis{MB.Monomial,monomial_type(x)},
-                MB.FullBasis{MB.Monomial,monomial_type(x)},
+                _FB,
+                _FB,
             },
         },
     }

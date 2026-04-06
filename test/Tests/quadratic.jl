@@ -125,16 +125,18 @@ function quadratic_test(
     ] atol = atol rtol = rtol
     @test MB.keys_as_monomials(ν.basis) == cert_monos
 
+    _FB = typeof(MB.FullBasis{basis}(x))
+    _SB = MB.explicit_basis_type(_FB)
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        MB.SubBasis{basis,monomial_type(x),monomial_vector_type(x)},
+        _SB,
         SumOfSquares.Certificate.Newton{
             typeof(cone),
-            MB.FullBasis{basis,monomial_type(x)},
-            MB.FullBasis{basis,monomial_type(x)},
+            _FB,
+            _FB,
             N,
         },
     }
