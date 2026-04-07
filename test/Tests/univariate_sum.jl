@@ -41,11 +41,7 @@ function univariate_sum_test(
         _SB,
         SumOfSquares.Certificate.Sparsity.Ideal{
             Sparsity.Variable,
-            SumOfSquares.Certificate.MaxDegree{
-                typeof(cone),
-                _FB,
-                _FB,
-            },
+            SumOfSquares.Certificate.MaxDegree{typeof(cone),_FB,_FB},
         },
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]

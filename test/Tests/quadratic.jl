@@ -133,12 +133,7 @@ function quadratic_test(
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
         _SB,
-        SumOfSquares.Certificate.Newton{
-            typeof(cone),
-            _FB,
-            _FB,
-            N,
-        },
+        SumOfSquares.Certificate.Newton{typeof(cone),_FB,_FB,N},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     return test_delete_bridge(

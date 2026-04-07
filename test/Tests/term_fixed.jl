@@ -57,12 +57,7 @@ function term_fixed_test(
         typeof(set),
         _SB,
         SumOfSquares.Certificate.Remainder{
-            SumOfSquares.Certificate.Newton{
-                typeof(cone),
-                _FB,
-                _FB,
-                N,
-            },
+            SumOfSquares.Certificate.Newton{typeof(cone),_FB,_FB,N},
         },
     }
     @test list_of_constraint_types(model) == [(Vector{JuMP.AffExpr}, S)]
@@ -74,10 +69,7 @@ function term_fixed_test(
             (MOI.VectorOfVariables, MOI.Nonnegatives, 0),
             (
                 MOI.VectorAffineFunction{Float64},
-                SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-                    typeof(set),
-                    _SB,
-                },
+                SumOfSquares.PolyJuMP.ZeroPolynomialSet{typeof(set),_SB},
                 0,
             ),
         ),

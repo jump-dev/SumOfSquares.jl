@@ -40,11 +40,7 @@ function quartic_constant_test(
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
         MB.explicit_basis_type(_FB),
-        SumOfSquares.Certificate.FixedBasis{
-            typeof(cone),
-            typeof(p.basis),
-            _FB,
-        },
+        SumOfSquares.Certificate.FixedBasis{typeof(cone),typeof(p.basis),_FB},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     return test_delete_bridge(
