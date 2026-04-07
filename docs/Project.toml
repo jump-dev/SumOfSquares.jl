@@ -36,3 +36,6 @@ TypedPolynomials = "afbbf031-7a57-5f58-a1b9-b774a0fad08d"
 [compat]
 Documenter = "1"
 DynamicPolynomials = "0.6"
+
+[sources]
+SumOfSquares = {path = ".."}
