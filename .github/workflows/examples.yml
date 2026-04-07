@@ -17,10 +17,6 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="SymbolicWedderburn", rev="master"),
-              PackageSpec(name="MultivariateBases", rev="master"),
-              PackageSpec(name="MultivariateMoments", rev="master"),
-              PackageSpec(name="PolyJuMP", rev="master"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()
