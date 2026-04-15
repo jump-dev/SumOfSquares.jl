@@ -82,7 +82,7 @@ function quadratic_test(
         atol rtol = rtol
     @test b[1] + b[3] ≈ 2.0 atol = atol rtol = rtol
     @test μ[2].polynomial == MB.Polynomial{basis}(
-        bivariate ? (basis === MB.Chebyshev ? y^2 : x * y) : x^1,
+        bivariate ? (basis === MB.Chebyshev ? x^0*y^2 : x * y) : x^1,
     )
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
