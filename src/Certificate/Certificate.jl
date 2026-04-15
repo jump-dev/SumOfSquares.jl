@@ -104,8 +104,22 @@ function maxdegree_gram_basis(
     variables,
     maxdegree::Int,
 )
-    @assert MP.variables(basis) == variables
-    return MB.maxdegree_basis(basis, fld(maxdegree, 2))
+    if MP.variables(basis) == variables
+        return MB.maxdegree_basis(basis, fld(maxdegree, 2))
+    else
+        return _maxdegree_gram_basis(basis, variables, fld(maxdegree, 2))
+    end
+end
+
+function _maxdegree_gram_basis(
+    full::MB.FullBasis{B},
+    variables,
+    halfdegree::Int,
+) where {B}
+    monos = MP.monomials(variables, 0:halfdegree)
+    sub = MB.SubBasis{B}(monos)
+    new_sub, _ = SA.promote_bases(sub, full)
+    return new_sub
 end
 
 include("ideal.jl")
