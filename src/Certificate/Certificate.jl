@@ -74,17 +74,19 @@ function within_bounds(mono, bounds)
 end
 
 function maxdegree_gram_basis(
-    ::MB.FullBasis{B},
+    full::MB.FullBasis{B},
     bounds::DegreeBounds,
 ) where {B<:MB.AbstractMonomial}
     variables = MP.variables(bounds.variablewise_maxdegree)
-    return MB.SubBasis{B}(
-        MP.monomials(
-            variables,
-            bounds.mindegree:bounds.maxdegree,
-            Base.Fix2(within_variablewise_bounds, bounds),
-        ),
+    monos = MP.monomials(
+        variables,
+        bounds.mindegree:bounds.maxdegree,
+        Base.Fix2(within_variablewise_bounds, bounds),
     )
+    sub = MB.SubBasis{B}(monos)
+    new_sub, new_full = SA.promote_bases(sub, full)
+    @assert new_full === full
+    return new_sub
 end
 
 function maxdegree_gram_basis(basis::SA.AbstractBasis, ::Nothing)
