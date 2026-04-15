@@ -59,6 +59,13 @@ end
 function __reduce_with_domain(_, _, _)
     return error("Only Monomial basis support with an equalities in domain")
 end
+
+# TODO type piracy, remove
+function SA.promote_with_map(t::MP.Term, x, y)
+    mono, map = SA.promote_with_map(MP.monomial(t), x, y)
+    return MP.term(MP.coefficient(t), mono), map
+end
+
 function __reduce_with_domain(
     basis::MB.SubBasis{MB.Monomial},
     ::MB.FullBasis{MB.Monomial},
@@ -69,7 +76,10 @@ function __reduce_with_domain(
     standard = Set{MP.monomial_type(basis)}()
     for mono in MB.keys_as_monomials(basis)
         r = rem(mono, I)
-        union!(standard, MP.monomials(r))
+        # `FixedVariablesSet`, use substitutions which makes us
+        # loose variables
+        s, _ = SA.promote_bases(r, mono)
+        union!(standard, MP.monomials(s))
     end
     return MB.QuotientBasis(
         MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))),
@@ -253,7 +263,10 @@ end
 function _rem(coeffs, basis::MB.FullBasis{MB.Monomial}, I)
     poly = MP.polynomial(MB.algebra_element(coeffs, basis))
     r = convert(typeof(poly), rem(poly, I))
-    return MB.algebra_element(MB.sparse_coefficients(r), basis)
+    # `FixedVariablesSet`, use substitutions which makes us
+    # loose variables
+    s, _ = SA.promote_bases(r, poly)
+    return MB.algebra_element(MB.sparse_coefficients(s), basis)
 end
 
 function reduced_polynomial(::Remainder, a::SA.AlgebraElement, domain)
