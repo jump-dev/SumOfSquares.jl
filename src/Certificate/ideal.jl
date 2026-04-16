@@ -60,12 +60,6 @@ function __reduce_with_domain(_, _, _)
     return error("Only Monomial basis support with an equalities in domain")
 end
 
-# TODO type piracy, remove
-function SA.promote_with_map(t::MP.Term, x, y)
-    mono, map = SA.promote_with_map(MP.monomial(t), x, y)
-    return MP.term(MP.coefficient(t), mono), map
-end
-
 function __reduce_with_domain(
     basis::MB.SubBasis{MB.Monomial},
     ::MB.FullBasis{MB.Monomial},

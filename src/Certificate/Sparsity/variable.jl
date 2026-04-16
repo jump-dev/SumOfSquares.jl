@@ -67,6 +67,7 @@ function sparsity(
         ]
     end
     ideal_bases = clique_bases(basis, MP.variables(basis))
-    preorder_bases = map(q -> clique_bases(q, MP.effective_variables(q)), domain.p)
+    preorder_bases =
+        map(q -> clique_bases(q, MP.effective_variables(q)), domain.p)
     return ideal_bases, preorder_bases
 end

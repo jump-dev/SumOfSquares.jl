@@ -129,8 +129,7 @@ function test_Hermitian_SOS()
     @ncpolyvar x y
     p = (x + im * y) * (x - im * y)  # = x^2 + y^2 + i(yx - xy)
     model = Model(nc_optimizer)
-    cone =
-        NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
+    cone = NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
     cref = @constraint(model, p in cone)
     optimize!(model)
     @test termination_status(model) == OPTIMAL
