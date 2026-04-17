@@ -845,7 +845,11 @@ end
 
 function half_newton_polytope(basis::MB.SubBasis, args...)
     a = MB.algebra_element(
-        SA.SparseCoefficients(basis.keys, ones(length(basis)), SA.comparable(MB.implicit_basis(basis))),
+        SA.SparseCoefficients(
+            basis.keys,
+            ones(length(basis)),
+            SA.comparable(MB.implicit_basis(basis)),
+        ),
         MB.implicit_basis(basis),
     )
     return half_newton_polytope(a, args...)
