@@ -48,6 +48,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         SA.SparseCoefficients(
             copy(collect(set.basis.keys)),
             MOI.Utilities.scalarize(f),
+            SA.comparable(MB.implicit_basis(set.basis)),
         ),
         MB.implicit_basis(set.basis),
     )

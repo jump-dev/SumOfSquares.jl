@@ -376,7 +376,7 @@ function _default_basis(
         return coeffs, basis
     else
         return _default_basis(
-            SA.SparseCoefficients(basis.keys, coeffs),
+            SA.SparseCoefficients(basis.keys, coeffs, SA.comparable(MB.implicit_basis(basis))),
             MB.implicit_basis(basis),
             gram_basis,
         )

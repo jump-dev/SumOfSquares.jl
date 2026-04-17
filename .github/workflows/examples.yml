@@ -17,6 +17,7 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
+              PackageSpec(name="MultivariateBases", rev="bl/comparable"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()
