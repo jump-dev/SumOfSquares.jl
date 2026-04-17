@@ -43,23 +43,23 @@ product between `a` and `X`.
 
 Just like with classical JuMP's decision variables, containers of polynomial
 variables can be created as follows:
-```jldoctest variables; filter = r"AlgebraElement\{[^}]+\}" => "AlgebraElement{…}"
+```jldoctest variables; filter = [r"(Matrix|Vector|DenseAxisArray|SparseAxisArray)\{.*\}" => s"\1{…}"]
 julia> @variable(model, [1:3, 1:4], Poly(X))       # Creates a Matrix
-3×4 Matrix{StarAlgebras.AlgebraElement{…}}:
+3×4 Matrix{…}:
  (_[7])·1 + (_[8])·y + (_[9])·x + (_[10])·y² + (_[11])·xy + (_[12])·x²     …  (_[61])·1 + (_[62])·y + (_[63])·x + (_[64])·y² + (_[65])·xy + (_[66])·x²
  (_[13])·1 + (_[14])·y + (_[15])·x + (_[16])·y² + (_[17])·xy + (_[18])·x²     (_[67])·1 + (_[68])·y + (_[69])·x + (_[70])·y² + (_[71])·xy + (_[72])·x²
  (_[19])·1 + (_[20])·y + (_[21])·x + (_[22])·y² + (_[23])·xy + (_[24])·x²     (_[73])·1 + (_[74])·y + (_[75])·x + (_[76])·y² + (_[77])·xy + (_[78])·x²
 
 julia> @variable(model, [[:a, :b], -2:2], Poly(X)) # Creates a DenseAxisArray
-2-dimensional DenseAxisArray{StarAlgebras.AlgebraElement{…},2,...} with index sets:
+2-dimensional DenseAxisArray{…} with index sets:
     Dimension 1, [:a, :b]
     Dimension 2, -2:2
-And data, a 2×5 Matrix{StarAlgebras.AlgebraElement{…}}:
+And data, a 2×5 Matrix{…}:
  (_[79])·1 + (_[80])·y + (_[81])·x + (_[82])·y² + (_[83])·xy + (_[84])·x²  …  (_[127])·1 + (_[128])·y + (_[129])·x + (_[130])·y² + (_[131])·xy + (_[132])·x²
  (_[85])·1 + (_[86])·y + (_[87])·x + (_[88])·y² + (_[89])·xy + (_[90])·x²     (_[133])·1 + (_[134])·y + (_[135])·x + (_[136])·y² + (_[137])·xy + (_[138])·x²
 
 julia> @variable(model, [i=1:3, j=i:3], Poly(X))   # Creates a SparseAxisArray
-JuMP.Containers.SparseAxisArray{StarAlgebras.AlgebraElement{…}, 2, Tuple{Int64, Int64}} with 6 entries:
+SparseAxisArray{…} with 6 entries:
   [1, 1]  =  (_[139])·1 + (_[140])·y + (_[141])·x + (_[142])·y^2 + (_[143])·x*y + (_[144])·x^2
   [1, 2]  =  (_[145])·1 + (_[146])·y + (_[147])·x + (_[148])·y^2 + (_[149])·x*y + (_[150])·x^2
   [1, 3]  =  (_[151])·1 + (_[152])·y + (_[153])·x + (_[154])·y^2 + (_[155])·x*y + (_[156])·x^2
@@ -94,9 +94,9 @@ In order to create a sum-of-squares polynomial variable, the syntax is exactly
 the same except `SOSPoly` should be used instead of `Poly`.
 For instance, the following code creates a ``3 \times 4`` matrix of
 sum-of-squares polynomial variables:
-```jldoctest variables; filter = r"GramMatrix\{[^}]+\}" => "GramMatrix{…}"
+```jldoctest variables; filter = [r"(Matrix|Vector|DenseAxisArray|SparseAxisArray)\{.*\}" => s"\1{…}"]
 julia> @variable(model, [1:2], SOSPoly(X))
-2-element Vector{GramMatrix{…}}:
+2-element Vector{…}:
  GramMatrix with row/column basis:
  SubBasis{Monomial}([1, y, x, y^2, x*y, x^2])
 And entries in a 6×6 SymMatrix{VariableRef}:
