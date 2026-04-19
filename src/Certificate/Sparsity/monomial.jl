@@ -183,7 +183,7 @@ function sparsity(
     return _monomial_vector(cliques)
 end
 # This also checks that it is indeed a monomial basis
-_monos(basis::MB.SubBasis{MB.Monomial}) = basis.monomials
+_monos(basis::MB.SubBasis{MB.Monomial}) = MB.keys_as_monomials(basis)
 function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree)
     return _monos(
         SumOfSquares.Certificate.maxdegree_gram_basis(
@@ -215,8 +215,7 @@ struct DummyPolynomial{M}
 end
 function SumOfSquares.Certificate._algebra_element(p::DummyPolynomial)
     return MB.algebra_element(
-        SA.SparseCoefficients(p.monomials, ones(length(p.monomials))),
-        MB.FullBasis{MB.Monomial,eltype(p.monomials)}(),
+        MP.polynomial(ones(length(p.monomials)), p.monomials),
     )
 end
 MP.monomials(p::DummyPolynomial) = p.monomials
@@ -253,14 +252,14 @@ function sparsity(
             SumOfSquares.Certificate.ideal_certificate(certificate),
             DummyPolynomial(
                 _ideal_monos(
-                    MB.explicit_basis(poly).monomials,
+                    MB.keys_as_monomials(MB.explicit_basis(poly)),
                     multiplier_generator_monos,
                 ),
             ),
         ),
     )
     cliques, multiplier_cliques = sparsity(
-        MB.explicit_basis(poly).monomials,
+        MB.keys_as_monomials(MB.explicit_basis(poly)),
         sp,
         gram_monos,
         multiplier_generator_monos,

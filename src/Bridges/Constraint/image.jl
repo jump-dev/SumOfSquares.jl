@@ -81,17 +81,17 @@ function MOI.Bridges.Constraint.bridge_constraint(
     @assert MOI.output_dimension(g) == length(set.basis)
     scalars = MOI.Utilities.scalarize(g)
     k = 0
-    found = Dict{eltype(set.basis.monomials),Int}()
+    found = Dict{MP.monomial_type(set.basis),Int}()
     first = Union{Nothing,Int}[nothing for _ in eachindex(scalars)]
     variables = MOI.VariableIndex[]
     constraints = MOI.ConstraintIndex{F}[]
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
         cone = SOS.matrix_cone(M, length(gram_basis))
         f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(cone))
-        for j in eachindex(gram_basis.monomials)
+        for j in eachindex(gram_basis)
             for i in 1:j
                 k += 1
-                mono = gram_basis.monomials[i] * gram_basis.monomials[j]
+                mono = MP.monomial(gram_basis[i]) * MP.monomial(gram_basis[j])
                 is_diag = i == j
                 if haskey(found, mono)
                     var = MOI.add_variable(model)
@@ -119,7 +119,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
                     MOI.Utilities.operate_output_index!(-, T, k, f, var)
                 else
                     found[mono] = k
-                    t = MB.monomial_index(set.basis, mono)
+                    t = SA.key_index(set.basis, MP.exponents(mono))
                     if !isnothing(t)
                         first[t] = k
                         if is_diag
@@ -305,8 +305,8 @@ function MOI.get(
 ) where {T}
     dual =
         MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint)
-    output = similar(dual, length(bridge.set.monomials))
-    for i in eachindex(bridge.set.monomials)
+    output = similar(dual, length(bridge.set.basis))
+    for i in eachindex(bridge.set.basis)
         output[i] = dual[bridge.first[i]]
     end
     return output

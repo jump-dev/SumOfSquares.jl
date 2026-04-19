@@ -34,16 +34,13 @@ function quartic_constant_test(
     @test p isa SumOfSquares.GramMatrix
     @test value_matrix(p) ≈ ones(1, 1) atol = atol rtol = rtol
     @test p.basis isa MB.SubBasis{MB.Monomial}
-    @test p.basis.monomials == [x^2]
+    @test MB.keys_as_monomials(p.basis) == [x^2]
 
+    _FB = typeof(MB.FullBasis{MB.Monomial}(x))
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        MB.SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
-        SumOfSquares.Certificate.FixedBasis{
-            typeof(cone),
-            typeof(p.basis),
-            MB.FullBasis{MB.Monomial,monomial_type(x)},
-        },
+        MB.explicit_basis_type(_FB),
+        SumOfSquares.Certificate.FixedBasis{typeof(cone),typeof(p.basis),_FB},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     return test_delete_bridge(

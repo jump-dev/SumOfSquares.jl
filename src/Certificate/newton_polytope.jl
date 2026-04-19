@@ -1,7 +1,3 @@
-function is_commutative(vars)
-    return length(vars) < 2 || prod(vars[1:2]) == prod(reverse(vars[1:2]))
-end
-
 abstract type AbstractNewtonPolytopeApproximation end
 
 # `maxdegree` and `mindegree` on each variable separately
@@ -82,7 +78,7 @@ function min_degree(p::SA.AlgebraElement, v)
 end
 function min_degree(p::MB.Polynomial{B}, v) where {B}
     if _is_monomial_basis(B)
-        return MP.degree(p.monomial, v)
+        return MP.degree(MP.monomial(p), v)
     else
         error("TODO $B")
     end
@@ -98,7 +94,7 @@ end
 function max_degree(p::SA.AlgebraElement, v)
     return mapreduce(Base.Fix2(max_degree, v), max, SA.supp(p))
 end
-max_degree(p::MB.Polynomial, v) = MP.degree(p.monomial, v)
+max_degree(p::MB.Polynomial, v) = MP.degree(MP.monomial(p), v)
 
 function min_shift(d, shift)
     return max(0, d - shift)
@@ -244,12 +240,12 @@ end
 #_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
 function _mindegree(p::MB.Polynomial{B}, vars) where {B}
     if _is_monomial_basis(B)
-        _sum_degree(p.monomial, vars)
+        _sum_degree(MP.monomial(p), vars)
     else
         error("TODO $B")
     end
 end
-_maxdegree(p::MB.Polynomial, vars) = _sum_degree(p.monomial, vars)
+_maxdegree(p::MB.Polynomial, vars) = _sum_degree(MP.monomial(p), vars)
 function _degree(mono, var::MP.AbstractVariable, comm::Bool)
     if comm
         return MP.degree(mono, var)
@@ -264,16 +260,19 @@ function _degree(mono, var::MP.AbstractVariable, comm::Bool)
     end
 end
 function _sum_degree(mono, vars)
-    comm = is_commutative(vars)
+    comm = MP.is_commutative(vars)
     return sum(var -> _degree(mono, var, comm), vars)
 end
 
 _is_monomial_basis(::Type{<:MB.AbstractMonomialIndexed}) = false
 _is_monomial_basis(::Type{<:Union{MB.Monomial,MB.ScaledMonomial}}) = true
 function _is_monomial_basis(
-    ::Type{<:SA.AlgebraElement{<:MB.Algebra{BT,B}}},
-) where {BT,B}
+    ::Type{<:Union{MB.FullBasis{B},MB.SubBasis{B}}},
+) where {B}
     return _is_monomial_basis(B)
+end
+function _is_monomial_basis(::Type{A}) where {A<:SA.AlgebraElement}
+    return _is_monomial_basis(MA.promote_operation(SA.basis, A))
 end
 
 # Minimum degree of a gram basis for a gram matrix `s`
@@ -390,19 +389,16 @@ function putinar_degree_bounds(
     )
 end
 
-function multiplier_basis(
-    g::SA.AlgebraElement{<:MB.Algebra{BT,B}},
-    bounds::DegreeBounds,
-) where {BT,B}
+function multiplier_basis(g::SA.AlgebraElement, bounds::DegreeBounds)
     return maxdegree_gram_basis(
-        MB.FullBasis{B,MP.monomial_type(typeof(g))}(),
+        MB.implicit_basis(SA.basis(g)),
         _half(minus_shift(bounds, g)),
     )
 end
 
 # Cartesian product of the newton polytopes of the different parts
 function _cartesian_product(bases::Vector{<:MB.SubBasis{B}}, bounds) where {B}
-    monos = [b.monomials for b in bases]
+    monos = [MB.keys_as_monomials(b) for b in bases]
     basis = MB.SubBasis{B}(
         vec([prod(monos) for monos in Iterators.product(monos...)]),
     )
@@ -412,19 +408,22 @@ function _cartesian_product(bases::Vector{<:MB.SubBasis{B}}, bounds) where {B}
         return MB.empty_basis(typeof(basis))
     else
         return MB.SubBasis{B}(
-            filter(Base.Fix2(within_bounds, _half(bounds)), basis.monomials),
+            filter(
+                Base.Fix2(within_bounds, _half(bounds)),
+                MB.keys_as_monomials(basis),
+            ),
         )
     end
 end
 
 function half_newton_polytope(
-    p::SA.AlgebraElement{<:MB.Algebra{BT,B,M}},
+    p::SA.AlgebraElement,
     gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
     newton::NewtonDegreeBounds,
-) where {BT,B,M}
-    if !is_commutative(vars)
+)
+    if !MP.is_commutative(vars)
         throw(
             ArgumentError(
                 "Multipartite Newton polytope not supported with noncommutative variables.",
@@ -481,16 +480,16 @@ function half_newton_polytope(
 end
 
 function half_newton_polytope(
-    p::SA.AlgebraElement{<:MB.Algebra{BT,B,M}},
+    p::SA.AlgebraElement,
     gs::AbstractVector{<:SA.AlgebraElement},
     vars,
     maxdegree,
     ::NewtonDegreeBounds{Tuple{}},
-) where {BT,B,M}
-    if is_commutative(vars)
+)
+    full = MB.implicit_basis(SA.basis(p))
+    if MP.is_commutative(vars)
         # TODO take `variable_groups` into account
         bounds = putinar_degree_bounds(p, gs, vars, maxdegree)
-        full = MB.FullBasis{B,M}()
         return maxdegree_gram_basis(full, _half(bounds)),
         MB.explicit_basis_type(typeof(full))[
             multiplier_basis(g, bounds) for g in gs
@@ -509,18 +508,19 @@ function half_newton_polytope(
         # Berlin: Springer, 2016.
         vars = unique!(sort(vars))
         bounds = _half(putinar_degree_bounds(p, gs, vars, maxdegree))
-        monos = MP.monomial_type(typeof(p))[]
-        for mono in MB.explicit_basis(p).monomials
+        keys = SA.key_type(full)[]
+        for mono in MB.keys_as_monomials(MB.explicit_basis(p))
             if _is_hermitian_square(mono)
                 for i in 1:div(MP.degree(mono), 2)
                     w = _chip(mono, -i)
                     if within_bounds(w, bounds)
-                        push!(monos, w)
+                        push!(keys, MP.exponents(w, MP.variables(full)))
                     end
                 end
             end
         end
-        basis = MB.SubBasis{B}(monos)
+        unique!(keys)
+        basis = SA.SubBasis(full, keys)
         return basis, typeof(basis)[]
     end
 end
@@ -543,17 +543,20 @@ end
 
 function half_newton_polytope(
     p::SA.AlgebraElement,
-    gs::AbstractVector{<:SA.AlgebraElement{<:MB.Algebra{B},T}},
+    gs::AbstractVector{G},
     vars,
     maxdegree,
     filter::NewtonFilter{<:NewtonDegreeBounds},
-) where {B,T}
+) where {G<:SA.AlgebraElement}
     basis, multipliers_bases =
         half_newton_polytope(p, gs, vars, maxdegree, filter.outer_approximation)
     bases = copy(multipliers_bases)
     push!(bases, basis)
     gs = copy(gs)
-    push!(gs, MB.constant_algebra_element(B, T))
+    push!(
+        gs,
+        MB.constant_algebra_element(MB.implicit_basis(SA.basis(p)), eltype(G)),
+    )
     filtered_bases = post_filter(p, gs, bases)
     # The last one will be recomputed by the ideal certificate
     return filtered_bases[end], filtered_bases[1:(end-1)]
@@ -668,12 +671,12 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
     return c
 end
 
-function _term(α, p::MB.Polynomial{B,M}) where {B,M}
-    return MB.algebra_element(MP.term(α, p.monomial), MB.FullBasis{B,M}())
+function _term(α, p::MB.Polynomial)
+    return MB.term_element(α, p)
 end
 
-function _term_constant_monomial(α, ::MB.Polynomial{B,M}) where {B,M}
-    return _term(α, MB.Polynomial{B}(MP.constant_monomial(M)))
+function _term_constant_monomial(α, p::MB.Polynomial{B,M}) where {B,M}
+    return _term(α, MB.Polynomial{B}(MP.constant_monomial(MP.monomial(p))))
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
@@ -707,8 +710,14 @@ function post_filter(
     # We use `_DictCoefficients` instead `SA.SparseCoefficients` because
     # we need to keep it canonicalized (without duplicate actually)
     # and don't care about the list of monomials being ordered
+    # TODO Base.promote_op is a bit hacky, MA.promote_operation or MP.exponents_type would be better
     counter = MB.algebra_element(
-        _DictCoefficients(Dict{MP.monomial_type(typeof(poly)),SignCount}()),
+        _DictCoefficients(
+            Dict{
+                Base.promote_op(MP.exponents, MP.monomial_type(typeof(poly))),
+                SignCount,
+            }(),
+        ),
         MB.implicit_basis(SA.basis(poly)),
     )
     cache = zero(SignCount, MB.algebra(MB.implicit_basis(SA.basis(poly))))
@@ -721,6 +730,16 @@ function post_filter(
         )
     end
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
+        if MP.variables(mult) != MP.variables(poly)
+            error(
+                "Generator has variables $(MP.variables(mult)) and poly $(MP.variables(poly))",
+            )
+        end
+        if MP.variables(gram_monos) != MP.variables(poly)
+            error(
+                "Multipliers has variables $(MP.variables(gram_monos)) and poly $(MP.variables(poly))",
+            )
+        end
         MA.operate_to!(
             cache,
             +,
@@ -791,22 +810,18 @@ function post_filter(
         end
     end
     return [
-        _sub(gram_monos, keep) for
+        SA.sub_basis(gram_monos, keep) for
         (keep, gram_monos) in zip(keep, multipliers_gram_monos)
     ]
 end
 
-function _sub(basis::SubBasis{B}, I) where {B}
-    return SubBasis{B}(basis.monomials[I])
-end
-
 function _weight_type(::Type{T}, ::Type{BT}) where {T,BT}
     return SA.AlgebraElement{
+        T,
         MA.promote_operation(
             MB.algebra,
             MA.promote_operation(MB.implicit_basis, BT),
         ),
-        T,
         MA.promote_operation(
             MB.sparse_coefficients,
             MP.polynomial_type(MP.monomial_type(BT), T),
@@ -830,12 +845,18 @@ end
 
 function half_newton_polytope(basis::MB.SubBasis, args...)
     a = MB.algebra_element(
-        SA.SparseCoefficients(basis.monomials, ones(length(basis))),
+        SA.SparseCoefficients(
+            basis.keys,
+            ones(length(basis)),
+            SA.comparable(MB.implicit_basis(basis)),
+        ),
         MB.implicit_basis(basis),
     )
     return half_newton_polytope(a, args...)
 end
 
 function monomials_half_newton_polytope(monos, args...)
-    return half_newton_polytope(MB.SubBasis{MB.Monomial}(monos), args...).monomials
+    return MB.keys_as_monomials(
+        half_newton_polytope(MB.SubBasis{MB.Monomial}(monos), args...),
+    )
 end

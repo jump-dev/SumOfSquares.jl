@@ -1,5 +1,6 @@
 using Test
 import MultivariateBases as MB
+import MultivariatePolynomials as MP
 using SumOfSquares
 using DynamicPolynomials
 
@@ -32,32 +33,29 @@ function term_test(
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ zeros(1, 1) atol = atol rtol = rtol
-    @test p.basis.monomials == [x]
+    @test MB.keys_as_monomials(p.basis) == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     for μ in [dual(cref), moments(cref)]
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 1
         @test moment_value(moments(μ)[1]) ≈ 1.0 atol = atol rtol = rtol
-        @test moments(μ)[1].polynomial.monomial == x^2
+        @test MP.monomial(moments(μ)[1].polynomial) == x^2
     end
 
     ν = moment_matrix(cref)
     @test value_matrix(ν) ≈ ones(1, 1) atol = atol rtol = rtol
-    @test ν.basis.monomials == [x]
+    @test MB.keys_as_monomials(ν.basis) == [x]
 
+    _FB = typeof(MB.FullBasis{MB.Monomial}(x))
+    _SB = MB.explicit_basis_type(_FB)
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
-        SumOfSquares.Certificate.Newton{
-            typeof(cone),
-            FullBasis{MB.Monomial,monomial_type(x)},
-            FullBasis{MB.Monomial,monomial_type(x)},
-            N,
-        },
+        _SB,
+        SumOfSquares.Certificate.Newton{typeof(cone),_FB,_FB,N},
     }
     @test list_of_constraint_types(model) == [(Vector{VariableRef}, S)]
     return test_delete_bridge(
@@ -70,11 +68,7 @@ function term_test(
                 MOI.VectorAffineFunction{Float64},
                 SumOfSquares.PolyJuMP.ZeroPolynomialSet{
                     SumOfSquares.FullSpace,
-                    SubBasis{
-                        MB.Monomial,
-                        monomial_type(x),
-                        monomial_vector_type(x),
-                    },
+                    _SB,
                 },
                 0,
             ),

@@ -1,4 +1,5 @@
 using Test
+import MultivariatePolynomials as MP
 import MultivariateBases
 using DynamicPolynomials
 
@@ -6,7 +7,7 @@ function _test_moments(test_values, μ, monos)
     @test μ isa AbstractMeasure{Float64}
     @test length(moments(μ)) == length(monos)
     test_values(moment_value.(moments(μ)))
-    @test [m.polynomial.monomial for m in moments(μ)] == monos
+    @test [MP.monomial(m.polynomial) for m in moments(μ)] == monos
 end
 
 function quadratic_test(
@@ -66,7 +67,7 @@ function quadratic_test(
     else
         @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     end
-    @test p.basis.monomials == cert_monos
+    @test MB.keys_as_monomials(p.basis) == cert_monos
 
     μ = moments(dual(cref))
     a = moment_value.(μ)
@@ -81,7 +82,7 @@ function quadratic_test(
         atol rtol = rtol
     @test b[1] + b[3] ≈ 2.0 atol = atol rtol = rtol
     @test μ[2].polynomial == MB.Polynomial{basis}(
-        bivariate ? (basis === MB.Chebyshev ? y^2 : x * y) : x^1,
+        bivariate ? (basis === MB.Chebyshev ? x^0*y^2 : x * y) : x^1,
     )
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
@@ -122,20 +123,17 @@ function quadratic_test(
         b[1] off
         off b[3]
     ] atol = atol rtol = rtol
-    @test ν.basis.monomials == cert_monos
+    @test MB.keys_as_monomials(ν.basis) == cert_monos
 
+    _FB = typeof(MB.FullBasis{basis}(x))
+    _SB = MB.explicit_basis_type(_FB)
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
     }
     S = SumOfSquares.SOSPolynomialSet{
         SumOfSquares.FullSpace,
-        MB.SubBasis{basis,monomial_type(x),monomial_vector_type(x)},
-        SumOfSquares.Certificate.Newton{
-            typeof(cone),
-            MB.FullBasis{basis,monomial_type(x)},
-            MB.FullBasis{basis,monomial_type(x)},
-            N,
-        },
+        _SB,
+        SumOfSquares.Certificate.Newton{typeof(cone),_FB,_FB,N},
     }
     @test list_of_constraint_types(model) == [(Vector{AffExpr}, S)]
     return test_delete_bridge(

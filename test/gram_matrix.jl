@@ -1,16 +1,6 @@
 using LinearAlgebra, Test, SumOfSquares
 
-function _algebra_element(poly)
-    return MB.algebra_element(
-        SA.SparseCoefficients(
-            collect(MP.monomials(poly)),
-            collect(MP.coefficients(poly)),
-        ),
-        MB.FullBasis{MB.Monomial,MP.monomial_type(poly)}(),
-    )
-end
-
-_sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
+_sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
 
 @testset "GramMatrix tests" begin
     @testset "GramMatrix" begin
@@ -42,8 +32,8 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
             GramMatrix([1 2; 2 4], monomial_vector([y, x])),
         )
             @test P.Q.Q == [1, 2, 4]
-            @test P.basis.monomials[1] == y
-            @test P.basis.monomials[2] == x
+            @test MB.keys_as_monomials(P.basis)[1] == y
+            @test MB.keys_as_monomials(P.basis)[2] == x
         end
         P = GramMatrix{Int}(
             (i, j) -> ((i, j) == (1, 1) ? 2 : 0),
@@ -91,14 +81,14 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
             q = GramMatrix(5 * ones(1, 1), [x])
             r = @inferred gram_operate(/, q, 5)
             @test r.Q == ones(1, 1)
-            @test r.basis.monomials == [x]
+            @test MB.keys_as_monomials(r.basis) == [x]
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [2 3; 3 7]
-            @test r.basis.monomials == [x, y]
+            @test MB.keys_as_monomials(r.basis) == [x, y]
             q = GramMatrix(5 * ones(1, 1), [y])
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [7 3; 3 2]
-            @test r.basis.monomials == [x, y]
+            @test MB.keys_as_monomials(r.basis) == [x, y]
             q = GramMatrix([5.0 7; 7 9], [x * y, 1])
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [
@@ -107,7 +97,7 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
                 0 3 2 0
                 7 0 0 5
             ]
-            @test r.basis.monomials == [x * y, x, y, 1]
+            @test MB.keys_as_monomials(r.basis) == [1, y, x, x * y]
         end
         @testset "With VariableIndex" begin
             a = MOI.VariableIndex(1)
@@ -126,7 +116,7 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
         #       ps = [1, x + y, x^2, x*y, 1 + x + x^2]
         #       P = GramMatrix(SOSDecomposition(ps))
         #       P.Q == [2 0 1 0 1; 0 1 0 0 0; 1 0 2 1 1; 0 0 1 1 0; 1 0 1 0 2]
-        #       P.basis.monomials == [x^2, x*y, x, y, 1]
+        #       MB.keys_as_monomials(P.basis) == [x^2, x*y, x, y, 1]
         #       @test P == P
         #       @test isapprox(GramMatrix(SOSDecomposition(P)), P)
         P = GramMatrix{Int}((i, j) -> i + j, [x^2, x * y, y^2])
@@ -166,15 +156,9 @@ _sos_dec(polys) = SOSDecomposition(_algebra_element.(polys))
         ps = _sos_dec([x + y, x - y])
         ps1 = _sos_dec([x])
         ps2 = _sos_dec([y])
-        M = typeof(x * y)
-        @test [ps, ps1] isa Vector{
-            SOSDecomposition{
-                MB.Algebra{MB.FullBasis{MB.Monomial,M},MB.Monomial,M},
-                Int,
-                SA.SparseCoefficients{M,Int,Vector{M},Vector{Int64}},
-                Int,
-            },
-        }
+        A = typeof(SA.parent(first(ps.ps)))
+        V = typeof(SA.coeffs(first(ps.ps)))
+        @test [ps, ps1] isa Vector{SOSDecomposition{Int,A,V,Int}}
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) ==
               "(1·y + 1·x)^2 + (-1·y + 1·x)^2 + (1·x)^2 * (1 - x^2) + (1·y)^2 * (1 - y^2)"
 

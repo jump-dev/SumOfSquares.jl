@@ -20,18 +20,18 @@ S = @set x >= 0 && y >= 0 && x^2 + y^2 >= 2
 # We will now see how to find the optimal solution using Sum of Squares Programming.
 # We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 # Note that SumOfSquares generates a *standard form* SDP (i.e., SDP variables
-# and equality constraints) while SCS expects a *geometric form* SDP (i.e.,
+# and equality constraints) while Clarabel expects a *geometric form* SDP (i.e.,
 # free variables and symmetric matrices depending affinely on these variables
 # constrained to belong to the PSD cone).
 # JuMP will transform the standard from to the geometric form will create the PSD
 # variables as free variables and then constrain then to be PSD.
 # While this will work, since the dual of a standard from is in in geometric form,
 # dualizing the problem will generate a smaller SDP.
-# We use therefore `Dualization.dual_optimizer` so that SCS solves the dual problem.
+# We use therefore `Dualization.dual_optimizer` so that Clarabel solves the dual problem.
 
-import SCS
+import Clarabel
 using Dualization
-solver = dual_optimizer(SCS.Optimizer)
+solver = dual_optimizer(Clarabel.Optimizer)
 
 # A Sum-of-Squares certificate that $p \ge \alpha$ over the domain `S`, ensures that $\alpha$ is a lower bound to the polynomial optimization problem.
 # The following program searches for the largest lower bound.
@@ -98,7 +98,7 @@ SOS.matrix_cone_type(::Type{<:Schmüdgen{IC, CT}}) where {IC, CT} = SOS.matrix_c
 model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
-basis = MB.FullBasis{MB.Monomial,typeof(x * y)}()
+basis = MB.FullBasis{MB.Monomial}(x * y)
 ideal_certificate = SOSC.Newton(SOSCone(), basis, basis, tuple())
 certificate = Schmüdgen(ideal_certificate, SOSCone(), basis, maxdegree(p))
 @constraint(model, c, p >= α, domain = S, certificate = certificate)

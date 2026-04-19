@@ -63,6 +63,21 @@ function Ideal(
     )
 end
 
+# `clique has a subset of variables`
+function _maxdegree_basis(
+    ambient_basis::MB.FullBasis{B},
+    clique,
+    maxdegree,
+) where {B}
+    basis = SumOfSquares.Certificate.maxdegree_gram_basis(
+        MB.FullBasis{B}(clique),
+        clique,
+        maxdegree,
+    )
+    full_basis, _ = SA.promote_bases(basis, ambient_basis)
+    return full_basis
+end
+
 function sparsity(
     poly,
     ::Variable,
@@ -71,7 +86,7 @@ function sparsity(
     basis = MB.explicit_basis(poly)
     H, cliques = chordal_csp_graph(basis, SemialgebraicSets.FullSpace())
     return map(cliques) do clique
-        return SumOfSquares.Certificate.maxdegree_gram_basis(
+        return _maxdegree_basis(
             certificate.gram_basis,
             clique,
             certificate.maxdegree,
@@ -83,7 +98,9 @@ function sparsity(
     sp::Union{SignSymmetry,Monomial},
     gram_basis::MB.SubBasis{MB.Monomial},
 )
-    return MB.SubBasis{MB.Monomial}.(sparsity(monos, sp, gram_basis.monomials))
+    return MB.SubBasis{MB.Monomial}.(
+        sparsity(monos, sp, MB.keys_as_monomials(gram_basis)),
+    )
 end
 function sparsity(
     poly,
@@ -91,7 +108,7 @@ function sparsity(
     certificate::SumOfSquares.Certificate.AbstractIdealCertificate,
 )
     return sparsity(
-        MB.explicit_basis(poly).monomials,
+        MB.keys_as_monomials(MB.explicit_basis(poly)),
         sp,
         SumOfSquares.Certificate.gram_basis(certificate, poly),
     )

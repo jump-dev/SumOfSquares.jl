@@ -376,7 +376,11 @@ function _default_basis(
         return coeffs, basis
     else
         return _default_basis(
-            SA.SparseCoefficients(basis.monomials, coeffs),
+            SA.SparseCoefficients(
+                basis.keys,
+                coeffs,
+                SA.comparable(MB.implicit_basis(basis)),
+            ),
             MB.implicit_basis(basis),
             gram_basis,
         )
@@ -391,11 +395,11 @@ function _default_basis(
     if B === G
         return _default_basis(
             collect(SA.values(p)),
-            MB.SubBasis{B}(collect(SA.keys(p))),
+            SA.sub_basis(basis, collect(SA.keys(p))),
             gram_basis,
         )
     else
-        new_basis = MB.FullBasis{G,MP.monomial_type(typeof(basis))}()
+        new_basis = MB.FullBasis{G}(MP.variables(basis))
         return _default_basis(
             SA.coeffs(p, basis, new_basis),
             new_basis,
@@ -404,18 +408,15 @@ function _default_basis(
     end
 end
 
-function _default_gram_basis(
-    ::MB.MonomialIndexedBasis{B,M},
-    ::Nothing,
-) where {B,M}
-    return MB.FullBasis{B,M}()
+function _default_gram_basis(b::MB.MonomialIndexedBasis, ::Nothing)
+    return MB.implicit_basis(b)
 end
 
 function _default_gram_basis(
-    ::MB.MonomialIndexedBasis{_B,M},
+    b::MB.MonomialIndexedBasis{_B,M},
     ::Type{B},
 ) where {_B,B,M}
-    return MB.FullBasis{B,M}()
+    return MB.FullBasis{B}(MP.variables(b))
 end
 
 function _default_gram_basis(_, basis::MB.MonomialIndexedBasis)
@@ -432,7 +433,7 @@ function _default_basis(p::MP.AbstractPolynomialLike, basis)
     return _default_basis(
         MB.algebra_element(
             MB.sparse_coefficients(p),
-            MB.FullBasis{MB.Monomial,MP.monomial_type(p)}(),
+            MB.FullBasis{MB.Monomial}(p),
         ),
         basis,
     )
@@ -443,20 +444,31 @@ function _default_zero_basis(basis, nodes::MB.AbstractNodes)
     return MB.ImplicitLagrangeBasis(MP.variables(basis), nodes)
 end
 
+_promote_bases(domain, p) = SA.promote_bases(domain, p)
+_promote_bases(domain::FullSpace, p::SA.AlgebraElement) = domain, p
+function _promote_bases(domain, p::SA.AlgebraElement)
+    _domain, _ = SA.promote_bases(domain, MP.polynomial(p))
+    _, _p = SA.promote_bases(MB.algebra_element(prod(MP.variables(domain))), p)
+    return _domain, _p
+end
+
 function JuMP.build_constraint(
     _error::Function,
     p,
     cone::SOSLikeCone;
     basis = nothing,
     zero_basis = nothing,
+    domain::AbstractSemialgebraicSet = FullSpace(),
     kws...,
 )
+    domain, p = _promote_bases(domain, p)
     __coefs, basis, gram_basis = _default_basis(p, basis)
     set = JuMP.moi_set(
         cone,
         basis,
         gram_basis,
         _default_zero_basis(basis, zero_basis);
+        domain,
         kws...,
     )
     _coefs = PolyJuMP.non_constant(__coefs)
@@ -556,7 +568,7 @@ Return the monomials of [`certificate_basis`](@ref). If the basis if not
 function certificate_monomials(cref::JuMP.ConstraintRef)
     return basis_monomials(certificate_basis(cref))
 end
-basis_monomials(basis::MB.SubBasis) = basis.monomials
+basis_monomials(basis::MB.SubBasis) = keys_as_monomials(basis)
 function basis_monomials(basis::SA.AbstractBasis)
     return error(
         "`certificate_monomials` is not supported with `$(typeof(basis))`, use `certificate_basis` instead.",

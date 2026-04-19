@@ -54,7 +54,7 @@ _vec(v::Tuple) = MP.variable_union_type(first(v))[v...]
 function _divides(a, b)
     # `MP.divides(a, b)` is not implemented yet for noncommutative
     vars = unique!(sort(_vec(MP.variables(a))))
-    comm = is_commutative(vars)
+    comm = MP.is_commutative(vars)
     return all(vars) do v
         return _degree(a, v, comm) <= _degree(b, v, comm)
     end
@@ -74,34 +74,52 @@ function within_bounds(mono, bounds)
 end
 
 function maxdegree_gram_basis(
-    ::MB.FullBasis{B},
+    full::MB.FullBasis{B},
     bounds::DegreeBounds,
 ) where {B<:MB.AbstractMonomial}
     variables = MP.variables(bounds.variablewise_maxdegree)
-    return MB.SubBasis{B}(
-        MP.monomials(
-            variables,
-            bounds.mindegree:bounds.maxdegree,
-            Base.Fix2(within_variablewise_bounds, bounds),
-        ),
+    monos = MP.monomials(
+        variables,
+        bounds.mindegree:bounds.maxdegree,
+        Base.Fix2(within_variablewise_bounds, bounds),
     )
+    sub = MB.SubBasis{B}(monos)
+    new_sub, new_full = SA.promote_bases(sub, full)
+    @assert new_full === full
+    return new_sub
 end
 
 function maxdegree_gram_basis(basis::SA.AbstractBasis, ::Nothing)
-    return MB.empty_basis(MB.explicit_basis_type(typeof(basis)))
+    return SA.SubBasis(basis, SA.key_type(basis)[])
 end
 
 function maxdegree_gram_basis(basis::SA.AbstractBasis, bounds::DegreeBounds)
     # TODO use bounds here too
-    variables = MP.variables(bounds.variablewise_maxdegree)
-    return MB.maxdegree_basis(basis, variables, bounds.maxdegree)
+    @assert MP.variables(basis) == MP.variables(bounds.variablewise_maxdegree)
+    return MB.maxdegree_basis(basis, bounds.maxdegree)
 end
+
 function maxdegree_gram_basis(
     basis::SA.AbstractBasis,
     variables,
     maxdegree::Int,
 )
-    return MB.maxdegree_basis(basis, variables, fld(maxdegree, 2))
+    if MP.variables(basis) == variables
+        return MB.maxdegree_basis(basis, fld(maxdegree, 2))
+    else
+        return _maxdegree_gram_basis(basis, variables, fld(maxdegree, 2))
+    end
+end
+
+function _maxdegree_gram_basis(
+    full::MB.FullBasis{B},
+    variables,
+    halfdegree::Int,
+) where {B}
+    monos = MP.monomials(variables, 0:halfdegree)
+    sub = MB.SubBasis{B}(monos)
+    new_sub, _ = SA.promote_bases(sub, full)
+    return new_sub
 end
 
 include("ideal.jl")

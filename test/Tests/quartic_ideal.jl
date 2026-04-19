@@ -1,4 +1,5 @@
 using Test
+import MultivariatePolynomials as MP
 using SumOfSquares
 using DynamicPolynomials
 
@@ -33,14 +34,14 @@ function quartic_ideal_test(
         @test termination_status(model) == MOI.OPTIMAL
         @test primal_status(model) == MOI.FEASIBLE_POINT
         μ = dual(cref)
-        @test moments(μ)[1].polynomial.monomial == 1
-        @test moments(μ)[2].polynomial.monomial == x^2
-        @test moments(μ)[3].polynomial.monomial == x^4
+        @test MP.monomial(moments(μ)[1].polynomial) == 1
+        @test MP.monomial(moments(μ)[2].polynomial) == x^2
+        @test MP.monomial(moments(μ)[3].polynomial) == x^4
         μ = moments(cref)
-        @test moments(μ)[1].polynomial.monomial == 1
-        @test moments(μ)[2].polynomial.monomial == x^1
-        @test moments(μ)[3].polynomial.monomial == x^2
-        @test moment_matrix(cref).basis.monomials == [1, x, x^2]
+        @test MP.monomial(moments(μ)[1].polynomial) == 1
+        @test MP.monomial(moments(μ)[2].polynomial) == x^1
+        @test MP.monomial(moments(μ)[3].polynomial) == x^2
+        @test MB.keys_as_monomials(moment_matrix(cref).basis) == [1, x, x^2]
     end
 end
 function quartic_ideal_test(optimizer, config)

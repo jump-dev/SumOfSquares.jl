@@ -1,4 +1,5 @@
 # Adapted from Example 3.99 of [BPT12].
+import MultivariatePolynomials as MP
 #
 # [BPT12] Blekherman, G.; Parrilo, P. & Thomas, R.
 # Semidefinite Optimization and Convex Algebraic Geometry
@@ -50,14 +51,14 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     p = gram_matrix(cref)
     if remainder
         @test value_matrix(p) ≈ [9 -3; -3 1] atol = atol rtol = rtol
-        @test p.basis.monomials == [1, y]
+        @test MB.keys_as_monomials(p.basis) == [1, y]
     else
         @test value_matrix(p) ≈ [
             5 -5 0
             -5 5 0
             0 0 4
         ] atol = atol rtol = rtol
-        @test p.basis.monomials == [1, y, x]
+        @test MB.keys_as_monomials(p.basis) == [1, y, x]
     end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
@@ -66,35 +67,35 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     @test length(moments(μ)) == 3
     @test moment_value(moments(μ)[1]) ≈ (remainder ? 1 / 3 : 1.0) atol = atol rtol =
         rtol
-    @test moments(μ)[1].polynomial.monomial == 1
+    @test MP.monomial(moments(μ)[1].polynomial) == 1
     @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
-    @test moments(μ)[2].polynomial.monomial == y
+    @test MP.monomial(moments(μ)[2].polynomial) == y
     @test moment_value(moments(μ)[3]) ≈ (remainder ? -8 / 3 : 0.0) atol = atol rtol =
         rtol
-    @test moments(μ)[3].polynomial.monomial == x^2
+    @test MP.monomial(moments(μ)[3].polynomial) == x^2
 
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
     if remainder
         @test length(moments(μ)) == 3
         @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
-        @test moments(μ)[1].polynomial.monomial == 1
+        @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
-        @test moments(μ)[2].polynomial.monomial == y
+        @test MP.monomial(moments(μ)[2].polynomial) == y
         @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
-        @test moments(μ)[3].polynomial.monomial == y^2
+        @test MP.monomial(moments(μ)[3].polynomial) == y^2
     else
         @test length(moments(μ)) == 5
         @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
-        @test moments(μ)[1].polynomial.monomial == 1
+        @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
-        @test moments(μ)[2].polynomial.monomial == y
+        @test MP.monomial(moments(μ)[2].polynomial) == y
         @test moment_value(moments(μ)[3]) ≈ 0 atol = atol rtol = rtol
-        @test moments(μ)[3].polynomial.monomial == x
+        @test MP.monomial(moments(μ)[3].polynomial) == x
         @test moment_value(moments(μ)[4]) ≈ 1 atol = atol rtol = rtol
-        @test moments(μ)[4].polynomial.monomial == y^2
+        @test MP.monomial(moments(μ)[4].polynomial) == y^2
         @test moment_value(moments(μ)[5]) ≈ 0 atol = atol rtol = rtol
-        @test moments(μ)[5].polynomial.monomial == x * y
+        @test MP.monomial(moments(μ)[5].polynomial) == x * y
     end
 
     @objective(model, Min, α)
@@ -111,14 +112,14 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     p = gram_matrix(cref)
     if remainder
         @test value_matrix(p) ≈ [9 3; 3 1] atol = atol rtol = rtol
-        @test p.basis.monomials == [1, y]
+        @test MB.keys_as_monomials(p.basis) == [1, y]
     else
         @test value_matrix(p) ≈ [
             5 5 0
             5 5 0
             0 0 4
         ] atol = atol rtol = rtol
-        @test p.basis.monomials == [1, y, x]
+        @test MB.keys_as_monomials(p.basis) == [1, y, x]
     end
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
@@ -127,35 +128,35 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     @test length(moments(μ)) == 3
     @test moment_value(moments(μ)[1]) ≈ (remainder ? 1 / 3 : 1.0) atol = atol rtol =
         rtol
-    @test moments(μ)[1].polynomial.monomial == 1
+    @test MP.monomial(moments(μ)[1].polynomial) == 1
     @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
-    @test moments(μ)[2].polynomial.monomial == y
+    @test MP.monomial(moments(μ)[2].polynomial) == y
     @test moment_value(moments(μ)[3]) ≈ (remainder ? -8 / 3 : 0.0) atol = atol rtol =
         rtol
-    @test moments(μ)[3].polynomial.monomial == x^2
+    @test MP.monomial(moments(μ)[3].polynomial) == x^2
 
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
     if remainder
         @test length(moments(μ)) == 3
         @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
-        @test moments(μ)[1].polynomial.monomial == 1
+        @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
-        @test moments(μ)[2].polynomial.monomial == y
+        @test MP.monomial(moments(μ)[2].polynomial) == y
         @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
-        @test moments(μ)[3].polynomial.monomial == y^2
+        @test MP.monomial(moments(μ)[3].polynomial) == y^2
     else
         @test length(moments(μ)) == 5
         @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
-        @test moments(μ)[1].polynomial.monomial == 1
+        @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
-        @test moments(μ)[2].polynomial.monomial == y
+        @test MP.monomial(moments(μ)[2].polynomial) == y
         @test moment_value(moments(μ)[3]) ≈ 0 atol = atol rtol = rtol
-        @test moments(μ)[3].polynomial.monomial == x
+        @test MP.monomial(moments(μ)[3].polynomial) == x
         @test moment_value(moments(μ)[4]) ≈ 1 atol = atol rtol = rtol
-        @test moments(μ)[4].polynomial.monomial == y^2
+        @test MP.monomial(moments(μ)[4].polynomial) == y^2
         @test moment_value(moments(μ)[5]) ≈ 0 atol = atol rtol = rtol
-        @test moments(μ)[5].polynomial.monomial == x * y
+        @test MP.monomial(moments(μ)[5].polynomial) == x * y
     end
 
     return model

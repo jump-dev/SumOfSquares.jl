@@ -30,6 +30,9 @@ include("certificate.jl")
 
 include("gram_matrix.jl")
 
+include("nc.jl")
+include("sets.jl")
+
 include("variable.jl")
 include("constraint.jl")
 include("Bridges/Bridges.jl")

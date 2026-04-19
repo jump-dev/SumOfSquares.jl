@@ -42,8 +42,10 @@ end
 
 function _poly(coeffs, basis::MB.MonomialIndexedBasis{B,M}) where {B,M}
     return MB.algebra_element(
-        MB.sparse_coefficients(MP.polynomial(coeffs, basis.monomials)),
-        MB.FullBasis{B,M}(),
+        MB.sparse_coefficients(
+            MP.polynomial(coeffs, MB.keys_as_monomials(basis)),
+        ),
+        MB.implicit_basis(basis),
     )
 end
 
@@ -65,7 +67,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         # MOI does not modify the coefficients of the functions so we can modify `p`.
         # without altering `f`.
         # The basis may be copied by MA however so we need to copy it.
-        _poly(MOI.Utilities.scalarize(func), copy(set.basis)),
+        _poly(MOI.Utilities.scalarize(func), set.basis), # TODO use `copy(set.basis)` once https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/83 is done
         domain,
     )
     gram_basis = SOS.Certificate.gram_basis(
@@ -73,7 +75,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         SOS.Certificate.with_variables(poly, set.domain),
     )
     gram_bases = [gram_basis]
-    weights = [MB.constant_algebra_element(typeof(SA.basis(poly)), T)]
+    weights = [MB.constant_algebra_element(SA.basis(poly), T)]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
     new_basis = SOS.Certificate.zero_basis(
         set.certificate,
@@ -115,7 +117,10 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
-    W = SOS.Certificate._weight_type(T, BT)
+    W = MB.constant_algebra_element_type(
+        MA.promote_operation(MB.implicit_basis, BT),
+        T,
+    )
     B = MA.promote_operation(
         SOS.Certificate.zero_basis,
         CT,

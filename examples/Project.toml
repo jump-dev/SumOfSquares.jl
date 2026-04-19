@@ -2,7 +2,7 @@
 CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
 Cyclotomics = "da8f5974-afbb-4dc8-91d8-516d5257c83b"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
 GroupsCore = "d5909c97-4eac-4ecc-a3dc-fdd0858a4120"
 HomotopyContinuation = "f213a82b-91d6-5c5d-acf7-10f1c761b327"

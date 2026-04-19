@@ -1,4 +1,6 @@
 using Test
+import MultivariatePolynomials as MP
+import MultivariateBases as MB
 using SumOfSquares
 using DynamicPolynomials
 
@@ -32,33 +34,30 @@ function term_fixed_test(
 
     p = gram_matrix(cref)
     @test value_matrix(p) ≈ zeros(1, 1) atol = atol rtol = rtol
-    @test p.basis.monomials == [x]
+    @test MB.keys_as_monomials(p.basis) == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     for (m, μ) in [(x^2, moments(cref))]
         @test μ isa AbstractMeasure{Float64}
         @test length(moments(μ)) == 1
         @test moment_value(moments(μ)[1]) ≈ 1.0 atol = atol rtol = rtol
-        @test moments(μ)[1].polynomial.monomial == m
+        @test MP.monomial(moments(μ)[1].polynomial) == m
     end
 
     ν = moment_matrix(cref)
     @test value_matrix(ν) ≈ ones(1, 1) atol = atol rtol = rtol
-    @test ν.basis.monomials == [x]
+    @test MB.keys_as_monomials(ν.basis) == [x]
 
+    _FB = typeof(MB.FullBasis{MB.Monomial}(x))
+    _SB = MB.explicit_basis_type(_FB)
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
     }
     S = SumOfSquares.SOSPolynomialSet{
         typeof(set),
-        SubBasis{MB.Monomial,monomial_type(x),monomial_vector_type(x)},
+        _SB,
         SumOfSquares.Certificate.Remainder{
-            SumOfSquares.Certificate.Newton{
-                typeof(cone),
-                FullBasis{MB.Monomial,monomial_type(x)},
-                FullBasis{MB.Monomial,monomial_type(x)},
-                N,
-            },
+            SumOfSquares.Certificate.Newton{typeof(cone),_FB,_FB,N},
         },
     }
     @test list_of_constraint_types(model) == [(Vector{JuMP.AffExpr}, S)]
@@ -70,14 +69,7 @@ function term_fixed_test(
             (MOI.VectorOfVariables, MOI.Nonnegatives, 0),
             (
                 MOI.VectorAffineFunction{Float64},
-                SumOfSquares.PolyJuMP.ZeroPolynomialSet{
-                    typeof(set),
-                    SubBasis{
-                        MB.Monomial,
-                        monomial_type(x),
-                        monomial_vector_type(x),
-                    },
-                },
+                SumOfSquares.PolyJuMP.ZeroPolynomialSet{typeof(set),_SB},
                 0,
             ),
         ),

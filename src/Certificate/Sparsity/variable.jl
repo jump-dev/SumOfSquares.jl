@@ -10,8 +10,8 @@ struct Variable <: Pattern end
 const CEG = ChordalExtensionGraph
 
 function csp_graph(basis::MB.SubBasis{MB.Monomial}, ::FullSpace)
-    G = CEG.LabelledGraph{MP.variable_union_type(eltype(basis.monomials))}()
-    for mono in basis.monomials
+    G = CEG.LabelledGraph{MP.variable_union_type(MP.monomial_type(basis))}()
+    for mono in MB.keys_as_monomials(basis)
         CEG.add_clique!(G, MP.effective_variables(mono))
     end
     return G
@@ -54,7 +54,7 @@ function sparsity(
 )
     basis = MB.explicit_basis(poly)
     H, cliques = chordal_csp_graph(basis, domain)
-    function bases(q)
+    function clique_bases(q, vars)
         return [
             SumOfSquares.Certificate.maxdegree_gram_basis(
                 certificate.multipliers_certificate.gram_basis,
@@ -63,8 +63,11 @@ function sparsity(
                     certificate.maxdegree,
                     q,
                 ),
-            ) for clique in cliques if MP.variables(q) ⊆ clique
+            ) for clique in cliques if vars ⊆ clique
         ]
     end
-    return bases(basis), map(bases, domain.p)
+    ideal_bases = clique_bases(basis, MP.variables(basis))
+    preorder_bases =
+        map(q -> clique_bases(q, MP.effective_variables(q)), domain.p)
+    return ideal_bases, preorder_bases
 end

@@ -32,21 +32,11 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
-      - name: MOI
-        shell: julia --project=@. {0}
-        run: |
-          using Pkg
-          Pkg.add([
-              PackageSpec(name="StarAlgebras", rev="main"),
-              PackageSpec(name="SymbolicWedderburn", rev="master"),
-              PackageSpec(name="MultivariateBases", rev="master"),
-              PackageSpec(name="MultivariateMoments", rev="master"),
-              PackageSpec(name="PolyJuMP", rev="master"),
-          ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
-        with:
-          depwarn: error
+# # See https://github.com/oxfordcontrol/Clarabel.jl/pull/230
+#        with:
+#          depwarn: error
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v4
         with:

@@ -15,12 +15,19 @@ Base.:+(::Number, a::_NonZero) = a
 Base.:+(::_NonZero, a::_NonZero) = a
 
 function _combine_with_gram(
-    basis::MB.SubBasis{B,M},
+    basis::MB.SubBasis{B},
     gram_bases::AbstractVector{<:SA.ExplicitBasis},
     weights,
-) where {B,M}
-    p = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
-    cache = zero(_NonZero, MB.algebra(MB.FullBasis{B,M}()))
+) where {B}
+    for gram_basis in gram_bases
+        if parent(basis) != parent(gram_basis)
+            error(
+                "Bases $(parent(basis)) and $(parent(gram_basis)) are incompatible",
+            )
+        end
+    end
+    p = zero(_NonZero, MB.algebra(parent(basis)))
+    cache = zero(_NonZero, MB.algebra(parent(basis)))
     for mono in basis
         MA.operate!(
             SA.UnsafeAddMul(*),
@@ -38,7 +45,7 @@ function _combine_with_gram(
         MA.operate!(SA.UnsafeAddMul(*), p, cache, weight)
     end
     MA.operate!(SA.canonical, SA.coeffs(p))
-    return MB.SubBasis{B}(keys(SA.coeffs(p)))
+    return SA.sub_basis(parent(basis), keys(SA.coeffs(p)))
 end
 
 function _reduce_with_domain(basis::MB.SubBasis, zero_basis, ::FullSpace)
@@ -52,6 +59,7 @@ end
 function __reduce_with_domain(_, _, _)
     return error("Only Monomial basis support with an equalities in domain")
 end
+
 function __reduce_with_domain(
     basis::MB.SubBasis{MB.Monomial},
     ::MB.FullBasis{MB.Monomial},
@@ -59,10 +67,13 @@ function __reduce_with_domain(
 )
     I = ideal(domain)
     # set of standard monomials that are hit
-    standard = Set{eltype(basis.monomials)}()
-    for mono in basis.monomials
+    standard = Set{MP.monomial_type(basis)}()
+    for mono in MB.keys_as_monomials(basis)
         r = rem(mono, I)
-        union!(standard, MP.monomials(r))
+        # `FixedVariablesSet`, use substitutions which makes us
+        # loose variables
+        s, _ = SA.promote_bases(r, mono)
+        union!(standard, MP.monomials(s))
     end
     return MB.QuotientBasis(
         MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))),
@@ -244,9 +255,12 @@ struct Remainder{C<:AbstractIdealCertificate} <: AbstractIdealCertificate
 end
 
 function _rem(coeffs, basis::MB.FullBasis{MB.Monomial}, I)
-    poly = MP.polynomial(SA.values(coeffs), SA.keys(coeffs))
+    poly = MP.polynomial(MB.algebra_element(coeffs, basis))
     r = convert(typeof(poly), rem(poly, I))
-    return MB.algebra_element(MB.sparse_coefficients(r), basis)
+    # `FixedVariablesSet`, use substitutions which makes us
+    # loose variables
+    s, _ = SA.promote_bases(r, poly)
+    return MB.algebra_element(MB.sparse_coefficients(s), basis)
 end
 
 function reduced_polynomial(::Remainder, a::SA.AlgebraElement, domain)

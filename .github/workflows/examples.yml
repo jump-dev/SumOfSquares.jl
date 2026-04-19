@@ -17,11 +17,7 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="StarAlgebras", rev="main"),
-              PackageSpec(name="SymbolicWedderburn", rev="master"),
-              PackageSpec(name="MultivariateBases", rev="master"),
-              PackageSpec(name="MultivariateMoments", rev="master"),
-              PackageSpec(name="PolyJuMP", rev="master"),
+              PackageSpec(name="MultivariateBases", rev="bl/comparable"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()
