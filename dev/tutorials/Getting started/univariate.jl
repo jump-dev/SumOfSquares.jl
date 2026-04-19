@@ -53,12 +53,12 @@ minimizers = [η.atoms[1].center; η.atoms[2].center]
 # Below are more details on what we mean by convex combination.
 # The moment matrix of the atomic measure at the first minimizer is:
 
-η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), ν.basis.monomials)
+η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), keys_as_monomials(ν.basis))
 η1.Q
 
 # The moment matrix of the atomic measure at the second minimizer is:
 
-η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), ν.basis.monomials)
+η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), keys_as_monomials(ν.basis))
 η2.Q
 
 # And the moment matrix is the convex combination of both:

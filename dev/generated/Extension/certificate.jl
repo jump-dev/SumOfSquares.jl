@@ -4,9 +4,9 @@ p = x^3 - x^2 + 2x*y - y^2 + y^3 + x^3 * y
 using SumOfSquares
 S = @set x >= 0 && y >= 0 && x^2 + y^2 >= 2
 
-import SCS
+import Clarabel
 using Dualization
-solver = dual_optimizer(SCS.Optimizer)
+solver = dual_optimizer(Clarabel.Optimizer)
 
 model = SOSModel(solver)
 @variable(model, α)
@@ -62,7 +62,7 @@ SOS.matrix_cone_type(::Type{<:Schmüdgen{IC, CT}}) where {IC, CT} = SOS.matrix_c
 model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
-basis = MB.FullBasis{MB.Monomial,typeof(x * y)}()
+basis = MB.FullBasis{MB.Monomial}(x * y)
 ideal_certificate = SOSC.Newton(SOSCone(), basis, basis, tuple())
 certificate = Schmüdgen(ideal_certificate, SOSCone(), basis, maxdegree(p))
 @constraint(model, c, p >= α, domain = S, certificate = certificate)

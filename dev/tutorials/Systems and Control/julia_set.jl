@@ -108,8 +108,8 @@ end
 
 # We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
 
-import CSDP
-solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+import Clarabel
+solver = optimizer_with_attributes(Clarabel.Optimizer, MOI.Silent() => true)
 
 # Let's start with the value of `c` corresponding to the left image of [KHJ14, Figure 3] and with degree 2.
 

@@ -25,14 +25,14 @@ function controller(f, g, b, α, degs)
     return MultivariatePolynomials.map_coefficients(coef -> abs(coef) < 1e-6 ? 0.0 : coef, u)
 end
 
-import DifferentialEquations, Plots
-function phase_plot(f, quiver_scaling, Δt, X0, solver = DifferentialEquations.Tsit5())
+import OrdinaryDiffEq, Plots
+function phase_plot(f, quiver_scaling, Δt, X0, solver = OrdinaryDiffEq.Tsit5())
     ∇(vx, vy) = [fi(x[1] => vx, x[2] => vy) for fi in f]
     ∇pt(v, p, t) = ∇(v[1], v[2])
     function traj(v0)
         tspan = (0.0, Δt)
-        prob = DifferentialEquations.ODEProblem(∇pt, v0, tspan)
-        return DifferentialEquations.solve(prob, solver, reltol=1e-8, abstol=1e-8)
+        prob = OrdinaryDiffEq.ODEProblem(∇pt, v0, tspan)
+        return OrdinaryDiffEq.solve(prob, solver, reltol=1e-8, abstol=1e-8)
     end
     ticks = -5:0.5:5
     X = repeat(ticks, 1, length(ticks))

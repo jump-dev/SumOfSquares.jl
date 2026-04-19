@@ -51,7 +51,7 @@ gram = gram_matrix(cref)
 
 #-
 
-gram.basis.monomials' * gram.Q * gram.basis.monomials
+keys_as_monomials(gram.basis)' * gram.Q * keys_as_monomials(gram.basis)
 
 # where the matrix `gram.Q` is positive semidefinite, because `p` is SOS. If we
 # could only get the decomposition `gram.Q = V' * V`, the SOS decomposition would

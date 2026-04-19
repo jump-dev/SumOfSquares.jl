@@ -16,6 +16,6 @@ polynomial(sos_dec, Float32)
 
 gram = gram_matrix(cref)
 
-gram.basis.monomials' * gram.Q * gram.basis.monomials
+keys_as_monomials(gram.basis)' * gram.Q * keys_as_monomials(gram.basis)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl

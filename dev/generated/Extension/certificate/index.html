@@ -8,59 +8,70 @@ S = @set x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x^2 + y^2 &gt;= 2</code></pre
  x ≥ 0
  y ≥ 0
  -2 + y^2 + x^2 ≥ 0
-</code></pre><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices. Note that SumOfSquares generates a <em>standard form</em> SDP (i.e., SDP variables and equality constraints) while SCS expects a <em>geometric form</em> SDP (i.e., free variables and symmetric matrices depending affinely on these variables constrained to belong to the PSD cone). JuMP will transform the standard from to the geometric form will create the PSD variables as free variables and then constrain then to be PSD. While this will work, since the dual of a standard from is in in geometric form, dualizing the problem will generate a smaller SDP. We use therefore <code>Dualization.dual_optimizer</code> so that SCS solves the dual problem.</p><pre><code class="language-julia hljs">import SCS
+</code></pre><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices. Note that SumOfSquares generates a <em>standard form</em> SDP (i.e., SDP variables and equality constraints) while Clarabel expects a <em>geometric form</em> SDP (i.e., free variables and symmetric matrices depending affinely on these variables constrained to belong to the PSD cone). JuMP will transform the standard from to the geometric form will create the PSD variables as free variables and then constrain then to be PSD. While this will work, since the dual of a standard from is in in geometric form, dualizing the problem will generate a smaller SDP. We use therefore <code>Dualization.dual_optimizer</code> so that Clarabel solves the dual problem.</p><pre><code class="language-julia hljs">import Clarabel
 using Dualization
-solver = dual_optimizer(SCS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#12 (generic function with 1 method)</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following program searches for the largest lower bound.</p><pre><code class="language-julia hljs">model = SOSModel(solver)
+solver = dual_optimizer(Clarabel.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#7 (generic function with 1 method)</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following program searches for the largest lower bound.</p><pre><code class="language-julia hljs">model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
 @constraint(model, c, p &gt;= α, domain = S)
-optimize!(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Success: SDP solved
-Primal objective value: 0.0000000e+00
-Dual objective value: 0.0000000e+00
-Relative primal infeasibility: 4.15e-17
-Relative dual infeasibility: 5.00e-11
-Real Relative Gap: 0.00e+00
-XZ Relative Gap: 3.63e-10
-DIMACS error measures: 6.34e-17 0.00e+00 5.00e-11 0.00e+00 0.00e+00 3.63e-10
-------------------------------------------------------------------
-	       SCS v3.2.7 - Splitting Conic Solver
-	(c) Brendan O&#39;Donoghue, Stanford University, 2012
-------------------------------------------------------------------
-problem:  variables n: 11, constraints m: 20
-cones: 	  z: primal zero / dual free vars: 1
-	  l: linear vars: 1
-	  s: psd vars: 18, ssize: 3
-settings: eps_abs: 1.0e-04, eps_rel: 1.0e-04, eps_infeas: 1.0e-07
-	  alpha: 1.50, scale: 1.00e-01, adaptive_scale: 1
-	  max_iters: 100000, normalize: 1, rho_x: 1.00e-06
-	  acceleration_lookback: 10, acceleration_interval: 10
-	  compiled with openmp parallelization enabled
-lin-sys:  sparse-direct-amd-qdldl
-	  nnz(A): 22, nnz(P): 0
-------------------------------------------------------------------
- iter | pri res | dua res |   gap   |   obj   |  scale  | time (s)
-------------------------------------------------------------------
-     0| 2.57e+01  1.01e+00  2.00e+06 -1.00e+06  1.00e-01  1.41e-04
-    25| 1.30e+11  4.45e+10  8.00e+18 -4.00e+18  1.00e-01  3.10e-04
-------------------------------------------------------------------
-status:  unbounded
-timings: total: 3.11e-04s = setup: 5.59e-05s + solve: 2.56e-04s
-	 lin-sys: 1.41e-05s, cones: 1.61e-04s, accel: 1.55e-06s
-------------------------------------------------------------------
-objective = -inf
-------------------------------------------------------------------</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
-├ solver_name          : Dual model with SCS attached
+optimize!(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
+           Clarabel.jl v0.11.1  -  Clever Acronym
+
+                   (c) Paul Goulart
+                University of Oxford, 2022
+-------------------------------------------------------------
+
+problem:
+  variables     = 11
+  constraints   = 20
+  nnz(P)        = 0
+  nnz(A)        = 22
+  cones (total) = 5
+    : Zero        = 1,  numel = 1
+    : Nonnegative = 1,  numel = 1
+    : PSDTriangle = 3,  numel = (6,6,6)
+
+settings:
+  linear algebra: direct / qdldl, precision: 64 bit (1 thread)
+  max iter = 200, time limit = Inf,  max step = 0.990
+  tol_feas = 1.0e-08, tol_gap_abs = 1.0e-08, tol_gap_rel = 1.0e-08,
+  static reg : on, ϵ1 = 1.0e-08, ϵ2 = 4.9e-32
+  dynamic reg: on, ϵ = 1.0e-13, δ = 2.0e-07
+  iter refine: on, reltol = 1.0e-13, abstol = 1.0e-12,
+               max iter = 10, stop ratio = 5.0
+  equilibrate: on, min_scale = 1.0e-04, max_scale = 1.0e+04
+               max iter = 10
+
+iter    pcost        dcost       gap       pres      dres      k/t        μ       step
+---------------------------------------------------------------------------------------------
+  0  -4.9489e-01  -4.9489e-01  9.61e-09  7.64e-01  6.51e-01  1.00e+00  3.40e+00   ------
+  1  -2.2460e+01  -1.5003e+01  4.97e-01  6.98e-02  6.09e-02  8.46e+00  4.09e-01  8.87e-01
+  2  -2.8137e+02  -1.9564e+02  4.38e-01  5.09e-03  4.78e-03  8.67e+01  4.59e-02  9.53e-01
+  3  -3.5303e+03  -2.5774e+03  3.70e-01  4.40e-04  3.97e-04  9.54e+02  4.22e-03  9.13e-01
+  4  -3.3724e+04  -2.6710e+04  2.63e-01  8.10e-05  5.59e-05  7.02e+03  7.25e-04  9.69e-01
+  5  -8.0048e+04  -5.2489e+04  5.25e-01  2.33e-05  2.02e-05  2.76e+04  2.41e-04  9.09e-01
+  6  -8.0840e+05  -5.1919e+05  5.57e-01  2.27e-06  2.00e-06  2.89e+05  2.37e-05  9.43e-01
+  7  -4.5856e+06  -3.1944e+06  4.35e-01  5.75e-07  4.21e-07  1.39e+06  5.68e-06  9.90e-01
+  8  -2.4991e+07  -1.7798e+07  4.04e-01  1.17e-07  8.16e-08  7.19e+06  1.11e-06  8.19e-01
+  9  -2.6734e+07  -7.8820e+06  2.39e+00  3.63e-08  4.30e-08  1.89e+07  4.92e-07  9.27e-01
+ 10  -4.1102e+07  -1.4993e+07  1.74e+00  2.67e-08  3.02e-08  2.61e+07  3.57e-07  3.24e-01
+ 11  -4.5297e+07  -1.1817e+07  2.83e+00  2.20e-08  2.64e-08  3.35e+07  2.98e-07  3.55e-01
+ 12  -1.2908e+08  -4.2247e+07  2.06e+00  8.44e-09  9.66e-09  8.68e+07  1.13e-07  6.58e-01
+ 13  -7.7028e+08  -5.5049e+08  3.99e-01  5.61e-09  3.08e-09  2.20e+08  7.48e-08  9.28e-01
+ 14  -4.1142e+09  -2.9008e+09  4.18e-01  1.25e-09  6.44e-10  1.21e+09  1.61e-08  7.96e-01
+---------------------------------------------------------------------------------------------
+Terminated with status = dual infeasible
+solve time = 2.09ms</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Dual model with Clarabel attached
 ├ Termination
 │ ├ termination_status : INFEASIBLE
 │ ├ result_count       : 1
-│ └ raw_status         : unbounded
-├ Solution (result = 1)
-│ ├ primal_status        : INFEASIBLE_POINT
-│ ├ dual_status          : INFEASIBILITY_CERTIFICATE
-│ ├ objective_value      : NaN
-│ └ dual_objective_value : -1.00000e+00
-└ Work counters
-  └ solve_time (sec)   : 3.11466e-04</code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
+│ └ raw_status         : DUAL_INFEASIBLE
+└ Solution (result = 1)
+  ├ primal_status        : INFEASIBLE_POINT
+  ├ dual_status          : INFEASIBILITY_CERTIFICATE
+  ├ objective_value      : -2.90080e+09
+  └ dual_objective_value : -4.11421e+09</code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
 import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
@@ -104,21 +115,19 @@ SOSC.ideal_certificate(::Type{&lt;:Schmüdgen{IC}}) where {IC} = IC
 SOS.matrix_cone_type(::Type{&lt;:Schmüdgen{IC, CT}}) where {IC, CT} = SOS.matrix_cone_type(CT)</code></pre><p>Let&#39;s try again with our the Schmüdgen certificate:</p><pre><code class="language-julia hljs">model = SOSModel(solver)
 @variable(model, α)
 @objective(model, Max, α)
-basis = MB.FullBasis{MB.Monomial,typeof(x * y)}()
+basis = MB.FullBasis{MB.Monomial}(x * y)
 ideal_certificate = SOSC.Newton(SOSCone(), basis, basis, tuple())
 certificate = Schmüdgen(ideal_certificate, SOSCone(), basis, maxdegree(p))
 @constraint(model, c, p &gt;= α, domain = S, certificate = certificate)
 optimize!(model)
 solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
-├ solver_name          : Dual model with SCS attached
+├ solver_name          : Dual model with Clarabel attached
 ├ Termination
 │ ├ termination_status : OPTIMAL
 │ ├ result_count       : 1
-│ └ raw_status         : solved
-├ Solution (result = 1)
-│ ├ primal_status        : FEASIBLE_POINT
-│ ├ dual_status          : FEASIBLE_POINT
-│ ├ objective_value      : 8.28436e-01
-│ └ dual_objective_value : 8.28444e-01
-└ Work counters
-  └ solve_time (sec)   : 4.33656e-02</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Sunday 20 April 2025 08:09">Sunday 20 April 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+│ └ raw_status         : SOLVED
+└ Solution (result = 1)
+  ├ primal_status        : FEASIBLE_POINT
+  ├ dual_status          : FEASIBLE_POINT
+  ├ objective_value      : 8.28427e-01
+  └ dual_objective_value : 8.28427e-01</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Sunday 19 April 2026 08:50">Sunday 19 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

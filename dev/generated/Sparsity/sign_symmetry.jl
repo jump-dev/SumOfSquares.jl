@@ -15,9 +15,9 @@ function sos_check(sparsity)
 end
 
 g = sos_check(Sparsity.NoPattern())
-g.basis.monomials
+g.basis
 
 g = sos_check(Sparsity.SignSymmetry())
-monos = [sub.basis.monomials for sub in g.blocks]
+monos = [keys_as_monomials(sub.basis) for sub in g.blocks]
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl

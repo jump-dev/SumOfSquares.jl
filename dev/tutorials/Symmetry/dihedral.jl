@@ -148,17 +148,13 @@ function solve(G)
 
     g = gram_matrix(con_ref).blocks #src
     @test length(g) == 4            #src
-    @test length(g[4].basis.bases) == 2 #src
-    polys = g[4].basis.bases[1].elements #src
-    @test length(polys) == 3 #src
-    @test polys[1] ≈ y^3 #src
-    @test polys[2] ≈ x^2*y #src
-    @test polys[3] ≈ y #src
-    polys = g[4].basis.bases[2].elements #src
-    @test length(polys) == 3 #src
-    @test polys[1] ≈ -x^3 #src
-    @test polys[2] ≈ -x*y^2 #src
-    @test polys[3] ≈ -x #src
+    @test length(g[4].basis[1].elements) == 2 #src
+    @test g[4].basis[1].elements[1] ≈ y^3 #src
+    @test g[4].basis[2].elements[1] ≈ x^2*y #src
+    @test g[4].basis[3].elements[1] ≈ y #src
+    @test g[4].basis[1].elements[2] ≈ -x^3 #src
+    @test g[4].basis[2].elements[2] ≈ -x*y^2 #src
+    @test g[4].basis[3].elements[2] ≈ -x #src
     I = 3:-1:1                      #src
     Q = g[4].Q[I, I]                #src
     @test size(Q) == (3, 3)         #src
@@ -168,20 +164,16 @@ function solve(G)
     @test Q[1, 1] ≈ 25/64 rtol=1e-2 #src
     @test Q[1, 3] ≈ -5/8  rtol=1e-2 #src
     @test Q[3, 3] ≈  1    rtol=1e-2 #src
-    polys = g[1].basis.bases[].elements #src
-    @test length(polys) == 2 #src
-    @test polys[1] ≈ 1.0 #src
-    @test polys[2] ≈ -(√2/2)x^2 - (√2/2)y^2 #src
+    @test g[1].basis[1].elements[] ≈ 1.0 #src
+    @test g[1].basis[2].elements[] ≈ -(√2/2)x^2 - (√2/2)y^2 #src
     @test size(g[1].Q) == (2, 2)             #src
     @test g[1].Q[1, 1] ≈ 7921/4096 rtol=1e-2 #src
     @test g[1].Q[1, 2] ≈ 0.983 rtol=1e-2  #src
     @test g[1].Q[2, 2] ≈ 1/2 rtol=1e-2 #src
-    polys = g[2].basis.bases[].elements #src
-    @test polys[] ≈ x * y #src
+    @test g[2].basis[1].elements[] ≈ x * y #src
     @test size(g[2].Q) == (1, 1)       #src
     @test g[2].Q[1, 1] ≈ 0   atol=1e-2 #src
-    polys = g[3].basis.bases[].elements #src
-    @test polys[] ≈ (√2/2)x^2 - (√2/2)y^2 #src
+    @test g[3].basis[1].elements[] ≈ (√2/2)x^2 - (√2/2)y^2 #src
     @test size(g[3].Q) == (1, 1)       #src
     @test g[3].Q[1, 1] ≈ 0   atol=1e-2 #src
     gram_matrix(con_ref)

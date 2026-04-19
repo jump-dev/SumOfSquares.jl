@@ -101,16 +101,12 @@ solution_summary(model)
 gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 2                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-polys = gram[1].basis.bases[].elements #src
-@test length(polys) == 2 #src
-@test polys[1] ≈ 1 #src
-@test polys[2] ≈ -sum(x)/√3 #src
+@test gram[1].basis[1].elements[] ≈ 1 #src
+@test gram[1].basis[2].elements[] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] #src
-@test length(gram[2].basis.bases) == 2 #src
-polys = gram[2].basis.bases[1].elements #src
-@test polys[] ≈ (x[1] + x[2] - 2x[3])/√6 #src
-polys = gram[2].basis.bases[2].elements #src
-@test polys[] ≈ (x[1] - x[2])/√2 #src
+@test length(gram[2].basis[1].elements) == 2 #src
+@test gram[2].basis[1].elements[1] ≈ (x[1] + x[2] - 2x[3])/√6 #src
+@test gram[2].basis[1].elements[2] ≈ (x[1] - x[2])/√2 #src
 gram_matrix(con_ref)
 
 # Let's look into more details at the last two elements of the basis.
@@ -150,18 +146,12 @@ solution_summary(model)
 gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 3                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-polys = gram[1].basis.bases[].elements #src
-@test length(polys) == 2 #src
-@test polys[1] ≈ 1 #src
-@test polys[2] ≈ -sum(x)/√3 #src
+@test gram[1].basis[1].elements[] ≈ 1 #src
+@test gram[1].basis[2].elements[] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] rtol = 1e-6 #src
-polys = gram[2].basis.bases[].elements #src
-@test length(polys) == 1 #src
-@test polys[] ≈ (basis[1] + basis[2] * im) / √2  #src
+@test gram[2].basis[1].elements[] ≈ (basis[1] + basis[2] * im) / √2  #src
 @test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
-polys = gram[3].basis.bases[].elements #src
-@test length(polys) == 1 #src
-@test polys[] ≈ (basis[1] - basis[2] * im) / √2 #src
+@test gram[3].basis[1].elements[] ≈ (basis[1] - basis[2] * im) / √2 #src
 gram_matrix(con_ref)
 
 # We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:

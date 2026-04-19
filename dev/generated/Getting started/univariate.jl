@@ -21,10 +21,10 @@ sos_dec = sos_decomposition(cref, 1e-4)
 η = atomic_measure(ν, 1e-4)
 minimizers = [η.atoms[1].center; η.atoms[2].center]
 
-η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), ν.basis.monomials)
+η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), keys_as_monomials(ν.basis))
 η1.Q
 
-η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), ν.basis.monomials)
+η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), keys_as_monomials(ν.basis))
 η2.Q
 
 Q12 = η1.Q * η.atoms[1].weight + η2.Q * η.atoms[2].weight

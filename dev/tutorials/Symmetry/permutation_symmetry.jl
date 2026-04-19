@@ -47,26 +47,18 @@ value(t)
 
 gram = gram_matrix(con_ref).blocks    #src
 @test length(gram) == 3                          #src
-polys = gram[1].basis.bases[].elements #src
-@test length(polys) == 2     #src
-@test polys[1] ≈ 1        #src
-@test polys[2] ≈ -0.5 * sum(x) #src
+@test gram[1].basis[1].elements[] ≈ 1        #src
+@test gram[1].basis[2].elements[] ≈ -0.5 * sum(x) #src
 @test size(gram[1].Q) == (2, 2)                  #src
 @test gram[1].Q[1, 1] ≈ 1.0 atol=1e-6            #src
 @test gram[1].Q[1, 2] ≈ -1.0 atol=1e-6            #src
 @test gram[1].Q[2, 2] ≈ 1.0 atol=1e-6            #src
-@test length(gram[2].basis.bases) == 2 #src
-polys = gram[2].basis.bases[1].elements #src
-@test length(polys) == 1     #src
-@test polys[] ≈ (x[2] - x[4]) / √2 #src
-@test size(g[2].Q) == (1, 1)                  #src
-@test g[2].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-polys = gram[2].basis.bases[2].elements #src
-@test length(polys) == 1     #src
-@test polys[1] ≈ (x[1] - x[3]) / √2 #src
-polys = gram[3].basis.bases[].elements #src
-@test length(polys) == 1     #src
-@test polys[] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
+@test length(gram[2].basis[1].elements) == 2 #src
+@test gram[2].basis[1].elements[1] ≈ (x[2] - x[4]) / √2 #src
+@test size(gram[2].Q) == (1, 1)                  #src
+@test gram[2].Q[1, 1] ≈ 1.0 atol=1e-6            #src
+@test gram[2].basis[1].elements[2] ≈ (x[1] - x[3]) / √2 #src
+@test gram[3].basis[1].elements[] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
 @test size(gram[3].Q) == (1, 1)                  #src
 @test gram[3].Q[1, 1] ≈ 1.0 atol=1e-6            #src
 gram_matrix(con_ref)
