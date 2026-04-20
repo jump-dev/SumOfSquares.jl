@@ -41,7 +41,9 @@ function _combine_with_gram(
             MA.operate!(
                 SA.UnsafeAdd(),
                 p,
-                SA.QuadraticForm(GramMatrix{_NonZero}((_, _) -> _NonZero(), gram)),
+                SA.QuadraticForm(
+                    GramMatrix{_NonZero}((_, _) -> _NonZero(), gram),
+                ),
             )
         else
             MA.operate_to!(
