@@ -296,21 +296,30 @@ function PolyJuMP.bridges(
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{EmptyCone},
 )
-    return Tuple{Type,Type}[(Bridges.Constraint.EmptyBridge, PolyJuMP.coefficient_type_or_float(F))]
+    return Tuple{Type,Type}[(
+        Bridges.Constraint.EmptyBridge,
+        PolyJuMP.coefficient_type_or_float(F),
+    )]
 end
 
 function PolyJuMP.bridges(
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{PositiveSemidefinite2x2ConeTriangle},
 )
-    return Tuple{Type,Type}[(Bridges.Constraint.PositiveSemidefinite2x2Bridge, PolyJuMP.coefficient_type_or_float(F))]
+    return Tuple{Type,Type}[(
+        Bridges.Constraint.PositiveSemidefinite2x2Bridge,
+        PolyJuMP.coefficient_type_or_float(F),
+    )]
 end
 
 function PolyJuMP.bridges(
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:DiagonallyDominantConeTriangle},
 )
-    return Tuple{Type,Type}[(Bridges.Constraint.DiagonallyDominantBridge, PolyJuMP.coefficient_type_or_float(F))]
+    return Tuple{Type,Type}[(
+        Bridges.Constraint.DiagonallyDominantBridge,
+        PolyJuMP.coefficient_type_or_float(F),
+    )]
 end
 
 function PolyJuMP.bridges(
@@ -481,7 +490,10 @@ function JuMP.build_constraint(
     _coefs = PolyJuMP.non_constant(__coefs)
     # If a polynomial with real coefficients is used with the Hermitian SOS
     # cone, we want to promote the coefficients to complex
-    T = _bridge_coefficient_type(JuMP.value_type(JuMP.variable_ref_type(eltype(_coefs))), typeof(set))
+    T = _bridge_coefficient_type(
+        JuMP.value_type(JuMP.variable_ref_type(eltype(_coefs))),
+        typeof(set),
+    )
     coefs = convert(Vector{_promote_coef_type(eltype(_coefs), T)}, _coefs)
     shape = PolyJuMP.PolynomialShape(basis)
     return PolyJuMP.bridgeable(
