@@ -81,11 +81,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     @assert MOI.output_dimension(g) == length(set.basis)
     scalars = MOI.Utilities.scalarize(g)
     k = 0
-<<<<<<< HEAD
-    found = Dict{MP.monomial_type(set.basis),Int}()
-=======
     found = Dict{eltype(set.basis),Int}()
->>>>>>> faf17503 (Add chsh example)
     first = Union{Nothing,Int}[nothing for _ in eachindex(scalars)]
     variables = MOI.VariableIndex[]
     constraints = MOI.ConstraintIndex{F}[]
@@ -96,7 +92,6 @@ function MOI.Bridges.Constraint.bridge_constraint(
         for j in eachindex(gram_basis)
             for i in 1:j
                 k += 1
-                # mono = MP.monomial(gram_basis[i])) * MP.monomial(gram_basis[j])
                 mono = SA.star(gram_basis[i]) * gram_basis[j]
                 is_diag = i == j
                 if haskey(found, mono)
@@ -125,14 +120,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
                     MOI.Utilities.operate_output_index!(-, T, k, f, var)
                 else
                     found[mono] = k
-<<<<<<< HEAD
-                    t = SA.key_index(set.basis, MP.exponents(mono))
-                    if !isnothing(t)
-=======
-                    @show mono, set.basis[mono]
                     if mono in set.basis
                         t = set.basis[mono]
->>>>>>> faf17503 (Add chsh example)
                         first[t] = k
                         if is_diag
                             MOI.Utilities.operate_output_index!(
