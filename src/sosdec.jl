@@ -6,7 +6,7 @@ function _promote_bases(p::Vector)
     end
     q = reduce(first ∘ SA.promote_bases, p)
     if q === first(p)
-        return
+        return p
     end
     return (first ∘ SA.promote_bases).(p, Ref(q))
 end

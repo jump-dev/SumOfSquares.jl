@@ -112,6 +112,18 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
     end
     @testset "SOSDecomposition" begin
         @polyvar x y
+        @testset "_promote_bases same basis" begin
+            ps = MB.algebra_element.([x + y, x - y])
+            dec = SOSDecomposition(ps)
+            @test dec.ps === ps
+        end
+        @testset "_promote_bases with different basis" begin
+            ps = MB.algebra_element.([x, y])
+            dec = SOSDecomposition(ps)
+            for p in dec.ps
+                @test MP.variables(p) == MP.variables(x * y)
+            end
+        end
         #       @test isempty(SOSDecomposition(typeof(x)[]))
         #       ps = [1, x + y, x^2, x*y, 1 + x + x^2]
         #       P = GramMatrix(SOSDecomposition(ps))
