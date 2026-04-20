@@ -1,5 +1,16 @@
 export SOSDecomposition, SOSDecompositionWithDomain, sos_decomposition
 
+function _promote_bases(p::Vector)
+    if length(p) <= 1
+        return p
+    end
+    q = reduce(first ∘ SA.promote_bases, p)
+    if q === first(p)
+        return p
+    end
+    return (first ∘ SA.promote_bases).(p, Ref(q))
+end
+
 """
     struct SOSDecomposition{T,A,V,U}
 
@@ -10,7 +21,7 @@ struct SOSDecomposition{T,A,V,U} <: AbstractDecomposition{U}
     function SOSDecomposition{T,A,V,U}(
         ps::Vector{SA.AlgebraElement{T,A,V}},
     ) where {T,A,V,U}
-        return new(ps)
+        return new(_promote_bases(ps))
     end
 end
 
@@ -36,12 +47,7 @@ function GramMatrix(p::SOSDecomposition{T}) where {T}
     Q = zeros(T, m, n)
     for i in 1:m
         for (k, v) in SA.nonzero_pairs(SA.coeffs(p.ps[i]))
-            # k is the key (exponent vector) in the algebra element's basis
-            # Find position j in merged basis with the same key
-            idx = findfirst(==(k), basis.keys)
-            if idx !== nothing
-                Q[i, idx] = v
-            end
+            Q[i, basis[SA.basis(p.ps[i])[k]]] = v
         end
     end
     return GramMatrix(Q' * Q, basis)
