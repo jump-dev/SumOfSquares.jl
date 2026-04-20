@@ -217,12 +217,8 @@ function MB.implicit_basis(g::BlockDiagonalGramMatrix)
     return MB.implicit_basis(first(g.blocks))
 end
 
-function MultivariateMoments.block_diagonal(
-    blocks::Vector{<:GramMatrix{T,B,U,MT}},
-) where {T,B,U,MT}
-    return BlockDiagonalGramMatrix(
-        convert(Vector{GramMatrix{T,B,U,MT}}, blocks),
-    )
+function MultivariateMoments.block_diagonal(blocks::Vector{<:GramMatrix})
+    return BlockDiagonalGramMatrix(blocks)
 end
 
 function _sparse_type(::Type{GramMatrix{T,B,U,MT}}) where {T,B,U,MT}
