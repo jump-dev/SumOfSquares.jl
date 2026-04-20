@@ -30,3 +30,9 @@ function _complex(
 ) where {T}
     return Complex{T}
 end
+function _complex(
+    ::Type{Complex{T}},
+    ::Type{MOI.HermitianPositiveSemidefiniteConeTriangle},
+) where {T}
+    return Complex{T}
+end
