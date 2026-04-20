@@ -26,10 +26,10 @@ function MP.polynomial_type(
 end
 
 function GramMatrix(p::SOSDecomposition{T}) where {T}
-    sub_bases = [MB.explicit_basis(a) for a in p.ps]
-    basis = reduce(
+    basis = mapreduce(
+        SA.basis,
         (b1, b2) -> SA.merge_bases(SA.promote_bases(b1, b2)...),
-        sub_bases,
+        p.ps,
     )
     m = length(p.ps)
     n = length(basis)
