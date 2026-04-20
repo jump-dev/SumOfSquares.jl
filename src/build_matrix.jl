@@ -85,7 +85,6 @@ function build_matrix(
     f::Function,
     ::Type{T},
 ) where {T}
-    @show T
     return T[f(Q(i), bases[i]) for i in eachindex(bases)]
 end
 function build_matrix(
