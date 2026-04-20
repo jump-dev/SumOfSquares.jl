@@ -32,10 +32,8 @@ function add_all_bridges(model, ::Type{T}) where {T}
     MOI.Bridges.add_bridge(model, DiagonallyDominantBridge{T})
     MOI.Bridges.add_bridge(model, ImageBridge{T})
     MOI.Bridges.add_bridge(model, SOSPolynomialBridge{T})
-    return MOI.Bridges.add_bridge(
-        model,
-        SOSPolynomialInSemialgebraicSetBridge{T},
-    )
+    MOI.Bridges.add_bridge(model, SOSPolynomialInSemialgebraicSetBridge{T})
+    return
 end
 
 end
