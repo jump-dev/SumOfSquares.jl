@@ -53,15 +53,15 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   6  -8.0840e+05  -5.1919e+05  5.57e-01  2.27e-06  2.00e-06  2.89e+05  2.37e-05  9.43e-01
   7  -4.5856e+06  -3.1944e+06  4.35e-01  5.75e-07  4.21e-07  1.39e+06  5.68e-06  9.90e-01
   8  -2.4991e+07  -1.7798e+07  4.04e-01  1.17e-07  8.16e-08  7.19e+06  1.11e-06  8.19e-01
-  9  -2.6734e+07  -7.8819e+06  2.39e+00  3.63e-08  4.30e-08  1.89e+07  4.92e-07  9.27e-01
- 10  -4.1111e+07  -1.4996e+07  1.74e+00  2.67e-08  3.02e-08  2.61e+07  3.57e-07  3.24e-01
- 11  -4.5308e+07  -1.1821e+07  2.83e+00  2.20e-08  2.64e-08  3.35e+07  2.98e-07  3.55e-01
- 12  -1.2910e+08  -4.2257e+07  2.06e+00  8.44e-09  9.66e-09  8.68e+07  1.13e-07  6.58e-01
- 13  -7.7076e+08  -5.5086e+08  3.99e-01  5.61e-09  3.08e-09  2.20e+08  7.48e-08  9.28e-01
- 14  -4.1029e+09  -2.8929e+09  4.18e-01  1.25e-09  6.46e-10  1.21e+09  1.61e-08  7.95e-01
+  9  -2.6734e+07  -7.8822e+06  2.39e+00  3.63e-08  4.30e-08  1.89e+07  4.92e-07  9.27e-01
+ 10  -4.1100e+07  -1.4992e+07  1.74e+00  2.67e-08  3.02e-08  2.61e+07  3.57e-07  3.24e-01
+ 11  -4.5295e+07  -1.1817e+07  2.83e+00  2.20e-08  2.64e-08  3.35e+07  2.98e-07  3.55e-01
+ 12  -1.2909e+08  -4.2252e+07  2.06e+00  8.44e-09  9.66e-09  8.68e+07  1.13e-07  6.58e-01
+ 13  -7.7050e+08  -5.5063e+08  3.99e-01  5.61e-09  3.08e-09  2.20e+08  7.48e-08  9.28e-01
+ 14  -4.1188e+09  -2.9040e+09  4.18e-01  1.24e-09  6.44e-10  1.21e+09  1.60e-08  7.96e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = dual infeasible
-solve time = 2.45ms</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+solve time = 2.01ms</code></pre><p>We can see that the problem is infeasible, meaning that no lower bound was found.</p><pre><code class="language-julia hljs">solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Dual model with Clarabel attached
 ├ Termination
 │ ├ termination_status : INFEASIBLE
@@ -70,8 +70,8 @@ solve time = 2.45ms</code></pre><p>We can see that the problem is infeasible, me
 └ Solution (result = 1)
   ├ primal_status        : INFEASIBLE_POINT
   ├ dual_status          : INFEASIBILITY_CERTIFICATE
-  ├ objective_value      : -2.89286e+09
-  └ dual_objective_value : -4.10292e+09</code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
+  ├ objective_value      : -2.90398e+09
+  └ dual_objective_value : -4.11880e+09</code></pre><p>We now define the Schmüdgen&#39;s certificate:</p><pre><code class="language-julia hljs">import StarAlgebras as SA
 import MultivariateBases as MB
 const SOS = SumOfSquares
 const SOSC = SOS.Certificate
@@ -130,4 +130,4 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   ├ primal_status        : FEASIBLE_POINT
   ├ dual_status          : FEASIBLE_POINT
   ├ objective_value      : 8.28427e-01
-  └ dual_objective_value : 8.28427e-01</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 20 April 2026 15:49">Monday 20 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  └ dual_objective_value : 8.28427e-01</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../Symmetry/permutation_symmetry/">« Symmetry reduction</a><a class="docs-footer-nextpage" href="../hypercube/">Hypercube »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 21 April 2026 12:21">Tuesday 21 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
