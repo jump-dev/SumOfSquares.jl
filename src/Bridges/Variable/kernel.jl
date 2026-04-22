@@ -19,8 +19,12 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
         gram, vars, con = SOS.add_gram_matrix(model, M, gram_basis, T)
         push!(variables, vars)
         push!(constraints, con)
-        MA.operate_to!(cache, +, gram)
-        MA.operate!(SA.UnsafeAddMul(*), acc, cache, weight)
+        if isone(weight)
+            MA.operate!(SA.UnsafeAdd(), acc, gram)
+        else
+            MA.operate_to!(cache, +, gram)
+            MA.operate!(SA.UnsafeAddMul(*), acc, cache, weight)
+        end
     end
     MA.operate!(SA.canonical, SA.coeffs(acc))
     return KernelBridge{T,M}(
