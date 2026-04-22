@@ -22,8 +22,6 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-              PackageSpec(name="MultivariateBases", rev="bl/one"),
-              PackageSpec(name="MultivariatePolynomials", rev="bl/in_expit"),
               PackageSpec(path=pwd()),
           ])
           Pkg.instantiate()
