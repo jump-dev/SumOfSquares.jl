@@ -13,7 +13,10 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
     set::SOS.WeightedSOSCone{M},
 ) where {T,M}
     variables = Vector{Vector{MOI.VariableIndex}}(undef, length(set.gram_bases))
-    constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}(undef, length(set.gram_bases))
+    constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}(
+        undef,
+        length(set.gram_bases),
+    )
     for i in eachindex(set.gram_bases)
         U = MB.transformation_to(set.gram_bases[i], set.basis)
         weights = SA.coeffs(set.weights[i], set.basis)
@@ -26,9 +29,8 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
                         MOI.LowRankMatrix(
                             [weights[j]],
                             reshape(U[j, :], size(U, 2), 1),
-                        )
-                    )
-                    for j in eachindex(set.basis)
+                        ),
+                    ) for j in eachindex(set.basis)
                 ],
             ),
         )
@@ -36,10 +38,12 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
     return LowRankBridge{T,M}(
         [
             MOI.ScalarAffineFunction(
-                [MOI.ScalarAffineTerm(one(T), variables[i][j]) for i in eachindex(set.gram_bases)],
+                [
+                    MOI.ScalarAffineTerm(one(T), variables[i][j]) for
+                    i in eachindex(set.gram_bases)
+                ],
                 zero(T),
-            )
-            for j in eachindex(set.basis)
+            ) for j in eachindex(set.basis)
         ],
         variables,
         constraints,
@@ -61,9 +65,13 @@ function MOI.Bridges.added_constrained_variable_types(
     ::Type{LowRankBridge{T,M}},
 ) where {T,M}
     return Tuple{Type}[
-        (MOI.SetWithDotProducts{S[1],MOI.TriangleVectorization{MOI.LowRankMatrix{T}}},)
-        for S in SOS.Bridges.Constraint.constrained_variable_types(M)
-        if S[1] == MOI.PositiveSemidefiniteConeTriangle # FIXME hack
+        (
+            MOI.SetWithDotProducts{
+                S[1],
+                MOI.TriangleVectorization{MOI.LowRankMatrix{T}},
+            },
+        ) for S in SOS.Bridges.Constraint.constrained_variable_types(M) if
+        S[1] == MOI.PositiveSemidefiniteConeTriangle # FIXME hack
     ]
 end
 
