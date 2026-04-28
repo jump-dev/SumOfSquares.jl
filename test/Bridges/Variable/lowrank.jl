@@ -135,9 +135,7 @@ function _bridged_model_and_vars()
     }(
         inner,
     )
-    set = SumOfSquares.WeightedSOSCone{
-        MOI.PositiveSemidefiniteConeTriangle,
-    }(
+    set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
         lag,
         [MB.SubBasis{MB.Monomial}([x^0, x])],
         [MB.algebra_element(1.0 * x^0)],
@@ -165,9 +163,7 @@ function test_primal()
     }(
         mock,
     )
-    set = SumOfSquares.WeightedSOSCone{
-        MOI.PositiveSemidefiniteConeTriangle,
-    }(
+    set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
         lag,
         [MB.SubBasis{MB.Monomial}([x^0, x])],
         [MB.algebra_element(1.0 * x^0)],
@@ -205,21 +201,15 @@ function test_hypatia_uses_setdotproducts()
         SumOfSquares.Bridges.Variable.LowRankBridge{Float64},
     )
     LRO.Bridges.Variable.add_all_bridges(model, Float64)
-    lag = MB.LagrangeBasis(
-        (x,),
-        [[0.0], [1.0], [2.0], [3.0], [4.0]],
-    )
-    set = SumOfSquares.WeightedSOSCone{
-        MOI.PositiveSemidefiniteConeTriangle,
-    }(
+    lag = MB.LagrangeBasis((x,), [[0.0], [1.0], [2.0], [3.0], [4.0]])
+    set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
         lag,
         [MB.SubBasis{MB.Monomial}([x^0, x, x^2])],
         [MB.algebra_element(1.0 * x^0)],
     )
     MOI.add_constrained_variables(model, set)
     cache = optimizer.model_cache
-    constraint_types =
-        MOI.get(cache, MOI.ListOfConstraintTypesPresent())
+    constraint_types = MOI.get(cache, MOI.ListOfConstraintTypesPresent())
     @test any(((F, S),) -> S <: LRO.SetDotProducts, constraint_types)
     @test !any(
         ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
