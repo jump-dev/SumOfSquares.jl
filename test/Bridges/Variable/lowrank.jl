@@ -126,6 +126,71 @@ function test_runtests_weighted()
     return
 end
 
+function _bridged_model_and_vars()
+    @polyvar x
+    lag = MB.LagrangeBasis((x,), [[0.0], [1.0], [2.0]])
+    inner = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}())
+    model = MOI.Bridges.Variable.SingleBridgeOptimizer{
+        SumOfSquares.Bridges.Variable.LowRankBridge{Float64},
+    }(
+        inner,
+    )
+    set = SumOfSquares.WeightedSOSCone{
+        MOI.PositiveSemidefiniteConeTriangle,
+    }(
+        lag,
+        [MB.SubBasis{MB.Monomial}([x^0, x])],
+        [MB.algebra_element(1.0 * x^0)],
+    )
+    p, ci = MOI.add_constrained_variables(model, set)
+    return model, inner, p, ci
+end
+
+function test_delete()
+    model, _, p, _ = _bridged_model_and_vars()
+    @test MOI.get(model, MOI.NumberOfVariables()) == 3
+    MOI.delete(model, p)
+    @test MOI.get(model, MOI.NumberOfVariables()) == 0
+    return
+end
+
+function test_primal()
+    @polyvar x
+    lag = MB.LagrangeBasis((x,), [[0.0], [1.0], [2.0]])
+    mock = MOI.Utilities.MockOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}()),
+    )
+    model = MOI.Bridges.Variable.SingleBridgeOptimizer{
+        SumOfSquares.Bridges.Variable.LowRankBridge{Float64},
+    }(
+        mock,
+    )
+    set = SumOfSquares.WeightedSOSCone{
+        MOI.PositiveSemidefiniteConeTriangle,
+    }(
+        lag,
+        [MB.SubBasis{MB.Monomial}([x^0, x])],
+        [MB.algebra_element(1.0 * x^0)],
+    )
+    p, ci = MOI.add_constrained_variables(model, set)
+    # Mock an optimization result: all inner variables = 1.0
+    inner_vars = MOI.get(mock, MOI.ListOfVariableIndices())
+    MOI.Utilities.mock_optimize!(
+        mock,
+        MOI.OPTIMAL,
+        (MOI.FEASIBLE_POINT, ones(length(inner_vars))),
+    )
+    # VariablePrimal through bridge (line 158)
+    for vi in p
+        @test MOI.get(model, MOI.VariablePrimal(), vi) == 1.0
+    end
+    # ConstraintPrimal through bridge (line 141)
+    cp = MOI.get(model, MOI.ConstraintPrimal(), ci)
+    @test length(cp) == 3
+    @test all(cp .== 1.0)
+    return
+end
+
 # Verify that with Hypatia, LagrangeBasis uses SetDotProducts (not PSD)
 function test_hypatia_uses_setdotproducts()
     @polyvar x
