@@ -50,22 +50,13 @@ function test_runtests()
                     SumOfSquares.PositiveSemidefinite2x2ConeTriangle(),
                     [
                         LRO.TriangleVectorization(
-                            LRO.Factorization(
-                                reshape([1.0, 0.0], 2, 1),
-                                [1.0],
-                            ),
+                            LRO.Factorization(reshape([1.0, 0.0], 2, 1), [1.0]),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(
-                                reshape([1.0, 1.0], 2, 1),
-                                [1.0],
-                            ),
+                            LRO.Factorization(reshape([1.0, 1.0], 2, 1), [1.0]),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(
-                                reshape([1.0, 2.0], 2, 1),
-                                [1.0],
-                            ),
+                            LRO.Factorization(reshape([1.0, 2.0], 2, 1), [1.0]),
                         ),
                     ],
                 ),
@@ -112,22 +103,13 @@ function test_runtests_weighted()
                     SumOfSquares.PositiveSemidefinite2x2ConeTriangle(),
                     [
                         LRO.TriangleVectorization(
-                            LRO.Factorization(
-                                reshape([1.0, 0.0], 2, 1),
-                                [2.0],
-                            ),
+                            LRO.Factorization(reshape([1.0, 0.0], 2, 1), [2.0]),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(
-                                reshape([1.0, 1.0], 2, 1),
-                                [2.0],
-                            ),
+                            LRO.Factorization(reshape([1.0, 1.0], 2, 1), [2.0]),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(
-                                reshape([1.0, 2.0], 2, 1),
-                                [2.0],
-                            ),
+                            LRO.Factorization(reshape([1.0, 2.0], 2, 1), [2.0]),
                         ),
                     ],
                 ),
