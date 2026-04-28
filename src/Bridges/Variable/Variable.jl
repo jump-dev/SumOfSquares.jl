@@ -6,6 +6,7 @@ import StarAlgebras as SA
 import MultivariateBases as MB
 import MathOptInterface as MOI
 import MultivariatePolynomials as MP
+import LowRankOpt as LRO
 import SumOfSquares as SOS
 
 include("psd2x2.jl")

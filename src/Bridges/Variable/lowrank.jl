@@ -22,13 +22,13 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
         weights = SA.coeffs(set.weights[i], set.basis)
         variables[i], constraints[i] = MOI.add_constrained_variables(
             model,
-            MOI.SetWithDotProducts(
+            LRO.SetDotProducts{LRO.WITHOUT_SET}(
                 SOS.matrix_cone(M, length(set.gram_bases[i])),
                 [
-                    MOI.TriangleVectorization(
-                        MOI.LowRankMatrix(
-                            [weights[j]],
+                    LRO.TriangleVectorization(
+                        LRO.Factorization(
                             reshape(U[j, :], size(U, 2), 1),
+                            [weights[j]],
                         ),
                     ) for j in eachindex(set.basis)
                 ],
@@ -66,9 +66,10 @@ function MOI.Bridges.added_constrained_variable_types(
 ) where {T,M}
     return Tuple{Type}[
         (
-            MOI.SetWithDotProducts{
+            LRO.SetDotProducts{
+                LRO.WITHOUT_SET,
                 S[1],
-                MOI.TriangleVectorization{MOI.LowRankMatrix{T}},
+                LRO.TriangleVectorization{T},
             },
         ) for S in SOS.Bridges.Constraint.constrained_variable_types(M) if
         S[1] == MOI.PositiveSemidefiniteConeTriangle # FIXME hack
@@ -84,6 +85,74 @@ function MOI.Bridges.Variable.concrete_bridge_type(
     ::Type{<:SOS.WeightedSOSCone{M}},
 ) where {T,M}
     return LowRankBridge{T,M}
+end
+
+# Attributes, Bridge acting as a model
+function MOI.get(bridge::LowRankBridge, ::MOI.NumberOfVariables)
+    return sum(length, bridge.variables)
+end
+
+function MOI.get(bridge::LowRankBridge, ::MOI.ListOfVariableIndices)
+    return reduce(vcat, bridge.variables)
+end
+
+function MOI.get(
+    bridge::LowRankBridge,
+    ::MOI.NumberOfConstraints{MOI.VectorOfVariables,S},
+) where {S<:MOI.AbstractVectorSet}
+    return count(bridge.constraints) do ci
+        return ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}
+    end
+end
+
+function MOI.get(
+    bridge::LowRankBridge,
+    ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables,S},
+) where {S}
+    return [
+        ci for ci in bridge.constraints if
+        ci isa MOI.ConstraintIndex{MOI.VectorOfVariables,S}
+    ]
+end
+
+# Indices
+function MOI.delete(model::MOI.ModelLike, bridge::LowRankBridge)
+    for vars in bridge.variables
+        MOI.delete(model, vars)
+    end
+    return
+end
+
+# Attributes, Bridge acting as a constraint
+
+function MOI.get(::MOI.ModelLike, ::MOI.ConstraintSet, bridge::LowRankBridge)
+    return bridge.set
+end
+
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::MOI.ConstraintPrimal,
+    bridge::LowRankBridge,
+)
+    return [
+        MOI.get(
+            model,
+            MOI.VariablePrimal(attr.result_index),
+            bridge,
+            MOI.Bridges.IndexInVector(i),
+        ) for i in eachindex(bridge.affine)
+    ]
+end
+
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::MOI.VariablePrimal,
+    bridge::LowRankBridge,
+    i::MOI.Bridges.IndexInVector,
+)
+    return MOI.Utilities.eval_variables(bridge.affine[i.value]) do vi
+        return MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
+    end
 end
 
 function MOI.Bridges.bridged_function(
