@@ -27,8 +27,8 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
                 [
                     LRO.TriangleVectorization(
                         LRO.Factorization(
-                            reshape(U[j, :], size(U, 2), 1),
-                            [weights[j]],
+                            Matrix{T}(reshape(U[j, :], size(U, 2), 1)),
+                            T[weights[j]],
                         ),
                     ) for j in eachindex(set.basis)
                 ],
@@ -69,7 +69,10 @@ function MOI.Bridges.added_constrained_variable_types(
             LRO.SetDotProducts{
                 LRO.WITHOUT_SET,
                 S[1],
-                LRO.TriangleVectorization{T},
+                LRO.TriangleVectorization{
+                    T,
+                    LRO.Factorization{T,Matrix{T},Vector{T}},
+                },
             },
         ) for S in SOS.Bridges.Constraint.constrained_variable_types(M) if
         S[1] == MOI.PositiveSemidefiniteConeTriangle # FIXME hack

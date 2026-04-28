@@ -3,6 +3,7 @@ module TestVariableLowRank
 using Test
 import MultivariateBases as MB
 import LowRankOpt as LRO
+import Hypatia
 using DynamicPolynomials
 using SumOfSquares
 
@@ -121,6 +122,43 @@ function test_runtests_weighted()
             )
         end;
         cannot_unbridge = true,
+    )
+    return
+end
+
+# Verify that with Hypatia, LagrangeBasis uses SetDotProducts (not PSD)
+function test_hypatia_uses_setdotproducts()
+    @polyvar x
+    optimizer = MOI.Utilities.CachingOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}()),
+        Hypatia.Optimizer{Float64}(),
+    )
+    MOI.set(optimizer, MOI.Silent(), true)
+    model = MOI.Bridges.full_bridge_optimizer(optimizer, Float64)
+    MOI.Bridges.add_bridge(
+        model,
+        SumOfSquares.Bridges.Variable.LowRankBridge{Float64},
+    )
+    LRO.Bridges.Variable.add_all_bridges(model, Float64)
+    lag = MB.LagrangeBasis(
+        (x,),
+        [[0.0], [1.0], [2.0], [3.0], [4.0]],
+    )
+    set = SumOfSquares.WeightedSOSCone{
+        MOI.PositiveSemidefiniteConeTriangle,
+    }(
+        lag,
+        [MB.SubBasis{MB.Monomial}([x^0, x, x^2])],
+        [MB.algebra_element(1.0 * x^0)],
+    )
+    MOI.add_constrained_variables(model, set)
+    cache = optimizer.model_cache
+    constraint_types =
+        MOI.get(cache, MOI.ListOfConstraintTypesPresent())
+    @test any(((F, S),) -> S <: LRO.SetDotProducts, constraint_types)
+    @test !any(
+        ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
+        constraint_types,
     )
     return
 end
