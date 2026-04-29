@@ -62,9 +62,9 @@ function quadratic_test(
     @test a[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol =
         atol rtol = rtol
     @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
-    _dual_basis = SumOfSquares.Certificate._is_monomial_basis(basis) ? basis : MB.Monomial
-    @test μ[2].polynomial ==
-        MB.Polynomial{_dual_basis}(bivariate ? x * y : x^1)
+    _dual_basis =
+        SumOfSquares.Certificate._is_monomial_basis(basis) ? basis : MB.Monomial
+    @test μ[2].polynomial == MB.Polynomial{_dual_basis}(bivariate ? x * y : x^1)
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     _test_moments(dual(cref), monos) do vals
@@ -96,7 +96,8 @@ function quadratic_test(
     @test MB.keys_as_monomials(ν.basis) == cert_monos
 
     _FB = typeof(MB.FullBasis{basis}(x))
-    _poly_basis = SumOfSquares.Certificate._is_monomial_basis(basis) ? basis : MB.Monomial
+    _poly_basis =
+        SumOfSquares.Certificate._is_monomial_basis(basis) ? basis : MB.Monomial
     _SB = MB.explicit_basis_type(typeof(MB.FullBasis{_poly_basis}(x)))
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
