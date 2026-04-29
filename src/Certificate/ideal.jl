@@ -246,19 +246,21 @@ function gram_basis(certificate::Newton, poly)
         mono_full = MB.FullBasis{MB.Monomial}(MP.variables(poly))
         a = MB.algebra_element(SA.coeffs(a, mono_full), mono_full)
     end
-    basis = half_newton_polytope(
-        a,
-        MP.variables(poly),
-        certificate.newton,
-    )
+    basis = half_newton_polytope(a, MP.variables(poly), certificate.newton)
     return _convert_gram_basis(basis, certificate.gram_basis)
 end
 
-function _convert_gram_basis(basis::MB.SubBasis{B}, gram_full::MB.FullBasis{B}) where {B}
+function _convert_gram_basis(
+    basis::MB.SubBasis{B},
+    gram_full::MB.FullBasis{B},
+) where {B}
     return basis
 end
 
-function _convert_gram_basis(basis::MB.SubBasis, gram_full::MB.FullBasis{G}) where {G}
+function _convert_gram_basis(
+    basis::MB.SubBasis,
+    gram_full::MB.FullBasis{G},
+) where {G}
     monos = MB.keys_as_monomials(basis)
     sub = MB.SubBasis{G}(monos)
     new_sub, _ = SA.promote_bases(sub, gram_full)
