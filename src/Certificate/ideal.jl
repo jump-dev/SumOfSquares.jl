@@ -237,16 +237,11 @@ function Newton(cone, gram_basis, zero_basis, variable_groups::Tuple)
 end
 
 function gram_basis(certificate::Newton, poly)
-    a = _algebra_element(poly)
-    # For non-monomial bases like Chebyshev, conversion introduces lower-degree
-    # terms (e.g. `x^2` → `1/2 T_2 + 1/2`) that enlarge the Newton polytope.
-    # Convert to monomial basis to recover the original support and compute
-    # tighter Newton polytope bounds.
-    if !_is_monomial_basis(typeof(a))
-        mono_full = MB.FullBasis{MB.Monomial}(MP.variables(poly))
-        a = MB.algebra_element(SA.coeffs(a, mono_full), mono_full)
-    end
-    basis = half_newton_polytope(a, MP.variables(poly), certificate.newton)
+    basis = half_newton_polytope(
+        _algebra_element(poly),
+        MP.variables(poly),
+        certificate.newton,
+    )
     return _convert_gram_basis(basis, certificate.gram_basis)
 end
 

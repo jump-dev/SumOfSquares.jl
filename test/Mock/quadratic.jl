@@ -70,6 +70,17 @@ for mock in mocks(optimize!)
     Tests.dsos_univariate_quadratic_test(mock, config)
     Tests.dsos_bivariate_quadratic_test(mock, config)
     Tests.dsos_scaled_univariate_quadratic_test(mock, config)
+end
+function optimize!(mock)
+    return MOI.Utilities.mock_optimize!(
+        mock,
+        (MOI.FEASIBLE_POINT, [2.0, 1.0, 1.0, 1.0, 1.0]),
+        (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64}) =>
+            [0.0, 2.0, 1.0, 1.0],
+        (MOI.VectorAffineFunction{Float64}, MOI.Zeros) => [[1.0, -1.0, 1.0]],
+    )
+end
+for mock in mocks(optimize!)
     Tests.dsos_cheby_univariate_quadratic_test(mock, config)
 end
 function optimize!(mock)

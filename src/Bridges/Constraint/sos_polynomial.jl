@@ -74,6 +74,14 @@ function MOI.Bridges.Constraint.bridge_constraint(
         set.certificate,
         SOS.Certificate.with_variables(poly, set.domain),
     )
+    # Convert poly to the gram basis algebra if needed.
+    # When basis = Chebyshev is passed with a monomial polynomial, the
+    # polynomial stays in monomial basis until here so that the Newton
+    # polytope is computed on the original (tighter) support.
+    gram_full = MB.implicit_basis(gram_basis)
+    if SA.basis(poly) != gram_full
+        poly = MB.algebra_element(SA.coeffs(poly, gram_full), gram_full)
+    end
     gram_bases = [gram_basis]
     weights = [MB.constant_algebra_element(SA.basis(poly), T)]
     flat_gram_bases, flat_weights, flat_indices = _flatten(gram_bases, weights)
@@ -117,8 +125,11 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     # promotes VectorOfVariables into VectorAffineFunction, it should be enough
     # for most use cases
     M = SOS.matrix_cone_type(CT)
+    # Use the gram basis type for the weight since the polynomial may be
+    # converted to the gram basis algebra in bridge_constraint.
+    G_elem = _eltype(MA.promote_operation(SOS.Certificate.gram_basis, CT))
     W = MB.constant_algebra_element_type(
-        MA.promote_operation(MB.implicit_basis, BT),
+        MA.promote_operation(MB.implicit_basis, G_elem),
         T,
     )
     B = MA.promote_operation(
@@ -144,8 +155,28 @@ function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
 end
 
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
-    # FIXME `coeffs` should be an `AbstractMatrix`
-    return SA.adjoint_coeffs(f, bridge.set.basis, bridge.new_basis)
+    set_basis = bridge.set.basis
+    new_basis = bridge.new_basis
+    if parent(set_basis) == parent(new_basis)
+        # FIXME `coeffs` should be an `AbstractMatrix`
+        return SA.adjoint_coeffs(f, set_basis, new_basis)
+    end
+    # Cross-algebra adjoint (e.g. Monomial set.basis, Chebyshev new_basis).
+    # The forward map converts each set_basis element to its new_basis
+    # representation. The adjoint dots f with each such column.
+    gram_full = MB.implicit_basis(new_basis)
+    T = eltype(f)
+    result = zeros(T, length(set_basis))
+    for (i, mono) in enumerate(set_basis)
+        a = MB.algebra_element(mono)
+        cheby_coeffs = SA.coeffs(a, gram_full)
+        cheby_a = MB.algebra_element(cheby_coeffs, gram_full)
+        col = SA.coeffs(cheby_a, new_basis)
+        for j in eachindex(col)
+            result[i] += col[j] * f[j]
+        end
+    end
+    return result
 end
 
 # Attributes, Bridge acting as a constraint

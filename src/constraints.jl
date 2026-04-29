@@ -388,7 +388,7 @@ function _default_basis(
     basis::MB.SubBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
 ) where {B,G}
-    if B === G
+    if B === G || !Certificate._is_monomial_basis(G)
         return coeffs, basis
     else
         return _default_basis(
@@ -408,7 +408,11 @@ function _default_basis(
     basis::MB.FullBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
 ) where {B,G}
-    if B === G
+    if B === G || !Certificate._is_monomial_basis(G)
+        # Don't convert to non-monomial bases (e.g. Chebyshev): the conversion
+        # introduces lower-degree terms (e.g. `x^2` → `1/2 T_2 + 1/2`) which
+        # enlarges the Newton polytope. The conversion is deferred to the bridge,
+        # after the Newton polytope has been computed in the original basis.
         return _default_basis(
             collect(SA.values(p)),
             SA.sub_basis(basis, collect(SA.keys(p))),
@@ -483,7 +487,7 @@ function JuMP.build_constraint(
         cone,
         basis,
         gram_basis,
-        _default_zero_basis(basis, zero_basis);
+        _default_zero_basis(gram_basis, zero_basis);
         domain,
         kws...,
     )
