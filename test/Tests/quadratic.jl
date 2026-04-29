@@ -28,12 +28,7 @@ function quadratic_test(
     if bivariate
         @polyvar y
         poly = x^2 + α * x * y + y^2
-        if basis === Chebyshev
-            # See https://github.com/jump-dev/SumOfSquares.jl/issues/357
-            cert_monos = [1, y, x]
-        else
-            cert_monos = [y, x]
-        end
+        cert_monos = [y, x]
         if basis === Chebyshev
             monos = [1, y^2, x * y, x^2]
         else
@@ -60,13 +55,7 @@ function quadratic_test(
     test_constraint_primal(cref, value(poly); atol, rtol)
 
     p = gram_matrix(cref)
-    if basis === Chebyshev && bivariate
-        # See https://github.com/jump-dev/SumOfSquares.jl/issues/357
-        @test value_matrix(p) ≈ [zeros(1, 3); zeros(2) ones(2, 2)] atol = atol rtol =
-            rtol
-    else
-        @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
-    end
+    @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     @test MB.keys_as_monomials(p.basis) == cert_monos
 
     μ = moments(dual(cref))
@@ -89,22 +78,8 @@ function quadratic_test(
     _test_moments(dual(cref), monos) do vals
         @test vals ≈ a atol = atol rtol = rtol
     end
-    if basis === MB.Chebyshev && bivariate
-        _test_moments(
-            moments(cref),
-            monomial_vector([1, y, x, y^2, x * y, x^2]),
-        ) do vals
-            @test length(vals) == 6
-            for i in [2, 3]
-                @test vals[i] ≈ 0 rtol = rtol atol = atol
-            end
-            @test vals[5] ≈ -1 rtol = rtol atol = atol
-            @test vals[4] + vals[6] + 2vals[1] ≈ 4 rtol = rtol atol = atol
-        end
-    else
-        _test_moments(moments(cref), monos) do vals
-            @test vals ≈ a atol = atol rtol = rtol
-        end
+    _test_moments(moments(cref), monos) do vals
+        @test vals ≈ a atol = atol rtol = rtol
     end
 
     ν = moment_matrix(cref)
@@ -116,9 +91,6 @@ function quadratic_test(
         a[2]
     end
     M = value_matrix(ν)
-    if basis === Chebyshev && bivariate
-        M = M[2:end, 2:end]
-    end
     @test M ≈ [
         b[1] off
         off b[3]
