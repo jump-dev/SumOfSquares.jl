@@ -78,9 +78,11 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # When basis = Chebyshev is passed with a monomial polynomial, the
     # polynomial stays in monomial basis until here so that the Newton
     # polytope is computed on the original (tighter) support.
-    gram_full = MB.implicit_basis(gram_basis)
-    if SA.basis(poly) != gram_full
-        poly = MB.algebra_element(SA.coeffs(poly, gram_full), gram_full)
+    if gram_basis isa SA.AbstractBasis
+        gram_full = MB.implicit_basis(gram_basis)
+        if SA.basis(poly) != gram_full
+            poly = MB.algebra_element(SA.coeffs(poly, gram_full), gram_full)
+        end
     end
     gram_bases = [gram_basis]
     weights = [MB.constant_algebra_element(SA.basis(poly), T)]
@@ -154,29 +156,37 @@ function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
     #return SA.coeffs(MP.polynomial(f, bridge.new_basis), bridge.set.basis)
 end
 
+function _is_cross_algebra(
+    set_basis::MB.MonomialIndexedBasis{B1},
+    new_basis::MB.MonomialIndexedBasis{B2},
+) where {B1,B2}
+    return B1 !== B2 && !Certificate._is_monomial_basis(B2)
+end
+_is_cross_algebra(::SA.AbstractBasis, ::SA.AbstractBasis) = false
+
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
     set_basis = bridge.set.basis
     new_basis = bridge.new_basis
-    if parent(set_basis) == parent(new_basis)
-        # FIXME `coeffs` should be an `AbstractMatrix`
-        return SA.adjoint_coeffs(f, set_basis, new_basis)
-    end
-    # Cross-algebra adjoint (e.g. Monomial set.basis, Chebyshev new_basis).
-    # The forward map converts each set_basis element to its new_basis
-    # representation. The adjoint dots f with each such column.
-    gram_full = MB.implicit_basis(new_basis)
-    T = eltype(f)
-    result = zeros(T, length(set_basis))
-    for (i, mono) in enumerate(set_basis)
-        a = MB.algebra_element(mono)
-        cheby_coeffs = SA.coeffs(a, gram_full)
-        cheby_a = MB.algebra_element(cheby_coeffs, gram_full)
-        col = SA.coeffs(cheby_a, new_basis)
-        for j in eachindex(col)
-            result[i] += col[j] * f[j]
+    if _is_cross_algebra(set_basis, new_basis)
+        # Cross-algebra adjoint (e.g. Monomial set.basis, Chebyshev new_basis).
+        # The forward map converts each set_basis element to its new_basis
+        # representation. The adjoint dots f with each such column.
+        gram_full = MB.implicit_basis(new_basis)
+        T = eltype(f)
+        result = zeros(T, length(set_basis))
+        for (i, mono) in enumerate(set_basis)
+            a = MB.algebra_element(mono)
+            cheby_coeffs = SA.coeffs(a, gram_full)
+            cheby_a = MB.algebra_element(cheby_coeffs, gram_full)
+            col = SA.coeffs(cheby_a, new_basis)
+            for j in eachindex(col)
+                result[i] += col[j] * f[j]
+            end
         end
+        return result
     end
-    return result
+    # FIXME `coeffs` should be an `AbstractMatrix`
+    return SA.adjoint_coeffs(f, set_basis, new_basis)
 end
 
 # Attributes, Bridge acting as a constraint
