@@ -126,9 +126,9 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     M = SOS.matrix_cone_type(CT)
     # Use the gram basis type for the weight since the polynomial may be
     # converted to the gram basis algebra in bridge_constraint.
-    G_elem = _eltype(MA.promote_operation(SOS.Certificate.gram_basis, CT))
+    G = _eltype(MA.promote_operation(SOS.Certificate.gram_basis, CT))
     W = MB.constant_algebra_element_type(
-        MA.promote_operation(MB.implicit_basis, G_elem),
+        MA.promote_operation(MB.implicit_basis, G),
         T,
     )
     B = MA.promote_operation(
@@ -139,8 +139,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
         Vector{BT},
         Vector{W},
     )
-    G = MA.promote_operation(SOS.Certificate.gram_basis, CT)
-    return SOSPolynomialBridge{T,F,DT,M,BT,B,_eltype(G),CT,W}
+    return SOSPolynomialBridge{T,F,DT,M,BT,B,G,CT,W}
 end
 
 function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
