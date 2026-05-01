@@ -192,6 +192,10 @@ function _coeff_type(C::Type{<:Ideal})
     return SumOfSquares._complex(Float64, SumOfSquares.matrix_cone_type(C))
 end
 
+function MB.implicit_basis(certificate::Ideal)
+    return MB.implicit_basis(certificate.certificate)
+end
+
 function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
     basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
     return _gram_basis(cert.pattern, basis, _coeff_type(typeof(cert)))

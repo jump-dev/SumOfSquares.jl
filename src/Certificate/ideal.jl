@@ -150,6 +150,8 @@ struct MaxDegree{
     maxdegree::Int
 end
 
+MB.implicit_basis(certificate::MaxDegree) = certificate.gram_basis
+
 function gram_basis(certificate::MaxDegree, poly)
     return maxdegree_gram_basis(
         certificate.gram_basis,
@@ -180,6 +182,10 @@ struct FixedBasis{
     cone::C
     gram_basis::G
     zero_basis::Z
+end
+
+function MB.implicit_basis(certificate::FixedBasis)
+    return MB.implicit_basis(certificate.gram_basis)
 end
 
 function gram_basis(certificate::FixedBasis, _)
@@ -235,6 +241,8 @@ function Newton(cone, gram_basis, zero_basis, variable_groups::Tuple)
         NewtonFilter(NewtonDegreeBounds(variable_groups)),
     )
 end
+
+MB.implicit_basis(certificate::Newton) = certificate.gram_basis
 
 function gram_basis(certificate::Newton, poly)
     basis = half_newton_polytope(
@@ -293,6 +301,10 @@ end
 
 function reduced_polynomial(::Remainder, a::SA.AlgebraElement, domain)
     return _rem(SA.coeffs(a), SA.basis(a), ideal(domain))
+end
+
+function MB.implicit_basis(certificate::Remainder)
+    return MB.implicit_basis(certificate.gram_certificate)
 end
 
 function gram_basis(certificate::Remainder, poly)

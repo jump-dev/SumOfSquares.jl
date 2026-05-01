@@ -74,15 +74,12 @@ function MOI.Bridges.Constraint.bridge_constraint(
         set.certificate,
         SOS.Certificate.with_variables(poly, set.domain),
     )
-    # Convert poly to the gram basis algebra if needed.
-    # When basis = Chebyshev is passed with a monomial polynomial, the
-    # polynomial stays in monomial basis until here so that the Newton
-    # polytope is computed on the original (tighter) support.
-    if gram_basis isa SA.AbstractBasis
-        gram_full = MB.implicit_basis(gram_basis)
-        if SA.basis(poly) != gram_full
-            poly = MB.algebra_element(SA.coeffs(poly, gram_full), gram_full)
-        end
+    implicit_basis = MB.implicit_basis(set.certificate)
+    if SA.basis(poly) != implicit_basis
+        poly = MB.algebra_element(
+            SA.coeffs(poly, implicit_basis),
+            implicit_basis,
+        )
     end
     gram_bases = [gram_basis]
     weights = [MB.constant_algebra_element(SA.basis(poly), T)]
