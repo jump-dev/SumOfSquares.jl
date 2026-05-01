@@ -161,20 +161,19 @@ end
 _is_cross_algebra(::SA.AbstractBasis, ::SA.AbstractBasis) = false
 
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
-    set_basis = bridge.set.basis
-    new_basis = bridge.new_basis
-    if _is_cross_algebra(set_basis, new_basis)
+    input_basis = MP.implicit_basis(bridge.set.basis)
+    output_basis = MP.implicit_basis(bridge.new_basis)
+    if input_basis != output_basis
         # Cross-algebra adjoint (e.g. Monomial set.basis, Chebyshev new_basis).
         # The forward map converts each set_basis element to its new_basis
         # representation. The adjoint dots f with each such column.
-        gram_full = MB.implicit_basis(new_basis)
         T = eltype(f)
-        result = zeros(T, length(set_basis))
-        for (i, mono) in enumerate(set_basis)
+        result = zeros(T, length(bridge.set.basis))
+        for (i, mono) in enumerate(bridge.set.basis)
             a = MB.algebra_element(mono)
-            cheby_coeffs = SA.coeffs(a, gram_full)
-            cheby_a = MB.algebra_element(cheby_coeffs, gram_full)
-            col = SA.coeffs(cheby_a, new_basis)
+            cheby_coeffs = SA.coeffs(a, output_basis)
+            cheby_a = MB.algebra_element(cheby_coeffs, output_basis)
+            col = SA.coeffs(cheby_a, bridge.new_basis)
             for j in eachindex(col)
                 result[i] += col[j] * f[j]
             end
@@ -182,7 +181,7 @@ function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
         return result
     end
     # FIXME `coeffs` should be an `AbstractMatrix`
-    return SA.adjoint_coeffs(f, set_basis, new_basis)
+    return SA.adjoint_coeffs(f, bridge.set.basis, bridge.new_basis)
 end
 
 # Attributes, Bridge acting as a constraint
