@@ -25,3 +25,4 @@ DynamicPolynomials = "0.6"
 
 [sources]
 SumOfSquares = {path = ".."}
+MultivariateBases = {path = "../../MultivariateBases"}
