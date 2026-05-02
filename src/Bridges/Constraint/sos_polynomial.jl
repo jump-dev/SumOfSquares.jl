@@ -161,8 +161,8 @@ end
 _is_cross_algebra(::SA.AbstractBasis, ::SA.AbstractBasis) = false
 
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
-    input_basis = MP.implicit_basis(bridge.set.basis)
-    output_basis = MP.implicit_basis(bridge.new_basis)
+    input_basis = MB.implicit_basis(bridge.set.basis)
+    output_basis = MB.implicit_basis(bridge.new_basis)
     if input_basis != output_basis
         # Cross-algebra adjoint (e.g. Monomial set.basis, Chebyshev new_basis).
         # The forward map converts each set_basis element to its new_basis
