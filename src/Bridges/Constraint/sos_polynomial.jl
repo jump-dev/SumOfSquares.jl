@@ -153,24 +153,6 @@ function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
 end
 
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
-    input_basis = MB.implicit_basis(bridge.set.basis)
-    output_basis = MB.implicit_basis(bridge.new_basis)
-    if input_basis != output_basis
-        # Cross-algebra adjoint (e.g. Monomial set.basis, Chebyshev new_basis).
-        # The forward map converts each set_basis element to its new_basis
-        # representation. The adjoint dots f with each such column.
-        T = eltype(f)
-        result = zeros(T, length(bridge.set.basis))
-        for (i, mono) in enumerate(bridge.set.basis)
-            cheby_coeffs =
-                SA.coeffs(MB.algebra_element(mono), output_basis)
-            col = SA.coeffs(cheby_coeffs, output_basis, bridge.new_basis)
-            for j in eachindex(col)
-                result[i] += col[j] * f[j]
-            end
-        end
-        return result
-    end
     # FIXME `coeffs` should be an `AbstractMatrix`
     return SA.adjoint_coeffs(f, bridge.set.basis, bridge.new_basis)
 end
