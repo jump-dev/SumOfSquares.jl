@@ -152,14 +152,6 @@ function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
     #return SA.coeffs(MP.polynomial(f, bridge.new_basis), bridge.set.basis)
 end
 
-function _is_cross_algebra(
-    set_basis::MB.MonomialIndexedBasis{B1},
-    new_basis::MB.MonomialIndexedBasis{B2},
-) where {B1,B2}
-    return B1 !== B2 && !Certificate._is_monomial_basis(B2)
-end
-_is_cross_algebra(::SA.AbstractBasis, ::SA.AbstractBasis) = false
-
 function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
     input_basis = MB.implicit_basis(bridge.set.basis)
     output_basis = MB.implicit_basis(bridge.new_basis)
@@ -170,10 +162,9 @@ function MOI.Bridges.adjoint_map_function(bridge::SOSPolynomialBridge, f)
         T = eltype(f)
         result = zeros(T, length(bridge.set.basis))
         for (i, mono) in enumerate(bridge.set.basis)
-            a = MB.algebra_element(mono)
-            cheby_coeffs = SA.coeffs(a, output_basis)
-            cheby_a = MB.algebra_element(cheby_coeffs, output_basis)
-            col = SA.coeffs(cheby_a, bridge.new_basis)
+            cheby_coeffs =
+                SA.coeffs(MB.algebra_element(mono), output_basis)
+            col = SA.coeffs(cheby_coeffs, output_basis, bridge.new_basis)
             for j in eachindex(col)
                 result[i] += col[j] * f[j]
             end
