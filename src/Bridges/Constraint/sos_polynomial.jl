@@ -76,10 +76,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
     )
     implicit_basis = MB.implicit_basis(set.certificate)
     if SA.basis(poly) != implicit_basis
-        poly = MB.algebra_element(
-            SA.coeffs(poly, implicit_basis),
-            implicit_basis,
-        )
+        poly =
+            MB.algebra_element(SA.coeffs(poly, implicit_basis), implicit_basis)
     end
     gram_bases = [gram_basis]
     weights = [MB.constant_algebra_element(SA.basis(poly), T)]
