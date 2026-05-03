@@ -244,13 +244,13 @@ function wml19()
     end
     @testset "Example 6.7" begin
         f =
-            1 + x[1]^2 * x[2]^4 + x[1]^4 * x[2]^2 + x[1]^4 * x[2]^4 -
+            x[3]^0 + x[1]^2 * x[2]^4 + x[1]^4 * x[2]^2 + x[1]^4 * x[2]^4 -
             x[1] * x[2]^2 - 3x[1]^2 * x[2]^2
         alg_el = MB.algebra_element(
             MB.sparse_coefficients(f),
             MB.FullBasis{MB.Monomial}(f),
         )
-        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x[1:2])
+        with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         basis = MB.SubBasis{MB.Monomial}(MP.monomials(f))
         @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in
                                                                            [
