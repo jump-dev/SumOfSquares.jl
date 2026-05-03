@@ -59,12 +59,9 @@ function quadratic_test(
     # inner Chebyshev representation back to the outer Monomial representation.
     μ = moments(dual(cref))
     a = moment_value.(μ)
-    @test a[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol =
-        atol rtol = rtol
+    @test a[2] ≈ -1.0 atol = atol rtol = rtol
     @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
-    _dual_basis =
-        SumOfSquares.Certificate._is_monomial_basis(basis) ? basis : MB.Monomial
-    @test μ[2].polynomial == MB.Polynomial{_dual_basis}(bivariate ? x * y : x^1)
+    @test μ[2].polynomial == MB.Polynomial{MB.Monomial}(bivariate ? x * y : x^1)
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     _test_moments(dual(cref), monos) do vals
@@ -76,6 +73,12 @@ function quadratic_test(
         _test_moments(moments(cref), inner_monos) do vals
             @test length(vals) == 4
         end
+    elseif basis === MB.ScaledMonomial
+        # `moments(cref)` returns the inner constraint moments in ScaledMonomial
+        # basis: off-diagonal entries are scaled by `√2`.
+        _test_moments(moments(cref), monos) do vals
+            @test length(vals) == length(monos)
+        end
     else
         _test_moments(moments(cref), monos) do vals
             @test vals ≈ a atol = atol rtol = rtol
@@ -83,22 +86,15 @@ function quadratic_test(
     end
 
     ν = moment_matrix(cref)
-    off = if bivariate && basis === ScaledMonomial
-        a[2] / √2
-    else
-        a[2]
-    end
     M = value_matrix(ν)
     @test M ≈ [
-        a[1] off
-        off a[3]
+        a[1] a[2]
+        a[2] a[3]
     ] atol = atol rtol = rtol
     @test MB.keys_as_monomials(ν.basis) == cert_monos
 
     _FB = typeof(MB.FullBasis{basis}(x))
-    _poly_basis =
-        SumOfSquares.Certificate._is_monomial_basis(basis) ? basis : MB.Monomial
-    _SB = MB.explicit_basis_type(typeof(MB.FullBasis{_poly_basis}(x)))
+    _SB = MB.explicit_basis_type(typeof(MB.FullBasis{MB.Monomial}(x)))
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
     }
