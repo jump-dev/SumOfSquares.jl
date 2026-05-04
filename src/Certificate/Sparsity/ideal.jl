@@ -113,6 +113,11 @@ function sparsity(
         SumOfSquares.Certificate.gram_basis(certificate, poly),
     )
 end
+
+function MB.implicit_basis(certificate::Ideal)
+    return MB.implicit_basis(certificate.certificate)
+end
+
 function SumOfSquares.Certificate.gram_basis(certificate::Ideal, poly)
     return sparsity(poly, certificate.sparsity, certificate.certificate)
 end

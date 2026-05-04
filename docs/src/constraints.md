@@ -153,8 +153,13 @@ only the basis *type* needs to be given. For instance, to use the scaled monomia
 basis in the example above, use
 ```jldoctest constraint-xy
 julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y, basis = ScaledMonomial)
-(β)·ScaledMonomial(y²) + (-0.7071067811865475 α + 0.7071067811865475 β)·ScaledMonomial(xy) + (α)·ScaledMonomial(x²) is SOS
+(β)·y² + (-α + β)·xy + (α)·x² is SOS
 ```
+In the output, we still see the polynomial in monomial basis.
+The transformation to `basis` is done internally, after Newton polytope step.
+Although the Newton polytope computation in `Monomial` or `ScaledMonomial` basis
+are equivalent,
+this is not the case for `Chebyshev` basis for instance.
 
 ## Polynomial nonnegativity on a subset of the space
 

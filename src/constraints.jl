@@ -388,19 +388,7 @@ function _default_basis(
     basis::MB.SubBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
 ) where {B,G}
-    if B === G
-        return coeffs, basis
-    else
-        return _default_basis(
-            SA.SparseCoefficients(
-                basis.keys,
-                coeffs,
-                SA.comparable(MB.implicit_basis(basis)),
-            ),
-            MB.implicit_basis(basis),
-            gram_basis,
-        )
-    end
+    return coeffs, basis
 end
 
 function _default_basis(
@@ -408,20 +396,11 @@ function _default_basis(
     basis::MB.FullBasis{B},
     gram_basis::MB.MonomialIndexedBasis{G},
 ) where {B,G}
-    if B === G
-        return _default_basis(
-            collect(SA.values(p)),
-            SA.sub_basis(basis, collect(SA.keys(p))),
-            gram_basis,
-        )
-    else
-        new_basis = MB.FullBasis{G}(MP.variables(basis))
-        return _default_basis(
-            SA.coeffs(p, basis, new_basis),
-            new_basis,
-            gram_basis,
-        )
-    end
+    return _default_basis(
+        collect(SA.values(p)),
+        SA.sub_basis(basis, collect(SA.keys(p))),
+        gram_basis,
+    )
 end
 
 function _default_gram_basis(b::MB.MonomialIndexedBasis, ::Nothing)
@@ -483,7 +462,7 @@ function JuMP.build_constraint(
         cone,
         basis,
         gram_basis,
-        _default_zero_basis(basis, zero_basis);
+        _default_zero_basis(gram_basis, zero_basis);
         domain,
         kws...,
     )

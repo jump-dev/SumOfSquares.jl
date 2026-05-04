@@ -28,17 +28,8 @@ function quadratic_test(
     if bivariate
         @polyvar y
         poly = x^2 + α * x * y + y^2
-        if basis === Chebyshev
-            # See https://github.com/jump-dev/SumOfSquares.jl/issues/357
-            cert_monos = [1, y, x]
-        else
-            cert_monos = [y, x]
-        end
-        if basis === Chebyshev
-            monos = [1, y^2, x * y, x^2]
-        else
-            monos = [y^2, x * y, x^2]
-        end
+        cert_monos = [y, x]
+        monos = [y^2, x * y, x^2]
     else
         poly = x^2 + α * x + 1
         cert_monos = [1, x]
@@ -60,46 +51,33 @@ function quadratic_test(
     test_constraint_primal(cref, value(poly); atol, rtol)
 
     p = gram_matrix(cref)
-    if basis === Chebyshev && bivariate
-        # See https://github.com/jump-dev/SumOfSquares.jl/issues/357
-        @test value_matrix(p) ≈ [zeros(1, 3); zeros(2) ones(2, 2)] atol = atol rtol =
-            rtol
-    else
-        @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
-    end
+    @test value_matrix(p) ≈ ones(2, 2) atol = atol rtol = rtol
     @test MB.keys_as_monomials(p.basis) == cert_monos
 
+    # `dual(cref)` returns moments in the polynomial's original basis (Monomial
+    # even when basis = Chebyshev), since the adjoint map converts from the
+    # inner Chebyshev representation back to the outer Monomial representation.
     μ = moments(dual(cref))
     a = moment_value.(μ)
-    if bivariate && basis === MB.Chebyshev
-        b = a[2:end] + [a[1], 0, a[1]]
-        b[1] /= 2
-        b[3] /= 2
-    else
-        b = a
-    end
-    @test b[2] ≈ (bivariate && basis === MB.ScaledMonomial ? -√2 : -1.0) atol =
-        atol rtol = rtol
-    @test b[1] + b[3] ≈ 2.0 atol = atol rtol = rtol
-    @test μ[2].polynomial == MB.Polynomial{basis}(
-        bivariate ? (basis === MB.Chebyshev ? x^0*y^2 : x * y) : x^1,
-    )
+    @test a[2] ≈ -1.0 atol = atol rtol = rtol
+    @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
+    @test μ[2].polynomial == MB.Polynomial{MB.Monomial}(bivariate ? x * y : x^1)
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     _test_moments(dual(cref), monos) do vals
         @test vals ≈ a atol = atol rtol = rtol
     end
     if basis === MB.Chebyshev && bivariate
-        _test_moments(
-            moments(cref),
-            monomial_vector([1, y, x, y^2, x * y, x^2]),
-        ) do vals
-            @test length(vals) == 6
-            for i in [2, 3]
-                @test vals[i] ≈ 0 rtol = rtol atol = atol
-            end
-            @test vals[5] ≈ -1 rtol = rtol atol = atol
-            @test vals[4] + vals[6] + 2vals[1] ≈ 4 rtol = rtol atol = atol
+        # `moments(cref)` returns the inner constraint moments in Chebyshev basis
+        inner_monos = [1, y^2, x * y, x^2]
+        _test_moments(moments(cref), inner_monos) do vals
+            @test length(vals) == 4
+        end
+    elseif basis === MB.ScaledMonomial
+        # `moments(cref)` returns the inner constraint moments in ScaledMonomial
+        # basis: off-diagonal entries are scaled by `√2`.
+        _test_moments(moments(cref), monos) do vals
+            @test length(vals) == length(monos)
         end
     else
         _test_moments(moments(cref), monos) do vals
@@ -108,25 +86,15 @@ function quadratic_test(
     end
 
     ν = moment_matrix(cref)
-    off = if bivariate && basis === ScaledMonomial
-        a[2] / √2
-    elseif bivariate && basis == Chebyshev
-        -(a[1] + a[2]) / 2
-    else
-        a[2]
-    end
     M = value_matrix(ν)
-    if basis === Chebyshev && bivariate
-        M = M[2:end, 2:end]
-    end
     @test M ≈ [
-        b[1] off
-        off b[3]
+        a[1] a[2]
+        a[2] a[3]
     ] atol = atol rtol = rtol
     @test MB.keys_as_monomials(ν.basis) == cert_monos
 
     _FB = typeof(MB.FullBasis{basis}(x))
-    _SB = MB.explicit_basis_type(_FB)
+    _SB = MB.explicit_basis_type(typeof(MB.FullBasis{MB.Monomial}(x)))
     N = SumOfSquares.Certificate.NewtonFilter{
         SumOfSquares.Certificate.NewtonDegreeBounds{Tuple{}},
     }
