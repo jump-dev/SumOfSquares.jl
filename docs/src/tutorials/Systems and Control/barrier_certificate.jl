@@ -52,8 +52,8 @@ JuMP.primal_status(model)
 @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT #src
 
 # Plot the phase plot with the 0-level set of the barrier function, and the boundary of the initial and unsafe sets
-import OrdinaryDiffEq, Plots, ImplicitPlots
-function phase_plot(f, B, g₁, h₁, quiver_scaling, Δt, X0, solver = OrdinaryDiffEq.Tsit5())
+import OrdinaryDiffEqTsit5, Plots, ImplicitPlots
+function phase_plot(f, B, g₁, h₁, quiver_scaling, Δt, X0, solver = OrdinaryDiffEqTsit5.Tsit5())
     X₀plot = ImplicitPlots.implicit_plot(h₁; xlims=(-2, 3), ylims=(-2.5, 2.5), resolution = 1000, label="X₀", linecolor=:blue)
     Xᵤplot = ImplicitPlots.implicit_plot!(g₁; xlims=(-2, 3), ylims=(-2.5, 2.5), resolution = 1000, label="Xᵤ", linecolor=:teal)
     Bplot  = ImplicitPlots.implicit_plot!(B; xlims=(-2, 3), ylims=(-2.5, 2.5), resolution = 1000, label="B = 0", linecolor=:red)
@@ -64,8 +64,8 @@ function phase_plot(f, B, g₁, h₁, quiver_scaling, Δt, X0, solver = Ordinary
     ∇pt(v, p, t) = ∇(v[1], v[2])
     function traj(v0)
         tspan = (0.0, Δt)
-        prob = OrdinaryDiffEq.ODEProblem(∇pt, v0, tspan)
-        return OrdinaryDiffEq.solve(prob, solver, reltol=1e-8, abstol=1e-8)
+        prob = OrdinaryDiffEqTsit5.ODEProblem(∇pt, v0, tspan)
+        return OrdinaryDiffEqTsit5.solve(prob, solver, reltol=1e-8, abstol=1e-8)
     end
     ticks = -5:0.5:5
     X = repeat(ticks, 1, length(ticks))
