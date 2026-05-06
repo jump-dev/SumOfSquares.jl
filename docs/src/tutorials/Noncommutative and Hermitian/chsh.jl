@@ -1,5 +1,4 @@
-import QuantumStuff: trace_monoid, Monoids
-using StarAlgebras
+import StarAlgebras as SA
 
 module Monoids
 
@@ -124,9 +123,12 @@ function Base.:(/)(
     A = m.alphabet
     new_rels = Relation{I}[word(first(r)) => word(last(r)) for r in rels]
 
-    rws = KB.RewritingSystem(new_rels, ordering(KB.alphabet(m)))
+    rws = KB.RewritingSystem(
+        Tuple{KB.Word{I},KB.Word{I}}[(first(r), last(r)) for r in new_rels],
+        ordering(KB.alphabet(m)),
+    )
 
-    rws = KB.knuthbendix!(rws, KB.Settings())
+    rws = KB.knuthbendix(KB.Settings(), rws)
 
     return Monoid(A, new_rels, rws)
 end
@@ -250,36 +252,33 @@ RM = let M = M, A = A, C = C, level = 4
     )
     @info "Sizes of generated balls:" (A, C, combined) = (sizesA, sizesC, sizes)
 
-    b = @time StarAlgebras.FixedBasis(words, StarAlgebras.DiracMStructure(*), (UInt32(sizes[1]), UInt32(sizes[1])))
-    StarAlgebra(M, b)
+    basis = SA.FixedBasis(words)
+    dirac = SA.DiracMStructure(basis, *)
+    table = SA.MTable(dirac, (sizes[1], sizes[1]))
+    SA.StarAlgebra(M, table)
 end
 
 A = RM.(A)
 C = RM.(C)
 chsh = A[1] * C[1] + A[1] * C[2] + A[2] * C[1] - A[2] * C[2]
 
-import StarAlgebras as SA
 struct Full{B} <: SA.ImplicitBasis{B,B} end
+Base.in(::B, ::Full{B}) where {B} = true
 Base.getindex(::Full{B}, b::B) where {B} = b
 import MultivariateBases as MB
 MB.implicit_basis(::SA.FixedBasis{B}) where {B} = Full{B}()
-MB.algebra(b::Full{B}) where {B} = SA.StarAlgebra(M, b)
-SA.mstructure(::Full) = SA.DiracMStructure(*)
+MB.algebra(b::Full{B}) where {B} = SA.StarAlgebra(M, SA.DiracMStructure(b, *))
+SA.comparable(::Full) = isless
 
-b = basis(chsh)
-import StarAlgebras as SA
 f = SA.AlgebraElement(
     SA.SparseCoefficients(
         [b[k] for (k, _) in SA.nonzero_pairs(coeffs(chsh))],
         [v for (_, v) in SA.nonzero_pairs(coeffs(chsh))],
     ),
-    SA.StarAlgebra(
-        parent(chsh).object,
-        Full{eltype(b)}()
-    ),
+    MB.algebra(Full{eltype(SA.basis(chsh))}()),
 )
 n = size(b.table, 1)
-gram_basis = @time StarAlgebras.FixedBasis(b.elts[1:n], StarAlgebras.DiracMStructure(*));
+gram_basis = SA.FixedBasis(SA.basis(b).elts[1:n])
 one(f)
 SA.coeffs(f, b)
 using SumOfSquares
@@ -291,7 +290,7 @@ function SumOfSquares._term_element(a, mono::Monoids.MonoidElement)
 end
 
 cone = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
-    b,
+    SA.basis(chsh),
     [gram_basis],
     [one(f)],
 )
