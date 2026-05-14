@@ -26,21 +26,31 @@ import KnuthBendix as KB
 import GroupsCore.gens
 
 # /!\ Type piracy: this should go to KnuthBendix.jl
-Base.convert(::Type{KB.Word{I}}, v::AbstractVector{<:Integer}) where {I} =
-    KB.Word{I}(v)
-Base.convert(::Type{KB.Word{I}}, w::KB.AbstractWord) where {I} = KB.Word{I}(w, false)
+function Base.convert(
+    ::Type{KB.Word{I}},
+    v::AbstractVector{<:Integer},
+) where {I}
+    return KB.Word{I}(v)
+end
+function Base.convert(::Type{KB.Word{I}}, w::KB.AbstractWord) where {I}
+    return KB.Word{I}(w, false)
+end
 
 abstract type AbstractMonoid{I} end
 
 function Base.iterate(M::AbstractMonoid)
     m = one(M)
-    return m, (words=[word(m)], widx=1, letter=1)
+    return m, (words = [word(m)], widx = 1, letter = 1)
 end
 
-function Base.iterate(M::AbstractMonoid, state, w = copy(state.words[state.widx]))
+function Base.iterate(
+    M::AbstractMonoid,
+    state,
+    w = copy(state.words[state.widx]),
+)
     next_letter = state.letter ≥ length(KB.alphabet(M)) ? 1 : state.letter + 1
     next_widx = next_letter == 1 ? state.widx + 1 : state.widx
-    next_state = (words=state.words, letter=next_letter, widx=next_widx)
+    next_state = (words = state.words, letter = next_letter, widx = next_widx)
 
     push!(w, state.letter)
     m = M(w) # w gets reduced here
@@ -87,17 +97,21 @@ mutable struct MonoidElement{I,M}
     parent::M
     reduced::Bool
 
-    MonoidElement{I}(
+    function MonoidElement{I}(
         w::AbstractVector,
         M::AbstractMonoid,
         reduced = false,
-    ) where {I} = new{I,typeof(M)}(convert(KB.Word{I}, w), M, reduced)
+    ) where {I}
+        return new{I,typeof(M)}(convert(KB.Word{I}, w), M, reduced)
+    end
 
-    MonoidElement{I}(
+    function MonoidElement{I}(
         w::KB.Word{I},
         M::AbstractMonoid{I},
         reduced = false,
-    ) where {I} = new{I,typeof(M)}(w, M, reduced)
+    ) where {I}
+        return new{I,typeof(M)}(w, M, reduced)
+    end
 end
 
 function Base.deepcopy_internal(m::MonoidElement, stackdict::IdDict)
@@ -106,10 +120,12 @@ function Base.deepcopy_internal(m::MonoidElement, stackdict::IdDict)
 end
 
 # coercing to monoid
-(M::AbstractMonoid{I})(
+function (M::AbstractMonoid{I})(
     w::AbstractVector{<:Integer},
     reduced = false,
-) where {I} = MonoidElement{I}(w, M, reduced)
+) where {I}
+    return MonoidElement{I}(w, M, reduced)
+end
 
 # Accessors and basic manipulation
 KB.alphabet(M::FreeMonoid) = M.alphabet
@@ -125,18 +141,23 @@ Base.one(m::MonoidElement) = one(parent(m))
 # isone is equivalent to the word problem for general inputs, see also ==
 # isone(m::MonoidElement) = one(parent(m)) == m # should be literal empty word comparison, but this is already implemented in Base.:(==) below
 
-GroupsCore.gens(M::AbstractMonoid) =
-    [M([i], true) for i in 1:length(KB.alphabet(M))]
+function GroupsCore.gens(M::AbstractMonoid)
+    return [M([i], true) for i in 1:length(KB.alphabet(M))]
+end
 
 # actual user-constructors for Monoid:
 
-Base.:(/)(m::FreeMonoid{I}, rels::AbstractArray{<:MonoidElement}) where {I} =
-    m / [r => one(m) for r in rels]
+function Base.:(/)(
+    m::FreeMonoid{I},
+    rels::AbstractArray{<:MonoidElement},
+) where {I}
+    return m / [r => one(m) for r in rels]
+end
 
 function Base.:(/)(
     m::FreeMonoid{I},
     rels::AbstractArray{<:Pair{<:MonoidElement,<:MonoidElement}},
-    ordering = KB.LenLex
+    ordering = KB.LenLex,
 ) where {I}
     A = m.alphabet
     new_rels = Relation{I}[word(first(r)) => word(last(r)) for r in rels]
@@ -151,11 +172,15 @@ function Base.:(/)(
     return Monoid(A, new_rels, rws)
 end
 
-Base.show(io::IO, M::FreeMonoid) = print(io, "free monoid over $(KB.alphabet(M))")
-Base.show(io::IO, M::Monoid) = print(
-    io,
-    "monoid with $(length(M.relations)) relations over $(KB.alphabet(M))",
-)
+function Base.show(io::IO, M::FreeMonoid)
+    return print(io, "free monoid over $(KB.alphabet(M))")
+end
+function Base.show(io::IO, M::Monoid)
+    return print(
+        io,
+        "monoid with $(length(M.relations)) relations over $(KB.alphabet(M))",
+    )
+end
 
 function Base.:(*)(m1::MonoidElement, m2::MonoidElement)
     parent(m1) === parent(m2) ||
@@ -207,11 +232,13 @@ function Base.isless(m1::MonoidElement, m2::MonoidElement)
     return isless(word(m1), word(m2))
 end
 
-Base.hash(m::MonoidElement, h::UInt) =
-    (normalform!(m); hash(word(m), hash(parent(m), h)))
+function Base.hash(m::MonoidElement, h::UInt)
+    return (normalform!(m); hash(word(m), hash(parent(m), h)))
+end
 
-Base.show(io::IO, m::MonoidElement{I,<:FreeMonoid}) where {I} =
-    print(io, KB.string_repr(word(m), KB.alphabet(parent(m))))
+function Base.show(io::IO, m::MonoidElement{I,<:FreeMonoid}) where {I}
+    return print(io, KB.string_repr(word(m), KB.alphabet(parent(m))))
+end
 
 function Base.show(io::IO, m::MonoidElement)
     m = normalform!(m)
@@ -223,8 +250,9 @@ function wlmetric_ball(S::AbstractVector{T}; radius = 2, op = *) where {T}
     new = empty(old)
     sizes = [1, length(old)]
     for _ in 2:radius
-        new = union!(new,
-            (op(o, s) for o in @view(old[sizes[end-1]:end]) for s in S)
+        new = union!(
+            new,
+            (op(o, s) for o in @view(old[sizes[end-1]:end]) for s in S),
         )
         append!(old, new)
         resize!(new, 0)
@@ -234,18 +262,19 @@ function wlmetric_ball(S::AbstractVector{T}; radius = 2, op = *) where {T}
     return old, sizes[2:end]
 end
 
-Base.adjoint(m::MonoidElement{I}) where {I} =
-    MonoidElement{I}(reverse(m.word), parent(m))
+function Base.adjoint(m::MonoidElement{I}) where {I}
+    return MonoidElement{I}(reverse(m.word), parent(m))
+end
 
 end # module
 
 import StarAlgebras as SA
 import KnuthBendix as KB
 
-function trace_monoid(nA, nC; A=:A, C=:C)
+function trace_monoid(nA, nC; A = :A, C = :C)
     F, A, C = let
-        SA = [Symbol(A, m) for m = 1:nA]
-        SC = [Symbol(C, m) for m = 1:nC]
+        SA = [Symbol(A, m) for m in 1:nA]
+        SC = [Symbol(C, m) for m in 1:nC]
         F = Monoids.FreeMonoid(KB.Alphabet([SA; SC]))
         toF = Dict(zip([SA; SC], Monoids.gens(F)))
 
@@ -255,34 +284,33 @@ function trace_monoid(nA, nC; A=:A, C=:C)
         # Reflections
         obs = [a * a => one(F) for a in [A; C]] # a² = id
         # Commutation
-        com = [
-            y * x => x * y for (p1, p2) in [(A, C)] for x in p1 for y in p2
-        ]
+        com = [y * x => x * y for (p1, p2) in [(A, C)] for x in p1 for y in p2]
         [obs; com]
     end
-    M = F/R
+    M = F / R
     toM = Dict(zip([A; C], Monoids.gens(M)))
-    M, [toM[e] for e in A], [toM[e] for e in C]
+    return M, [toM[e] for e in A], [toM[e] for e in C]
 end
 
 # The rewriting rule are as follows:
 
-monoid, A, C = trace_monoid(2, 2, A=:A, C=:C)
+monoid, A, C = trace_monoid(2, 2, A = :A, C = :C)
 monoid.rws
 
 # We now define a `StarAlgebra` from [StarAlgebras](https://github.com/JuliaAlgebra/StarAlgebras.jl/)
 
 RM = let monoid = monoid, A = A, C = C, level = 4
-    A_l, sizesA = Monoids.wlmetric_ball(A, radius=level)
-    C_l, sizesC = Monoids.wlmetric_ball(C, radius=level)
+    A_l, sizesA = Monoids.wlmetric_ball(A, radius = level)
+    C_l, sizesC = Monoids.wlmetric_ball(C, radius = level)
 
     # starAlg(M, 1, half = unique!([a*c for a in A_l for c in C_l]))
 
     @time words, sizes = Monoids.wlmetric_ball(
         unique!([a * c for a in A_l for c in C_l]);
-        radius=2,
+        radius = 2,
     )
-    @info "Sizes of generated balls:" (A, C, combined) = (sizesA, sizesC, sizes)
+    @info "Sizes of generated balls:" (A, C, combined) =
+        (sizesA, sizesC, sizes)
 
     basis = SA.FixedBasis(words)
     dirac = SA.DiracMStructure(basis, *)
@@ -312,7 +340,9 @@ Base.in(::B, ::Full{B}) where {B} = true
 Base.getindex(::Full{B}, b::B) where {B} = b
 import MultivariateBases as MB
 MB.implicit_basis(::SA.FixedBasis{B}) where {B} = Full{B}()
-MB.algebra(b::Full{B}) where {B} = SA.StarAlgebra(monoid, SA.DiracMStructure(b, *))
+function MB.algebra(b::Full{B}) where {B}
+    return SA.StarAlgebra(monoid, SA.DiracMStructure(b, *))
+end
 SA.comparable(::Full) = isless
 
 # The `chsh` polynomial can be rewritten in this basis as follows:
@@ -362,10 +392,12 @@ objective_value(model) ≈ 2√2
 # Let's look at the size of the generated SDP:
 
 function _add!(f, psd, model, F, S)
-    append!(psd, [
-        f(MOI.get(model, MOI.ConstraintSet(), ci))
-        for ci in MOI.get(model, MOI.ListOfConstraintIndices{F,S}())
-    ],
+    return append!(
+        psd,
+        [
+            f(MOI.get(model, MOI.ConstraintSet(), ci)) for
+            ci in MOI.get(model, MOI.ListOfConstraintIndices{F,S}())
+        ],
     )
 end
 function summary(model)
@@ -377,7 +409,7 @@ function summary(model)
     S = SCS.ScaledPSDCone
     _add!(MOI.side_dimension, psd, model, F, S)
     free -= sum(psd, init = 0) do d
-        div(d * (d + 1), 2)
+        return div(d * (d + 1), 2)
     end
     F = MOI.VectorAffineFunction{Float64}
     S = MOI.PositiveSemidefiniteConeTriangle
@@ -391,7 +423,9 @@ function summary(model)
     F = MOI.ScalarAffineFunction{Float64}
     S = MOI.EqualTo{Float64}
     _add!(MOI.dimension, eq, model, F, S)
-    println("$free free variables, $(sum(eq, init = 0)) equality constraints, PSD block sizes: $psd")
+    println(
+        "$free free variables, $(sum(eq, init = 0)) equality constraints, PSD block sizes: $psd",
+    )
     return
 end
 summary(backend(model).optimizer.model)
@@ -401,24 +435,16 @@ summary(backend(model).optimizer.model)
 
 print_active_bridges(model)
 
-# If we dualize, we get
-
-function dual_scs()
-    T = Float64
-    opt = MOI.instantiate(scs, with_cache_type=T)
-    dual_problem = Dualization.DualProblem{T}(
-        MOI.Utilities.CachingOptimizer(
-            MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}()),
-            opt,
-        ),
-    )
-    OptimizerType = typeof(dual_problem.dual_model)
-    return Dualization.DualOptimizer{T,OptimizerType}(dual_problem)
-end
+# As a workaround for [this MOI issue](https://github.com/jump-dev/MathOptInterface.jl/pull/3001),
+# we need to remove the Image bridge
 
 import Dualization
 model = Model(Dualization.dual_optimizer(scs))
 SumOfSquares.Bridges.add_all_bridges(backend(model).optimizer, Float64)
+MOI.Bridges.remove_bridge(
+    backend(model).optimizer,
+    SumOfSquares.Bridges.Constraint.ImageBridge{Float64},
+)
 @variable(model, λ)
 @objective(model, Min, λ)
 @constraint(model, SA.coeffs(λ * one(f) - f, SA.basis(chsh)) in cone);
@@ -426,17 +452,19 @@ optimize!(model)
 solution_summary(model)
 objective_value(model) ≈ 2√2
 
+# The model is much smaller this time, with 289 equality constraints and 1 free variable.
+
 summary(backend(model).optimizer.model)
-show(backend(model).optimizer.model)
-summary(backend(model).optimizer.model)
-summary(backend(model).optimizer.model.optimizer.dual_problem.dual_model.model)
+
+# After dualization that is 289 free variables and 1 equality constraints.
+# This is a big improvement compared to the 3051 free variables, 18 equality constraints without dualization.
+
+summary(backend(model).optimizer.model.optimizer.dual_problem.dual_model)
+
+# We can see that the bridge used is the `KernelBridge` this time.
+
 print_active_bridges(model)
 
-b = backend(model).optimizer
-F = MOI.VectorAffineFunction{Float64}
-S = MOI.PositiveSemidefiniteConeTriangle
-node = MOI.Bridges.node(b, F, S)
-@edit MOI.Bridges.bridging_cost(b, F, S)
-@edit MOI.Bridges.bridging_cost(b.graph, node)
-
-MOI.Bridges.bridging_cost()
+# We didn't test using the `ImageBridge` with dualization or using the `KernelBridge` without dualization.
+# However, these will always produce larger models, which is why the choice o bridge can be need
+# automatically once you choose whether you want to dualize the problem or not.
