@@ -120,28 +120,25 @@ function MOI.Bridges.Constraint.bridge_constraint(
                     MOI.Utilities.operate_output_index!(-, T, k, f, var)
                 else
                     found[mono] = k
-                    if mono in set.basis
-                        t = set.basis[mono]
-                        first[t] = k
-                        if is_diag
-                            MOI.Utilities.operate_output_index!(
-                                +,
-                                T,
-                                k,
-                                f,
-                                scalars[t],
-                            )
-                        else
-                            MOI.Utilities.operate_output_index!(
-                                +,
-                                T,
-                                k,
-                                f,
-                                inv(T(2)) * scalars[t],
-                            )
-                        end
+                    # FIXME handle case if mono is not in set.basis
+                    t = set.basis[mono]
+                    first[t] = k
+                    if is_diag
+                        MOI.Utilities.operate_output_index!(
+                            +,
+                            T,
+                            k,
+                            f,
+                            scalars[t],
+                        )
                     else
-                        @warn("$mono not in basis")
+                        MOI.Utilities.operate_output_index!(
+                            +,
+                            T,
+                            k,
+                            f,
+                            inv(T(2)) * scalars[t],
+                        )
                     end
                 end
             end
@@ -268,9 +265,10 @@ function MOI.get(
             MOI.get(model, attr, bridge.zero_constraint),
         )
     end
-    funcs = MOI.Utilities.eachscalar.(
-        MOI.get.(model, MOI.ConstraintFunction(), bridge.constraints),
-    )
+    funcs =
+        MOI.Utilities.eachscalar.(
+            MOI.get.(model, MOI.ConstraintFunction(), bridge.constraints),
+        )
     z_idx = 0
     return MOI.Utilities.vectorize(
         map(eachindex(bridge.first)) do i
