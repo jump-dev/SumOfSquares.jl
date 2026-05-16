@@ -176,12 +176,15 @@ function MOI.Bridges.added_constrained_variable_types(::Type{<:ImageBridge})
 end
 
 function MOI.Bridges.added_constraint_types(
-    ::Type{<:ImageBridge{T,F,G}},
-) where {T,F,G}
+    ::Type{<:ImageBridge{T,F,G,M}},
+) where {T,F,G,M}
     return Tuple{Type,Type}[
-        (F, MOI.PositiveSemidefiniteConeTriangle),
+        (F, typeof(SOS.matrix_cone(M, 0))),
+        (F, typeof(SOS.matrix_cone(M, 1))),
+        (F, typeof(SOS.matrix_cone(M, 2))),
+        (F, typeof(SOS.matrix_cone(M, 3))),
         (G, MOI.Zeros),
-    ] # TODO
+    ]
 end
 
 function MOI.Bridges.Constraint.concrete_bridge_type(

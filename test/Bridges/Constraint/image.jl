@@ -59,6 +59,29 @@ function test_runtests()
     return
 end
 
+# Regression test for an oversight in
+# `MOI.Bridges.added_constraint_types(ImageBridge)`: the bridge can produce a
+# constraint in any of the four sets returned by `SOS.matrix_cone(M, k)` for
+# `k = 0, 1, 2, 3` depending on the gram-basis length, but only
+# `PositiveSemidefiniteConeTriangle` (i.e. `k = 3`) was advertised. The other
+# three variants were missing, leaving `LazyBridgeOptimizer` with an
+# inconsistent view of the bridge graph (in particular, its bridging cost was
+# under-estimated relative to `Variable.KernelBridge`, which advertises all
+# four).
+function test_added_constraint_types_covers_all_matrix_cones()
+    T = Float64
+    F = MOI.VectorAffineFunction{T}
+    G = MOI.VectorAffineFunction{T}
+    M = MOI.PositiveSemidefiniteConeTriangle
+    BT = SumOfSquares.Bridges.Constraint.ImageBridge{T,F,G,M}
+    added = MOI.Bridges.added_constraint_types(BT)
+    for k in 0:3
+        @test (F, typeof(SumOfSquares.matrix_cone(M, k))) in added
+    end
+    @test (G, MOI.Zeros) in added
+    return
+end
+
 end  # module
 
 TestConstraintImage.runtests()
