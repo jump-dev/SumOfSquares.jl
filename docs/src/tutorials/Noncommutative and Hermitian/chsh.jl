@@ -23,8 +23,6 @@ module Monoids
 import GroupsCore
 import KnuthBendix as KB
 
-import GroupsCore
-
 # /!\ Type piracy: this should go to KnuthBendix.jl
 function Base.convert(
     ::Type{KB.Word{I}},
