@@ -16,6 +16,7 @@
 # rewriting rules of the [CHSH inequality](https://en.wikipedia.org/wiki/CHSH_inequality) using
 # [KnuthBendix](https://github.com/kalmarek/KnuthBendix.jl).
 
+using SumOfSquares
 include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "monoids.jl"))
 
 import StarAlgebras as SA
@@ -87,7 +88,6 @@ f = SA.AlgebraElement(
 
 # We pick the SCS solver:
 
-using SumOfSquares
 import SCS
 scs = optimizer_with_attributes(
     SCS.Optimizer,
