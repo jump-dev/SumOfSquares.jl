@@ -70,7 +70,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   6   6.0000e+00   6.0000e+00  3.18e-11  2.02e-10  8.47e-11  6.56e-10  1.82e-09  9.90e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time =  690μs
+solve time =  793μs
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -83,7 +83,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -6.00000e+00
 │ └ dual_objective_value : -6.00000e+00
 └ Work counters
-  ├ solve_time (sec)   : 6.90222e-04
+  ├ solve_time (sec)   : 7.93142e-04
   └ barrier_iterations : 6</code></pre><p>The second level improves the lower bound</p><pre><code class="language-julia hljs">model4 = solve(4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.11.1  -  Clever Acronym
 
@@ -127,7 +127,7 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  10   5.6923e+00   5.6923e+00  2.66e-10  3.51e-10  1.97e-10  2.33e-09  1.25e-09  9.78e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 3.28ms
+solve time = 3.54ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -140,7 +140,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -5.69231e+00
 │ └ dual_objective_value : -5.69231e+00
 └ Work counters
-  ├ solve_time (sec)   : 3.28408e-03
+  ├ solve_time (sec)   : 3.54420e-03
   └ barrier_iterations : 10</code></pre><p>The third level improves it even further</p><pre><code class="language-julia hljs">model6 = solve(6)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.11.1  -  Clever Acronym
 
@@ -170,7 +170,7 @@ settings:
 
 iter    pcost        dcost       gap       pres      dres      k/t        μ       step
 ---------------------------------------------------------------------------------------------
-  0   6.2703e-01   6.2703e-01  1.11e-16  7.75e-01  5.19e-01  1.00e+00  1.48e+00   ------
+  0   6.2703e-01   6.2703e-01  0.00e+00  7.75e-01  5.19e-01  1.00e+00  1.48e+00   ------
   1   7.4953e-01   7.6135e-01  1.18e-02  1.77e-01  1.32e-01  2.39e-01  4.26e-01  8.06e-01
   2   1.2333e+00   1.3121e+00  6.39e-02  4.83e-02  5.13e-02  1.73e-01  1.70e-01  8.68e-01
   3   1.9671e+00   2.0062e+00  1.99e-02  1.35e-02  1.14e-02  6.32e-02  3.87e-02  8.18e-01
@@ -187,10 +187,10 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  14   4.0671e+00   4.0671e+00  6.05e-06  5.62e-07  1.01e-07  2.75e-05  6.16e-07  6.69e-01
  15   4.0683e+00   4.0683e+00  7.91e-07  7.24e-08  1.31e-08  3.60e-06  7.98e-08  8.78e-01
  16   4.0684e+00   4.0684e+00  3.27e-07  2.87e-08  5.20e-09  1.48e-06  3.17e-08  7.67e-01
- 17   4.0685e+00   4.0685e+00  6.90e-09  6.03e-10  1.09e-10  3.13e-08  6.67e-10  9.80e-01
+ 17   4.0685e+00   4.0685e+00  6.90e-09  6.03e-10  1.09e-10  3.12e-08  6.67e-10  9.80e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 32.8ms
+solve time = 41.0ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -203,7 +203,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -4.06848e+00
 │ └ dual_objective_value : -4.06848e+00
 └ Work counters
-  ├ solve_time (sec)   : 3.28325e-02
+  ├ solve_time (sec)   : 4.10162e-02
   └ barrier_iterations : 17</code></pre><p>The fourth level finds the optimal objective value as lower bound.</p><pre><code class="language-julia hljs">model8 = solve(8)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.11.1  -  Clever Acronym
 
@@ -233,7 +233,7 @@ settings:
 
 iter    pcost        dcost       gap       pres      dres      k/t        μ       step
 ---------------------------------------------------------------------------------------------
-  0   5.8462e-01   5.8462e-01  3.33e-16  8.33e-01  6.41e-01  1.00e+00  1.32e+00   ------
+  0   5.8462e-01   5.8462e-01  1.44e-15  8.33e-01  6.41e-01  1.00e+00  1.32e+00   ------
   1   6.6260e-01   6.6529e-01  2.69e-03  1.88e-01  1.72e-01  2.55e-01  4.10e-01  7.95e-01
   2   8.8639e-01   9.8255e-01  9.62e-02  7.03e-02  8.83e-02  2.42e-01  2.31e-01  7.79e-01
   3   1.3550e+00   1.3811e+00  1.92e-02  1.49e-02  1.66e-02  5.46e-02  4.98e-02  8.09e-01
@@ -249,14 +249,14 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  13   3.9300e+00   3.9304e+00  1.02e-04  1.29e-05  3.31e-06  4.89e-04  2.08e-05  8.27e-01
  14   3.9879e+00   3.9880e+00  1.64e-05  2.15e-06  5.26e-07  8.02e-05  3.48e-06  8.64e-01
  15   3.9979e+00   3.9979e+00  3.11e-06  3.51e-07  8.41e-08  1.48e-05  5.72e-07  9.11e-01
- 16   3.9995e+00   3.9996e+00  7.21e-07  7.40e-08  1.77e-08  3.39e-06  1.22e-07  8.85e-01
- 17   3.9999e+00   3.9999e+00  1.26e-07  1.28e-08  3.06e-09  5.90e-07  2.10e-08  8.37e-01
- 18   4.0000e+00   4.0000e+00  2.15e-08  1.31e-07  5.07e-10  1.01e-07  3.45e-09  9.09e-01
- 19   4.0000e+00   4.0000e+00  3.77e-09  2.29e-08  8.85e-11  1.76e-08  6.02e-10  8.36e-01
- 20   4.0000e+00   4.0000e+00  7.07e-10  4.22e-09  1.65e-11  3.30e-09  1.11e-10  9.10e-01
+ 16   3.9996e+00   3.9996e+00  7.00e-07  7.12e-08  1.71e-08  3.29e-06  1.18e-07  8.96e-01
+ 17   3.9999e+00   3.9999e+00  1.22e-07  1.24e-08  2.96e-09  5.75e-07  2.04e-08  8.36e-01
+ 18   4.0000e+00   4.0000e+00  2.16e-08  7.60e-08  5.06e-10  1.01e-07  3.46e-09  9.09e-01
+ 19   4.0000e+00   4.0000e+00  3.77e-09  1.32e-08  8.79e-11  1.76e-08  6.01e-10  8.37e-01
+ 20   4.0000e+00   4.0000e+00  7.15e-10  2.47e-09  1.66e-11  3.33e-09  1.12e-10  9.10e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time =  667ms
+solve time =  871ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -269,5 +269,5 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -4.00000e+00
 │ └ dual_objective_value : -4.00000e+00
 └ Work counters
-  ├ solve_time (sec)   : 6.66633e-01
-  └ barrier_iterations : 20</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../goldstein_price/">Goldstein-price function »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 16 May 2026 16:59">Saturday 16 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ├ solve_time (sec)   : 8.71008e-01
+  └ barrier_iterations : 20</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bound_on_global_extremum/">« Bound on Global Extremum</a><a class="docs-footer-nextpage" href="../goldstein_price/">Goldstein-price function »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 16 May 2026 18:34">Saturday 16 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
