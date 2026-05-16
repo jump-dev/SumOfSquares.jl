@@ -8,7 +8,7 @@ import MultivariateBases as MB
 using SumOfSquares
 
 function runtests()
-    for name in names(@__MODULE__; all=true)
+    for name in names(@__MODULE__; all = true)
         if startswith("$(name)", "test_")
             @testset "$(name)" begin
                 getfield(@__MODULE__, name)()
@@ -31,8 +31,8 @@ function test_hypatia_uses_kernel_bridge()
     @polyvar x y
     optimizer = MOI.instantiate(
         Hypatia.Optimizer;
-        with_cache_type=T,
-        with_bridge_type=T,
+        with_cache_type = T,
+        with_bridge_type = T,
     )
     SumOfSquares.Bridges.add_all_bridges(optimizer, T)
     # TODO we use dualized SCS once https://github.com/jump-dev/MathOptInterface.jl/pull/3001 is done
@@ -41,13 +41,7 @@ function test_hypatia_uses_kernel_bridge()
         SumOfSquares.Bridges.Constraint.ImageBridge{T},
     )
     set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
-        MB.SubBasis{MB.Monomial}([
-            y^4,
-            x * y^3,
-            x^2 * y^2,
-            x^3 * y,
-            x^4,
-        ]),
+        MB.SubBasis{MB.Monomial}([y^4, x * y^3, x^2 * y^2, x^3 * y, x^4]),
         [MB.SubBasis{MB.Monomial}([y^2, x * y, x^2])],
         [MB.algebra_element(one(T) * x^0 * y^0)],
     )
@@ -66,8 +60,8 @@ function test_clarabel_uses_image_bridge()
     @polyvar x y
     optimizer = MOI.instantiate(
         Clarabel.Optimizer;
-        with_cache_type=T,
-        with_bridge_type=T,
+        with_cache_type = T,
+        with_bridge_type = T,
     )
     SumOfSquares.Bridges.add_all_bridges(optimizer, T)
     set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
@@ -75,10 +69,8 @@ function test_clarabel_uses_image_bridge()
         [MB.SubBasis{MB.Monomial}([y^2, x * y, x^2])],
         [MB.algebra_element(one(T) * x^0 * y^0)],
     )
-    func = MOI.VectorAffineFunction{T}(
-        MOI.VectorAffineTerm{T}[],
-        T[5, -1, 2, 2],
-    )
+    func =
+        MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[5, -1, 2, 2])
     ci = MOI.add_constraint(optimizer, func, set)
     @test MOI.Bridges.bridge(optimizer, ci) isa
           SumOfSquares.Bridges.Constraint.ImageBridge
