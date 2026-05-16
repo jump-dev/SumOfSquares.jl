@@ -6,6 +6,12 @@ import SumOfSquares as SOS
 include("Variable/Variable.jl")
 include("Constraint/Constraint.jl")
 
+function add_all_bridges(model, ::Type{T}) where {T}
+    Variable.add_all_bridges(model, T)
+    Constraint.add_all_bridges(model, T)
+    return
+end
+
 function MOI.get(
     model::MOI.ModelLike,
     attr::Union{
