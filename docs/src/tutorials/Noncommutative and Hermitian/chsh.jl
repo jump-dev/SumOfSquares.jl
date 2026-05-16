@@ -23,7 +23,7 @@ module Monoids
 import GroupsCore
 import KnuthBendix as KB
 
-import GroupsCore.gens
+import GroupsCore
 
 # /!\ Type piracy: this should go to KnuthBendix.jl
 function Base.convert(
@@ -40,17 +40,17 @@ abstract type AbstractMonoid{I} end
 
 function Base.iterate(M::AbstractMonoid)
     m = one(M)
-    return m, (words = [word(m)], widx = 1, letter = 1)
+    return m, (words=[word(m)], widx=1, letter=1)
 end
 
 function Base.iterate(
     M::AbstractMonoid,
     state,
-    w = copy(state.words[state.widx]),
+    w=copy(state.words[state.widx]),
 )
     next_letter = state.letter ≥ length(KB.alphabet(M)) ? 1 : state.letter + 1
     next_widx = next_letter == 1 ? state.widx + 1 : state.widx
-    next_state = (words = state.words, letter = next_letter, widx = next_widx)
+    next_state = (words=state.words, letter=next_letter, widx=next_widx)
 
     push!(w, state.letter)
     m = M(w) # w gets reduced here
@@ -100,7 +100,7 @@ mutable struct MonoidElement{I,M}
     function MonoidElement{I}(
         w::AbstractVector,
         M::AbstractMonoid,
-        reduced = false,
+        reduced=false,
     ) where {I}
         return new{I,typeof(M)}(convert(KB.Word{I}, w), M, reduced)
     end
@@ -108,7 +108,7 @@ mutable struct MonoidElement{I,M}
     function MonoidElement{I}(
         w::KB.Word{I},
         M::AbstractMonoid{I},
-        reduced = false,
+        reduced=false,
     ) where {I}
         return new{I,typeof(M)}(w, M, reduced)
     end
@@ -122,7 +122,7 @@ end
 # coercing to monoid
 function (M::AbstractMonoid{I})(
     w::AbstractVector{<:Integer},
-    reduced = false,
+    reduced=false,
 ) where {I}
     return MonoidElement{I}(w, M, reduced)
 end
@@ -157,7 +157,7 @@ end
 function Base.:(/)(
     m::FreeMonoid{I},
     rels::AbstractArray{<:Pair{<:MonoidElement,<:MonoidElement}},
-    ordering = KB.LenLex,
+    ordering=KB.LenLex,
 ) where {I}
     A = m.alphabet
     new_rels = Relation{I}[word(first(r)) => word(last(r)) for r in rels]
@@ -245,7 +245,7 @@ function Base.show(io::IO, m::MonoidElement)
     return KB.print_repr(io, word(m), KB.alphabet(parent(m)), "·")
 end
 
-function wlmetric_ball(S::AbstractVector{T}; radius = 2, op = *) where {T}
+function wlmetric_ball(S::AbstractVector{T}; radius=2, op=*) where {T}
     old = unique!([one(first(S)), S...])
     new = empty(old)
     sizes = [1, length(old)]
@@ -270,13 +270,14 @@ end # module
 
 import StarAlgebras as SA
 import KnuthBendix as KB
+import GroupsCore
 
-function trace_monoid(nA, nC; A = :A, C = :C)
+function trace_monoid(nA, nC; A=:A, C=:C)
     F, A, C = let
         SA = [Symbol(A, m) for m in 1:nA]
         SC = [Symbol(C, m) for m in 1:nC]
         F = Monoids.FreeMonoid(KB.Alphabet([SA; SC]))
-        toF = Dict(zip([SA; SC], Monoids.gens(F)))
+        toF = Dict(zip([SA; SC], GroupsCore.gens(F)))
 
         F, [toF[e] for e in SA], [toF[e] for e in SC]
     end
@@ -288,26 +289,26 @@ function trace_monoid(nA, nC; A = :A, C = :C)
         [obs; com]
     end
     M = F / R
-    toM = Dict(zip([A; C], Monoids.gens(M)))
+    toM = Dict(zip([A; C], GroupsCore.gens(M)))
     return M, [toM[e] for e in A], [toM[e] for e in C]
 end
 
 # The rewriting rule are as follows:
 
-monoid, A, C = trace_monoid(2, 2, A = :A, C = :C)
+monoid, A, C = trace_monoid(2, 2, A=:A, C=:C)
 monoid.rws
 
 # We now define a `StarAlgebra` from [StarAlgebras](https://github.com/JuliaAlgebra/StarAlgebras.jl/)
 
 RM = let monoid = monoid, A = A, C = C, level = 4
-    A_l, sizesA = Monoids.wlmetric_ball(A, radius = level)
-    C_l, sizesC = Monoids.wlmetric_ball(C, radius = level)
+    A_l, sizesA = Monoids.wlmetric_ball(A, radius=level)
+    C_l, sizesC = Monoids.wlmetric_ball(C, radius=level)
 
     # starAlg(M, 1, half = unique!([a*c for a in A_l for c in C_l]))
 
     @time words, sizes = Monoids.wlmetric_ball(
         unique!([a * c for a in A_l for c in C_l]);
-        radius = 2,
+        radius=2,
     )
     @info "Sizes of generated balls:" (A, C, combined) =
         (sizesA, sizesC, sizes)
@@ -408,7 +409,7 @@ function summary(model)
     _add!(MOI.side_dimension, psd, model, F, S)
     S = SCS.ScaledPSDCone
     _add!(MOI.side_dimension, psd, model, F, S)
-    free -= sum(psd, init = 0) do d
+    free -= sum(psd, init=0) do d
         return div(d * (d + 1), 2)
     end
     F = MOI.VectorAffineFunction{Float64}
