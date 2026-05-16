@@ -35,6 +35,11 @@ function test_hypatia_uses_kernel_bridge()
         with_bridge_type=T,
     )
     SumOfSquares.Bridges.add_all_bridges(optimizer, T)
+    # TODO we use dualized SCS once https://github.com/jump-dev/MathOptInterface.jl/pull/3001 is done
+    MOI.Bridges.remove_bridge(
+        optimizer,
+        SumOfSquares.Bridges.Constraint.ImageBridge{T},
+    )
     set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
         MB.SubBasis{MB.Monomial}([
             y^4,
