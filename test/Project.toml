@@ -20,8 +20,8 @@ SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TypedPolynomials = "afbbf031-7a57-5f58-a1b9-b774a0fad08d"
 
-[compat]
-DynamicPolynomials = "0.6"
-
 [sources]
 SumOfSquares = {path = ".."}
+
+[compat]
+DynamicPolynomials = "0.6"
