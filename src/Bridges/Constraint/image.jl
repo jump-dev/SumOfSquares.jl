@@ -86,7 +86,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     variables = MOI.VariableIndex[]
     constraints = MOI.ConstraintIndex{F}[]
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
-        # TODO don't ignore weight
+        @assert isone(weight)
         cone = SOS.matrix_cone(M, length(gram_basis))
         f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(cone))
         for j in eachindex(gram_basis)
@@ -118,9 +118,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
                         )
                     end
                     MOI.Utilities.operate_output_index!(-, T, k, f, var)
-                else
+                elseif mono in set.basis
                     found[mono] = k
-                    # FIXME handle case if mono is not in set.basis
                     t = set.basis[mono]
                     first[t] = k
                     if is_diag
