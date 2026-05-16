@@ -33,16 +33,12 @@ monoid.rws
 RM = let monoid = monoid, A = A, C = C, level = 4
     A_l, sizesA = Monoids.wlmetric_ball(A, radius=level)
     C_l, sizesC = Monoids.wlmetric_ball(C, radius=level)
-
-    # starAlg(M, 1, half = unique!([a*c for a in A_l for c in C_l]))
-
     @time words, sizes = Monoids.wlmetric_ball(
         unique!([a * c for a in A_l for c in C_l]);
         radius=2,
     )
     @info "Sizes of generated balls:" (A, C, combined) =
         (sizesA, sizesC, sizes)
-
     basis = SA.FixedBasis(words)
     dirac = SA.DiracMStructure(basis, *)
     table = SA.MTable(dirac, (sizes[1], sizes[1]))
