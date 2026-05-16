@@ -40,6 +40,3 @@ DynamicPolynomials = "0.6"
 KnuthBendix = "0.5"
 PolyJuMP = "0.8"
 SymbolicWedderburn = "0.5"
-
-[sources]
-SumOfSquares = {path = ".."}
