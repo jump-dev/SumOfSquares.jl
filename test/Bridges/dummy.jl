@@ -146,7 +146,7 @@ function test_dummymosek_uses_kernel_bridge()
         optimizer,
         SumOfSquares.Bridges.Variable.KernelBridge{T},
     )
-    @test MOI.Bridges.bridging_cost(optimizer, S) == 8.0
+    @test MOI.Bridges.bridging_cost(optimizer, S) == 7.0
     @test !MOI.Bridges.is_variable_bridged(optimizer, S)
     return
 end

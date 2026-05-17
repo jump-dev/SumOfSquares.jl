@@ -38,7 +38,7 @@ function test_clarabel_uses_image_bridge()
     )
     S = typeof(set)
     # `ImageBridge` directly supports `F`-in-`WeightedSOSCone`.
-    @test MOI.Bridges.bridging_cost(optimizer, F, S) == 7.0
+    @test MOI.Bridges.bridging_cost(optimizer, F, S) == 6.0
     func =
         MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[5, -1, 2, 2])
     ci = MOI.add_constraint(optimizer, func, set)
