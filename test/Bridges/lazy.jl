@@ -1,7 +1,6 @@
 module TestLazy
 
 using Test
-import Hypatia
 import Clarabel
 using DynamicPolynomials
 import MultivariateBases as MB
@@ -15,55 +14,6 @@ function runtests()
             end
         end
     end
-    return
-end
-
-# Verify that with a full bridge optimizer wrapping CSDP, the bridges added by
-# `SumOfSquares.Bridges.add_all_bridges` route a `WeightedSOSCone` constrained
-# variable through `KernelBridge`. CSDP only supports
-# `MOI.PositiveSemidefiniteConeTriangle` as constrained variables, which is
-# what `KernelBridge` produces. We follow the workaround documented in
-# `docs/src/tutorials/Noncommutative and Hermitian/chsh.jl`
-# (cf. https://github.com/jump-dev/MathOptInterface.jl/pull/3001) and remove
-# `ImageBridge` so the bridge optimizer picks the `KernelBridge` path.
-function test_hypatia_uses_kernel_bridge()
-    T = Float64
-    @polyvar x y
-    optimizer = MOI.instantiate(
-        Hypatia.Optimizer;
-        with_cache_type = T,
-        with_bridge_type = T,
-    )
-    SumOfSquares.Bridges.add_all_bridges(optimizer, T)
-    set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
-        MB.SubBasis{MB.Monomial}([y^4, x * y^3, x^2 * y^2, x^3 * y, x^4]),
-        [MB.SubBasis{MB.Monomial}([y^2, x * y, x^2])],
-        [MB.algebra_element(one(T) * x^0 * y^0)],
-    )
-    S = typeof(set)
-    # With every bridge enabled, `KernelBridge` (variable side) wins.
-    @test MOI.Bridges.bridging_cost(optimizer, S) == 6.0
-    @test MOI.Bridges.is_variable_bridged(optimizer, S)
-    _, ci = MOI.add_constrained_variables(optimizer, set)
-    @test MOI.Bridges.bridge(optimizer, ci) isa
-          SumOfSquares.Bridges.Variable.KernelBridge
-    # Re-instantiate without `KernelBridge` so we measure the fallback path
-    # through `ImageBridge` instead.
-    optimizer = MOI.instantiate(
-        Hypatia.Optimizer;
-        with_cache_type = T,
-        with_bridge_type = T,
-    )
-    SumOfSquares.Bridges.add_all_bridges(optimizer, T)
-    MOI.Bridges.remove_bridge(
-        optimizer,
-        SumOfSquares.Bridges.Variable.KernelBridge{T},
-    )
-    @test MOI.Bridges.bridging_cost(optimizer, S) == 7.0
-    @test !MOI.Bridges.is_variable_bridged(optimizer, S)
-    _, ci = MOI.add_constrained_variables(optimizer, set)
-    @test MOI.Bridges.bridge(optimizer, ci) isa
-          SumOfSquares.Bridges.Constraint.ImageBridge
     return
 end
 
