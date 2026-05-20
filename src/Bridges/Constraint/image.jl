@@ -187,6 +187,15 @@ function MOI.Bridges.added_constraint_types(
     ]
 end
 
+# The default cost of `1` makes `ImageBridge` win against `Variable.KernelBridge`
+# for solvers that natively support PSD as constrained variables (e.g. Mosek's
+# `barvar` matrix variables), where `KernelBridge` would be more natural.
+# Bumping the cost by `1` shifts the balance: for solvers that only support PSD
+# as a constraint (e.g. Clarabel), the `KernelBridge` fallback path is still
+# strictly more expensive, so `ImageBridge` remains the cheapest path; for
+# solvers that support PSD as constrained variables, `KernelBridge` now wins.
+MOI.Bridges.bridging_cost(::Type{<:ImageBridge}) = 2.0
+
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:ImageBridge{T}},
     G::Type{<:MOI.AbstractVectorFunction},
