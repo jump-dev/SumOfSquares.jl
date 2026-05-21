@@ -235,17 +235,18 @@ end
 #      the vector as `sqrt(weights[j]) * column` with a unit singular value).
 #      That keeps `LowRankBridge` agnostic of the sign of `weights[j]` (no
 #      `sqrt` to take) and lets it stay generic for `rank > 1`.
-#   2. The explicit `LRO.Bridges.Variable.add_all_bridges` call below adds
+#   2. `PolyJuMP.bridges` for that intermediate `SetDotProducts` variant adds
 #      `LRO.Bridges.Variable.ToRankOneBridge`, which splits the
-#      `Factorization{T, Matrix{T}, Vector{T}}` into rank-1
-#      `Factorization{T, Vector{T}, LRO.One{T}}` pieces (one per gram-basis
-#      column, scaling collapsed to the 0-dim `FillArrays.Ones`).
-#   3. Hypatia's MOI wrapper natively consumes that rank-1 variant.
+#      `Factorization{T, Matrix{T}, Vector{T}}` into per-column rank-1 pieces
+#      `Factorization{T, Vector{T}, Array{T,0}}`.
+#   3. `PolyJuMP.bridges` for that variant adds
+#      `LRO.Bridges.Variable.ToPositiveBridge`, which collapses the 0-dim
+#      scaling into `LRO.One{T}` (= `FillArrays.Ones{T,0,Tuple{}}`).
+#   4. Hypatia's MOI wrapper natively consumes that final rank-1 variant.
 function test_hypatia_jump_uses_setdotproducts()
     @polyvar x
     model = JuMP.Model(Hypatia.Optimizer)
     JuMP.set_silent(model)
-    LRO.Bridges.Variable.add_all_bridges(JuMP.backend(model).optimizer, Float64)
     @variable(model, γ)
     @objective(model, Max, γ)
     p = x^4 - 4x^3 - 2x^2 + 12x + 3
