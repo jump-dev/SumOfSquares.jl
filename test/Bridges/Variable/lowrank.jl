@@ -228,10 +228,7 @@ function test_hypatia_jump_uses_setdotproducts()
     @polyvar x
     model = JuMP.Model(Hypatia.Optimizer)
     JuMP.set_silent(model)
-    LRO.Bridges.Variable.add_all_bridges(
-        JuMP.backend(model).optimizer,
-        Float64,
-    )
+    LRO.Bridges.Variable.add_all_bridges(JuMP.backend(model).optimizer, Float64)
     @variable(model, γ)
     @objective(model, Max, γ)
     p = x^4 - 4x^3 - 2x^2 + 12x + 3
