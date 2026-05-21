@@ -26,6 +26,25 @@ function PolyJuMP.bridges(::Type{<:CopositiveInnerCone})
     return [(Bridges.Variable.CopositiveInnerBridge, Float64)]
 end
 
+# `LowRankBridge` produces `LRO.SetDotProduct` of rank-1 with
+# scaling being equal to the value of the domain constraint
+# on the samples, not necessarily one.
+# But Hypatia needs 1 so we need `ToPositiveBridge` to transform.
+function PolyJuMP.bridges(
+    ::Type{
+        <:LRO.SetDotProducts{
+            W,
+            S,
+            LRO.TriangleVectorization{
+                T,
+                LRO.Factorization{T,Vector{T},Array{T,0}},
+            },
+        },
+    },
+) where {W,S,T}
+    return Tuple{Type,Type}[(LRO.Bridges.Variable.ToPositiveBridge, T)]
+end
+
 function JuMP.value(p::GramMatrix{<:JuMP.AbstractJuMPScalar})
     return GramMatrix(map(JuMP.value, p.Q), p.basis)
 end
