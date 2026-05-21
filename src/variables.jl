@@ -35,7 +35,10 @@ function PolyJuMP.bridges(
         <:LRO.SetDotProducts{
             W,
             S,
-            LRO.TriangleVectorization{T,LRO.Factorization{T,Vector{T},Array{T,0}}},
+            LRO.TriangleVectorization{
+                T,
+                LRO.Factorization{T,Vector{T},Array{T,0}},
+            },
         },
     },
 ) where {W,S,T}
