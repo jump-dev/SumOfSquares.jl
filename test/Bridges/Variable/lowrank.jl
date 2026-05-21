@@ -5,6 +5,7 @@ import MultivariateBases as MB
 import LowRankOpt as LRO
 import Hypatia
 using DynamicPolynomials
+using JuMP
 using SumOfSquares
 
 function runtests()
@@ -215,6 +216,64 @@ function test_hypatia_uses_setdotproducts()
         ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
         constraint_types,
     )
+    return
+end
+
+# Same idea as `test_hypatia_uses_setdotproducts` but driven through the JuMP
+# `@constraint` macro and a `BoxSampling` `zero_basis`: the SOS constraint
+# should reach Hypatia as a `VOV-in-LRO.SetDotProducts` rather than going
+# through `MOI.PositiveSemidefiniteConeTriangle` (which would require Hypatia
+# to bridge it back to its native scaled cone).
+#
+# The bridge chain that lands the constraint at Hypatia is:
+#   1. `PolyJuMP`'s `bridges(::Type{<:WeightedSOSCone})` auto-registers
+#      `SumOfSquares.Bridges.Variable.LowRankBridge`, which produces
+#      `LRO.SetDotProducts{WITHOUT_SET, PSDConeTriangle,
+#       TriangleVectorization{T, Factorization{T, Matrix{T}, Vector{T}}}}` —
+#      i.e. it keeps each gram-basis column as a *one-column matrix* with a
+#      single scaling factor `weights[j]` (rather than baking the weight into
+#      the vector as `sqrt(weights[j]) * column` with a unit singular value).
+#      That keeps `LowRankBridge` agnostic of the sign of `weights[j]` (no
+#      `sqrt` to take) and lets it stay generic for `rank > 1`.
+#   2. The explicit `LRO.Bridges.Variable.add_all_bridges` call below adds
+#      `LRO.Bridges.Variable.ToRankOneBridge`, which splits the
+#      `Factorization{T, Matrix{T}, Vector{T}}` into rank-1
+#      `Factorization{T, Vector{T}, LRO.One{T}}` pieces (one per gram-basis
+#      column, scaling collapsed to the 0-dim `FillArrays.Ones`).
+#   3. Hypatia's MOI wrapper natively consumes that rank-1 variant.
+function test_hypatia_jump_uses_setdotproducts()
+    @polyvar x
+    model = JuMP.Model(Hypatia.Optimizer)
+    JuMP.set_silent(model)
+    LRO.Bridges.Variable.add_all_bridges(JuMP.backend(model).optimizer, Float64)
+    @variable(model, γ)
+    @objective(model, Max, γ)
+    p = x^4 - 4x^3 - 2x^2 + 12x + 3
+    @constraint(
+        model,
+        p - γ in SOSCone(),
+        zero_basis = MB.BoxSampling([-1.0], [1.0]),
+    )
+    JuMP.optimize!(model)
+    @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
+    @test JuMP.value(γ) ≈ -6 rtol = 1e-4
+    inner_cache = JuMP.backend(model).optimizer.model.model_cache
+    constraint_types = MOI.get(inner_cache, MOI.ListOfConstraintTypesPresent())
+    @test !any(
+        ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
+        constraint_types,
+    )
+    # The constraint reaches Hypatia as the rank-1 `LRO.SetDotProducts` variant
+    # that Hypatia's MOI wrapper natively supports.
+    expected_S = LRO.SetDotProducts{
+        LRO.WITHOUT_SET,
+        MOI.PositiveSemidefiniteConeTriangle,
+        LRO.TriangleVectorization{
+            Float64,
+            LRO.Factorization{Float64,Vector{Float64},LRO.One{Float64}},
+        },
+    }
+    @test (MOI.VectorOfVariables, expected_S) in constraint_types
     return
 end
 
