@@ -5,6 +5,7 @@ import MultivariateBases as MB
 import LowRankOpt as LRO
 import Hypatia
 using DynamicPolynomials
+using JuMP
 using SumOfSquares
 
 function runtests()
@@ -210,6 +211,40 @@ function test_hypatia_uses_setdotproducts()
     MOI.add_constrained_variables(model, set)
     cache = optimizer.model_cache
     constraint_types = MOI.get(cache, MOI.ListOfConstraintTypesPresent())
+    @test any(((F, S),) -> S <: LRO.SetDotProducts, constraint_types)
+    @test !any(
+        ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
+        constraint_types,
+    )
+    return
+end
+
+# Same idea as `test_hypatia_uses_setdotproducts` but driven through the JuMP
+# `@constraint` macro and a `BoxSampling` `zero_basis`: the SOS constraint
+# should reach Hypatia as a `VOV-in-LRO.SetDotProducts` rather than going
+# through `MOI.PositiveSemidefiniteConeTriangle` (which would require Hypatia
+# to bridge it back to its native scaled cone).
+function test_hypatia_jump_uses_setdotproducts()
+    @polyvar x
+    model = JuMP.Model(Hypatia.Optimizer)
+    JuMP.set_silent(model)
+    LRO.Bridges.Variable.add_all_bridges(
+        JuMP.backend(model).optimizer,
+        Float64,
+    )
+    @variable(model, γ)
+    @objective(model, Max, γ)
+    p = x^4 - 4x^3 - 2x^2 + 12x + 3
+    @constraint(
+        model,
+        p - γ in SOSCone(),
+        zero_basis = MB.BoxSampling([-1.0], [1.0]),
+    )
+    JuMP.optimize!(model)
+    @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
+    @test JuMP.value(γ) ≈ -6 rtol = 1e-4
+    inner_cache = JuMP.backend(model).optimizer.model.model_cache
+    constraint_types = MOI.get(inner_cache, MOI.ListOfConstraintTypesPresent())
     @test any(((F, S),) -> S <: LRO.SetDotProducts, constraint_types)
     @test !any(
         ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
