@@ -68,7 +68,7 @@ function MOI.Bridges.added_constrained_variable_types(
                 S[1],
                 LRO.TriangleVectorization{
                     T,
-                    LRO.Factorization{T,Matrix{T},Vector{T}},
+                    LRO.Factorization{T,Vector{T},Array{T,0}},
                 },
             },
         ) for S in SOS.Bridges.Constraint.constrained_variable_types(M) if

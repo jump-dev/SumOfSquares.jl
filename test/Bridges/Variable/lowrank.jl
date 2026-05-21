@@ -52,13 +52,13 @@ function test_runtests()
                     SumOfSquares.PositiveSemidefinite2x2ConeTriangle(),
                     [
                         LRO.TriangleVectorization(
-                            LRO.Factorization(reshape([1.0, 0.0], 2, 1), [1.0]),
+                            LRO.Factorization([1.0, 0.0], reshape([1.0], ())),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(reshape([1.0, 1.0], 2, 1), [1.0]),
+                            LRO.Factorization([1.0, 1.0], reshape([1.0], ())),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(reshape([1.0, 2.0], 2, 1), [1.0]),
+                            LRO.Factorization([1.0, 2.0], reshape([1.0], ())),
                         ),
                     ],
                 ),
@@ -105,13 +105,13 @@ function test_runtests_weighted()
                     SumOfSquares.PositiveSemidefinite2x2ConeTriangle(),
                     [
                         LRO.TriangleVectorization(
-                            LRO.Factorization(reshape([1.0, 0.0], 2, 1), [2.0]),
+                            LRO.Factorization([1.0, 0.0], reshape([2.0], ())),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(reshape([1.0, 1.0], 2, 1), [2.0]),
+                            LRO.Factorization([1.0, 1.0], reshape([2.0], ())),
                         ),
                         LRO.TriangleVectorization(
-                            LRO.Factorization(reshape([1.0, 2.0], 2, 1), [2.0]),
+                            LRO.Factorization([1.0, 2.0], reshape([2.0], ())),
                         ),
                     ],
                 ),
@@ -229,20 +229,15 @@ end
 #   1. `PolyJuMP`'s `bridges(::Type{<:WeightedSOSCone})` auto-registers
 #      `SumOfSquares.Bridges.Variable.LowRankBridge`, which produces
 #      `LRO.SetDotProducts{WITHOUT_SET, PSDConeTriangle,
-#       TriangleVectorization{T, Factorization{T, Matrix{T}, Vector{T}}}}` —
-#      i.e. it keeps each gram-basis column as a *one-column matrix* with a
-#      single scaling factor `weights[j]` (rather than baking the weight into
-#      the vector as `sqrt(weights[j]) * column` with a unit singular value).
-#      That keeps `LowRankBridge` agnostic of the sign of `weights[j]` (no
-#      `sqrt` to take) and lets it stay generic for `rank > 1`.
-#   2. `PolyJuMP.bridges` for that intermediate `SetDotProducts` variant adds
-#      `LRO.Bridges.Variable.ToRankOneBridge`, which splits the
-#      `Factorization{T, Matrix{T}, Vector{T}}` into per-column rank-1 pieces
-#      `Factorization{T, Vector{T}, Array{T,0}}`.
-#   3. `PolyJuMP.bridges` for that variant adds
+#       TriangleVectorization{T, Factorization{T, Vector{T}, Array{T,0}}}}` —
+#      i.e. directly emits per-Lagrange-point rank-1 factors `U[j, :]` with a
+#      0-dim scaling `weights[j]` (rather than baking the weight into the
+#      vector as `sqrt(weights[j]) * column`, which would force a `sqrt`
+#      that's only valid for non-negative weights).
+#   2. `PolyJuMP.bridges` for that rank-1 `SetDotProducts` variant adds
 #      `LRO.Bridges.Variable.ToPositiveBridge`, which collapses the 0-dim
 #      scaling into `LRO.One{T}` (= `FillArrays.Ones{T,0,Tuple{}}`).
-#   4. Hypatia's MOI wrapper natively consumes that final rank-1 variant.
+#   3. Hypatia's MOI wrapper natively consumes that final rank-1 variant.
 function test_hypatia_jump_uses_setdotproducts()
     @polyvar x
     model = JuMP.Model(Hypatia.Optimizer)
