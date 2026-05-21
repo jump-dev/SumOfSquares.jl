@@ -26,23 +26,10 @@ function PolyJuMP.bridges(::Type{<:CopositiveInnerCone})
     return [(Bridges.Variable.CopositiveInnerBridge, Float64)]
 end
 
-# Chain the LRO `SetDotProducts` variants produced by `Variable.LowRankBridge`
-# down to the rank-1 `Factorization{T,Vector{T},LRO.One{T}}` form that low-rank
-# solvers (e.g. Hypatia via its `LowRankOpt` extension) consume natively. This
-# lets `PolyJuMP`'s `bridgeable` machinery register the LRO variable bridges
-# automatically, so users don't have to call
-# `LRO.Bridges.Variable.add_all_bridges` themselves.
-function PolyJuMP.bridges(
-    ::Type{
-        <:LRO.SetDotProducts{
-            W,
-            S,
-            LRO.TriangleVectorization{T,LRO.Factorization{T,Matrix{T},Vector{T}}},
-        },
-    },
-) where {W,S,T}
-    return Tuple{Type,Type}[(LRO.Bridges.Variable.ToRankOneBridge, T)]
-end
+# `LowRankBridge` produces `LRO.SetDotProduct` of rank-1 with
+# scaling being equal to the value of the domain constraint
+# on the samples, not necessarily one.
+# But Hypatia needs 1 so we need `ToPositiveBridge` to transform.
 function PolyJuMP.bridges(
     ::Type{
         <:LRO.SetDotProducts{

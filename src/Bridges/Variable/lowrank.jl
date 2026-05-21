@@ -26,10 +26,7 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
                 SOS.matrix_cone(M, length(set.gram_bases[i])),
                 [
                     LRO.TriangleVectorization(
-                        LRO.Factorization(
-                            Matrix{T}(reshape(U[j, :], size(U, 2), 1)),
-                            T[weights[j]],
-                        ),
+                        LRO.Factorization(U[j, :], reshape(T[weights[j]], ())),
                     ) for j in eachindex(set.basis)
                 ],
             ),
