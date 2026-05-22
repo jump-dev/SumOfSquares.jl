@@ -1,6 +1,6 @@
 name = "SumOfSquares"
 uuid = "4b9e565b-77fc-50a5-a571-1244f986bda1"
-version = "0.7.3"
+version = "0.8.0"
 repo = "https://github.com/jump-dev/SumOfSquares.jl.git"
 
 [deps]
