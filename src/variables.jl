@@ -26,14 +26,37 @@ function PolyJuMP.bridges(::Type{<:CopositiveInnerCone})
     return [(Bridges.Variable.CopositiveInnerBridge, Float64)]
 end
 
-# `LowRankBridge` produces `LRO.SetDotProduct` of rank-1 with
-# scaling being equal to the value of the domain constraint
-# on the samples, not necessarily one.
-# But Hypatia needs 1 so we need `ToPositiveBridge` to transform.
+# Chain the `LRO.SetDotProducts` variants produced by `Variable.LowRankBridge`
+# down to whichever form the inner solver consumes natively. For low-rank-aware
+# solvers (e.g. Hypatia via its `LowRankOpt` extension), the cheaper rank-1
+# path `ToRankOneBridge` → `ToPositiveBridge` lands at
+# `Factorization{T,Vector{T},LRO.One{T}}`. For classical PSD solvers without a
+# native low-rank interface (and with `KernelBridge` not applicable, e.g.
+# because the basis is a `LagrangeBasis`), the fallback path `AppendSetBridge`
+# → `DotProductsBridge` lands at the underlying matrix cone `S`. Both are
+# registered; `LazyBridgeOptimizer`'s cost graph picks the cheapest path.
 function PolyJuMP.bridges(
     ::Type{
         <:LRO.SetDotProducts{
-            W,
+            LRO.WITHOUT_SET,
+            S,
+            LRO.TriangleVectorization{
+                T,
+                LRO.Factorization{T,Matrix{T},Vector{T}},
+            },
+        },
+    },
+) where {S,T}
+    return Tuple{Type,Type}[
+        (LRO.Bridges.Variable.ToRankOneBridge, T),
+        (LRO.Bridges.Variable.AppendSetBridge, T),
+    ]
+end
+
+function PolyJuMP.bridges(
+    ::Type{
+        <:LRO.SetDotProducts{
+            LRO.WITHOUT_SET,
             S,
             LRO.TriangleVectorization{
                 T,
@@ -41,8 +64,38 @@ function PolyJuMP.bridges(
             },
         },
     },
-) where {W,S,T}
-    return Tuple{Type,Type}[(LRO.Bridges.Variable.ToPositiveBridge, T)]
+) where {S,T}
+    return Tuple{Type,Type}[
+        (LRO.Bridges.Variable.ToPositiveBridge, T),
+        (LRO.Bridges.Variable.AppendSetBridge, T),
+    ]
+end
+
+function PolyJuMP.bridges(
+    ::Type{
+        <:LRO.SetDotProducts{
+            LRO.WITHOUT_SET,
+            S,
+            LRO.TriangleVectorization{
+                T,
+                LRO.Factorization{T,Vector{T},LRO.One{T}},
+            },
+        },
+    },
+) where {S,T}
+    return Tuple{Type,Type}[(LRO.Bridges.Variable.AppendSetBridge, T)]
+end
+
+function PolyJuMP.bridges(
+    ::Type{
+        <:LRO.SetDotProducts{
+            LRO.WITH_SET,
+            S,
+            LRO.TriangleVectorization{T,LRO.Factorization{T,F,D}},
+        },
+    },
+) where {S,T,F,D}
+    return Tuple{Type,Type}[(LRO.Bridges.Variable.DotProductsBridge, T)]
 end
 
 function JuMP.value(p::GramMatrix{<:JuMP.AbstractJuMPScalar})
