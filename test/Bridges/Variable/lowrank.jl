@@ -354,10 +354,7 @@ function test_lro_optimizer_preserves_low_rank_structure()
             )
         end,
     )
-    @test any(
-        ((F, S),) -> S <: LRO.SetDotProducts,
-        constraint_types,
-    )
+    @test any(((F, S),) -> S <: LRO.SetDotProducts, constraint_types)
     @test !any(
         ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
         constraint_types,

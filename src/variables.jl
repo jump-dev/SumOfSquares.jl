@@ -24,7 +24,6 @@ function PolyJuMP.bridges(S::Type{<:WeightedSOSCone})
     return Tuple{Type,Type}[(Bridges.Variable.KernelBridge, T)]
 end
 
-
 function PolyJuMP.bridges(::Type{<:PositiveSemidefinite2x2ConeTriangle})
     return [(Bridges.Variable.PositiveSemidefinite2x2Bridge, Float64)]
 end
@@ -49,7 +48,10 @@ function PolyJuMP.bridges(
         <:LRO.SetDotProducts{
             LRO.WITHOUT_SET,
             S,
-            LRO.TriangleVectorization{T,LRO.Factorization{T,Vector{T},Array{T,0}}},
+            LRO.TriangleVectorization{
+                T,
+                LRO.Factorization{T,Vector{T},Array{T,0}},
+            },
         },
     },
 ) where {S,T}
@@ -63,7 +65,10 @@ function PolyJuMP.bridges(
         <:LRO.SetDotProducts{
             LRO.WITHOUT_SET,
             S,
-            LRO.TriangleVectorization{T,LRO.Factorization{T,Vector{T},LRO.One{T}}},
+            LRO.TriangleVectorization{
+                T,
+                LRO.Factorization{T,Vector{T},LRO.One{T}},
+            },
         },
     },
 ) where {S,T}
