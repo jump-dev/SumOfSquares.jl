@@ -331,11 +331,16 @@ end
 # remove `Constraint.ImageBridge` from the outer bridge layer. With the
 # constraint-side `ImageBridge` shortcut gone, the cost graph routes the SOS
 # constraint through `Variable.LowRankBridge` → `LRO.SetDotProducts`. The
-# dualization layer then flips primal/dual so the LRO solver sees the
-# low-rank-structured cone directly. The same workaround is documented in
+# `dual_optimizer` wrapper is what makes the LRO solver actually see this
+# low-rank-structured cone: `LRO.Optimizer` natively consumes
+# `LinearCombinationInSet` (constraint-side LRO), so the dualization layer is
+# needed to flip the `SetDotProducts` (variable-side LRO) into its constraint
+# dual. The `remove_bridge` shim is documented in
 # `docs/src/tutorials/Noncommutative and Hermitian/chsh.jl` and tracked by
 # <https://github.com/jump-dev/MathOptInterface.jl/pull/3001>; once that lands
-# we can drop both the `dual_optimizer` wrapper and the `remove_bridge` call.
+# we can drop the `remove_bridge` call. The `dual_optimizer` wrapper remains
+# required regardless, since it bridges the variable/constraint divide that
+# the LRO bridge graph does not itself cross.
 function test_lro_optimizer_preserves_low_rank_structure()
     constraint_types = _lagrange_jump_model(
         Dualization.dual_optimizer(LRO.Optimizer{Float64});
