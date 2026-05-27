@@ -215,7 +215,7 @@ function MOI.get(
             idx = offdiag_vector_index(k, i)
             value += MOI.get(model, attr, bridge.variables[idx][3])
         end
-        for k in (i+1):bridge.side_dimension
+        for k in (i+1):(bridge.side_dimension)
             idx = offdiag_vector_index(i, k)
             value += MOI.get(model, attr, bridge.variables[idx][1])
         end
@@ -237,7 +237,7 @@ function MOI.Bridges.bridged_function(
             idx = offdiag_vector_index(k, i)
             MOI.Utilities.operate!(+, T, func, bridge.variables[idx][3])
         end
-        for k in (i+1):bridge.side_dimension
+        for k in (i+1):(bridge.side_dimension)
             idx = offdiag_vector_index(i, k)
             MOI.Utilities.operate!(+, T, func, bridge.variables[idx][1])
         end
@@ -261,7 +261,7 @@ function MOI.Bridges.Variable.unbridged_map(
     saf(i) = convert(SAF, vis[i])
     # vis[MOI.Utilities.trimap(j, j)] is replaced by a sum of several variables.
     # The strategy is to replace all of them by zero except one.
-    for j in 1:bridge.side_dimension
+    for j in 1:(bridge.side_dimension)
         for i in 1:(j-1)
             k += 1
             if i == 1 && j == 2

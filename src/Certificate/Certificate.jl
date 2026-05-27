@@ -80,7 +80,7 @@ function maxdegree_gram_basis(
     variables = MP.variables(bounds.variablewise_maxdegree)
     monos = MP.monomials(
         variables,
-        bounds.mindegree:bounds.maxdegree,
+        (bounds.mindegree):(bounds.maxdegree),
         Base.Fix2(within_variablewise_bounds, bounds),
     )
     sub = MB.SubBasis{B}(monos)
