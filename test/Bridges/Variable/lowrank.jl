@@ -4,6 +4,8 @@ using Test
 import MultivariateBases as MB
 import LowRankOpt as LRO
 import Hypatia
+import Clarabel
+import Dualization
 using DynamicPolynomials
 using JuMP
 using SumOfSquares
@@ -219,11 +221,49 @@ function test_hypatia_uses_setdotproducts()
     return
 end
 
-# Same idea as `test_hypatia_uses_setdotproducts` but driven through the JuMP
-# `@constraint` macro and a `BoxSampling` `zero_basis`: the SOS constraint
-# should reach Hypatia as a `VOV-in-LRO.SetDotProducts` rather than going
-# through `MOI.PositiveSemidefiniteConeTriangle` (which would require Hypatia
-# to bridge it back to its native scaled cone).
+# Build the JuMP model used by `test_hypatia_jump_uses_setdotproducts` and
+# `test_clarabel_jump_lagrange_via_lro_bridges`: a univariate SOS problem
+# `max γ s.t. p - γ ∈ SOS` whose unique optimum is `γ = -6`, with a
+# `BoxSampling` `zero_basis` so the basis carried by `WeightedSOSCone` is a
+# `LagrangeBasis` and `Variable.LowRankBridge` becomes the relevant entry
+# point. Using a shared helper guarantees the two solvers receive the exact
+# same model.
+function _lagrange_jump_model(
+    optimizer;
+    optimize = true,
+    pre_constraint = nothing,
+)
+    @polyvar x
+    model = JuMP.Model(optimizer)
+    JuMP.set_silent(model)
+    if pre_constraint !== nothing
+        pre_constraint(model)
+    end
+    @variable(model, γ)
+    @objective(model, Max, γ)
+    p = x^4 - 4x^3 - 2x^2 + 12x + 3
+    @constraint(
+        model,
+        p - γ in SOSCone(),
+        zero_basis = MB.BoxSampling([-1.0], [1.0]),
+    )
+    if optimize
+        JuMP.optimize!(model)
+        @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
+        @test JuMP.value(γ) ≈ -6 rtol = 1e-4
+    else
+        # No sub-solver loaded; just push the constraints down the bridge layer
+        # so we can inspect what the inner optimizer received.
+        MOI.Utilities.attach_optimizer(JuMP.backend(model))
+    end
+    inner_cache = JuMP.backend(model).optimizer.model.model_cache
+    return MOI.get(inner_cache, MOI.ListOfConstraintTypesPresent())
+end
+
+# Driven through the JuMP `@constraint` macro and a `BoxSampling` `zero_basis`,
+# the SOS constraint should reach Hypatia as a `VOV-in-LRO.SetDotProducts`
+# rather than going through `MOI.PositiveSemidefiniteConeTriangle` (which would
+# require Hypatia to bridge it back to its native scaled cone).
 #
 # The bridge chain that lands the constraint at Hypatia is:
 #   1. `PolyJuMP`'s `bridges(::Type{<:WeightedSOSCone})` auto-registers
@@ -239,22 +279,7 @@ end
 #      scaling into `LRO.One{T}` (= `FillArrays.Ones{T,0,Tuple{}}`).
 #   3. Hypatia's MOI wrapper natively consumes that final rank-1 variant.
 function test_hypatia_jump_uses_setdotproducts()
-    @polyvar x
-    model = JuMP.Model(Hypatia.Optimizer)
-    JuMP.set_silent(model)
-    @variable(model, γ)
-    @objective(model, Max, γ)
-    p = x^4 - 4x^3 - 2x^2 + 12x + 3
-    @constraint(
-        model,
-        p - γ in SOSCone(),
-        zero_basis = MB.BoxSampling([-1.0], [1.0]),
-    )
-    JuMP.optimize!(model)
-    @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
-    @test JuMP.value(γ) ≈ -6 rtol = 1e-4
-    inner_cache = JuMP.backend(model).optimizer.model.model_cache
-    constraint_types = MOI.get(inner_cache, MOI.ListOfConstraintTypesPresent())
+    constraint_types = _lagrange_jump_model(Hypatia.Optimizer)
     @test !any(
         ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
         constraint_types,
@@ -270,6 +295,70 @@ function test_hypatia_jump_uses_setdotproducts()
         },
     }
     @test (MOI.VectorOfVariables, expected_S) in constraint_types
+    return
+end
+
+# Counterpart to `test_hypatia_jump_uses_setdotproducts`: for a classical SDP
+# solver (Clarabel) without a low-rank interface, `KernelBridge` is not
+# applicable for the `LagrangeBasis` case (its `supports_constrained_variable`
+# returns `false`). The bridge graph instead routes `LowRankBridge`'s LRO
+# output back to classical PSD through the `AppendSetBridge` →
+# `DotProductsBridge` fallback registered in `src/variables.jl`. Clarabel
+# itself supports the scaled PSD cone, so MOI's own `SetDotScalingBridge`
+# finishes the chain.
+function test_clarabel_jump_lagrange_via_lro_bridges()
+    constraint_types = _lagrange_jump_model(Clarabel.Optimizer)
+    # The LRO chain (`AppendSetBridge` + `DotProductsBridge`) lowers
+    # `LRO.SetDotProducts` back to a classical PSD cone, which MOI's
+    # `SetDotScalingBridge` then maps to Clarabel's natively-supported
+    # `MOI.Scaled{PSDConeTriangle}`. No `LRO.SetDotProducts` reaches Clarabel.
+    @test !any(((F, S),) -> S <: LRO.SetDotProducts, constraint_types)
+    @test (
+        MOI.VectorAffineFunction{Float64},
+        MOI.Scaled{MOI.PositiveSemidefiniteConeTriangle},
+    ) in constraint_types
+    return
+end
+
+# Same `_lagrange_jump_model` setup but with `LRO.Optimizer` as the inner
+# optimizer. `LRO.Optimizer` supports `VAF`-in-`LinearCombinationInSet` (its
+# low-rank constraint form) *and* `VAF`-in-`PSDConeTriangle` (its classical
+# form), so without intervention the bridge layer prefers the cheaper one-step
+# `ImageBridge` path to classical PSD and the rank-1 structure carried by
+# `Variable.LowRankBridge` never reaches the solver.
+#
+# Workaround: wrap the inner optimizer in `Dualization.dual_optimizer` and
+# remove `Constraint.ImageBridge` from the outer bridge layer. With the
+# constraint-side `ImageBridge` shortcut gone, the cost graph routes the SOS
+# constraint through `Variable.LowRankBridge` → `LRO.SetDotProducts`. The
+# `dual_optimizer` wrapper is what makes the LRO solver actually see this
+# low-rank-structured cone: `LRO.Optimizer` natively consumes
+# `LinearCombinationInSet` (constraint-side LRO), so the dualization layer is
+# needed to flip the `SetDotProducts` (variable-side LRO) into its constraint
+# dual. The `remove_bridge` shim is documented in
+# `docs/src/tutorials/Noncommutative and Hermitian/chsh.jl` and tracked by
+# <https://github.com/jump-dev/MathOptInterface.jl/pull/3001>; once that lands
+# we can drop the `remove_bridge` call. The `dual_optimizer` wrapper remains
+# required regardless, since it bridges the variable/constraint divide that
+# the LRO bridge graph does not itself cross.
+function test_lro_optimizer_preserves_low_rank_structure()
+    constraint_types = _lagrange_jump_model(
+        Dualization.dual_optimizer(LRO.Optimizer{Float64});
+        optimize = false,
+        pre_constraint = model -> begin
+            backend = JuMP.backend(model)
+            SumOfSquares.Bridges.add_all_bridges(backend.optimizer, Float64)
+            MOI.Bridges.remove_bridge(
+                backend.optimizer,
+                SumOfSquares.Bridges.Constraint.ImageBridge{Float64},
+            )
+        end,
+    )
+    @test any(((F, S),) -> S <: LRO.SetDotProducts, constraint_types)
+    @test !any(
+        ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
+        constraint_types,
+    )
     return
 end
 
