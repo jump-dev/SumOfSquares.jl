@@ -284,8 +284,12 @@ function test_hypatia_jump_uses_setdotproducts()
         ((F, S),) -> S <: MOI.PositiveSemidefiniteConeTriangle,
         constraint_types,
     )
-    # The constraint reaches Hypatia as the rank-1 `LRO.SetDotProducts` variant
-    # that Hypatia's MOI wrapper natively supports.
+    # The constraint reaches Hypatia as the rank-1 `LRO.SetDotProducts` variant.
+    # Hypatia's MOI wrapper consumes this set as a `VectorAffineFunction`
+    # constraint (the `VectorOfVariables` form is mapped to `VAF` by
+    # `MOI.Bridges.Constraint.VectorFunctionizeBridge`). The point of this
+    # assertion is that the rank-1 low-rank structure survives the bridge
+    # chain — it is *not* collapsed back to a dense `PSDConeTriangle`.
     expected_S = LRO.SetDotProducts{
         LRO.WITHOUT_SET,
         MOI.PositiveSemidefiniteConeTriangle,
@@ -294,7 +298,7 @@ function test_hypatia_jump_uses_setdotproducts()
             LRO.Factorization{Float64,Vector{Float64},LRO.One{Float64}},
         },
     }
-    @test (MOI.VectorOfVariables, expected_S) in constraint_types
+    @test (MOI.VectorAffineFunction{Float64}, expected_S) in constraint_types
     return
 end
 
