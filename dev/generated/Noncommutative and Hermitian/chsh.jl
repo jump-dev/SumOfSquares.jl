@@ -1,23 +1,25 @@
 using SumOfSquares
-include(joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "monoids.jl"))
+include(
+    joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "monoids.jl"),
+)
 
 import StarAlgebras as SA
 import KnuthBendix as KB
 import GroupsCore
 
-monoid, A, C = trace_monoid(2, 2, A=:A, C=:C)
+monoid, A, C = trace_monoid(2, 2, A = :A, C = :C)
 monoid.rws
 
 RM = let monoid = monoid, A = A, C = C, level = 4
-    A_l, sizesA = Monoids.wlmetric_ball(A, radius=level)
-    C_l, sizesC = Monoids.wlmetric_ball(C, radius=level)
+    A_l, sizesA = Monoids.wlmetric_ball(A, radius = level)
+    C_l, sizesC = Monoids.wlmetric_ball(C, radius = level)
     @time words, sizes = Monoids.wlmetric_ball(
         unique!([a * c for a in A_l for c in C_l]);
-        radius=2,
+        radius = 2,
     )
     @info "Sizes of generated balls:" (A, C, combined) =
         (sizesA, sizesC, sizes)
-    basis = SA.FixedBasis(words)
+    basis = SA.SubBasis(SA.DiracBasis(monoid), words)
     dirac = SA.DiracMStructure(basis, *)
     table = SA.MTable(dirac, (sizes[1], sizes[1]))
     SA.StarAlgebra(monoid, table)
@@ -31,22 +33,17 @@ chsh = let A = RM.(A), C = RM.(C)
     A[1] * C[1] + A[1] * C[2] + A[2] * C[1] - A[2] * C[2]
 end
 
-struct Full{B} <: SA.ImplicitBasis{B,B} end
-Base.in(::B, ::Full{B}) where {B} = true
-Base.getindex(::Full{B}, b::B) where {B} = b
 import MultivariateBases as MB
-MB.implicit_basis(::SA.FixedBasis{B}) where {B} = Full{B}()
-function MB.algebra(b::Full{B}) where {B}
-    return SA.StarAlgebra(monoid, SA.DiracMStructure(b, *))
+function MB.algebra(b::SA.DiracBasis{<:Monoids.MonoidElement})
+    return SA.StarAlgebra(SA.object(b), b)
 end
-SA.comparable(::Full) = isless
 
 f = SA.AlgebraElement(
     SA.SparseCoefficients(
         [SA.basis(chsh)[k] for (k, _) in SA.nonzero_pairs(SA.coeffs(chsh))],
         [v for (_, v) in SA.nonzero_pairs(SA.coeffs(chsh))],
     ),
-    MB.algebra(Full{eltype(SA.basis(chsh))}()),
+    MB.algebra(parent(SA.basis(chsh))),
 )
 
 import SCS
@@ -63,7 +60,7 @@ SumOfSquares.Bridges.add_all_bridges(backend(model).optimizer, Float64)
 @objective(model, Min, λ)
 
 n = size(SA.mstructure(RM).table, 1)
-gram_basis = SA.FixedBasis(SA.basis(chsh).elts[1:n])
+gram_basis = SA.sub_basis(SA.basis(chsh), 1:n)
 cone = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
     SA.basis(chsh),
     [gram_basis],
@@ -92,7 +89,7 @@ function summary(model)
     _add!(MOI.side_dimension, psd, model, F, S)
     S = SCS.ScaledPSDCone
     _add!(MOI.side_dimension, psd, model, F, S)
-    free -= sum(psd, init=0) do d
+    free -= sum(psd, init = 0) do d
         return div(d * (d + 1), 2)
     end
     F = MOI.VectorAffineFunction{Float64}
