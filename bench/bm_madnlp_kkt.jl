@@ -29,6 +29,12 @@ mutable struct BMKKTSystem{T,VT,NLP,LS} <:
     # Current Lagrangian multipliers — stashed at `eval_lag_hess_wrapper!` time
     # and read by `mul!` (the BM Hessian depends on `y` but not on `x`).
     current_y::VT
+    # Current primal iterate — stashed at `eval_jac_wrapper!` time. The BM
+    # constraint c(x) is *quadratic* in `x` (since x is the rank factor /
+    # square-scalar pre-image), so its Jacobian depends on the linearization
+    # point and we must pass the actual IPM iterate to `jprod!`/`jtprod!`,
+    # not the Krylov direction.
+    current_x::VT
     # Krylov state
     linear_solver::LS
     krylov_iterations::Vector{Int}
@@ -55,6 +61,7 @@ function BMKKTSystem(nlp; T = Float64, VT = Vector{T})
         Int[],                                     # ind_lb
         Int[],                                     # ind_ub
         zeros(T, m),                               # current_y
+        zeros(T, n),                               # current_x
         workspace,
         Int[],
         Float64[],
@@ -101,13 +108,16 @@ function MadNLP.initialize!(kkt::BMKKTSystem{T}) where {T}
     fill!(kkt.pr_diag, one(T))
     fill!(kkt.du_diag, zero(T))
     fill!(kkt.current_y, zero(T))
+    fill!(kkt.current_x, zero(T))
     return
 end
 
-# Never assemble Jacobian or Hessian — but DO stash the current multipliers.
+# Never assemble Jacobian or Hessian — but DO stash the current iterate so
+# our matrix-free `mul!` linearizes the (nonlinear) BM constraint at it.
 function MadNLP.eval_jac_wrapper!(
-    ::MadNLP.MadNLPSolver, ::BMKKTSystem, ::MadNLP.PrimalVector,
+    ::MadNLP.MadNLPSolver, kkt::BMKKTSystem, x::MadNLP.PrimalVector,
 )
+    copyto!(kkt.current_x, MadNLP.full(x))
     return
 end
 function MadNLP.eval_lag_hess_wrapper!(
@@ -144,14 +154,17 @@ function _kkt_apply!(
     # the trailing `_kktmul!`, which mirrors MadNLP's standard sparse path):
     #   yp = β·yp + α·(H·xp + Aᵀ·xd)
     #   yd = β·yd + α·(A·xp)
+    # Linearize at the *current IPM iterate* (`kkt.current_x`), not at the
+    # Krylov direction `xp` — the BM Jacobian is x-dependent (quadratic
+    # constraint).
     NLPModels.hprod!(
-        kkt.nlp, xp, kkt.current_y, xp, kkt.hv_buf;
+        kkt.nlp, kkt.current_x, kkt.current_y, xp, kkt.hv_buf;
         obj_weight = one(eltype(yp)),
     )
-    NLPModels.jtprod!(kkt.nlp, xp, xd, kkt.jtv_buf)
+    NLPModels.jtprod!(kkt.nlp, kkt.current_x, xd, kkt.jtv_buf)
     yp .= beta .* yp .+ alpha .* (kkt.hv_buf .+ kkt.jtv_buf)
 
-    NLPModels.jprod!(kkt.nlp, xp, xp, kkt.jv_buf)
+    NLPModels.jprod!(kkt.nlp, kkt.current_x, xp, kkt.jv_buf)
     yd .= beta .* yd .+ alpha .* kkt.jv_buf
     return
 end
@@ -269,13 +282,31 @@ function MadNLP.solve_kkt!(kkt::BMKKTSystem, w::MadNLP.AbstractKKTVector)
     # The `[primal; dual]` block — what MadNLP's standard
     # `solve!(::AbstractReducedKKTSystem, w)` hands to its linear solver.
     b = MadNLP.primal_dual(w)
+    rhs_norm = LinearAlgebra.norm(b)
+    rhs_copy = copy(b)
     Krylov.krylov_solve!(
         kkt.linear_solver, kkt, b;
-        atol = 1e-10, rtol = 1e-8, verbose = 0,
+        atol = 1e-10, rtol = 1e-8, itmax = 10 * (kkt.n + kkt.m),
+        verbose = 0,
     )
     x = Krylov.solution(kkt.linear_solver)
+    # Compute true residual ‖K·x − b‖ against the operator we just gave Krylov
+    Kx = similar(x)
+    LinearAlgebra.mul!(Kx, kkt, x, true, false)   # routes through `_kkt_apply!`
+    true_res = LinearAlgebra.norm(Kx .- rhs_copy)
+    nit = Krylov.iteration_count(kkt.linear_solver)
+    issolved = Krylov.issolved(kkt.linear_solver)
+    kstatus = Krylov.statistics(kkt.linear_solver).status
+    println(stderr,
+        "Krylov solve: rhs=", rhs_norm,
+        "  sol=", LinearAlgebra.norm(x),
+        "  res=", true_res,
+        "  it=", nit,
+        "  solved=", issolved,
+        "  ", kstatus,
+    )
     copyto!(b, x)
-    push!(kkt.krylov_iterations, Krylov.iteration_count(kkt.linear_solver))
+    push!(kkt.krylov_iterations, nit)
     push!(kkt.krylov_residuals, Krylov.elapsed_time(kkt.linear_solver))
     MadNLP.finish_aug_solve!(kkt, w)
     return w

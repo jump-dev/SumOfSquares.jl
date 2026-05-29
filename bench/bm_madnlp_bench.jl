@@ -41,7 +41,7 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; kws...)
         kkt_system = BMKKTSystem,
         linear_solver = MadNLP.LapackCPUSolver,  # unused — Krylov takes over
         nlp_scaling = false,      # `jac_dense!` not implemented
-        print_level = MadNLP.INFO,
+        print_level = MadNLP.TRACE,
         max_iter = 50,
     )
 end
