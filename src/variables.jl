@@ -50,11 +50,11 @@ function PolyJuMP.bridges(
             S,
             LRO.TriangleVectorization{
                 T,
-                LRO.Factorization{T,Vector{T},Array{T,0}},
+                LRO.Factorization{T,F,Array{T,0}},
             },
         },
     },
-) where {S,T}
+) where {S,T,F<:AbstractVector{T}}
     return Tuple{Type,Type}[
         (LRO.Bridges.Variable.ToPositiveBridge, T),
         (LRO.Bridges.Variable.AppendSetBridge, T),
@@ -67,11 +67,11 @@ function PolyJuMP.bridges(
             S,
             LRO.TriangleVectorization{
                 T,
-                LRO.Factorization{T,Vector{T},LRO.One{T}},
+                LRO.Factorization{T,F,LRO.One{T}},
             },
         },
     },
-) where {S,T}
+) where {S,T,F<:AbstractVector{T}}
     return Tuple{Type,Type}[(LRO.Bridges.Variable.AppendSetBridge, T)]
 end
 function PolyJuMP.bridges(

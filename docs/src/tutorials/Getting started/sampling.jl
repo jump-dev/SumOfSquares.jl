@@ -8,10 +8,6 @@ using Test #src
 using DynamicPolynomials
 using SumOfSquares
 import MultivariateBases as MB
-import SDPLR
-import Hypatia
-import SCS
-import BMSOS
 
 # In this tutorial, we show how to use a different polynomial basis
 # for enforcing the equality between the polynomial and its Sum-of-Squares decomposition.
@@ -19,10 +15,17 @@ import BMSOS
 @polyvar x
 p = x^4 - 4x^3 - 2x^2 + 12x + 3
 
-scs = SCS.Optimizer
-sdplr = optimizer_with_attributes(SDPLR.Optimizer, "maxrank" => (m, n) -> 4)
-hypatia = Hypatia.Optimizer
-bmsos = BMSOS.Optimizer
+# We want to find the minimum of the above polynomial (which is -6).
+
+model = Model()
+set_silent(model)
+γ = -6
+@variable(model, γ)
+@objective(model, Max, γ)
+@constraint(model, p - γ in SOSCone(), zero_basis = BoxSampling([-1], [1]))
+set_optimizer()
+optimize!(model)
+
 function test(solver, feas::Bool)
     model = Model(solver)
     set_silent(model)
@@ -35,16 +38,37 @@ function test(solver, feas::Bool)
     @constraint(model, p - γ in SOSCone(), zero_basis = BoxSampling([-1], [1]))
     optimize!(model)
     @test primal_status == MOI.FEASIBLE_POINT
-    if !feasible
+    if !feas
         @test value(γ) ≈ -6 rtol=1e-4
     end
 end
-test(scs)
-test(sdplr)
-test(hypatia)
-test(bmsos, true)
 
-function test_rand(solver, d, B)
+
+import SDPLR
+
+import BMSOS
+
+import LowRankOpt as LRO
+import Percival
+import Dualization
+
+sdplr = optimizer_with_attributes(SDPLR.Optimizer, "maxrank" => (m, n) -> 4)
+bmsos = BMSOS.Optimizer
+bmlbfgs = Dualization.dual_optimizer(
+    optimizer_with_attributes(
+        LRO.Optimizer,
+        "solver" => LRO.BurerMonteiro.Solver,
+        "sub_solver" => Percival.PercivalSolver,
+        "ranks" => [4],
+        "square_scalars" => true,
+    );
+    assume_min_if_feasibility = true,
+)
+test(sdplr)
+test(bmsos, true)
+test(bmlbfgs, true)
+
+function bench_rand(solver, d, B)
     model = Model(solver)
     set_silent(model)
     p = MB.algebra_element(rand(2d+1), MB.SubBasis{B}(monomials(x, 0:2d)))
@@ -53,7 +77,14 @@ function test_rand(solver, d, B)
     return solve_time(model)
 end
 
-test_rand(scs, 100, MultivariateBases.Trigonometric)
-test_rand(sdplr, 100, MultivariateBases.Trigonometric)
+import SCS
+scs = SCS.Optimizer
+bench_rand(scs, 100, MultivariateBases.Trigonometric)
+
+import Hypatia
+hypatia = Hypatia.Optimizer
 test_rand(hypatia, 100, MultivariateBases.Trigonometric)
+
+test_rand(sdplr, 100, MultivariateBases.Trigonometric)
 test_rand(bmsos, 100, MultivariateBases.Trigonometric)
+test_rand(bmlbfgs, 100, MultivariateBases.Trigonometric)
