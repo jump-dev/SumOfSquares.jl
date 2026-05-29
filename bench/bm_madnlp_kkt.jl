@@ -11,7 +11,7 @@ import NLPModels
 import LinearAlgebra
 import LowRankOpt as LRO
 
-mutable struct BMKKTSystem{T,VT,NLP,LS} <:
+mutable struct BMKKTSystem{QLP,T,VT,NLP,LS} <:
                MadNLP.AbstractReducedKKTSystem{T,VT,Matrix{T},MadNLP.ExactHessian{T,VT}}
     nlp::NLP
     n::Int
@@ -45,11 +45,17 @@ mutable struct BMKKTSystem{T,VT,NLP,LS} <:
     jtv_buf::VT
 end
 
-function BMKKTSystem(nlp; T = Float64, VT = Vector{T})
+# `qlp=true` → `Krylov.MinresQlpWorkspace` (robust on singular K, default).
+# `qlp=false` → `Krylov.MinresWorkspace` (cheaper per iter, but falls back to
+# the min-norm least-squares solution when K is rank-deficient — yields
+# bogus Newton directions there).
+function BMKKTSystem(nlp; qlp::Bool = true, T = Float64, VT = Vector{T})
     n = NLPModels.get_nvar(nlp)
     m = NLPModels.get_ncon(nlp)
-    workspace = Krylov.MinresWorkspace(n + m, n + m, VT)
-    return BMKKTSystem{T,VT,typeof(nlp),typeof(workspace)}(
+    workspace = qlp ?
+        Krylov.MinresQlpWorkspace(n + m, n + m, VT) :
+        Krylov.MinresWorkspace(n + m, n + m, VT)
+    return BMKKTSystem{qlp,T,VT,typeof(nlp),typeof(workspace)}(
         nlp, n, m,
         VT(undef, n),                              # reg
         VT(undef, n),                              # pr_diag
@@ -72,38 +78,43 @@ function BMKKTSystem(nlp; T = Float64, VT = Vector{T})
 end
 
 function MadNLP.create_kkt_system(
-    ::Type{<:BMKKTSystem},
+    ::Type{BMKKTSystem{QLP}},
     cb::MadNLP.AbstractCallback{T,VT},
     linear_solver::Type;
     opt_linear_solver = MadNLP.default_options(linear_solver),
     hessian_approximation = MadNLP.ExactHessian,
     qn_options = MadNLP.QuasiNewtonOptions(),
-) where {T,VT}
+) where {QLP,T,VT}
     # Only supported with `square_scalars=true` (no bounds, equality
     # constraints only). Verify here so misconfiguration surfaces early.
     @assert isempty(cb.ind_ineq) "BMKKTSystem assumes equality-only constraints"
     @assert isempty(cb.ind_lb)   "BMKKTSystem assumes no lower-bound variables (square_scalars=true)"
     @assert isempty(cb.ind_ub)   "BMKKTSystem assumes no upper-bound variables (square_scalars=true)"
-    return BMKKTSystem(cb.nlp; T = T, VT = VT)
+    return BMKKTSystem(cb.nlp; qlp = QLP, T = T, VT = VT)
 end
+# Convenience dispatch — `kkt_system = BMKKTSystem` (no type param) ↔ QLP=true.
+MadNLP.create_kkt_system(::Type{BMKKTSystem}, cb, ls; kws...) =
+    MadNLP.create_kkt_system(BMKKTSystem{true}, cb, ls; kws...)
 
 MadNLP.num_variables(kkt::BMKKTSystem) = kkt.n
 MadNLP.get_hessian(::BMKKTSystem) = nothing
 MadNLP.get_jacobian(::BMKKTSystem) = nothing
 
 # Pretend the Krylov workspace is a "factorization" with no inertia info.
-MadNLP.is_inertia(::Krylov.MinresWorkspace) = true
-MadNLP.inertia(::Krylov.MinresWorkspace) = (0, 0, 0)
-MadNLP.introduce(::Krylov.MinresWorkspace) = "Krylov.MINRES"
-MadNLP.improve!(::Krylov.MinresWorkspace) = true
-MadNLP.factorize!(::Krylov.MinresWorkspace) = nothing
+const _KrylovWS = Union{Krylov.MinresWorkspace,Krylov.MinresQlpWorkspace}
+MadNLP.is_inertia(::_KrylovWS) = true
+MadNLP.inertia(::_KrylovWS) = (0, 0, 0)
+MadNLP.introduce(::Krylov.MinresQlpWorkspace) = "Krylov.MINRES-QLP"
+MadNLP.introduce(::Krylov.MinresWorkspace)    = "Krylov.MINRES"
+MadNLP.improve!(::_KrylovWS) = true
+MadNLP.factorize!(::_KrylovWS) = nothing
 MadNLP.is_inertia_correct(::BMKKTSystem, _, _, _) = true
 
-Base.eltype(::BMKKTSystem{T}) where {T} = T
+Base.eltype(::BMKKTSystem{QLP,T}) where {QLP,T} = T
 Base.size(kkt::BMKKTSystem) = (kkt.n + kkt.m, kkt.n + kkt.m)
 Base.size(kkt::BMKKTSystem, ::Int) = kkt.n + kkt.m
 
-function MadNLP.initialize!(kkt::BMKKTSystem{T}) where {T}
+function MadNLP.initialize!(kkt::BMKKTSystem{QLP,T}) where {QLP,T}
     fill!(kkt.reg, one(T))
     fill!(kkt.pr_diag, one(T))
     fill!(kkt.du_diag, zero(T))

@@ -25,7 +25,7 @@ include(joinpath(@__DIR__, "bm_madnlp_kkt.jl"))
 DynamicPolynomials.@polyvar x
 
 # Custom sub_solver factory that builds a MadNLPSolver with our BMKKTSystem.
-function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; kws...)
+function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; qlp::Bool = true, kws...)
     # Deterministic init so every run sees the same KKT trace.
     Random.seed!(0)
     # Override the random `meta.x0` with a feasibility-friendlier starting
@@ -41,7 +41,7 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; kws...)
     return MadNLP.MadNLPSolver(
         nlp;
         callback = MadNLP.DenseCallback,
-        kkt_system = BMKKTSystem,
+        kkt_system = BMKKTSystem{qlp},
         linear_solver = MadNLP.LapackCPUSolver,  # unused — Krylov takes over
         nlp_scaling = false,      # `jac_dense!` not implemented
         print_level = MadNLP.DEBUG,
