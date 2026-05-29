@@ -138,7 +138,12 @@ function MadNLP.eval_lag_hess_wrapper!(
     l::AbstractVector;
     is_resto = false,
 )
-    copyto!(kkt.current_y, l)
+    # MadNLP convention: `L(x, y) = obj_weight·f(x) + y'·c(x)` (dual feasibility
+    # `∇f + Jᵀy = 0`, see `IPM/kernels.jl:247`).
+    # NLPModels convention: `L(x, y) = obj_weight·f(x) − y'·c(x)`, so its
+    # `hprod!` returns `(obj_weight·∇²f − Σ y_i ∇²c_i)·v`.
+    # To get MadNLP's Hessian `∇²f + Σ y_i ∇²c_i` we must pass `−l`.
+    kkt.current_y .= .-l
     return
 end
 
@@ -246,9 +251,15 @@ function MadNLP.mul_hess_blk!(
     return wx
 end
 
-# `Aᵀ x`, just routes to the NLP's `jtprod!`.
+# `Aᵀ x`, linearized at the current IPM iterate (stashed in `kkt.current_x`
+# by our `eval_jac_wrapper!`). Until that fix, this passed `y` as the
+# evaluation point of the Jacobian — fine if `c` is linear, but `c(X) =
+# jprod(model, X, X)` for our BM model is *quadratic* in `X`, so J depends
+# on the linearization point and the wrong one produced bogus duals once
+# `y` had non-trivial magnitude (feasibility happens to keep `y ≈ 0` so the
+# bug stayed dormant; `max γ` revealed it).
 function MadNLP.jtprod!(y::AbstractVector, kkt::BMKKTSystem, x::AbstractVector)
-    NLPModels.jtprod!(kkt.nlp, y, x, y)
+    NLPModels.jtprod!(kkt.nlp, kkt.current_x, x, y)
     return y
 end
 

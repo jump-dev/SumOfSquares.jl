@@ -49,8 +49,8 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; qlp::Bool = true, k
         # heuristic). It just needs two extra `solve_kkt!`s per Newton step
         # to validate that the computed direction is a descent step.
         inertia_correction_method = MadNLP.InertiaFree,
-        print_level = MadNLP.DEBUG,
-        max_iter = 50,
+        print_level = MadNLP.INFO,
+        max_iter = 500,
     )
 end
 
@@ -72,17 +72,53 @@ function with_lro_bridges!(model)
     )
 end
 
-println("== BMKKTSystem smoke: max γ s.t. p − γ ∈ SOS ==")
-model = Model(bmlbfgs)
-set_silent(model)
-@variable(model, γ)
-@objective(model, Max, γ)
-with_lro_bridges!(model)
 p = x^4 - 4x^3 - 2x^2 + 12x + 3
-@constraint(model, p - γ in SOSCone(), zero_basis = MB.BoxSampling([-1.0], [1.0]))
-optimize!(model)
-println("primal_status = ", primal_status(model))
-println("value(γ)      = ", value(γ), "    (expected ≈ -6)")
+
+function smoke(feas::Bool)
+    println("\n== BMKKTSystem smoke: ", feas ? "feasibility (γ=-6)" : "max γ", " ==")
+    model = Model(bmlbfgs)
+    set_silent(model)
+    γ = -6
+    if !feas
+        @variable(model, γ)
+        @objective(model, Max, γ)
+    end
+    with_lro_bridges!(model)
+    @constraint(model, p - γ in SOSCone(), zero_basis = MB.BoxSampling([-1.0], [1.0]))
+    optimize!(model)
+    println("primal_status = ", primal_status(model))
+    if !feas
+        println("value(γ)      = ", value(γ), "    (expected ≈ -6)")
+    end
+end
+
+smoke(true)
+smoke(false)
+
+# Cross-check : same problem, but with Percival as the sub_solver. If Percival
+# *also* diverges on `max γ`, the bug is upstream (Dualization / bridges),
+# not in our MadNLP integration.
+println("\n== Percival cross-check (max γ) ==")
+import Percival
+percival_inner = optimizer_with_attributes(
+    LRO.Optimizer,
+    "solver"         => LRO.BurerMonteiro.Solver,
+    "sub_solver"     => Percival.PercivalSolver,
+    "ranks"          => [4],
+    "square_scalars" => true,
+)
+percival_bmlbfgs = Dualization.dual_optimizer(percival_inner; assume_min_if_feasibility = true)
+let
+    model = Model(percival_bmlbfgs)
+    set_silent(model)
+    @variable(model, γ)
+    @objective(model, Max, γ)
+    with_lro_bridges!(model)
+    @constraint(model, p - γ in SOSCone(), zero_basis = MB.BoxSampling([-1.0], [1.0]))
+    optimize!(model)
+    println("primal_status = ", primal_status(model))
+    println("value(γ)      = ", value(γ), "    (expected ≈ -6)")
+end
 
 # Should give
 # == BMKKTSystem smoke: max γ s.t. p − γ ∈ SOS ==
