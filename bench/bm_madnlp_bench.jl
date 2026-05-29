@@ -18,6 +18,7 @@ import NLPModels
 import Dualization
 import LinearAlgebra
 import MathOptInterface as MOI
+import Random
 
 include(joinpath(@__DIR__, "bm_madnlp_kkt.jl"))
 
@@ -25,6 +26,8 @@ DynamicPolynomials.@polyvar x
 
 # Custom sub_solver factory that builds a MadNLPSolver with our BMKKTSystem.
 function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; kws...)
+    # Deterministic init so every run sees the same KKT trace.
+    Random.seed!(0)
     # Override the random `meta.x0` with a feasibility-friendlier starting
     # point. `BMSOSAL` uses `rand(n)` and `BMSOS` uses `randn(n) * 1e-8`;
     # `rand(n) / n` keeps norms small as the rank-factor count grows.
@@ -41,7 +44,7 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; kws...)
         kkt_system = BMKKTSystem,
         linear_solver = MadNLP.LapackCPUSolver,  # unused — Krylov takes over
         nlp_scaling = false,      # `jac_dense!` not implemented
-        print_level = MadNLP.TRACE,
+        print_level = MadNLP.DEBUG,
         max_iter = 50,
     )
 end
