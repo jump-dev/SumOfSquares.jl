@@ -206,6 +206,10 @@ function MadNLP.mul!(
 end
 
 # Variant called by `Krylov.kmul!` on plain `Vector{T}` (length `n + m`).
+# Must mirror the `AbstractKKTVector` variant — including the `reg`/`du_diag`
+# contributions that the sparse path applies via `_kktmul!`. Without these,
+# MadNLP's `del_w` regularization never reaches Krylov, the curvature test
+# can never be satisfied, and the IPM bails into restoration.
 function LinearAlgebra.mul!(
     y::AbstractVector,
     kkt::BMKKTSystem,
@@ -213,17 +217,34 @@ function LinearAlgebra.mul!(
     alpha::Number, beta::Number,
 )
     n, m = kkt.n, kkt.m
-    _kkt_apply!(
-        view(y, 1:n), view(y, (n+1):(n+m)),
-        kkt,
-        view(x, 1:n), view(x, (n+1):(n+m)),
-        alpha, beta,
-    )
+    yp = view(y, 1:n);       yd = view(y, (n+1):(n+m))
+    xp = view(x, 1:n);       xd = view(x, (n+1):(n+m))
+    _kkt_apply!(yp, yd, kkt, xp, xd, alpha, beta)
+    # Match `_kktmul!` from the `AbstractKKTVector` path: add `reg` to the
+    # primal block and `du_diag` to the dual block. These reflect MadNLP's
+    # cumulative `del_w`/`del_c` Hessian/Jacobian perturbations.
+    yp .+= alpha .* kkt.reg .* xp
+    yd .+= alpha .* kkt.du_diag .* xd
     return y
 end
 
 LinearAlgebra.mul!(y::AbstractVector, kkt::BMKKTSystem, x::AbstractVector) =
     LinearAlgebra.mul!(y, kkt, x, true, false)
+
+# Hessian-block matvec used by `InertiaFree`'s curvature test (`curv_test`
+# in `MadNLP/src/IPM/solver.jl:785`). Computes `wx = (H + pr_diag) · t`
+# where `t`, `wx` ∈ ℝⁿ are *primal only* (see `build_inertia_corrector`).
+function MadNLP.mul_hess_blk!(
+    wx::AbstractVector, kkt::BMKKTSystem, t::AbstractVector,
+)
+    NLPModels.hprod!(
+        kkt.nlp, kkt.current_x, kkt.current_y, t, kkt.hv_buf;
+        obj_weight = one(eltype(wx)),
+    )
+    copyto!(wx, kkt.hv_buf)
+    wx .+= t .* kkt.pr_diag
+    return wx
+end
 
 # `Aᵀ x`, just routes to the NLP's `jtprod!`.
 function MadNLP.jtprod!(y::AbstractVector, kkt::BMKKTSystem, x::AbstractVector)

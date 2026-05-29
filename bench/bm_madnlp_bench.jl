@@ -43,7 +43,12 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; qlp::Bool = true, k
         callback = MadNLP.DenseCallback,
         kkt_system = BMKKTSystem{qlp},
         linear_solver = MadNLP.LapackCPUSolver,  # unused — Krylov takes over
-        nlp_scaling = false,      # `jac_dense!` not implemented
+        nlp_scaling = false,                     # `jac_dense!` not implemented
+        # We can't honestly report KKT inertia from a matrix-free MINRES
+        # solve, so use MadNLP's inertia-free correction (Curtis–Schenk–Wächter
+        # heuristic). It just needs two extra `solve_kkt!`s per Newton step
+        # to validate that the computed direction is a descent step.
+        inertia_correction_method = MadNLP.InertiaFree,
         print_level = MadNLP.DEBUG,
         max_iter = 50,
     )
