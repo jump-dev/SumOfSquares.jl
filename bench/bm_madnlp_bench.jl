@@ -29,10 +29,12 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; qlp::Bool = true, k
     # Deterministic init so every run sees the same KKT trace.
     Random.seed!(0)
     # Override the random `meta.x0` with a feasibility-friendlier starting
-    # point. `BMSOSAL` uses `rand(n)` and `BMSOS` uses `randn(n) * 1e-8`;
-    # `rand(n) / n` keeps norms small as the rank-factor count grows.
+    # point. Starting from `rand(n)/n` (small) makes the Hessian near-singular
+    # at iter 0, which gives Newton steps that overshoot the optimum and the
+    # IPM oscillates. Use `rand(n)` (BMSOSAL's choice) for a non-degenerate
+    # initial Hessian.
     n = length(nlp.meta.x0)
-    nlp.meta.x0 .= rand(eltype(nlp.meta.x0), n) ./ n
+    nlp.meta.x0 .= rand(eltype(nlp.meta.x0), n)
     # Quick check whether the BM objective is identically zero (which would
     # make the dual-Newton step purely feasibility-driven).
     f0 = NLPModels.obj(nlp, nlp.meta.x0)
@@ -49,6 +51,18 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; qlp::Bool = true, k
         # heuristic). It just needs two extra `solve_kkt!`s per Newton step
         # to validate that the computed direction is a descent step.
         inertia_correction_method = MadNLP.InertiaFree,
+        # Stabilisation : la `curv_test` par défaut tolère ζ=0 (curvature ≥ 0),
+        # ce qui laisse passer des directions presque-singulières → pas de
+        # Newton qui dépassent l'optimum. Demander une curvature strictement
+        # positive et un régulariseur primal de base force un comportement
+        # type «Levenberg-Marquardt léger».
+        inertia_free_tol = 1e-8,
+        default_primal_regularization   = 1e-8,
+        default_dual_regularization     = 1e-8,
+        # Default least-squares dual init solves K·[d;y] = [-g;-c] once,
+        # which on our singular KKT can throw `y` to wild values. Starting
+        # from `y = 0` lets MadNLP build up the duals iteration by iteration.
+        dual_initialization_method = MadNLP.DualInitializeSetZero,
         print_level = MadNLP.INFO,
         max_iter = 500,
     )
