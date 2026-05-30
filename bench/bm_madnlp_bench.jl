@@ -137,6 +137,38 @@ let
     println("value(γ)      = ", value(γ), "    (expected ≈ -6)")
 end
 
+# Bump the BM rank to scale up the primal-variable count without changing
+# the optimum (γ* = -6) or the constraint structure. Smoke uses `rank=4`
+# (`n + m = 19`); we sweep up to `rank = 32` (`n + m ≈ 103`). Tests the
+# dense `n+m × n+m` Bunch-Kaufman inertia probe at a non-trivial size.
+# (Polynomial-degree scaling hits an unrelated upstream `BoundsError` in
+# `MultivariateBases.eval_basis!` for `degree > 4`; bumping rank exercises
+# the same `n + m` growth without touching the SOS-bridge path.)
+function smoke_box_with_rank(rank::Int)
+    inner_r = optimizer_with_attributes(
+        LRO.Optimizer,
+        "solver"         => LRO.BurerMonteiro.Solver,
+        "sub_solver"     => MadNLPMinresSolver,
+        "ranks"          => [rank],
+        "square_scalars" => true,
+    )
+    opt = Dualization.dual_optimizer(inner_r; assume_min_if_feasibility = true)
+    model = Model(opt)
+    set_silent(model)
+    @variable(model, γ)
+    @objective(model, Max, γ)
+    with_lro_bridges!(model)
+    @constraint(model, p - γ in SOSCone(), zero_basis = MB.BoxSampling([-1.0], [1.0]))
+    t = @elapsed optimize!(model)
+    println("rank = ", rank, "    value(γ) = ", round(value(γ), digits = 8),
+            "  (expected ≈ -6)    time = ", round(t, digits = 2), " s")
+    return t
+end
+println("\n== Scale-up via BM rank (smoke poly, expected γ = -6) ==")
+for r in (4, 8, 16, 32)
+    smoke_box_with_rank(r)
+end
+
 # Should give
 # == BMKKTSystem smoke: max γ s.t. p − γ ∈ SOS ==
 # ┌ Info: BM model at x0
