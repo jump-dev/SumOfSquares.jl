@@ -50,7 +50,10 @@ function MadNLPMinresSolver(nlp::NLPModels.AbstractNLPModel; qlp::Bool = true, k
         # solve, so use MadNLP's inertia-free correction (Curtis–Schenk–Wächter
         # heuristic). It just needs two extra `solve_kkt!`s per Newton step
         # to validate that the computed direction is a descent step.
-        inertia_correction_method = MadNLP.InertiaFree,
+        # Lanczos probe in `factorize_wrapper!` reports honest inertia, so
+        # MadNLP can drive `del_w` on its own — `InertiaBased` is now the
+        # right choice (no more `InertiaFree` curvature heuristic).
+        inertia_correction_method = MadNLP.InertiaBased,
         # Stabilisation : la `curv_test` par défaut tolère ζ=0 (curvature ≥ 0),
         # ce qui laisse passer des directions presque-singulières → pas de
         # Newton qui dépassent l'optimum. Demander une curvature strictement

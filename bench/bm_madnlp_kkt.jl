@@ -50,6 +50,17 @@ mutable struct BMKKTSystem{QLP,T,VT,NLP,LS} <:
     # but `O(n)` FFTs per IPM iter for the larger benchmark.
     precond_diag::VT
     precond_probe::VT      # buffer for the probe vector
+    # Inertia estimate produced by a short Lanczos probe of `K` before each
+    # solve; `MadNLP.inertia(workspace)` reads this so `InertiaBased`'s
+    # `is_inertia_correct(n_pos, n_zero, n_neg)` can fire and trigger a
+    # `del_w` bump when the operator is indefinite on the augmented system.
+    inertia_pos::Base.RefValue{Int}
+    inertia_zero::Base.RefValue{Int}
+    inertia_neg::Base.RefValue{Int}
+    # Lanczos probe buffers (length `n + m`).
+    lanczos_v_prev::VT
+    lanczos_v_curr::VT
+    lanczos_w::VT
 end
 # Wrapper so Krylov treats `precond_diag` as a left preconditioner via
 # `LinearAlgebra.ldiv!` (we set `ldiv = true` in `solve_kkt!`).
@@ -93,6 +104,12 @@ function BMKKTSystem(nlp; qlp::Bool = true, T = Float64, VT = Vector{T})
         VT(undef, n),                              # jtv_buf
         ones(T, n + m),                            # precond_diag
         zeros(T, n),                               # precond_probe
+        Ref(n),                                    # inertia_pos
+        Ref(0),                                    # inertia_zero
+        Ref(m),                                    # inertia_neg
+        zeros(T, n + m),                           # lanczos_v_prev
+        zeros(T, n + m),                           # lanczos_v_curr
+        zeros(T, n + m),                           # lanczos_w
     )
 end
 
@@ -119,7 +136,10 @@ MadNLP.num_variables(kkt::BMKKTSystem) = kkt.n
 MadNLP.get_hessian(::BMKKTSystem) = nothing
 MadNLP.get_jacobian(::BMKKTSystem) = nothing
 
-# Pretend the Krylov workspace is a "factorization" with no inertia info.
+# Krylov workspaces themselves carry no inertia. The real estimate lives on
+# `BMKKTSystem` (refreshed by `_inertia_probe!` before each `solve_kkt!`);
+# the workspace shim below stays a no-op so `is_inertia_correct(::BMKKTSystem,
+# ...)` reads the kkt-level refs.
 const _KrylovWS = Union{Krylov.MinresWorkspace,Krylov.MinresQlpWorkspace}
 MadNLP.is_inertia(::_KrylovWS) = true
 MadNLP.inertia(::_KrylovWS) = (0, 0, 0)
@@ -127,7 +147,17 @@ MadNLP.introduce(::Krylov.MinresQlpWorkspace) = "Krylov.MINRES-QLP"
 MadNLP.introduce(::Krylov.MinresWorkspace)    = "Krylov.MINRES"
 MadNLP.improve!(::_KrylovWS) = true
 MadNLP.factorize!(::_KrylovWS) = nothing
-MadNLP.is_inertia_correct(::BMKKTSystem, _, _, _) = true
+# MadNLP's `InertiaBased` corrector calls `inertia(kkt.linear_solver)` to
+# get the inertia tuple, *then* hands it to `is_inertia_correct(kkt, ...)`.
+# Our `Krylov.MinresQlpWorkspace` shim is forced to return `(0,0,0)` since
+# the workspace has no view of `kkt`. So we ignore the passed args and read
+# the inertia stashed on `kkt` by `_inertia_probe!`. Same for
+# `should_regularize_dual`.
+MadNLP.is_inertia_correct(kkt::BMKKTSystem, _, _, _) =
+    kkt.inertia_pos[] == kkt.n &&
+    kkt.inertia_zero[] == 0 &&
+    kkt.inertia_neg[] == kkt.m
+MadNLP.should_regularize_dual(kkt::BMKKTSystem, _, _, _) = kkt.inertia_zero[] != 0
 
 Base.eltype(::BMKKTSystem{QLP,T}) where {QLP,T} = T
 Base.size(kkt::BMKKTSystem) = (kkt.n + kkt.m, kkt.n + kkt.m)
@@ -173,6 +203,10 @@ function MadNLP.factorize_wrapper!(
     solver::MadNLP.MadNLPSolver{T,VT,IT,KKT},
 ) where {T,VT,IT,KKT<:BMKKTSystem}
     MadNLP.build_kkt!(solver.kkt)
+    # Lanczos inertia probe runs against the regularization-augmented matvec,
+    # so MadNLP's subsequent `inertia(kkt)` / `is_inertia_correct(kkt, ...)`
+    # check honestly reflects the current `reg`/`pr_diag`/`du_diag` state.
+    _inertia_probe!(solver.kkt, solver.kkt.n + solver.kkt.m)
     return true
 end
 
@@ -339,6 +373,60 @@ function SolverCore.solve!(
     return stats
 end
 
+# Dense reconstruction of `K` via `n+m` standard-basis matvecs, then
+# `eigvals`. Cheap for the smoke (`n+m = 19`); the trig benchmark
+# (`n+m ≈ 1000+`) will need a Lanczos with full reorthogonalization
+# instead. Plain three-term Lanczos on indefinite KKT loses orthogonality
+# after a few iters and produces spurious eigenvalues, which made
+# `is_inertia_correct` permanently false.
+function _inertia_probe!(kkt::BMKKTSystem{QLP,T}, k_max::Int) where {QLP,T}
+    nm = kkt.n + kkt.m
+    Kmat = zeros(T, nm, nm)
+    e = kkt.lanczos_v_curr
+    w = kkt.lanczos_w
+    fill!(e, zero(T))
+    for j in 1:nm
+        e[j] = one(T)
+        LinearAlgebra.mul!(w, kkt, e)
+        @views Kmat[:, j] .= w
+        e[j] = zero(T)
+    end
+    # Symmetrize defensively (drops asymmetry from accumulated FP error).
+    Kmat .= (Kmat .+ Kmat') ./ 2
+    # Bunch-Kaufman on the symmetric `Kmat` — the signs of `D`'s diagonal
+    # give exact inertia by Sylvester's law, without an eigenvalue tolerance
+    # to tune. (The 2×2 blocks have one positive and one negative eigenvalue.)
+    bk = LinearAlgebra.bunchkaufman(LinearAlgebra.Symmetric(Kmat); check = false)
+    D = bk.D  # `Tridiagonal` view on the block-diagonal D
+    n_pos = 0; n_neg = 0; n_zero = 0
+    i = 1
+    while i ≤ nm
+        if i < nm && D[i + 1, i] != zero(T)
+            # 2×2 block: one positive, one negative eigenvalue
+            n_pos += 1; n_neg += 1
+            i += 2
+        else
+            d = D[i, i]
+            if d > zero(T);  n_pos += 1
+            elseif d < zero(T); n_neg += 1
+            else; n_zero += 1
+            end
+            i += 1
+        end
+    end
+    kkt.inertia_pos[]  = n_pos
+    kkt.inertia_zero[] = n_zero
+    kkt.inertia_neg[]  = n_neg
+    return
+end
+
+# Hook MadNLP reads after `factorize_wrapper!`. We computed the inertia
+# during `factorize!` (overridden below) so just return the cached values.
+function MadNLP.inertia(kkt::BMKKTSystem)
+    return (kkt.inertia_pos[], kkt.inertia_zero[], kkt.inertia_neg[])
+end
+MadNLP.is_inertia(::BMKKTSystem) = true
+
 # Probe `diag(H)` via `n` Hessian-vector products on standard basis vectors.
 # Cheap for our smoke-test (`n = 14`); for the trigonometric `d = 100`
 # benchmark this is `n ≈ 800` FFTs per IPM iter, still negligible compared
@@ -386,16 +474,6 @@ function MadNLP.solve_kkt!(kkt::BMKKTSystem, w::MadNLP.AbstractKKTVector)
     LinearAlgebra.mul!(Kx, kkt, x, true, false)   # routes through `_kkt_apply!`
     true_res = LinearAlgebra.norm(Kx .- rhs_copy)
     nit = Krylov.iteration_count(kkt.linear_solver)
-    issolved = Krylov.issolved(kkt.linear_solver)
-    kstatus = Krylov.statistics(kkt.linear_solver).status
-    println(stderr,
-        "Krylov solve: rhs=", rhs_norm,
-        "  sol=", LinearAlgebra.norm(x),
-        "  res=", true_res,
-        "  it=", nit,
-        "  solved=", issolved,
-        "  ", kstatus,
-    )
     copyto!(b, x)
     push!(kkt.krylov_iterations, nit)
     push!(kkt.krylov_residuals, Krylov.elapsed_time(kkt.linear_solver))
