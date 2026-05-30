@@ -43,7 +43,24 @@ mutable struct BMKKTSystem{QLP,T,VT,NLP,LS} <:
     hv_buf::VT
     jv_buf::VT
     jtv_buf::VT
+    # Diagonal preconditioner for Krylov. Length `n+m`. Refreshed before
+    # each `krylov_solve!` from `reg + pr_diag + |diag(H)|` on the primal
+    # block and `max(|du_diag|, 1)` on the dual block. `diag(H)` is
+    # extracted by probing `hprod!(e_i)`; cheap for our smoke-test sizes
+    # but `O(n)` FFTs per IPM iter for the larger benchmark.
+    precond_diag::VT
+    precond_probe::VT      # buffer for the probe vector
 end
+# Wrapper so Krylov treats `precond_diag` as a left preconditioner via
+# `LinearAlgebra.ldiv!` (we set `ldiv = true` in `solve_kkt!`).
+struct BMJacobiPrecond{VT} <: AbstractMatrix{Float64}
+    diag::VT
+end
+Base.size(M::BMJacobiPrecond) = (length(M.diag), length(M.diag))
+Base.eltype(::BMJacobiPrecond{VT}) where {VT} = eltype(VT)
+LinearAlgebra.ldiv!(y::AbstractVector, M::BMJacobiPrecond, x::AbstractVector) =
+    (y .= x ./ M.diag; return y)
+LinearAlgebra.ldiv!(M::BMJacobiPrecond, x::AbstractVector) = (x ./= M.diag; return x)
 
 # `qlp=true` → `Krylov.MinresQlpWorkspace` (robust on singular K, default).
 # `qlp=false` → `Krylov.MinresWorkspace` (cheaper per iter, but falls back to
@@ -74,6 +91,8 @@ function BMKKTSystem(nlp; qlp::Bool = true, T = Float64, VT = Vector{T})
         VT(undef, n),                              # hv_buf
         VT(undef, m),                              # jv_buf
         VT(undef, n),                              # jtv_buf
+        ones(T, n + m),                            # precond_diag
+        zeros(T, n),                               # precond_probe
     )
 end
 
@@ -320,6 +339,32 @@ function SolverCore.solve!(
     return stats
 end
 
+# Probe `diag(H)` via `n` Hessian-vector products on standard basis vectors.
+# Cheap for our smoke-test (`n = 14`); for the trigonometric `d = 100`
+# benchmark this is `n ≈ 800` FFTs per IPM iter, still negligible compared
+# to the Krylov inner loop.
+function _refresh_preconditioner!(kkt::BMKKTSystem{QLP,T}) where {QLP,T}
+    n, m = kkt.n, kkt.m
+    e = kkt.precond_probe
+    fill!(e, zero(T))
+    for i in 1:n
+        e[i] = one(T)
+        NLPModels.hprod!(
+            kkt.nlp, kkt.current_x, kkt.current_y, e, kkt.hv_buf;
+            obj_weight = one(T),
+        )
+        # `|diag(H)| + reg + pr_diag`, guarded away from zero. Taking abs
+        # keeps the preconditioner SPD even where H has indefinite diagonal
+        # entries — for MINRES-QLP a SPD preconditioner is required.
+        kkt.precond_diag[i] = max(abs(kkt.hv_buf[i]) + kkt.reg[i] + kkt.pr_diag[i], 1e-12)
+        e[i] = zero(T)
+    end
+    for j in 1:m
+        kkt.precond_diag[n + j] = max(abs(kkt.du_diag[j]), one(T))
+    end
+    return
+end
+
 function MadNLP.solve_kkt!(kkt::BMKKTSystem, w::MadNLP.AbstractKKTVector)
     MadNLP.reduce_rhs!(kkt, w)
     # The `[primal; dual]` block — what MadNLP's standard
@@ -327,8 +372,11 @@ function MadNLP.solve_kkt!(kkt::BMKKTSystem, w::MadNLP.AbstractKKTVector)
     b = MadNLP.primal_dual(w)
     rhs_norm = LinearAlgebra.norm(b)
     rhs_copy = copy(b)
+    _refresh_preconditioner!(kkt)
+    M = BMJacobiPrecond(kkt.precond_diag)
     Krylov.krylov_solve!(
         kkt.linear_solver, kkt, b;
+        M = M, ldiv = true,
         atol = 1e-10, rtol = 1e-8, itmax = 10 * (kkt.n + kkt.m),
         verbose = 0,
     )
