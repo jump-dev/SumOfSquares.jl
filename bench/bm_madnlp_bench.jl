@@ -19,6 +19,7 @@ import Dualization
 import LinearAlgebra
 import MathOptInterface as MOI
 import Random
+import StarAlgebras as SA
 
 include(joinpath(@__DIR__, "bm_madnlp_kkt.jl"))
 
@@ -168,6 +169,58 @@ println("\n== Scale-up via BM rank (smoke poly, expected γ = -6) ==")
 for r in (4, 8, 16, 32)
     smoke_box_with_rank(r)
 end
+
+# Convert the smoke polynomial `3 + 12x − 2x² − 4x³ + x⁴` to a cos-only
+# trig polynomial via Chebyshev as intermediate. Under `x = cos(θ)` we have
+# `Tₖ(cos θ) = cos(kθ)`, so the Chebyshev expansion immediately gives the
+# Fourier-cosine coefficients of `p(cos θ)`. Sampling `θ ∈ [−π, π]` covers
+# `x ∈ [−1, 1]`, so the smoke optimum `γ* = −6` (attained at `x = −1`, i.e.
+# `θ = π`) is preserved.
+function _smoke_as_cos_only_trig()
+    mon_coeffs = Float64[3, 12, -2, -4, 1]  # constant, x, x², x³, x⁴
+    mon_sub = MB.SubBasis{MB.Monomial}(DynamicPolynomials.monomials(x, 0:4))
+    cheb_full = MB.FullBasis{MB.Chebyshev}([x])
+    cheb_sparse = SA.coeffs(mon_coeffs, mon_sub, cheb_full)
+    # `cheb_sparse` is `SparseCoefficients` over the chebyshev keys. Pack
+    # values into the trig basis (which interleaves cos/sin: index
+    # `2k − 1` → `cos(kθ)`, `2k` → `sin(kθ)`, `0` → constant).
+    cheb_vals = collect(SA.values(cheb_sparse))
+    # The conversion may produce fewer than 5 chebyshev terms if some are
+    # zero; we know the smoke poly has nonzero `T_0, …, T_4`.
+    @assert length(cheb_vals) == 5 "expected 5 chebyshev coefficients, got $(length(cheb_vals))"
+    trig_coeffs = zeros(9)              # `monomials(x, 0:8)` → 9 trig basis fns
+    trig_coeffs[1] = cheb_vals[1]       # constant
+    trig_coeffs[2] = cheb_vals[2]       # cos(θ)
+    trig_coeffs[4] = cheb_vals[3]       # cos(2θ)
+    trig_coeffs[6] = cheb_vals[4]       # cos(3θ)
+    trig_coeffs[8] = cheb_vals[5]       # cos(4θ)
+    trig_basis = MB.SubBasis{MB.Trigonometric}(DynamicPolynomials.monomials(x, 0:8))
+    return MB.algebra_element(trig_coeffs, trig_basis)
+end
+function smoke_box_trig(solver, p_trig)
+    model = Model(solver)
+    set_silent(model)
+    @variable(model, γ)
+    @objective(model, Max, γ)
+    with_lro_bridges!(model)
+    # MultivariateBases' `Trigonometric` recurrence interprets the sample
+    # value as `cos(θ)` directly (see `recurrence_eval` in trigonometric.jl),
+    # so `BoxSampling([-1, 1])` covers the full `θ ∈ [-π, π]` and the
+    # Chebyshev→cos-only conversion exactly reproduces the smoke polynomial.
+    @constraint(model, p_trig - γ in SOSCone(), zero_basis = MB.BoxSampling([-1.0], [1.0]))
+    t = @elapsed optimize!(model)
+    println("    value(γ) = ", round(value(γ), digits = 6),
+            "    time = ", round(t, digits = 2), " s")
+    return value(γ)
+end
+println("\n== Trigonometric smoke (smoke poly via Chebyshev → cos-only trig) ==")
+p_trig = _smoke_as_cos_only_trig()
+println("MadNLP+MINRES-QLP:")
+γ_mad = smoke_box_trig(bmlbfgs, p_trig)
+println("Percival:")
+γ_perc = smoke_box_trig(percival_bmlbfgs, p_trig)
+println("agreement: |Δγ| = ", round(abs(γ_mad - γ_perc), digits = 6),
+        "    expected ≈ -6")
 
 # Should give
 # == BMKKTSystem smoke: max γ s.t. p − γ ∈ SOS ==
