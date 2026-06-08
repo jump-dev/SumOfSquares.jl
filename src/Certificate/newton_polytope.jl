@@ -300,11 +300,11 @@ function _multiplier_maxdegree(maxdegree, g::SA.AlgebraElement, vars)
 end
 
 function _multiplier_deg_range(range, g::SA.AlgebraElement, vars)
-    return _multiplier_mindegree(
-        minimum(range),
+    return _multiplier_mindegree(minimum(range), g, vars):_multiplier_maxdegree(
+        maximum(range),
         g,
         vars,
-    ):_multiplier_maxdegree(maximum(range), g, vars)
+    )
 end
 
 # Cheap approximation of the convex hull as the approximation of:
