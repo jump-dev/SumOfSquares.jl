@@ -178,7 +178,7 @@ model = Model(Dualization.dual_optimizer(scs))
 SumOfSquares.Bridges.add_all_bridges(backend(model).optimizer, Float64)
 @variable(model, λ)
 @objective(model, Min, λ)
-@constraint(model, con_ref, SA.coeffs(λ * one(f) - f, SA.basis(chsh)) in cone);
+@constraint(model, SA.coeffs(λ * one(f) - f, SA.basis(chsh)) in cone);
 optimize!(model)
 solution_summary(model)
 objective_value(model) ≈ 2√2
@@ -196,7 +196,6 @@ summary(backend(model).optimizer.model.optimizer.dual_problem.dual_model)
 # We can see that the bridge used is the `KernelBridge` this time.
 
 print_active_bridges(model)
-MOI.Bridges.bridge(backend(model), JuMP.index(con_ref))
 
 # We didn't test using the `ImageBridge` with dualization or using the `KernelBridge` without dualization.
 # However, these will always produce larger models, which is why the choice o bridge can be done
