@@ -16,6 +16,7 @@
 # rewriting rules of the [CHSH inequality](https://en.wikipedia.org/wiki/CHSH_inequality) using
 # [KnuthBendix](https://github.com/kalmarek/KnuthBendix.jl).
 
+using Test #src
 using SumOfSquares
 include(
     joinpath(dirname(dirname(pathof(SumOfSquares))), "examples", "monoids.jl"),
@@ -112,44 +113,57 @@ objective_value(model) ≈ 2√2
 
 # Let's look at the size of the generated SDP:
 
+mutable struct SDPSize
+    free::Int
+    eq::Vector{Int}
+    psd::Vector{Int}
+end
+function Base.:(==)(a::SDPSize, b::SDPSize)                    #src
+    return a.free == b.free && a.eq == b.eq && a.psd == b.psd #src
+end                                                           #src
+function Base.show(io::IO, size::SDPSize)
+    print(io, "$(size.free) free variables, ")
+    print(io, "$(sum(size.eq, init = 0)) equality constraints, ")
+    print(io, "PSD block sizes: $(size.psd)")
+    return
+end
 function _add!(f, psd, model, F, S)
-    return append!(
+    append!(
         psd,
         [
             f(MOI.get(model, MOI.ConstraintSet(), ci)) for
             ci in MOI.get(model, MOI.ListOfConstraintIndices{F,S}())
         ],
     )
+    return
 end
 function summary(model)
-    free = MOI.get(model, MOI.NumberOfVariables())
-    psd = Int[]
+    size = SDPSize(0, Int[], Int[])
+    size.free = MOI.get(model, MOI.NumberOfVariables())
     F = MOI.VectorOfVariables
     S = MOI.PositiveSemidefiniteConeTriangle
-    _add!(MOI.side_dimension, psd, model, F, S)
+    _add!(MOI.side_dimension, size.psd, model, F, S)
     S = SCS.ScaledPSDCone
-    _add!(MOI.side_dimension, psd, model, F, S)
-    free -= sum(psd, init = 0) do d
+    _add!(MOI.side_dimension, size.psd, model, F, S)
+    size.free -= sum(size.psd, init = 0) do d
         return div(d * (d + 1), 2)
     end
     F = MOI.VectorAffineFunction{Float64}
     S = MOI.PositiveSemidefiniteConeTriangle
-    _add!(MOI.side_dimension, psd, model, F, S)
+    _add!(MOI.side_dimension, size.psd, model, F, S)
     S = SCS.ScaledPSDCone
-    _add!(MOI.side_dimension, psd, model, F, S)
+    _add!(MOI.side_dimension, size.psd, model, F, S)
     eq = Int[]
     F = MOI.VectorAffineFunction{Float64}
     S = MOI.Zeros
-    _add!(MOI.dimension, eq, model, F, S)
+    _add!(MOI.dimension, size.eq, model, F, S)
     F = MOI.ScalarAffineFunction{Float64}
     S = MOI.EqualTo{Float64}
-    _add!(MOI.dimension, eq, model, F, S)
-    println(
-        "$free free variables, $(sum(eq, init = 0)) equality constraints, PSD block sizes: $psd",
-    )
-    return
+    _add!(MOI.dimension, size.eq, model, F, S)
+    return size
 end
 summary(backend(model).optimizer.model)
+@test summary(backend(model).optimizer.model) == SDPSize(3051, [18], [81]) #src
 
 # We can see that the `FreeBridge` was used because SCS supports free variables and
 # affine-in-PSD constraints.
@@ -162,13 +176,9 @@ print_active_bridges(model)
 import Dualization
 model = Model(Dualization.dual_optimizer(scs))
 SumOfSquares.Bridges.add_all_bridges(backend(model).optimizer, Float64)
-MOI.Bridges.remove_bridge(
-    backend(model).optimizer,
-    SumOfSquares.Bridges.Constraint.ImageBridge{Float64},
-)
 @variable(model, λ)
 @objective(model, Min, λ)
-@constraint(model, SA.coeffs(λ * one(f) - f, SA.basis(chsh)) in cone);
+@constraint(model, con_ref, SA.coeffs(λ * one(f) - f, SA.basis(chsh)) in cone);
 optimize!(model)
 solution_summary(model)
 objective_value(model) ≈ 2√2
@@ -176,6 +186,7 @@ objective_value(model) ≈ 2√2
 # The model is much smaller this time, with 289 equality constraints and 1 free variable.
 
 summary(backend(model).optimizer.model)
+@test summary(backend(model).optimizer.model) == SDPSize(1, [289], [81]) #src
 
 # After dualization that is 289 free variables and 1 equality constraints.
 # This is a big improvement compared to the 3051 free variables, 18 equality constraints without dualization.
@@ -185,7 +196,8 @@ summary(backend(model).optimizer.model.optimizer.dual_problem.dual_model)
 # We can see that the bridge used is the `KernelBridge` this time.
 
 print_active_bridges(model)
+MOI.Bridges.bridge(backend(model), JuMP.index(con_ref))
 
 # We didn't test using the `ImageBridge` with dualization or using the `KernelBridge` without dualization.
-# However, these will always produce larger models, which is why the choice o bridge can be need
+# However, these will always produce larger models, which is why the choice o bridge can be done
 # automatically once you choose whether you want to dualize the problem or not.
