@@ -17,7 +17,7 @@ K = @set x[1] &gt;= 0 &amp;&amp; x[1] &lt;= 3 &amp;&amp; x[2] &gt;= 0 &amp;&amp;
 using Plots
 plot(xs, f1.(xs), label = &quot;f1&quot;)
 plot!(xs, f2.(xs), label = &quot;f2&quot;)
-plot!(xs, 4 * ones(length(xs)), label = nothing)</code></pre><img src="afd7320d.svg" alt="Example block output"/><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import Clarabel
+plot!(xs, 4 * ones(length(xs)), label = nothing)</code></pre><img src="b0e99caf.svg" alt="Example block output"/><p>We will now see how to find the optimal solution using Sum of Squares Programming. We first need to pick an SDP solver, see <a href="https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers">here</a> for a list of the available choices.</p><pre><code class="language-julia hljs">import Clarabel
 solver = Clarabel.Optimizer</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Clarabel.MOIwrapper.Optimizer</code></pre><p>A Sum-of-Squares certificate that <span>$p \ge \alpha$</span> over the domain <code>S</code>, ensures that <span>$\alpha$</span> is a lower bound to the polynomial optimization problem. The following function searches for the largest lower bound and finds zero using the <code>d</code>th level of the hierarchy`.</p><pre><code class="language-julia hljs">function solve(d)
     model = SOSModel(solver)
     @variable(model, α)
@@ -66,10 +66,10 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
   8   6.9993e+00   6.9994e+00  1.29e-05  1.39e-06  1.35e-07  9.46e-05  6.33e-07  9.75e-01
   9   7.0000e+00   7.0000e+00  3.48e-07  3.79e-08  3.68e-09  2.56e-06  1.72e-08  9.73e-01
  10   7.0000e+00   7.0000e+00  1.18e-08  1.30e-09  1.25e-10  8.65e-08  5.85e-10  9.66e-01
- 11   7.0000e+00   7.0000e+00  2.34e-10  2.43e-11  2.60e-12  1.72e-09  1.17e-11  9.80e-01
+ 11   7.0000e+00   7.0000e+00  2.34e-10  2.62e-11  2.59e-12  1.72e-09  1.17e-11  9.80e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 1.74ms
+solve time = 2.10ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -82,7 +82,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -7.00000e+00
 │ └ dual_objective_value : -7.00000e+00
 └ Work counters
-  ├ solve_time (sec)   : 1.73793e-03
+  ├ solve_time (sec)   : 2.10353e-03
   └ barrier_iterations : 11</code></pre><p>The second level improves the lower bound</p><pre><code class="language-julia hljs">model5 = solve(5)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.11.1  -  Clever Acronym
 
@@ -127,11 +127,11 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  11   6.4423e+00   6.4536e+00  1.75e-03  1.41e-05  5.51e-07  1.13e-02  2.07e-06  8.34e-01
  12   6.6492e+00   6.6500e+00  1.19e-04  8.39e-07  3.36e-08  7.94e-04  1.26e-07  9.69e-01
  13   6.6662e+00   6.6663e+00  3.10e-06  2.18e-08  8.74e-10  2.08e-05  3.28e-09  9.74e-01
- 14   6.6667e+00   6.6667e+00  8.84e-08  6.27e-10  2.50e-11  5.93e-07  9.37e-11  9.72e-01
- 15   6.6667e+00   6.6667e+00  2.63e-09  3.16e-11  7.62e-13  1.76e-08  2.79e-12  9.70e-01
+ 14   6.6667e+00   6.6667e+00  8.84e-08  6.27e-10  2.49e-11  5.93e-07  9.36e-11  9.72e-01
+ 15   6.6667e+00   6.6667e+00  2.63e-09  1.89e-11  7.39e-13  1.76e-08  2.79e-12  9.71e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time = 5.60ms
+solve time = 6.48ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -144,7 +144,7 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -6.66667e+00
 │ └ dual_objective_value : -6.66667e+00
 └ Work counters
-  ├ solve_time (sec)   : 5.59568e-03
+  ├ solve_time (sec)   : 6.48209e-03
   └ barrier_iterations : 15</code></pre><p>The third level finds the optimal objective value as lower bound...</p><pre><code class="language-julia hljs">model7 = solve(7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-------------------------------------------------------------
            Clarabel.jl v0.11.1  -  Clever Acronym
 
@@ -187,17 +187,16 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
  10   3.6591e+00   3.6805e+00  5.86e-03  3.22e-05  3.07e-06  2.17e-02  7.16e-06  9.60e-01
  11   4.0143e+00   4.0278e+00  3.36e-03  1.51e-05  1.27e-06  1.36e-02  3.07e-06  7.92e-01
  12   4.3776e+00   4.3897e+00  2.76e-03  8.80e-06  5.15e-07  1.22e-02  1.31e-06  6.54e-01
- 13   4.8732e+00   4.8813e+00  1.66e-03  3.01e-06  1.23e-07  8.13e-03  3.43e-07  8.18e-01
- 14   5.0128e+00   5.0214e+00  1.72e-03  2.75e-06  7.70e-08  8.68e-03  2.15e-07  6.26e-01
- 15   5.3405e+00   5.3430e+00  4.68e-04  7.83e-07  2.29e-08  2.51e-03  6.19e-08  9.90e-01
- 16   5.4836e+00   5.4840e+00  6.10e-05  1.11e-07  3.37e-09  3.36e-04  8.39e-09  8.62e-01
- 17   5.5052e+00   5.5052e+00  9.63e-06  1.30e-08  3.96e-10  5.32e-05  9.86e-10  9.68e-01
- 18   5.5079e+00   5.5079e+00  4.62e-07  6.19e-10  1.90e-11  2.55e-06  4.72e-11  9.53e-01
- 19   5.5080e+00   5.5080e+00  3.10e-08  4.82e-11  1.25e-12  1.71e-07  3.11e-12  9.46e-01
- 20   5.5080e+00   5.5080e+00  6.18e-10  8.90e-13  2.56e-14  3.42e-09  6.20e-14  9.80e-01
+ 13   4.8728e+00   4.8809e+00  1.67e-03  3.06e-06  1.25e-07  8.16e-03  3.48e-07  8.12e-01
+ 14   5.0129e+00   5.0215e+00  1.73e-03  2.93e-06  7.84e-08  8.70e-03  2.19e-07  6.20e-01
+ 15   5.3515e+00   5.3542e+00  5.10e-04  7.00e-07  1.99e-08  2.74e-03  4.72e-08  9.90e-01
+ 16   5.4907e+00   5.4909e+00  4.29e-05  6.47e-08  1.96e-09  2.37e-04  5.11e-09  9.25e-01
+ 17   5.5069e+00   5.5069e+00  3.72e-06  4.38e-09  1.34e-10  2.06e-05  3.49e-10  9.75e-01
+ 18   5.5080e+00   5.5080e+00  1.65e-07  1.94e-10  5.89e-12  9.14e-07  1.55e-11  9.57e-01
+ 19   5.5080e+00   5.5080e+00  8.82e-09  3.10e-11  3.17e-13  4.87e-08  8.21e-13  9.49e-01
 ---------------------------------------------------------------------------------------------
 Terminated with status = solved
-solve time =  129ms
+solve time = 28.8ms
 solution_summary(; result = 1, verbose = false)
 ├ solver_name          : Clarabel
 ├ Termination
@@ -210,8 +209,8 @@ solution_summary(; result = 1, verbose = false)
 │ ├ objective_value      : -5.50801e+00
 │ └ dual_objective_value : -5.50801e+00
 └ Work counters
-  ├ solve_time (sec)   : 1.28893e-01
-  └ barrier_iterations : 20</code></pre><p>...and proves it by exhibiting the minimizer.</p><pre><code class="language-julia hljs">ν7 = moment_matrix(model7[:c])
+  ├ solve_time (sec)   : 2.88249e-02
+  └ barrier_iterations : 19</code></pre><p>...and proves it by exhibiting the minimizer.</p><pre><code class="language-julia hljs">ν7 = moment_matrix(model7[:c])
 η = atomic_measure(ν7, 1e-3) # Returns nothing as the dual is not atomic</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Atomic measure on the variables x[1], x[2] with 1 atoms:
- at [2.329520175344143, 3.1784930894299404] with weight 0.9999999814218617</code></pre><p>We can indeed verify that the objective value at <code>x_opt</code> is equal to the lower bound.</p><pre><code class="language-julia hljs">x_opt = η.atoms[1].center
-p(x_opt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-5.508013264774084</code></pre><p>We can see visualize the solution as follows:</p><pre><code class="language-julia hljs">scatter!([x_opt[1]], [x_opt[2]], markershape = :star, label = nothing)</code></pre><img src="1cf368f6.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../goldstein_price/">« Goldstein-price function</a><a class="docs-footer-nextpage" href="../polynomial_optimization/">Polynomial Optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 28 May 2026 10:02">Thursday 28 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ at [2.329519874124259, 3.1784931466725235] with weight 0.9999997348305585</code></pre><p>We can indeed verify that the objective value at <code>x_opt</code> is equal to the lower bound.</p><pre><code class="language-julia hljs">x_opt = η.atoms[1].center
+p(x_opt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-5.508013020796783</code></pre><p>We can see visualize the solution as follows:</p><pre><code class="language-julia hljs">scatter!([x_opt[1]], [x_opt[2]], markershape = :star, label = nothing)</code></pre><img src="a3d6da41.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../goldstein_price/">« Goldstein-price function</a><a class="docs-footer-nextpage" href="../polynomial_optimization/">Polynomial Optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 8 June 2026 16:47">Monday 8 June 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

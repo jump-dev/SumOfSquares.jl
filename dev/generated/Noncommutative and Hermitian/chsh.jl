@@ -72,42 +72,51 @@ optimize!(model)
 solution_summary(model)
 objective_value(model) ≈ 2√2
 
+mutable struct SDPSize
+    free::Int
+    eq::Vector{Int}
+    psd::Vector{Int}
+end
+function Base.show(io::IO, size::SDPSize)
+    print(io, "$(size.free) free variables, ")
+    print(io, "$(sum(size.eq, init = 0)) equality constraints, ")
+    print(io, "PSD block sizes: $(size.psd)")
+    return
+end
 function _add!(f, psd, model, F, S)
-    return append!(
+    append!(
         psd,
         [
             f(MOI.get(model, MOI.ConstraintSet(), ci)) for
             ci in MOI.get(model, MOI.ListOfConstraintIndices{F,S}())
         ],
     )
+    return
 end
 function summary(model)
-    free = MOI.get(model, MOI.NumberOfVariables())
-    psd = Int[]
+    size = SDPSize(0, Int[], Int[])
+    size.free = MOI.get(model, MOI.NumberOfVariables())
     F = MOI.VectorOfVariables
     S = MOI.PositiveSemidefiniteConeTriangle
-    _add!(MOI.side_dimension, psd, model, F, S)
+    _add!(MOI.side_dimension, size.psd, model, F, S)
     S = SCS.ScaledPSDCone
-    _add!(MOI.side_dimension, psd, model, F, S)
-    free -= sum(psd, init = 0) do d
+    _add!(MOI.side_dimension, size.psd, model, F, S)
+    size.free -= sum(size.psd, init = 0) do d
         return div(d * (d + 1), 2)
     end
     F = MOI.VectorAffineFunction{Float64}
     S = MOI.PositiveSemidefiniteConeTriangle
-    _add!(MOI.side_dimension, psd, model, F, S)
+    _add!(MOI.side_dimension, size.psd, model, F, S)
     S = SCS.ScaledPSDCone
-    _add!(MOI.side_dimension, psd, model, F, S)
+    _add!(MOI.side_dimension, size.psd, model, F, S)
     eq = Int[]
     F = MOI.VectorAffineFunction{Float64}
     S = MOI.Zeros
-    _add!(MOI.dimension, eq, model, F, S)
+    _add!(MOI.dimension, size.eq, model, F, S)
     F = MOI.ScalarAffineFunction{Float64}
     S = MOI.EqualTo{Float64}
-    _add!(MOI.dimension, eq, model, F, S)
-    println(
-        "$free free variables, $(sum(eq, init = 0)) equality constraints, PSD block sizes: $psd",
-    )
-    return
+    _add!(MOI.dimension, size.eq, model, F, S)
+    return size
 end
 summary(backend(model).optimizer.model)
 
@@ -116,10 +125,6 @@ print_active_bridges(model)
 import Dualization
 model = Model(Dualization.dual_optimizer(scs))
 SumOfSquares.Bridges.add_all_bridges(backend(model).optimizer, Float64)
-MOI.Bridges.remove_bridge(
-    backend(model).optimizer,
-    SumOfSquares.Bridges.Constraint.ImageBridge{Float64},
-)
 @variable(model, λ)
 @objective(model, Min, λ)
 @constraint(model, SA.coeffs(λ * one(f) - f, SA.basis(chsh)) in cone);
