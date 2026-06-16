@@ -176,25 +176,24 @@ end
 # Fourier-cosine coefficients of `p(cos θ)`. Sampling `θ ∈ [−π, π]` covers
 # `x ∈ [−1, 1]`, so the smoke optimum `γ* = −6` (attained at `x = −1`, i.e.
 # `θ = π`) is preserved.
-function _smoke_as_cos_only_trig()
-    mon_coeffs = Float64[3, 12, -2, -4, 1]  # constant, x, x², x³, x⁴
-    mon_sub = MB.SubBasis{MB.Monomial}(DynamicPolynomials.monomials(x, 0:4))
+# Reduce to a degree-2 monomial polynomial: `x² − x − 1`. Min on `ℝ`
+# is at `x = 1/2`, with `p(1/2) = −5/4 = −1.25`. Its `Monomial → Chebyshev`
+# conversion gives `−0.5 T₀ − T₁ + 0.5 T₂`, so the cos-only trig form is
+# `p_trig(θ) = −0.5 − cos(θ) + 0.5·cos(2θ)`, with the same minimum `−1.25`
+# attained at `θ = π/3` (where `cos(θ) = 1/2`). Sticks to `monomials(x, 0:4)`
+# → 5 trig basis functions (odd, dodges the upstream `isodd(n_coef)` assertion).
+function _quad_as_cos_only_trig()
+    mon_coeffs = Float64[-1, -1, 1]  # constant, x, x²
+    mon_sub = MB.SubBasis{MB.Monomial}(DynamicPolynomials.monomials(x, 0:2))
     cheb_full = MB.FullBasis{MB.Chebyshev}([x])
     cheb_sparse = SA.coeffs(mon_coeffs, mon_sub, cheb_full)
-    # `cheb_sparse` is `SparseCoefficients` over the chebyshev keys. Pack
-    # values into the trig basis (which interleaves cos/sin: index
-    # `2k − 1` → `cos(kθ)`, `2k` → `sin(kθ)`, `0` → constant).
     cheb_vals = collect(SA.values(cheb_sparse))
-    # The conversion may produce fewer than 5 chebyshev terms if some are
-    # zero; we know the smoke poly has nonzero `T_0, …, T_4`.
-    @assert length(cheb_vals) == 5 "expected 5 chebyshev coefficients, got $(length(cheb_vals))"
-    trig_coeffs = zeros(9)              # `monomials(x, 0:8)` → 9 trig basis fns
+    @assert length(cheb_vals) == 3 "expected 3 chebyshev coefficients, got $(length(cheb_vals))"
+    trig_coeffs = zeros(5)              # `monomials(x, 0:4)` → 5 trig basis fns
     trig_coeffs[1] = cheb_vals[1]       # constant
     trig_coeffs[2] = cheb_vals[2]       # cos(θ)
     trig_coeffs[4] = cheb_vals[3]       # cos(2θ)
-    trig_coeffs[6] = cheb_vals[4]       # cos(3θ)
-    trig_coeffs[8] = cheb_vals[5]       # cos(4θ)
-    trig_basis = MB.SubBasis{MB.Trigonometric}(DynamicPolynomials.monomials(x, 0:8))
+    trig_basis = MB.SubBasis{MB.Trigonometric}(DynamicPolynomials.monomials(x, 0:4))
     return MB.algebra_element(trig_coeffs, trig_basis)
 end
 function smoke_box_trig(solver, p_trig)
@@ -213,14 +212,14 @@ function smoke_box_trig(solver, p_trig)
             "    time = ", round(t, digits = 2), " s")
     return value(γ)
 end
-println("\n== Trigonometric smoke (smoke poly via Chebyshev → cos-only trig) ==")
-p_trig = _smoke_as_cos_only_trig()
+println("\n== Trigonometric quad (x²−x−1 via Chebyshev → cos-only trig) ==")
+p_trig = _quad_as_cos_only_trig()
 println("MadNLP+MINRES-QLP:")
 γ_mad = smoke_box_trig(bmlbfgs, p_trig)
 println("Percival:")
 γ_perc = smoke_box_trig(percival_bmlbfgs, p_trig)
 println("agreement: |Δγ| = ", round(abs(γ_mad - γ_perc), digits = 6),
-        "    expected ≈ -6")
+        "    expected ≈ -1.25")
 
 # Should give
 # == BMKKTSystem smoke: max γ s.t. p − γ ∈ SOS ==
