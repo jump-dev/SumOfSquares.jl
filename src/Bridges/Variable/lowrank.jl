@@ -1,17 +1,31 @@
-struct LowRankBridge{T,M} <: MOI.Bridges.Variable.AbstractBridge
+struct LowRankBridge{T,M,B,G,W} <: MOI.Bridges.Variable.AbstractBridge
     affine::Vector{MOI.ScalarAffineFunction{T}}
     variables::Vector{Vector{MOI.VariableIndex}}
     constraints::Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}
-    set::SOS.WeightedSOSCone{M}
+    set::SOS.WeightedSOSCone{M,B,G,W}
 end
 
 import LinearAlgebra
 
+# The matrix returned by `MB.transformation_to(gram_basis, target_basis)`.
+# `Base.promote_op` resolves this at the type level so we can declare a
+# concrete `LRO.Factorization{T, SubArray{...}, Array{T,0}}` in
+# `added_constrained_variable_types` — needed because PolyJuMP's
+# `bridgeable` rejects `UnionAll` set types.
+_transformation_type(::Type{G}, ::Type{B}) where {G,B} =
+    Base.promote_op(MB.transformation_to, G, B)
+
+# Row-view of the transformation matrix, i.e. the type of `view(U, j, :)`.
+# Used as the `Factorization.factor` type so the parent `U` survives down
+# to downstream batched-FFT consumers (e.g. `LowRankOpt.BurerMonteiro`).
+_row_view_type(::Type{MT}) where {MT} =
+    Base.promote_op(view, MT, Int, Colon)
+
 function MOI.Bridges.Variable.bridge_constrained_variable(
-    ::Type{LowRankBridge{T,M}},
+    ::Type{LowRankBridge{T,M,B,G,W}},
     model::MOI.ModelLike,
-    set::SOS.WeightedSOSCone{M},
-) where {T,M}
+    set::SOS.WeightedSOSCone{M,B,G,W},
+) where {T,M,B,G,W}
     variables = Vector{Vector{MOI.VariableIndex}}(undef, length(set.gram_bases))
     constraints = Vector{MOI.ConstraintIndex{MOI.VectorOfVariables}}(
         undef,
@@ -20,19 +34,26 @@ function MOI.Bridges.Variable.bridge_constrained_variable(
     for i in eachindex(set.gram_bases)
         U = MB.transformation_to(set.gram_bases[i], set.basis)
         weights = SA.coeffs(set.weights[i], set.basis)
+        # `view(U, j, :)` preserves the parent matrix `U` so that downstream
+        # `LowRankOpt.BurerMonteiro` can recognise the row-sharing pattern and
+        # use a single `mul!(buf, U, X.factor)` (one batched FFT per row of `Y`
+        # when `U::MB.TrigEvalMatrix`) instead of `n` separate inner products.
         variables[i], constraints[i] = MOI.add_constrained_variables(
             model,
             LRO.SetDotProducts{LRO.WITHOUT_SET}(
                 SOS.matrix_cone(M, length(set.gram_bases[i])),
                 [
                     LRO.TriangleVectorization(
-                        LRO.Factorization(U[j, :], reshape(T[weights[j]], ())),
+                        LRO.Factorization(
+                            view(U, j, :),
+                            reshape(T[weights[j]], ()),
+                        ),
                     ) for j in eachindex(set.basis)
                 ],
             ),
         )
     end
-    return LowRankBridge{T,M}(
+    return LowRankBridge{T,M,B,G,W}(
         [
             MOI.ScalarAffineFunction(
                 [
@@ -59,19 +80,14 @@ function MOI.Bridges.Variable.supports_constrained_variable(
 end
 
 function MOI.Bridges.added_constrained_variable_types(
-    ::Type{LowRankBridge{T,M}},
-) where {T,M}
+    ::Type{LowRankBridge{T,M,B,G,W}},
+) where {T,M,B,G,W}
+    MT = _transformation_type(G, B)
+    FT = _row_view_type(MT)
+    TVT = LRO.TriangleVectorization{T,LRO.Factorization{T,FT,Array{T,0}}}
     return Tuple{Type}[
-        (
-            LRO.SetDotProducts{
-                LRO.WITHOUT_SET,
-                S[1],
-                LRO.TriangleVectorization{
-                    T,
-                    LRO.Factorization{T,Vector{T},Array{T,0}},
-                },
-            },
-        ) for S in SOS.Bridges.Constraint.constrained_variable_types(M) if
+        (LRO.SetDotProducts{LRO.WITHOUT_SET,S[1],TVT,Vector{TVT}},)
+        for S in SOS.Bridges.Constraint.constrained_variable_types(M) if
         S[1] == MOI.PositiveSemidefiniteConeTriangle # FIXME hack
     ]
 end
@@ -82,9 +98,9 @@ end
 
 function MOI.Bridges.Variable.concrete_bridge_type(
     ::Type{<:LowRankBridge{T}},
-    ::Type{<:SOS.WeightedSOSCone{M}},
-) where {T,M}
-    return LowRankBridge{T,M}
+    ::Type{<:SOS.WeightedSOSCone{M,B,G,W}},
+) where {T,M,B,G,W}
+    return LowRankBridge{T,M,B,G,W}
 end
 
 # Attributes, Bridge acting as a model
