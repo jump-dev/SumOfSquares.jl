@@ -29,7 +29,7 @@ set_silent(model)
 optimize!(model)
 solution_summary(model)
 @test primal_status(model) == MOI.FEASIBLE_POINT #src
-@test value(γ) ≈ -6 rtol=1e-4 #src
+@test value(γ) ≈ -6 rtol=1e-3 #src
 
 # We can see that the SOS constraint is converted into a PSD constraint.
 

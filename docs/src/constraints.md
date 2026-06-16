@@ -186,7 +186,7 @@ To use a zero basis different than the gram basis, use the `zero_basis` keyword 
 As basis conversion can be numerically delicate at high degree, you usually want to avoid
 using a different gram and zero basis.
 One notable exception is the sampling basis.
-As discussed in the [Sampling](@ref) tutorial,
+As discussed in the [Sampling basis](@ref) tutorial,
 when using the sampling basis, [Hypatia](https://github.com/jump-dev/Hypatia.jl)
 can use its `WSOSInterpNonnegativeCone`.
 The advantage of this cone is that Hypatia does not need to create the matrix `Q`.
