@@ -59,6 +59,113 @@ function test_runtests()
     return
 end
 
+# Same as `test_runtests` but with a non-unit constant weight. This is the
+# kind of `WeightedSOSCone` that arises when the `domain` keyword is used in
+# `@constraint` and the resulting Putinar-style decomposition leaves a scaling
+# in front of one of the SOS multipliers. Mirrors
+# `test_runtests_weighted` in `test/Bridges/Variable/kernel.jl`.
+function test_runtests_weighted()
+    T = Float64
+    @polyvar x y
+    MOI.Bridges.runtests(
+        SumOfSquares.Bridges.Constraint.ImageBridge,
+        model -> begin
+            MOI.add_constraint(
+                model,
+                MOI.VectorAffineFunction{T}(
+                    MOI.VectorAffineTerm{T}[],
+                    T[5, -1, 2, 2],
+                ),
+                SumOfSquares.WeightedSOSCone{
+                    MOI.PositiveSemidefiniteConeTriangle,
+                }(
+                    MB.SubBasis{MB.Monomial}([y^4, x^2 * y^2, x^3 * y, x^4]),
+                    [MB.SubBasis{MB.Monomial}([y^2, x * y, x^2])],
+                    [MB.algebra_element(T(2) * x^0 * y^0)],
+                ),
+            )
+        end,
+        model -> begin
+            λ = MOI.add_variable(model)
+            MOI.add_constraint(
+                model,
+                MOI.Utilities.operate(
+                    vcat,
+                    T,
+                    T(5 // 2),
+                    T(0),
+                    T(2) * λ - T(1 // 2),
+                    T(-1) * λ,
+                    T(1 // 2),
+                    T(1),
+                ),
+                MOI.PositiveSemidefiniteConeTriangle(3),
+            )
+        end;
+        cannot_unbridge = true,
+    )
+    return
+end
+
+# Same as `test_runtests` but with a non-constant weight, which is the form
+# that arises when the `domain` keyword introduces a polynomial multiplier
+# `g(x)` (e.g. coming from `@set g >= 0`) into the SOS certificate.
+# Mirrors `test_runtests_polynomial_weight` in
+# `test/Bridges/Variable/kernel.jl`.
+#
+# weight (1 + x), gram basis [1, x]
+# (1 + x) * (Q11 + 2*Q12*x + Q22*x^2)
+#   = Q11 + (2*Q12 + Q11)*x + (Q22 + 2*Q12)*x^2 + Q22*x^3
+# so the gram entries are determined (modulo a single zero constraint) by:
+#   Q11   = scalars[1]
+#   2*Q12 = scalars[2] - scalars[1]
+#   Q22   = scalars[3] - scalars[2] + scalars[1]
+# with the consistency requirement
+#   scalars[1] - scalars[2] + scalars[3] - scalars[4] = 0.
+function test_runtests_polynomial_weight()
+    T = Float64
+    @polyvar x
+    MOI.Bridges.runtests(
+        SumOfSquares.Bridges.Constraint.ImageBridge,
+        model -> begin
+            MOI.add_constraint(
+                model,
+                MOI.VectorAffineFunction{T}(
+                    MOI.VectorAffineTerm{T}[],
+                    T[1, 3, 4, 2],
+                ),
+                SumOfSquares.WeightedSOSCone{
+                    MOI.PositiveSemidefiniteConeTriangle,
+                }(
+                    MB.SubBasis{MB.Monomial}([x^0, x, x^2, x^3]),
+                    [MB.SubBasis{MB.Monomial}([x^0, x])],
+                    [MB.algebra_element(T(1) * x^0 + T(1) * x)],
+                ),
+            )
+        end,
+        model -> begin
+            MOI.add_constraint(
+                model,
+                MOI.VectorAffineFunction{T}(
+                    MOI.VectorAffineTerm{T}[],
+                    T[1, 1, 2],
+                ),
+                SumOfSquares.PositiveSemidefinite2x2ConeTriangle(),
+            )
+            MOI.add_constraint(
+                model,
+                MOI.VectorAffineFunction{T}(
+                    MOI.VectorAffineTerm{T}[],
+                    T[0],
+                ),
+                MOI.Zeros(1),
+            )
+        end;
+        cannot_unbridge = true,
+    )
+    return
+end
+
 # Regression test for an oversight in
 # `MOI.Bridges.added_constraint_types(ImageBridge)`: the bridge can produce a
 # constraint in any of the four sets returned by `SOS.matrix_cone(M, k)` for

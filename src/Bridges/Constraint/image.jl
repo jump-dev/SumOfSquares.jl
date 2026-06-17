@@ -80,79 +80,155 @@ function MOI.Bridges.Constraint.bridge_constraint(
 ) where {T,F,G,M}
     @assert MOI.output_dimension(g) == length(set.basis)
     scalars = MOI.Utilities.scalarize(g)
-    k = 0
+    # `found[mono] = k` records the index in the current `f` where the
+    # monomial `mono` has been anchored, with factor `factor[mono]`.
     found = Dict{eltype(set.basis),Int}()
+    factor = Dict{eltype(set.basis),T}()
+    # `pending[t]` lists `(k, factor)` contributions to the `t`-th basis
+    # monomial that is not yet anchored; the contributions will be absorbed
+    # when the monomial gets anchored, or otherwise turned into a zero
+    # constraint.
+    pending = Dict{Int,Vector{Tuple{Int,T}}}()
     first = Union{Nothing,Int}[nothing for _ in eachindex(scalars)]
     variables = MOI.VariableIndex[]
     constraints = MOI.ConstraintIndex{F}[]
+    # `fs[i]` keeps the function passed to `MOI.add_constraint` for the
+    # `i`-th gram basis. It is used below to build the residual zero
+    # constraint for unanchored basis monomials.
+    fs = F[]
     for (gram_basis, weight) in zip(set.gram_bases, set.weights)
-        @assert isone(weight)
         cone = SOS.matrix_cone(M, length(gram_basis))
         f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(cone))
+        weight_basis = SA.basis(weight)
+        weight_coeffs = SA.coeffs(weight)
+        k = 0
         for j in eachindex(gram_basis)
             for i in 1:j
                 k += 1
-                mono = SA.star(gram_basis[i]) * gram_basis[j]
                 is_diag = i == j
-                if haskey(found, mono)
-                    var = MOI.add_variable(model)
-                    push!(variables, var)
-                    is_diag_found =
-                        MOI.Utilities.is_diagonal_vectorized_index(found[mono])
-                    if is_diag == is_diag_found
-                        MOI.Utilities.operate_output_index!(
-                            +,
-                            T,
-                            found[mono],
-                            f,
-                            var,
-                        )
-                    else
-                        coef = is_diag ? inv(T(2)) : T(2)
-                        MOI.Utilities.operate_output_index!(
-                            +,
-                            T,
-                            found[mono],
-                            f,
-                            coef * var,
-                        )
-                    end
-                    MOI.Utilities.operate_output_index!(-, T, k, f, var)
-                elseif mono in set.basis
-                    found[mono] = k
-                    t = set.basis[mono]
-                    first[t] = k
-                    if is_diag
-                        MOI.Utilities.operate_output_index!(
-                            +,
-                            T,
-                            k,
-                            f,
-                            scalars[t],
-                        )
-                    else
-                        MOI.Utilities.operate_output_index!(
-                            +,
-                            T,
-                            k,
-                            f,
-                            inv(T(2)) * scalars[t],
-                        )
+                diag_factor = is_diag ? one(T) : T(2)
+                entry_anchored = false
+                slack_var = nothing
+                for (w_key, w_coef) in
+                    zip(SA.keys(weight_coeffs), SA.values(weight_coeffs))
+                    mono_w = weight_basis[w_key]
+                    mono = mono_w * SA.star(gram_basis[i]) * gram_basis[j]
+                    f_kw = w_coef * diag_factor
+                    if haskey(found, mono)
+                        k_a = found[mono]
+                        f_a = factor[mono]
+                        if entry_anchored
+                            # Entry `k` is anchored by a previous weight term:
+                            # subtract its current contribution from the
+                            # anchor of `mono`.
+                            f_k = MOI.Utilities.eachscalar(f)[k]
+                            MOI.Utilities.operate_output_index!(
+                                -,
+                                T,
+                                k_a,
+                                f,
+                                (f_kw / f_a) * f_k,
+                            )
+                        else
+                            # Entry `k` is free so far: introduce a slack
+                            # variable representing its value (or extend the
+                            # one already introduced by an earlier weight
+                            # term) and adjust the anchor.
+                            if slack_var === nothing
+                                slack_var = MOI.add_variable(model)
+                                push!(variables, slack_var)
+                                MOI.Utilities.operate_output_index!(
+                                    -,
+                                    T,
+                                    k,
+                                    f,
+                                    slack_var,
+                                )
+                            end
+                            MOI.Utilities.operate_output_index!(
+                                +,
+                                T,
+                                k_a,
+                                f,
+                                (f_kw / f_a) * slack_var,
+                            )
+                        end
+                    elseif mono in set.basis
+                        t = set.basis[mono]
+                        if !entry_anchored && slack_var === nothing
+                            # Anchor `mono` at entry `k` with factor `f_kw`.
+                            found[mono] = k
+                            factor[mono] = f_kw
+                            first[t] = k
+                            MOI.Utilities.operate_output_index!(
+                                +,
+                                T,
+                                k,
+                                f,
+                                inv(f_kw) * scalars[t],
+                            )
+                            if haskey(pending, t)
+                                for (k_p, f_p) in pending[t]
+                                    f_kp = MOI.Utilities.eachscalar(f)[k_p]
+                                    MOI.Utilities.operate_output_index!(
+                                        -,
+                                        T,
+                                        k,
+                                        f,
+                                        (f_p / f_kw) * f_kp,
+                                    )
+                                end
+                                delete!(pending, t)
+                            end
+                            entry_anchored = true
+                        else
+                            # Entry `k` is busy (already anchored or slack):
+                            # record the contribution for when `mono` gets
+                            # anchored or for a zero constraint.
+                            push!(
+                                get!(pending, t, Tuple{Int,T}[]),
+                                (k, f_kw),
+                            )
+                        end
                     end
                 end
             end
         end
+        push!(fs, f)
         push!(constraints, MOI.add_constraint(model, f, cone))
     end
-    if any(isnothing, first)
-        z = findall(isnothing, first)
-        zero_constraint = MOI.add_constraint(
-            model,
-            MOI.Utilities.vectorize(scalars[z]),
-            MOI.Zeros(length(z)),
-        )
+    # Build zero constraints for unanchored basis monomials. For each such
+    # monomial, the polynomial coefficient must equal the sum of the pending
+    # contributions; if no contributions exist at all, the coefficient must
+    # simply be zero.
+    z = findall(isnothing, first)
+    zero_terms = if isempty(z)
+        empty(scalars)
     else
-        zero_constraint = nothing
+        # The per-gram-basis `f`s above were built with a local `k`. With a
+        # single gram basis (the typical case) the global pending index is
+        # the local one. Supporting multiple gram bases would require
+        # tracking the originating basis for each pending contribution.
+        @assert length(fs) == 1
+        f_local = MOI.Utilities.eachscalar(fs[1])
+        map(z) do t
+            term = scalars[t]
+            if haskey(pending, t)
+                for (k_p, f_p) in pending[t]
+                    term = MA.operate!!(-, term, f_p * f_local[k_p])
+                end
+            end
+            return term
+        end
+    end
+    zero_constraint = if isempty(zero_terms)
+        nothing
+    else
+        MOI.add_constraint(
+            model,
+            MOI.Utilities.vectorize(zero_terms),
+            MOI.Zeros(length(zero_terms)),
+        )
     end
     return ImageBridge{T,F,G,M}(
         variables,
@@ -271,6 +347,20 @@ function MOI.get(
     attr::MOI.ConstraintFunction,
     bridge::ImageBridge{T},
 ) where {T}
+    # Recovering the original function from the bridged constraints requires
+    # inverting the affine map applied per gram entry. For weights that are
+    # not the constant one, this map is no longer simply identity-with-2
+    # scaling, so we declare unbridging unsupported instead of returning a
+    # wrong function.
+    if !all(isone, bridge.set.weights)
+        throw(
+            MOI.GetAttributeNotAllowed(
+                attr,
+                "The `ImageBridge` does not support recovering the original" *
+                " function when the `WeightedSOSCone` has non-unit weights.",
+            ),
+        )
+    end
     if !isnothing(bridge.zero_constraint)
         z = MOI.Utilities.eachscalar(
             MOI.get(model, attr, bridge.zero_constraint),
