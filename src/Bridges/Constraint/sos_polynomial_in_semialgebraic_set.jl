@@ -232,7 +232,7 @@ function MOI.get(
     ::MOI.ConstraintPrimal,
     ::SOSPolynomialInSemialgebraicSetBridge,
 )
-    throw(SOS.ValueNotSupported())
+    return throw(SOS.ValueNotSupported())
 end
 
 function MOI.get(

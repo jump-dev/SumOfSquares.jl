@@ -92,7 +92,7 @@ variables and `x` and `y` which are *polynomial* variables.
 
 In order to create a sum-of-squares polynomial variable, the syntax is exactly
 the same except `SOSPoly` should be used instead of `Poly`.
-For instance, the following code creates a ``3 \times 4`` matrix of
+For instance, the following code creates a vector of 2
 sum-of-squares polynomial variables:
 ```jldoctest variables; filter = [r"(Matrix|Vector|DenseAxisArray|SparseAxisArray)\{.*\}" => s"\1{…}"]
 julia> @variable(model, [1:2], SOSPoly(X))
@@ -117,9 +117,11 @@ And entries in a 6×6 SymMatrix{VariableRef}:
  _[213]  _[214]  _[215]  _[216]  _[217]  _[218]
 ```
 There is however an *important* difference between the meaning of the
-vector of monomials `X` between `Poly` and `SOSPoly`. For `SOSPoly`, it
-creates a positive semidefinite matrix of variables `Q` and sets `p` as the
-value of `X' * Q * X`. That is, for instance, if `X` contains all the monomials
+vector of monomials `X` between `Poly` and `SOSPoly`.
+In the case of `SOSPoly`, for each SOS polynomial decision variable created,
+let's call it `p`, think of it as internally creating a positive semidefinite matrix
+`Q` and replacing this `p` by the value of `X' * Q * X` everywhere `p` is used.
+So, for instance, if `X` contains all the monomials
 of degree 2, then all the monomials of `p` will have degree 4 (i.e. `p` will be
 a quartic form).
 
@@ -138,7 +140,7 @@ variables as the value of `X' * Q * X`.
 In the previous section, we show how to create polynomial variables from a
 monomial basis. However, the monomial basis is only a particular case of
 polynomial basis and while using a different basis of the same space of
-polynomial is would give an equivalent program, it might be more stable
+polynomial would give an equivalent program, it might be more stable
 numerically (see [Blekherman2012; Section 3.1.5](@cite)).
 
 For instance, creating an univariate cubic polynomial variable `p` using the

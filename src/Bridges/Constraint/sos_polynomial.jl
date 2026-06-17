@@ -141,7 +141,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
 end
 
 function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
-    throw(
+    return throw(
         MOI.Bridges.MapNotInvertible(
             "The linear map is not invertible for some basis transformation, use a `CachingOptimizer` layer",
         ),

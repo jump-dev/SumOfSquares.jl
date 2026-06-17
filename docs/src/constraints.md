@@ -140,13 +140,20 @@ julia> @constraint(model, α * x^2 + β * y^2 ≥ (α - β) * x * y)
 where `α` and `β` are JuMP decision variables and `x` and `y` are polynomial
 variables. Since the polynomial is a quadratic form, the sum-of-squares
 certificate is also a quadratic form (see [Blekherman2012; Section~3.3.4](@cite)). Hence the
-default polynomial basis used for the [Nonnegative polynomial variables]
+default polynomial basis used for the [Nonnegative polynomial variables](@ref)
 certificate is `MultivariateBases.SubBasis{MultivariateBases.Monomial}([x, y])`, that is, we search for a positive
 semidefinite matrix `Q` such that
 ```math
 \alpha x^2 + \beta y^2 - (\alpha - \beta) x y = X^\top Q X
 ```
 where ``X = (x, y)``.
+
+!!! note "Burer-Monteiro formulation"
+    Burer-Monteiro solvers such as [SDPLR](https://github.com/jump-dev/SDPLR.jl), [SDPLRPlus](https://github.com/luotuoqingshan/SDPLRPlus.jl) or [`LowRankOpt.BurerMonteiro`](https://github.com/blegat/LowRankOpt.jl/) do not optimize over `Q` but rather over its factorization.
+    In that case, the equation is rather
+    ```math
+    \alpha x^2 + \beta y^2 - (\alpha - \beta) x y = X^\top U U^\top X
+    ```
 
 As the polynomial space is determined by the polynomial being constrained,
 only the basis *type* needs to be given. For instance, to use the scaled monomial
@@ -160,6 +167,30 @@ The transformation to `basis` is done internally, after Newton polytope step.
 Although the Newton polytope computation in `Monomial` or `ScaledMonomial` basis
 are equivalent,
 this is not the case for `Chebyshev` basis for instance.
+
+### Zero basis
+
+There are two different basis that are important to distinguish:
+1) The *gram* basis is the vector ``X`` in ``X^\top Q X``
+2) The *zero* basis is the basis used to compare to enforce the equality
+   between the polynomial and its Sum-of-Squares decomposition; so between
+  ``\alpha x^2 + \beta y^2 - (\alpha - \beta) x y`` and ``X^\top Q X`` in
+  our example above.
+
+By default, both the gram and zero bases are using the monomial basis.
+This basis usually doesn't result in the most numerically well conditioned SDP
+so it is worth trying to test other basis.
+The `basis` keyword argument of `@constraint` sets both the gram and zero bases.
+To use a zero basis different than the gram basis, use the `zero_basis` keyword argument.
+
+As basis conversion can be numerically delicate at high degree, you usually want to avoid
+using a different gram and zero basis.
+One notable exception is the sampling basis.
+As discussed in the [Sampling basis](@ref) tutorial,
+when using the sampling basis, [Hypatia](https://github.com/jump-dev/Hypatia.jl)
+can use its `WSOSInterpNonnegativeCone`.
+The advantage of this cone is that Hypatia does not need to create the matrix `Q`.
+This is quite beneficial in scenarios with small number of variables and large degree where the number of entries in `Q` is large compared to the size of the zero basis.
 
 ## Polynomial nonnegativity on a subset of the space
 
