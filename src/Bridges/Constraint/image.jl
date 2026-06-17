@@ -69,7 +69,9 @@ struct ImageBridge{
     constraints::Vector{MOI.ConstraintIndex{F}}
     zero_constraint::Union{Nothing,MOI.ConstraintIndex{G,MOI.Zeros}}
     set::SOS.WeightedSOSCone{M}
-    first::Vector{Union{Nothing,Int}}
+    # `first[t] = (gram_basis_idx, k_local)` identifies which entry in which
+    # gram basis anchors the `t`-th basis monomial.
+    first::Vector{Union{Nothing,Tuple{Int,Int}}}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
@@ -80,27 +82,33 @@ function MOI.Bridges.Constraint.bridge_constraint(
 ) where {T,F,G,M}
     @assert MOI.output_dimension(g) == length(set.basis)
     scalars = MOI.Utilities.scalarize(g)
-    # `found[mono] = k` records the index in the current `f` where the
-    # monomial `mono` has been anchored, with factor `factor[mono]`.
-    found = Dict{eltype(set.basis),Int}()
-    factor = Dict{eltype(set.basis),T}()
-    # `pending[t]` lists `(k, factor)` contributions to the `t`-th basis
-    # monomial that is not yet anchored; the contributions will be absorbed
-    # when the monomial gets anchored, or otherwise turned into a zero
-    # constraint.
-    pending = Dict{Int,Vector{Tuple{Int,T}}}()
-    first = Union{Nothing,Int}[nothing for _ in eachindex(scalars)]
+    # `found[mono] = (i_basis, k, factor)` records that the monomial `mono`
+    # is anchored by the `k`-th entry of the `i_basis`-th gram matrix, with
+    # the recorded factor.
+    found = Dict{eltype(set.basis),Tuple{Int,Int,T}}()
+    # `pending[t]` lists `(i_basis, k, factor)` contributions to the `t`-th
+    # basis monomial that is not yet anchored; the contributions will be
+    # absorbed when the monomial gets anchored, or otherwise turned into a
+    # zero constraint.
+    pending = Dict{Int,Vector{Tuple{Int,Int,T}}}()
+    first = Union{Nothing,Tuple{Int,Int}}[nothing for _ in eachindex(scalars)]
     variables = MOI.VariableIndex[]
-    constraints = MOI.ConstraintIndex{F}[]
-    # `fs[i]` keeps the function passed to `MOI.add_constraint` for the
-    # `i`-th gram basis. It is used below to build the residual zero
-    # constraint for unanchored basis monomials.
+    # The gram matrices are built into `fs` first, then handed to MOI at
+    # the end: when an entry from a later gram basis slacks against the
+    # anchor of an earlier basis, the earlier `f` still has to be mutable.
     fs = F[]
-    for (gram_basis, weight) in zip(set.gram_bases, set.weights)
+    for gram_basis in set.gram_bases
         cone = SOS.matrix_cone(M, length(gram_basis))
-        f = MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(cone))
+        push!(
+            fs,
+            MOI.Utilities.zero_with_output_dimension(F, MOI.dimension(cone)),
+        )
+    end
+    for (i_basis, (gram_basis, weight)) in
+        enumerate(zip(set.gram_bases, set.weights))
         weight_basis = SA.basis(weight)
         weight_coeffs = SA.coeffs(weight)
+        f = fs[i_basis]
         k = 0
         for j in eachindex(gram_basis)
             for i in 1:j
@@ -115,25 +123,18 @@ function MOI.Bridges.Constraint.bridge_constraint(
                     mono = mono_w * SA.star(gram_basis[i]) * gram_basis[j]
                     f_kw = w_coef * diag_factor
                     if haskey(found, mono)
-                        k_a = found[mono]
-                        f_a = factor[mono]
+                        i_a, k_a, f_a = found[mono]
+                        f_a_func = fs[i_a]
                         if entry_anchored
-                            # Entry `k` is anchored by a previous weight term:
-                            # subtract its current contribution from the
-                            # anchor of `mono`.
                             f_k = MOI.Utilities.eachscalar(f)[k]
                             MOI.Utilities.operate_output_index!(
                                 -,
                                 T,
                                 k_a,
-                                f,
+                                f_a_func,
                                 (f_kw / f_a) * f_k,
                             )
                         else
-                            # Entry `k` is free so far: introduce a slack
-                            # variable representing its value (or extend the
-                            # one already introduced by an earlier weight
-                            # term) and adjust the anchor.
                             if slack_var === nothing
                                 slack_var = MOI.add_variable(model)
                                 push!(variables, slack_var)
@@ -149,17 +150,15 @@ function MOI.Bridges.Constraint.bridge_constraint(
                                 +,
                                 T,
                                 k_a,
-                                f,
+                                f_a_func,
                                 (f_kw / f_a) * slack_var,
                             )
                         end
                     elseif mono in set.basis
                         t = set.basis[mono]
                         if !entry_anchored && slack_var === nothing
-                            # Anchor `mono` at entry `k` with factor `f_kw`.
-                            found[mono] = k
-                            factor[mono] = f_kw
-                            first[t] = k
+                            found[mono] = (i_basis, k, f_kw)
+                            first[t] = (i_basis, k)
                             MOI.Utilities.operate_output_index!(
                                 +,
                                 T,
@@ -168,8 +167,9 @@ function MOI.Bridges.Constraint.bridge_constraint(
                                 inv(f_kw) * scalars[t],
                             )
                             if haskey(pending, t)
-                                for (k_p, f_p) in pending[t]
-                                    f_kp = MOI.Utilities.eachscalar(f)[k_p]
+                                for (i_p, k_p, f_p) in pending[t]
+                                    f_kp =
+                                        MOI.Utilities.eachscalar(fs[i_p])[k_p]
                                     MOI.Utilities.operate_output_index!(
                                         -,
                                         T,
@@ -182,37 +182,32 @@ function MOI.Bridges.Constraint.bridge_constraint(
                             end
                             entry_anchored = true
                         else
-                            # Entry `k` is busy (already anchored or slack):
-                            # record the contribution for when `mono` gets
-                            # anchored or for a zero constraint.
-                            push!(get!(pending, t, Tuple{Int,T}[]), (k, f_kw))
+                            push!(
+                                get!(pending, t, Tuple{Int,Int,T}[]),
+                                (i_basis, k, f_kw),
+                            )
                         end
                     end
                 end
             end
         end
-        push!(fs, f)
-        push!(constraints, MOI.add_constraint(model, f, cone))
     end
-    # Build zero constraints for unanchored basis monomials. For each such
-    # monomial, the polynomial coefficient must equal the sum of the pending
-    # contributions; if no contributions exist at all, the coefficient must
-    # simply be zero.
+    constraints = MOI.ConstraintIndex{F}[]
+    for (i_basis, gram_basis) in enumerate(set.gram_bases)
+        cone = SOS.matrix_cone(M, length(gram_basis))
+        push!(constraints, MOI.add_constraint(model, fs[i_basis], cone))
+    end
+    # Build zero constraints for unanchored basis monomials.
     z = findall(isnothing, first)
     zero_terms = if isempty(z)
         empty(scalars)
     else
-        # The per-gram-basis `f`s above were built with a local `k`. With a
-        # single gram basis (the typical case) the global pending index is
-        # the local one. Supporting multiple gram bases would require
-        # tracking the originating basis for each pending contribution.
-        @assert length(fs) == 1
-        f_local = MOI.Utilities.eachscalar(fs[1])
         map(z) do t
             term = scalars[t]
             if haskey(pending, t)
-                for (k_p, f_p) in pending[t]
-                    term = MA.operate!!(-, term, f_p * f_local[k_p])
+                for (i_p, k_p, f_p) in pending[t]
+                    f_kp = MOI.Utilities.eachscalar(fs[i_p])[k_p]
+                    term = MA.operate!!(-, term, f_p * f_kp)
                 end
             end
             return term
@@ -373,11 +368,12 @@ function MOI.get(
                 z_idx += 1
                 return z[z_idx]
             else
+                i_basis, k = bridge.first[i]
                 f = MOI.Utilities.filter_variables(
                     !Base.Fix2(in, bridge.variables),
-                    funcs[1][bridge.first[i]], # FIXME
+                    funcs[i_basis][k],
                 )
-                if !MOI.Utilities.is_diagonal_vectorized_index(bridge.first[i])
+                if !MOI.Utilities.is_diagonal_vectorized_index(k)
                     f = T(2) * f
                 end
                 return f

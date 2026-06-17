@@ -1,50 +1,31 @@
-function lagrangian_multiplier(
-    model::MOI.ModelLike,
-    certificate,
-    index,
-    preprocessed,
-    T::Type,
-)
-    basis = Certificate.multiplier_basis(certificate, index, preprocessed)
-    MCT = SOS.matrix_cone_type(typeof(certificate))
-    return SOS.add_gram_matrix(model, MCT, basis, T)..., basis
-end
-
 struct SOSPolynomialInSemialgebraicSetBridge{
     T,
     F<:MOI.AbstractVectorFunction,
     DT<:SemialgebraicSets.AbstractSemialgebraicSet,
     CT<:Certificate.AbstractIdealCertificate,
-    B<:Union{Vector{<:MB.SA.ExplicitBasis},MB.SA.ExplicitBasis},
-    UMCT<:Union{
-        Vector{<:MOI.ConstraintIndex{MOI.VectorOfVariables}},
-        MOI.ConstraintIndex{MOI.VectorOfVariables},
-    },
-    UMST,
-    MCT,
     BT<:MB.SubBasis{MB.Monomial},
+    M,
+    NB<:SA.ExplicitBasis,
+    GB<:SA.ExplicitBasis,
+    W<:SA.AlgebraElement,
 } <: MOI.Bridges.Constraint.AbstractBridge
-    lagrangian_bases::Vector{B}
-    lagrangian_variables::Vector{
-        Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}},
-    }
-    lagrangian_constraints::Vector{UMCT}
-    constraint::MOI.ConstraintIndex{F,SOS.SOSPolynomialSet{DT,BT,CT}}
+    constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,NB,GB,W}}
     basis::BT
+    # `sigma_0_indices` records the range of `gram_bases` that correspond to
+    # σ_0 (possibly multiple if the certificate uses sparsity). The
+    # remaining gram bases (after this range) are the Lagrangian multipliers
+    # σ_1, σ_2, … in order.
+    sigma_0_indices::Union{Int,UnitRange{Int}}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
-    ::Type{SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT}},
+    ::Type{SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,BT,M,NB,GB,W}},
     model::MOI.ModelLike,
     f::MOI.AbstractVectorFunction,
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet},
-) where {T,F,DT,CT,B,UMCT,UMST,MCT,BT}
+) where {T,F,DT,CT,BT,M,NB,GB,W}
     @assert MOI.output_dimension(f) == length(set.basis)
-    # MOI does not modify the coefficients of the functions so we can modify `p`.
-    # without altering `f`.
-    # The monomials may be copied by MA however so we need to copy it.
-    # TODO remove `collect` when `DynamicPolynomials.MonomialVector` can be used as keys
-    p = MB.algebra_element(
+    poly = MB.algebra_element(
         SA.SparseCoefficients(
             copy(collect(set.basis.keys)),
             MOI.Utilities.scalarize(f),
@@ -52,60 +33,76 @@ function MOI.Bridges.Constraint.bridge_constraint(
         ),
         MB.implicit_basis(set.basis),
     )
-    λ_bases = B[]
-    λ_variables =
-        Union{Vector{MOI.VariableIndex},Vector{Vector{MOI.VariableIndex}}}[]
-    λ_constraints = UMCT[]
-    preprocessed =
-        Certificate.preprocessed_domain(set.certificate, set.domain, p)
+    ideal_cert = Certificate.ideal_certificate(set.certificate)
+    # Reduce by the algebraic ideal part `V` of the basic semialgebraic
+    # domain so the rest of the certificate operates modulo it.
+    domain_V = MP.similar(set.domain.V, T)
+    poly_reduced = Certificate.reduced_polynomial(ideal_cert, poly, domain_V)
+    sigma_0_basis = Certificate.gram_basis(
+        ideal_cert,
+        Certificate.with_variables(poly_reduced, set.domain),
+    )
     implicit_basis = MB.implicit_basis(set.basis)
-    cache = zero(MOI.ScalarAffineFunction{T}, MB.algebra(implicit_basis))
+    # Build `[1, g_1, …]` weights and `[σ_0_basis, σ_1_basis, …]` gram bases
+    # so the whole Putinar decomposition becomes a single `WeightedSOSCone`.
+    preprocessed =
+        Certificate.preprocessed_domain(set.certificate, set.domain, poly)
+    # Use the same `sparse_coefficients`-based construction for the unit
+    # weight as for the polynomial g_i weights so they all share the same
+    # concrete element type and fit in a homogeneous `Vector{W}`.
+    some_mono = first(MB.keys_as_monomials(set.basis))
+    unit_poly = MP.polynomial(MP.term(one(T), MP.constant_monomial(some_mono)))
+    gram_bases_raw = Any[sigma_0_basis]
+    weights_raw = W[
+        MB.algebra_element(
+            MB.sparse_coefficients(unit_poly),
+            implicit_basis,
+        ),
+    ]
     for index in Certificate.preorder_indices(set.certificate, preprocessed)
-        λ, λ_variable, λ_constraint, λ_basis = lagrangian_multiplier(
-            model,
-            set.certificate,
-            index,
-            preprocessed,
-            T,
+        push!(
+            gram_bases_raw,
+            Certificate.multiplier_basis(set.certificate, index, preprocessed),
         )
-        push!(λ_variables, λ_variable)
-        push!(λ_constraints, λ_constraint)
-        push!(λ_bases, λ_basis)
-        # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
-        # need to call `similar`. This is critical since `T` is
-        # `Float64` when used with JuMP and the coefficient type is often `Int` if
-        # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
         g = Certificate.generator(set.certificate, index, preprocessed)
-        MA.operate_to!(cache, +, λ)
-        # TODO replace with `MA.sub_mul` when it works.
-        p = MA.operate!(
-            SA.UnsafeAddMul(*),
-            p,
-            cache,
+        push!(
+            weights_raw,
             MB.algebra_element(
-                MB.sparse_coefficients(-one(T) * similar(g, T)),
+                MB.sparse_coefficients(one(T) * similar(g, T)),
                 implicit_basis,
             ),
         )
     end
-    MA.operate!(SA.canonical, SA.coeffs(p))
-    new_set = SOS.SOSPolynomialSet(
-        set.domain.V,
-        MB.explicit_basis(p),
-        Certificate.ideal_certificate(set.certificate),
+    # `gram_basis` returns either a single basis or a `Vector{basis}` when
+    # sparsity is in play. Reuse `_flatten` from the SOSPolynomial bridge to
+    # turn the latter into a uniform `Vector{GB}` (replicating the matching
+    # weight for each sparsity block). The σ_0 block is the first entry, so
+    # `sigma_0_indices` is what `_flatten` reports for that single entry.
+    sigma_0_gram_bases, _, sigma_0_indices = _flatten(
+        identity.([sigma_0_basis]),
+        [weights_raw[1]],
     )
+    gram_bases, weights, _ = _flatten(
+        identity.(gram_bases_raw),
+        weights_raw,
+    )
+    new_basis = Certificate.zero_basis(
+        ideal_cert,
+        MB.explicit_basis(poly_reduced),
+        domain_V,
+        gram_bases,
+        weights,
+    )
+    new_coeffs = SA.coeffs(poly_reduced, new_basis)
     constraint = MOI.add_constraint(
         model,
-        MOI.Utilities.vectorize(SA.values(SA.coeffs(p))),
-        new_set,
+        MOI.Utilities.vectorize(SA.values(new_coeffs)),
+        SOS.WeightedSOSCone{M}(new_basis, gram_bases, weights),
     )
-
-    return SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT}(
-        λ_bases,
-        λ_variables,
-        λ_constraints,
+    return SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,BT,M,NB,GB,W}(
         constraint,
         set.basis,
+        sigma_0_indices,
     )
 end
 
@@ -117,14 +114,14 @@ function MOI.supports_constraint(
     return true
 end
 function MOI.Bridges.added_constrained_variable_types(
-    ::Type{<:SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT}},
-) where {T,F,DT,CT}
-    return constrained_variable_types(SOS.matrix_cone_type(CT))
+    ::Type{<:SOSPolynomialInSemialgebraicSetBridge},
+)
+    return Tuple{Type}[]
 end
 function MOI.Bridges.added_constraint_types(
-    ::Type{SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT}},
-) where {T,F,DT,CT,B,UMCT,UMST,MCT,BT}
-    return [(F, SOS.SOSPolynomialSet{DT,BT,CT})]
+    ::Type{SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,BT,M,NB,GB,W}},
+) where {T,F,DT,CT,BT,M,NB,GB,W}
+    return Tuple{Type,Type}[(F, SOS.WeightedSOSCone{M,NB,GB,W})]
 end
 function MOI.Bridges.Constraint.concrete_bridge_type(
     ::Type{<:SOSPolynomialInSemialgebraicSetBridge{T}},
@@ -137,89 +134,77 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
         },
     },
 ) where {T,S,PS,AT,CT,BT<:MB.MonomialIndexedBasis{MB.Monomial}}
-
-    # promotes VectorOfVariables into VectorAffineFunction, it should be enough
-    # for most use cases
     G = MOI.Utilities.promote_operation(-, T, F, MOI.VectorOfVariables)
-    MCT = SOS.matrix_cone_type(CT)
-    MT = MP.monomial_type(BT)
-    B = Certificate.multiplier_basis_type(CT, MT)
-    UMCT = union_constraint_types(MCT)
-    UMST = union_set_types(MCT)
     IC = Certificate.ideal_certificate(CT)
-    return SOSPolynomialInSemialgebraicSetBridge{T,G,AT,IC,B,UMCT,UMST,MCT,BT}
+    M = SOS.matrix_cone_type(IC)
+    # The multiplier gram basis of the inner ideal certificate is used both
+    # for σ_0 and (via `multiplier_basis_type`) for each Lagrangian σ_i.
+    GB =
+        SOSPolynomialBridgeType_helper_gram_basis_type(IC, MP.monomial_type(BT))
+    # All weights (the σ_0 unit weight and each g_i) are built with
+    # `MB.sparse_coefficients` so they share a single concrete type with
+    # `Vector{Int}` keys and `Vector{T}` values.
+    A = MA.promote_operation(
+        MB.algebra,
+        MA.promote_operation(MB.implicit_basis, BT),
+    )
+    C = SA.SparseCoefficients{
+        Vector{Int},
+        T,
+        Vector{Vector{Int}},
+        Vector{T},
+        MP.Graded{MP.LexOrder},
+    }
+    W = SA.AlgebraElement{T,A,C}
+    NB = MA.promote_operation(
+        Certificate.zero_basis,
+        IC,
+        BT,
+        SemialgebraicSets.similar_type(AT, T),
+        Vector{GB},
+        Vector{W},
+    )
+    return SOSPolynomialInSemialgebraicSetBridge{T,G,AT,IC,BT,M,NB,GB,W}
 end
 
-# Attributes, Bridge acting as an model
+# A small helper to keep the `concrete_bridge_type` readable.
+function SOSPolynomialBridgeType_helper_gram_basis_type(::Type{IC}, ::Type) where {IC}
+    return _eltype(MA.promote_operation(SOS.Certificate.gram_basis, IC))
+end
+
+# Attributes, Bridge acting as a model
 function MOI.get(
-    bridge::SOSPolynomialInSemialgebraicSetBridge,
+    ::SOSPolynomialInSemialgebraicSetBridge,
     ::MOI.NumberOfVariables,
 )
-    return mapreduce(_num_variables, +, bridge.lagrangian_variables, init = 0)
+    return 0
 end
 function MOI.get(
-    bridge::SOSPolynomialInSemialgebraicSetBridge,
+    ::SOSPolynomialInSemialgebraicSetBridge,
     ::MOI.ListOfVariableIndices,
 )
-    return Iterators.flatten([
-        _list_variables(Qi) for Qi in bridge.lagrangian_variables
-    ])
+    return MOI.VariableIndex[]
 end
 function MOI.get(
-    bridge::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST},
-    ::MOI.NumberOfConstraints{MOI.VectorOfVariables,S},
-) where {T,F,DT,CT,B,UMCT,UMST,S<:UMST}
-    return mapreduce(
-        cQ ->
-            _num_constraints(cQ, MOI.ConstraintIndex{MOI.VectorOfVariables,S}),
-        +,
-        bridge.lagrangian_constraints,
-        init = 0,
-    )
-end
-function MOI.get(
-    ::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST},
-    ::MOI.ListOfConstraintIndices{MOI.VectorOfVariables,S},
-) where {T,F,DT,CT,B,UMCT,UMST,S<:UMST}
-    C = MOI.ConstraintIndex{MOI.VectorOfVariables,S}
-    return Iterators.flatten([
-        _list_constraints(cQ, C) for cQ in bridge.lagrangian_constraints
-    ])
-end
-function MOI.get(
-    ::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT},
-    ::MOI.NumberOfConstraints{F,SOS.SOSPolynomialSet{DT,BT,CT}},
-) where {T,F,DT,CT,B,UMCT,UMST,MCT,BT}
+    ::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,BT,M,NB,GB,W},
+    ::MOI.NumberOfConstraints{F,SOS.WeightedSOSCone{M,NB,GB,W}},
+) where {T,F,DT,CT,BT,M,NB,GB,W}
     return 1
 end
 function MOI.get(
-    b::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,B,UMCT,UMST,MCT,BT},
-    ::MOI.ListOfConstraintIndices{F,SOS.SOSPolynomialSet{DT,BT,CT}},
-) where {T,F,DT,CT,B,UMCT,UMST,MCT,BT}
+    b::SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,BT,M,NB,GB,W},
+    ::MOI.ListOfConstraintIndices{F,SOS.WeightedSOSCone{M,NB,GB,W}},
+) where {T,F,DT,CT,BT,M,NB,GB,W}
     return [b.constraint]
 end
 
 # Indices
-function _delete_variables(model, Q::Vector{MOI.VariableIndex})
-    if !isempty(Q)
-        # FIXME Since there is not variables in the list, we cannot
-        # identify the `EmptyBridge` to delete
-        MOI.delete(model, Q)
-    end
-end
-function _delete_variables(model, Qs::Vector{Vector{MOI.VariableIndex}})
-    for Q in Qs
-        _delete_variables(model, Q)
-    end
-end
 function MOI.delete(
     model::MOI.ModelLike,
     bridge::SOSPolynomialInSemialgebraicSetBridge,
 )
     MOI.delete(model, bridge.constraint)
-    for variables in bridge.lagrangian_variables
-        _delete_variables(model, variables)
-    end
+    return
 end
 
 # Attributes, Bridge acting as a constraint
@@ -251,57 +236,56 @@ function MOI.get(
     attr::PolyJuMP.MomentsAttribute,
     bridge::SOSPolynomialInSemialgebraicSetBridge,
 )
-    return MOI.get(model, attr, bridge.constraint)
+    # We can't forward `MomentsAttribute` to `bridge.constraint` because
+    # nothing in the `WeightedSOSCone` chain knows about
+    # `MomentsAttribute`. Build it directly from the dual and the new basis
+    # stored on the `WeightedSOSCone` set.
+    set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
+    return MultivariateMoments.moment_vector(
+        MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint),
+        set.basis,
+    )
 end
 
 function MOI.get(
     model::MOI.ModelLike,
-    attr::Union{
-        SOS.CertificateBasis,
-        SOS.GramMatrixAttribute,
-        SOS.MomentMatrixAttribute,
-    },
+    attr::SOS.CertificateBasis,
     bridge::SOSPolynomialInSemialgebraicSetBridge,
 )
     return MOI.get(model, attr, bridge.constraint)
 end
 
-function _gram(
-    f::Function,
-    Q::Vector{MOI.VariableIndex},
-    gram_basis,
-    T::Type,
-    MCT,
+function MOI.get(
+    model::MOI.ModelLike,
+    attr::Union{SOS.GramMatrixAttribute,SOS.MomentMatrixAttribute},
+    bridge::SOSPolynomialInSemialgebraicSetBridge,
 )
-    return SOS.build_gram_matrix(convert(Vector{T}, f(Q)), gram_basis, MCT, T)
+    # `multiplier_index = 0` means "σ_0"; remap it to whichever indices the
+    # σ_0 block(s) occupy in the underlying `WeightedSOSCone`'s
+    # `gram_bases`.
+    SOS.check_multiplier_index_bounds(attr, 0:0)
+    return _get(model, attr, bridge.constraint, bridge.sigma_0_indices)
 end
 
-function _gram(
-    f::Function,
-    Qs::Vector{Vector{MOI.VariableIndex}},
-    gram_bases,
-    T::Type,
-    MCT,
-)
-    return SOS.build_gram_matrix(gram_bases, MCT, T) do i
-        return convert(Vector{T}, f(Qs[i]))
-    end
-end
 function MOI.get(
     model::MOI.ModelLike,
     attr::SOS.LagrangianMultipliers,
-    bridge::SOSPolynomialInSemialgebraicSetBridge{T,F,CT,B,UMCT,UMST,MCT,M},
-) where {T,F,CT,B,UMCT,UMST,MCT,M}
-    @assert eachindex(bridge.lagrangian_variables) ==
-            eachindex(bridge.lagrangian_bases)
-    return map(
-        i -> _gram(
-            Q -> MOI.get(model, MOI.VariablePrimal(attr.result_index), Q),
-            bridge.lagrangian_variables[i],
-            bridge.lagrangian_bases[i],
-            T,
-            MCT,
-        ),
-        eachindex(bridge.lagrangian_variables),
-    )
+    bridge::SOSPolynomialInSemialgebraicSetBridge,
+)
+    # σ_0 occupies the `sigma_0_indices` slot(s); the remaining gram bases
+    # are σ_1, σ_2, … (one Lagrangian multiplier per inequality).
+    set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
+    n_total = length(set.gram_bases)
+    sigma_0_max = bridge.sigma_0_indices isa Int ? bridge.sigma_0_indices :
+                  last(bridge.sigma_0_indices)
+    return map((sigma_0_max + 1):n_total) do i
+        return MOI.get(
+            model,
+            SOS.GramMatrixAttribute(;
+                multiplier_index = i,
+                result_index = attr.result_index,
+            ),
+            bridge.constraint,
+        )
+    end
 end
