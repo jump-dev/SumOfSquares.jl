@@ -148,7 +148,7 @@ semidefinite matrix `Q` such that
 ```
 where ``X = (x, y)``.
 
-!!! note Burer-Monteiro formulation
+!!! note "Burer-Monteiro formulation"
     Burer-Monteiro solvers such as [SDPLR](https://github.com/jump-dev/SDPLR.jl), [SDPLRPlus](https://github.com/luotuoqingshan/SDPLRPlus.jl) or [`LowRankOpt.BurerMonteiro`](https://github.com/blegat/LowRankOpt.jl/) do not optimize over `Q` but rather over its factorization.
     In that case, the equation is rather
     ```math
