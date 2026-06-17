@@ -300,7 +300,7 @@ function MOI.get(
 end
 
 function MOI.get(::MOI.ModelLike, ::MOI.ConstraintPrimal, ::ImageBridge)
-    throw(SOS.ValueNotSupported())
+    return throw(SOS.ValueNotSupported())
 end
 
 function MOI.get(
