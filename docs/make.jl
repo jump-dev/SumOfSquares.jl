@@ -17,6 +17,9 @@ const _TUTORIAL_SUBDIR = [
     "Extension",
 ]
 
+# Set it to true for running the doc locally without the tutorial
+skip_tutorials = false
+
 function literate_directory(dir)
     output_dir = joinpath(_OUTPUT_DIR, dir)
     for filename in readdir(joinpath(_TUTORIAL_DIR, dir))
@@ -30,7 +33,22 @@ function literate_directory(dir)
     end
 end
 
-literate_directory.(_TUTORIAL_SUBDIR)
+if skip_tutorials
+    tutorials = String[]
+else
+    literate_directory.(_TUTORIAL_SUBDIR)
+    tutorials = map(
+        subdir ->
+            subdir => map(
+                file -> joinpath("generated", subdir, file),
+                filter(
+                    file -> endswith(file, ".md"),
+                    sort(readdir(joinpath(_OUTPUT_DIR, subdir))),
+                ),
+            ),
+        _TUTORIAL_SUBDIR,
+    )
+end
 
 makedocs(
     sitename = "SumOfSquares",
@@ -39,6 +57,7 @@ makedocs(
         prettyurls = get(ENV, "CI", nothing) == "true",
         assets = ["assets/citations.css"],
     ),
+    warnonly = skip_tutorials ? [:cross_references] : false,
     pages = [
         "Index" => "index.md",
         "Sum-of-Squares Programming" => "sumofsquares.md",
@@ -50,17 +69,7 @@ makedocs(
             "reference/certificate.md",
             "reference/internal.md",
         ],
-        "Tutorials" => map(
-            subdir ->
-                subdir => map(
-                    file -> joinpath("generated", subdir, file),
-                    filter(
-                        file -> endswith(file, ".md"),
-                        sort(readdir(joinpath(_OUTPUT_DIR, subdir))),
-                    ),
-                ),
-            _TUTORIAL_SUBDIR,
-        ),
+        "Tutorials" => tutorials,
         "Bibliography" => "bibliography.md",
     ],
     # The following ensures that we only include the docstrings from
