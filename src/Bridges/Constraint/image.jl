@@ -185,10 +185,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
                             # Entry `k` is busy (already anchored or slack):
                             # record the contribution for when `mono` gets
                             # anchored or for a zero constraint.
-                            push!(
-                                get!(pending, t, Tuple{Int,T}[]),
-                                (k, f_kw),
-                            )
+                            push!(get!(pending, t, Tuple{Int,T}[]), (k, f_kw))
                         end
                     end
                 end

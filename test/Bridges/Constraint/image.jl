@@ -154,10 +154,7 @@ function test_runtests_polynomial_weight()
             )
             MOI.add_constraint(
                 model,
-                MOI.VectorAffineFunction{T}(
-                    MOI.VectorAffineTerm{T}[],
-                    T[0],
-                ),
+                MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[0]),
                 MOI.Zeros(1),
             )
         end;
