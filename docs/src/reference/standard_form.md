@@ -37,8 +37,6 @@ SAGE cones:
 ```@docs
 SumOfSquares.PolyJuMP.SAGE.Polynomials
 SumOfSquares.PolyJuMP.SAGE.Signomials
-SumOfSquares.PolyJuMP.SAGE.SignomialsBridge
-SumOfSquares.PolyJuMP.SAGE.AGEBridge
 ```
 
 ## MOI Sets
@@ -64,25 +62,4 @@ SumOfSquares.ScaledDiagonallyDominantConeTriangle
 
 ## Bridges
 
-Bridges are automatically added using the following utilities:
-```@docs
-SumOfSquares.PolyJuMP.bridgeable
-SumOfSquares.PolyJuMP.bridges
-```
-
-Bridges for polynomial optimization
-```@docs
-PolyJuMP.ScalarPolynomialFunction
-PolyJuMP.Bridges.Objective.ToPolynomialBridge
-PolyJuMP.Bridges.Constraint.ToPolynomialBridge
-```
-
-Sum-of-Squares bridges
-```@docs
-SumOfSquares.Bridges.Constraint.ImageBridge
-```
-
-Bridges for PSD cone approximations
-```@docs
-SumOfSquares.Bridges.Variable.ScaledDiagonallyDominantBridge
-```
+See the dedicated [Bridges](@ref) reference page.

@@ -1,3 +1,33 @@
+"""
+    SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,BT,M,NB,GB,W} <: Bridges.Constraint.AbstractBridge
+
+`SOSPolynomialInSemialgebraicSetBridge` implements a reformulation from
+[`SumOfSquares.SOSPolynomialSet{<:BasicSemialgebraicSet}`](@ref) into a
+single [`SumOfSquares.WeightedSOSCone`](@ref) carrying the whole
+Putinar-style decomposition
+``p = \\sigma_0 + \\sum_i g_i \\sigma_i``.
+
+For each inequality ``g_i`` of the basic semialgebraic domain, the bridge
+collects a multiplier basis ``b_i`` and produces a `WeightedSOSCone` with
+gram bases ``[b_0, b_1, \\dots]`` and weights ``[1, g_1, \\dots]``. The
+polynomial is reduced modulo the algebraic part ``\\mathcal{V}`` before
+being passed on. Whichever bridge handles `WeightedSOSCone` downstream
+(`Variable.KernelBridge`, `Variable.LowRankBridge` or `Constraint.ImageBridge`)
+ultimately produces the PSD constraints; this bridge adds no variables of
+its own.
+
+## Source node
+
+`SOSPolynomialInSemialgebraicSetBridge` supports:
+
+  * `F` in [`SumOfSquares.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet}`](@ref)
+
+## Target nodes
+
+`SOSPolynomialInSemialgebraicSetBridge` creates:
+
+  * `F` in [`SumOfSquares.WeightedSOSCone`](@ref)
+"""
 struct SOSPolynomialInSemialgebraicSetBridge{
     T,
     F<:MOI.AbstractVectorFunction,

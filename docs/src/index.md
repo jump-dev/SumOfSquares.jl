@@ -11,6 +11,6 @@ Starting with v0.8, we also have experimental support for any algebra implementi
 
 ## Contents
 ```@contents
-Pages = ["sumofsquares.md", "variables.md", "constraints.md"]
+Pages = ["sumofsquares.md", "variables.md", "constraints.md", "bridges.md"]
 Depth = 2
 ```

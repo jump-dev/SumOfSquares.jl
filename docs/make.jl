@@ -63,9 +63,11 @@ makedocs(
         "Sum-of-Squares Programming" => "sumofsquares.md",
         "Variables" => "variables.md",
         "Constraints" => "constraints.md",
+        "Bridging mechanism" => "bridges.md",
         "API Reference" => [
             "reference/standard_form.md",
             "reference/constraints.md",
+            "reference/bridges.md",
             "reference/certificate.md",
             "reference/internal.md",
         ],
