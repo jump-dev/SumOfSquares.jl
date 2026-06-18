@@ -119,13 +119,18 @@ function MOI.Bridges.Constraint.bridge_constraint(
     raw_ranges = Union{Int,UnitRange{Int}}[]
     cur = 0
     for raw in gram_bases_raw
-        n = raw isa AbstractVector ? length(raw) : 1
-        if n == 1
-            cur += 1
-            push!(raw_ranges, cur)
-        else
+        # Preserve whether the multiplier's basis was a `Vector` (sparsity is
+        # in play, even with a single block) or a single basis: that controls
+        # whether the corresponding gram/moment attribute comes back as a
+        # `BlockDiagonalGramMatrix` (`UnitRange` index) or a plain
+        # `GramMatrix` (single `Int` index).
+        if raw isa AbstractVector
+            n = length(raw)
             push!(raw_ranges, (cur+1):(cur+n))
             cur += n
+        else
+            cur += 1
+            push!(raw_ranges, cur)
         end
     end
     # σ_0 is the last entry of `gram_bases_raw`; bring it back to position 1
@@ -327,13 +332,16 @@ function MOI.get(
     bridge::SOSPolynomialInSemialgebraicSetBridge,
 )
     # `multiplier_indices[1]` is σ_0; the rest are σ_1, σ_2, … in order.
-    # Each multiplier is returned as a `BlockDiagonalGramMatrix`, even when
-    # its `gram_bases` range has a single entry, so that the result type is
-    # uniform across multipliers.
+    # `_get` returns a `BlockDiagonalGramMatrix` when given a `UnitRange`
+    # and a plain `GramMatrix` when given an `Int`, mirroring the original
+    # bridge's behaviour: sparsity → block-diagonal, no sparsity → plain.
     return map(2:length(bridge.multiplier_indices)) do i
-        idx = bridge.multiplier_indices[i]
-        range = idx isa Int ? (idx:idx) : idx
         gram_attr = SOS.GramMatrixAttribute(; result_index = attr.result_index)
-        return _get(model, gram_attr, bridge.constraint, range)
+        return _get(
+            model,
+            gram_attr,
+            bridge.constraint,
+            bridge.multiplier_indices[i],
+        )
     end
 end
