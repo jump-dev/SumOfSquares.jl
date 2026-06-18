@@ -153,7 +153,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
         T,
         Vector{Vector{Int}},
         Vector{T},
-        MP.Graded{MP.LexOrder},
+        MP.ordering(BT),
     }
     W = SA.AlgebraElement{T,A,C}
     NB = MA.promote_operation(
