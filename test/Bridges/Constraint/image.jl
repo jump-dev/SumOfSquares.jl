@@ -188,14 +188,7 @@ function test_runtests_polynomial_weight_avoidable_slack()
                 SumOfSquares.WeightedSOSCone{
                     MOI.PositiveSemidefiniteConeTriangle,
                 }(
-                    MB.SubBasis{MB.Monomial}([
-                        x^0,
-                        x,
-                        x^2,
-                        x^3,
-                        x^4,
-                        x^5,
-                    ]),
+                    MB.SubBasis{MB.Monomial}([x^0, x, x^2, x^3, x^4, x^5]),
                     [MB.SubBasis{MB.Monomial}([x^0, x, x^2])],
                     [MB.algebra_element(T(1) * x^0 + T(1) * x)],
                 ),

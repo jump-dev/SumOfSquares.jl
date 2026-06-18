@@ -83,12 +83,8 @@ function MOI.Bridges.Constraint.bridge_constraint(
     some_mono = first(MB.keys_as_monomials(set.basis))
     unit_poly = MP.polynomial(MP.term(one(T), MP.constant_monomial(some_mono)))
     gram_bases_raw = Any[sigma_0_basis]
-    weights_raw = W[
-        MB.algebra_element(
-            MB.sparse_coefficients(unit_poly),
-            implicit_basis,
-        ),
-    ]
+    weights_raw =
+        W[MB.algebra_element(MB.sparse_coefficients(unit_poly), implicit_basis),]
     for index in Certificate.preorder_indices(set.certificate, preprocessed)
         push!(
             gram_bases_raw,
@@ -108,14 +104,9 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # turn the latter into a uniform `Vector{GB}` (replicating the matching
     # weight for each sparsity block). The σ_0 block is the first entry, so
     # `sigma_0_indices` is what `_flatten` reports for that single entry.
-    sigma_0_gram_bases, _, sigma_0_indices = _flatten(
-        identity.([sigma_0_basis]),
-        [weights_raw[1]],
-    )
-    gram_bases, weights, _ = _flatten(
-        identity.(gram_bases_raw),
-        weights_raw,
-    )
+    sigma_0_gram_bases, _, sigma_0_indices =
+        _flatten(identity.([sigma_0_basis]), [weights_raw[1]])
+    gram_bases, weights, _ = _flatten(identity.(gram_bases_raw), weights_raw)
     new_basis = Certificate.zero_basis(
         ideal_cert,
         MB.explicit_basis(poly_reduced),
@@ -198,7 +189,10 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
 end
 
 # A small helper to keep the `concrete_bridge_type` readable.
-function SOSPolynomialBridgeType_helper_gram_basis_type(::Type{IC}, ::Type) where {IC}
+function SOSPolynomialBridgeType_helper_gram_basis_type(
+    ::Type{IC},
+    ::Type,
+) where {IC}
     return _eltype(MA.promote_operation(SOS.Certificate.gram_basis, IC))
 end
 
@@ -272,7 +266,11 @@ function MOI.get(
     # stored on the `WeightedSOSCone` set.
     set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
     return MultivariateMoments.moment_vector(
-        MOI.get(model, MOI.ConstraintDual(attr.result_index), bridge.constraint),
+        MOI.get(
+            model,
+            MOI.ConstraintDual(attr.result_index),
+            bridge.constraint,
+        ),
         set.basis,
     )
 end
@@ -306,9 +304,10 @@ function MOI.get(
     # are σ_1, σ_2, … (one Lagrangian multiplier per inequality).
     set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
     n_total = length(set.gram_bases)
-    sigma_0_max = bridge.sigma_0_indices isa Int ? bridge.sigma_0_indices :
-                  last(bridge.sigma_0_indices)
-    return map((sigma_0_max + 1):n_total) do i
+    sigma_0_max =
+        bridge.sigma_0_indices isa Int ? bridge.sigma_0_indices :
+        last(bridge.sigma_0_indices)
+    return map((sigma_0_max+1):n_total) do i
         return MOI.get(
             model,
             SOS.GramMatrixAttribute(;
