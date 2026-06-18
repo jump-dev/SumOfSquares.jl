@@ -333,9 +333,7 @@ function MOI.get(
     return map(2:length(bridge.multiplier_indices)) do i
         idx = bridge.multiplier_indices[i]
         range = idx isa Int ? (idx:idx) : idx
-        gram_attr = SOS.GramMatrixAttribute(;
-            result_index = attr.result_index,
-        )
+        gram_attr = SOS.GramMatrixAttribute(; result_index = attr.result_index)
         return _get(model, gram_attr, bridge.constraint, range)
     end
 end
