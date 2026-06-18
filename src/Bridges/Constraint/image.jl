@@ -39,6 +39,86 @@ The gram matrix is therefore:
 \\end{bmatrix}
 ```
 
+### Non-unit weight
+
+When the weight `w` of the gram basis is not one, each entry of `b * b'`
+contributes to a polynomial coefficient with an additional factor `w`.
+Concretely, every `(i, j)` entry of the gram matrix gets divided by `w`
+(and by the usual extra `2` for off-diagonal entries), while the slack
+adjustment ratio `(factor / factor_anchor)` is unchanged since `w` cancels.
+
+Take the same polynomial `p` and gram basis as above, but now write the
+SOS constraint with weight `w = 1 + x` and `q = q_0 + q_1 x`, where each `q_i`
+is a coefficient of the gram matrix.
+For brevity, denote the polynomial coefficients
+`p = a_0 + a_1 x + a_2 x^2 + a_3 x^3` with gram basis `b = [1, x]`.
+The product `b * b'` is
+```math
+\\begin{bmatrix}
+1 & x\\\\
+x & x^2
+\\end{bmatrix}
+```
+and `(1 + x) * b * b'` distributes one extra power of `x`:
+the `(1, 1)` entry contributes both to the `1` and the `x` coefficient of `p`,
+the `(1, 2)` (and `(2, 1)`) entry contributes to `x` and `x^2`, and the
+`(2, 2)` entry contributes to `x^2` and `x^3`.
+Anchoring each monomial of `p` to the first gram entry that produces it
+(while accumulating the contributions of every earlier entry) gives:
+- `q_{1,1} = a_0`;
+- `q_{1,2}` is anchored on the `x` coefficient and absorbs `q_{1,1}`'s
+  contribution, yielding `q_{1,2} = (a_1 - a_0) / 2`;
+- `q_{2,2}` is anchored on the `x^2` coefficient and absorbs the contribution
+  of `q_{1,2}`, yielding `q_{2,2} = a_2 - a_1 + a_0`.
+There is no entry left to anchor the `x^3` coefficient, so its equation
+`a_3 = q_{2,2}` becomes the zero constraint
+`a_0 - a_1 + a_2 - a_3 = 0`.
+The gram matrix is therefore:
+```math
+\\begin{bmatrix}
+a_0 & \\frac{a_1 - a_0}{2}\\\\
+\\frac{a_1 - a_0}{2} & a_0 - a_1 + a_2
+\\end{bmatrix}
+```
+with the additional zero constraint `a_0 - a_1 + a_2 - a_3 = 0`.
+
+### Multiple weights and gram bases
+
+The same logic extends to a `WeightedSOSCone` with several gram bases
+`b_i` and weights `w_i`: the bridge walks through every `(i, j, k)` entry
+of every gram matrix and treats each weight monomial as an additional
+contribution to the same anchoring/slack bookkeeping. Anchors and slack
+variables can therefore span across different gram matrices.
+
+Consider for instance Putinar-style decomposition
+`p = σ_0 + x * σ_1` with
+`p = a_0 + a_1 x + a_2 x^2`,
+weights `w_0 = 1`, `w_1 = x`,
+and gram bases `b_0 = [1, x]` (a 2 × 2 gram matrix `Q`)
+and `b_1 = [1]` (a 1 × 1 gram matrix `R`).
+
+Walking through `b_0`'s entries first (weight `1`):
+- `Q_{1,1}` anchors `1`, so `Q_{1,1} = a_0`;
+- `Q_{1,2}` anchors `x` and `Q_{1,2} = a_1 / 2`;
+- `Q_{2,2}` anchors `x^2` and `Q_{2,2} = a_2`.
+
+Then `R_{1,1}` with weight `x` produces the monomial
+`x · 1 · 1 = x`, which is already anchored by `Q_{1,2}` (off-diagonal,
+factor `2`). Introducing a slack variable `λ` to balance, with adjustment
+ratio `1 / 2`:
+`R_{1,1} = -λ` and `Q_{1,2}` is updated to `(a_1 + λ) / 2`.
+The gram matrices are therefore
+```math
+Q = \\begin{bmatrix}
+a_0 & \\frac{a_1 + \\lambda}{2}\\\\
+\\frac{a_1 + \\lambda}{2} & a_2
+\\end{bmatrix},
+\\qquad
+R = \\begin{bmatrix}-\\lambda\\end{bmatrix}.
+```
+The slack `λ` is constrained only by `Q ⪰ 0` and `R ⪰ 0`,
+i.e. by the PSD constraints on the gram matrices.
+
 ## Source node
 
 `ImageBridge` supports:
