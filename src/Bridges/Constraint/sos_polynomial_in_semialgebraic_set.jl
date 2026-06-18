@@ -41,11 +41,11 @@ struct SOSPolynomialInSemialgebraicSetBridge{
 } <: MOI.Bridges.Constraint.AbstractBridge
     constraint::MOI.ConstraintIndex{F,SOS.WeightedSOSCone{M,NB,GB,W}}
     basis::BT
-    # `sigma_0_indices` records the range of `gram_bases` that correspond to
-    # σ_0 (possibly multiple if the certificate uses sparsity). The
-    # remaining gram bases (after this range) are the Lagrangian multipliers
-    # σ_1, σ_2, … in order.
-    sigma_0_indices::Union{Int,UnitRange{Int}}
+    # `multiplier_indices[1]` is the range of `gram_bases` that corresponds
+    # to σ_0 (possibly multiple if the certificate uses sparsity).
+    # `multiplier_indices[1+i]` is the range of `gram_bases` of the
+    # Lagrangian multiplier σ_i.
+    multiplier_indices::Vector{Union{Int,UnitRange{Int}}}
 end
 
 function MOI.Bridges.Constraint.bridge_constraint(
@@ -82,9 +82,13 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # concrete element type and fit in a homogeneous `Vector{W}`.
     some_mono = first(MB.keys_as_monomials(set.basis))
     unit_poly = MP.polynomial(MP.term(one(T), MP.constant_monomial(some_mono)))
-    gram_bases_raw = Any[sigma_0_basis]
-    weights_raw =
-        W[MB.algebra_element(MB.sparse_coefficients(unit_poly), implicit_basis),]
+    # Append the Lagrangian multiplier bases (σ_1, σ_2, …) first and σ_0
+    # last so that, downstream, `Variable.KernelBridge` allocates the σ_i
+    # gram variables before the σ_0 ones — matching the variable ordering
+    # of the original two-bridge pipeline (and therefore the order assumed
+    # by the cached `Mock/` tests).
+    gram_bases_raw = Any[]
+    weights_raw = W[]
     for index in Certificate.preorder_indices(set.certificate, preprocessed)
         push!(
             gram_bases_raw,
@@ -99,13 +103,35 @@ function MOI.Bridges.Constraint.bridge_constraint(
             ),
         )
     end
+    push!(gram_bases_raw, sigma_0_basis)
+    push!(
+        weights_raw,
+        MB.algebra_element(MB.sparse_coefficients(unit_poly), implicit_basis),
+    )
     # `gram_basis` returns either a single basis or a `Vector{basis}` when
     # sparsity is in play. Reuse `_flatten` from the SOSPolynomial bridge to
     # turn the latter into a uniform `Vector{GB}` (replicating the matching
-    # weight for each sparsity block). The σ_0 block is the first entry, so
-    # `sigma_0_indices` is what `_flatten` reports for that single entry.
-    sigma_0_gram_bases, _, sigma_0_indices =
-        _flatten(identity.([sigma_0_basis]), [weights_raw[1]])
+    # weight for each sparsity block). At the same time, record where each
+    # multiplier σ_i lives in the flattened `gram_bases` so that we can
+    # rebuild block-diagonal gram and moment matrices per multiplier.
+    # `multiplier_indices` is `[σ_0, σ_1, …]` in that order, even though the
+    # underlying `gram_bases` lay them out as `[σ_1, …, σ_0]`.
+    raw_ranges = Union{Int,UnitRange{Int}}[]
+    cur = 0
+    for raw in gram_bases_raw
+        n = raw isa AbstractVector ? length(raw) : 1
+        if n == 1
+            cur += 1
+            push!(raw_ranges, cur)
+        else
+            push!(raw_ranges, (cur+1):(cur+n))
+            cur += n
+        end
+    end
+    # σ_0 is the last entry of `gram_bases_raw`; bring it back to position 1
+    # in `multiplier_indices` without splatting the `UnitRange` element.
+    multiplier_indices = Union{Int,UnitRange{Int}}[raw_ranges[end]]
+    append!(multiplier_indices, @view raw_ranges[1:(end-1)])
     gram_bases, weights, _ = _flatten(identity.(gram_bases_raw), weights_raw)
     new_basis = Certificate.zero_basis(
         ideal_cert,
@@ -123,7 +149,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     return SOSPolynomialInSemialgebraicSetBridge{T,F,DT,CT,BT,M,NB,GB,W}(
         constraint,
         set.basis,
-        sigma_0_indices,
+        multiplier_indices,
     )
 end
 
@@ -292,7 +318,7 @@ function MOI.get(
     # σ_0 block(s) occupy in the underlying `WeightedSOSCone`'s
     # `gram_bases`.
     SOS.check_multiplier_index_bounds(attr, 0:0)
-    return _get(model, attr, bridge.constraint, bridge.sigma_0_indices)
+    return _get(model, attr, bridge.constraint, bridge.multiplier_indices[1])
 end
 
 function MOI.get(
@@ -300,21 +326,16 @@ function MOI.get(
     attr::SOS.LagrangianMultipliers,
     bridge::SOSPolynomialInSemialgebraicSetBridge,
 )
-    # σ_0 occupies the `sigma_0_indices` slot(s); the remaining gram bases
-    # are σ_1, σ_2, … (one Lagrangian multiplier per inequality).
-    set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
-    n_total = length(set.gram_bases)
-    sigma_0_max =
-        bridge.sigma_0_indices isa Int ? bridge.sigma_0_indices :
-        last(bridge.sigma_0_indices)
-    return map((sigma_0_max+1):n_total) do i
-        return MOI.get(
-            model,
-            SOS.GramMatrixAttribute(;
-                multiplier_index = i,
-                result_index = attr.result_index,
-            ),
-            bridge.constraint,
+    # `multiplier_indices[1]` is σ_0; the rest are σ_1, σ_2, … in order.
+    # Each multiplier is returned as a `BlockDiagonalGramMatrix`, even when
+    # its `gram_bases` range has a single entry, so that the result type is
+    # uniform across multipliers.
+    return map(2:length(bridge.multiplier_indices)) do i
+        idx = bridge.multiplier_indices[i]
+        range = idx isa Int ? (idx:idx) : idx
+        gram_attr = SOS.GramMatrixAttribute(;
+            result_index = attr.result_index,
         )
+        return _get(model, gram_attr, bridge.constraint, range)
     end
 end
