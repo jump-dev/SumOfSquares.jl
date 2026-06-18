@@ -106,12 +106,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
         for block in block_iter
             for b1 in block, b2 in block
                 term = MB.algebra_element(SA.star(b1) * b2)
-                MA.operate!(
-                    SA.UnsafeAddMul(*),
-                    augmented,
-                    term,
-                    g_alg,
-                )
+                MA.operate!(SA.UnsafeAddMul(*), augmented, term, g_alg)
             end
         end
     end
