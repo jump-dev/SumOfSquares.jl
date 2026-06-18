@@ -119,6 +119,46 @@ R = \\begin{bmatrix}-\\lambda\\end{bmatrix}.
 The slack `λ` is constrained only by `Q ⪰ 0` and `R ⪰ 0`,
 i.e. by the PSD constraints on the gram matrices.
 
+### Sub-optimal greedy: slacks that could be avoided
+
+The order in which the contributions of one entry are processed matters.
+The bridge walks each entry's weight monomials in their stored order and
+commits to either anchoring the entry to the first unanchored target it
+sees, or to a slack variable if that first target is already anchored.
+That decision can introduce a slack variable that a different order would
+have avoided.
+
+Consider weight `w = 1 + x` with gram basis `[1, x, x^2]` and basis
+`{1, x, x^2, x^3, x^4, x^5}`. The ``6`` PSD entries are
+```text
+k = 1: (1, 1)     contributes to 1   and x
+k = 2: (1, x)     contributes to x   and x^2
+k = 3: (x, x)     contributes to x^2 and x^3
+k = 4: (1, x^2)   contributes to x^2 and x^3
+k = 5: (x, x^2)   contributes to x^3 and x^4
+k = 6: (x^2, x^2) contributes to x^4 and x^5
+```
+The greedy walks weight monomials in the order `[1, x]`, so for entry
+``k = 4`` it sees the contribution to `x^2` first. By then `x^2` is
+already anchored at ``k = 3``, so the bridge introduces a slack `λ`,
+records the second contribution (`x^3`, currently unanchored) into
+`pending`, and the trail of consequences cascades into 5 anchors and 1
+slack — with `x^5` left to a zero constraint.
+
+A bipartite matching between gram entries (left) and basis monomials
+(right) — an edge `(k, t)` for each weight-monomial contribution from
+``k`` to a target ``t`` in the basis — admits a perfect matching of size
+6 here:
+``1 \\to 1,\\ 2 \\to x,\\ 3 \\to x^2,\\ 4 \\to x^3,\\ 5 \\to x^4,\\ 6 \\to x^5``.
+Anchoring along that matching would use 6 anchors and 0 slack. Even just
+swapping the two contributions of entry ``k = 4`` (and similarly for
+``k = 5`` and ``k = 6``) — i.e. preferring an unanchored target whenever
+one is available, and falling back to subtracting from the existing
+anchor for the other contribution — recovers the same outcome. The
+underlying problem is unweighted bipartite max-cardinality matching, for
+which Hopcroft–Karp or simple augmenting paths gives the optimum; the
+weighted Hungarian assignment is not needed.
+
 ## Source node
 
 `ImageBridge` supports:

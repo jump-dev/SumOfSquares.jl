@@ -163,6 +163,71 @@ function test_runtests_polynomial_weight()
     return
 end
 
+# Same polynomial weight as `test_runtests_polynomial_weight` but with a
+# 3-element gram basis `[1, x, x^2]`. Here the greedy contribution order
+# inside an entry is sub-optimal: for entry `(1, 3)` the algorithm sees
+# `x^2` first (already anchored by entry `(2, 2)`) and so introduces a slack
+# `λ`, even though processing `(1, 3)`'s second contribution (`x^3`,
+# currently unanchored) first would have allowed it to anchor a fresh
+# monomial and use the `entry_anchored = true` subtract branch for `x^2`.
+# Bipartite max-cardinality matching between gram entries and basis
+# monomials would yield 6 anchors and zero slacks here; the current greedy
+# yields 5 anchors and 1 slack, with `x^5` becoming a zero constraint.
+function test_runtests_polynomial_weight_avoidable_slack()
+    T = Float64
+    @polyvar x
+    MOI.Bridges.runtests(
+        SumOfSquares.Bridges.Constraint.ImageBridge,
+        model -> begin
+            MOI.add_constraint(
+                model,
+                MOI.VectorAffineFunction{T}(
+                    MOI.VectorAffineTerm{T}[],
+                    T[1, 3, 5, 5, 3, 1],
+                ),
+                SumOfSquares.WeightedSOSCone{
+                    MOI.PositiveSemidefiniteConeTriangle,
+                }(
+                    MB.SubBasis{MB.Monomial}([
+                        x^0,
+                        x,
+                        x^2,
+                        x^3,
+                        x^4,
+                        x^5,
+                    ]),
+                    [MB.SubBasis{MB.Monomial}([x^0, x, x^2])],
+                    [MB.algebra_element(T(1) * x^0 + T(1) * x)],
+                ),
+            )
+        end,
+        model -> begin
+            λ = MOI.add_variable(model)
+            MOI.add_constraint(
+                model,
+                MOI.Utilities.operate(
+                    vcat,
+                    T,
+                    T(1),
+                    T(1),
+                    T(3) + T(2) * λ,
+                    T(-1) * λ,
+                    T(1),
+                    T(1),
+                ),
+                MOI.PositiveSemidefiniteConeTriangle(3),
+            )
+            MOI.add_constraint(
+                model,
+                MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[0]),
+                MOI.Zeros(1),
+            )
+        end;
+        cannot_unbridge = true,
+    )
+    return
+end
+
 # Regression test for an oversight in
 # `MOI.Bridges.added_constraint_types(ImageBridge)`: the bridge can produce a
 # constraint in any of the four sets returned by `SOS.matrix_cone(M, k)` for
