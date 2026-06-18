@@ -116,7 +116,7 @@ natively — the bridge graph is what makes this transparent.
 
 ## How LowRankOpt exploits rank-1 structure
 
-When the gram basis is a [`MultivariateBases.LagrangeBasis`](@ref) — the
+When the gram basis is a `MultivariateBases.LagrangeBasis` — the
 polynomial is sampled at a fixed set of points — the relation between
 gram-matrix entries and polynomial coefficients factorises through a list
 of rank-1 outer products, one per Lagrange node:

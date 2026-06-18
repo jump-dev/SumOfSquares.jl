@@ -62,4 +62,4 @@ SumOfSquares.ScaledDiagonallyDominantConeTriangle
 
 ## Bridges
 
-See the dedicated [Bridges](@ref) reference page.
+See the dedicated bridges page in the API Reference section.

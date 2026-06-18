@@ -19,7 +19,7 @@ preferred for solvers that natively support PSD as constrained variables
 for solvers that only support PSD as a constraint (e.g. Clarabel). The
 choice is driven by `MOI.Bridges.bridging_cost`.
 
-`KernelBridge` does not handle [`MultivariateBases.LagrangeBasis`](@ref) —
+`KernelBridge` does not handle `MultivariateBases.LagrangeBasis` —
 those bases dispatch to [`SumOfSquares.Bridges.Variable.LowRankBridge`](@ref)
 instead.
 

@@ -2,7 +2,7 @@
     CopositiveInnerBridge{T,S} <: Bridges.Variable.AbstractBridge
 
 `CopositiveInnerBridge` implements a reformulation from
-[`SumOfSquares.CopositiveInnerCone`](@ref) into a PSD-like inner cone plus
+`SumOfSquares.CopositiveInnerCone` into a PSD-like inner cone plus
 a nonnegativity constraint on the strictly off-diagonal entries.
 
 The cone of inner-copositive matrices contains symmetric matrices that can
@@ -14,7 +14,7 @@ entries. The bridge introduces constrained variables for each summand.
 
 `CopositiveInnerBridge` supports:
 
-  * [`SumOfSquares.CopositiveInnerCone{S}`](@ref)
+  * `SumOfSquares.CopositiveInnerCone{S}`
 
 ## Target nodes
 
