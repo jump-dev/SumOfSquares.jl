@@ -61,7 +61,9 @@ function test_runtests()
     new_basis = MB.SubBasis{MB.Monomial}([x, x^2])
     implicit_basis = MB.implicit_basis(basis)
     w_unit = MB.algebra_element(
-        MB.sparse_coefficients(MP.polynomial(MP.term(one(T), MP.constant_monomial(x)))),
+        MB.sparse_coefficients(
+            MP.polynomial(MP.term(one(T), MP.constant_monomial(x))),
+        ),
         implicit_basis,
     )
     g1 = MP.polynomial(domain.p[1])
@@ -69,13 +71,12 @@ function test_runtests()
         MB.sparse_coefficients(one(T) * MP.similar(g1, T)),
         implicit_basis,
     )
-    weighted = SumOfSquares.WeightedSOSCone{
-        MOI.PositiveSemidefiniteConeTriangle,
-    }(
-        new_basis,
-        [sigma_1_basis, sigma_0_basis],
-        [w_g1, w_unit],
-    )
+    weighted =
+        SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
+            new_basis,
+            [sigma_1_basis, sigma_0_basis],
+            [w_g1, w_unit],
+        )
     MOI.Bridges.runtests(
         SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge,
         model -> begin
@@ -126,46 +127,47 @@ function test_runtests_two_inequalities()
     # loop and the `multiplier_indices` bookkeeping. We have to use the
     # same parent `FullBasis{Monomial}([x, y])` as the certificate's gram
     # basis (the parent is part of the `SubBasis`'s identity).
-    sigma_basis = SA.SubBasis(
-        MB.FullBasis{MB.Monomial}([x, y]),
-        Vector{Vector{Int}}(),
-    )
+    sigma_basis =
+        SA.SubBasis(MB.FullBasis{MB.Monomial}([x, y]), Vector{Vector{Int}}())
     new_basis = MB.SubBasis{MB.Monomial}([x * y])
     implicit_basis = MB.implicit_basis(basis)
     w_unit = MB.algebra_element(
-        MB.sparse_coefficients(MP.polynomial(MP.term(one(T), MP.constant_monomial(x * y)))),
+        MB.sparse_coefficients(
+            MP.polynomial(MP.term(one(T), MP.constant_monomial(x * y))),
+        ),
         implicit_basis,
     )
     w_g1 = MB.algebra_element(
-        MB.sparse_coefficients(one(T) * MP.similar(MP.polynomial(domain.p[1]), T)),
+        MB.sparse_coefficients(
+            one(T) * MP.similar(MP.polynomial(domain.p[1]), T),
+        ),
         implicit_basis,
     )
     w_g2 = MB.algebra_element(
-        MB.sparse_coefficients(one(T) * MP.similar(MP.polynomial(domain.p[2]), T)),
+        MB.sparse_coefficients(
+            one(T) * MP.similar(MP.polynomial(domain.p[2]), T),
+        ),
         implicit_basis,
     )
-    weighted = SumOfSquares.WeightedSOSCone{
-        MOI.PositiveSemidefiniteConeTriangle,
-    }(new_basis, [sigma_basis, sigma_basis, sigma_basis], [w_g1, w_g2, w_unit])
+    weighted =
+        SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
+            new_basis,
+            [sigma_basis, sigma_basis, sigma_basis],
+            [w_g1, w_g2, w_unit],
+        )
     MOI.Bridges.runtests(
         SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge,
         model -> begin
             MOI.add_constraint(
                 model,
-                MOI.VectorAffineFunction{T}(
-                    MOI.VectorAffineTerm{T}[],
-                    T[1],
-                ),
+                MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[1]),
                 set,
             )
         end,
         model -> begin
             MOI.add_constraint(
                 model,
-                MOI.VectorAffineFunction{T}(
-                    MOI.VectorAffineTerm{T}[],
-                    T[1],
-                ),
+                MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[1]),
                 weighted,
             )
         end;
