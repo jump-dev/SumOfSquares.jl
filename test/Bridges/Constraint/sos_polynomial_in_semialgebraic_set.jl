@@ -207,7 +207,7 @@ end
 # multiplier bases and σ_0's basis come back as `Vector{SubBasis}` and the
 # bridge collapses them into a `UnitRange` slot of `multiplier_indices`. For
 # `p = x^2 + y^2` over `domain = {x ≥ 0}`, the σ_0 basis is split into two
-# sparsity blocks `[1, y]` and `[1, x]` (one per disconnected variable
+# sparsity blocks `[1, x]` and `[1, y]` (one per disconnected variable
 # cluster), so `multiplier_indices = [2:3, 1]`.
 function test_runtests_sparsity()
     T = Float64
@@ -242,7 +242,7 @@ function test_runtests_sparsity()
     weighted =
         SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
             new_basis,
-            [sigma_1_basis, sigma_0_block_y, sigma_0_block_x],
+            [sigma_1_basis, sigma_0_block_x, sigma_0_block_y],
             [w_g1, w_unit, w_unit],
         )
     func = MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[1, 1])

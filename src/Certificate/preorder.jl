@@ -50,6 +50,10 @@ _algebra_element(a::SA.AlgebraElement) = a
 struct WithFixedBases{S,B}
     inner::S
     bases::Vector{B}
+    # `σ_0`'s gram basis as computed by `half_newton_polytope` from `p` and
+    # the inequality polynomials `gs` (so it already accounts for the
+    # multiplier-times-g terms that show up in the SOS decomposition).
+    ideal_basis::B
 end
 
 # TODO temporary workaround because SS doesn't support AlgebraElement yet
@@ -88,16 +92,14 @@ function with_fixed_basis(
     newton::AbstractNewtonPolytopeApproximation,
 )
     v = with_variables(domain, p)
-    return WithFixedBases(
-        v.inner,
-        half_newton_polytope(
-            _algebra_element(p),
-            SemialgebraicSets.inequalities(v.inner),
-            v.variables,
-            maxdegree,
-            newton,
-        )[2],
+    ideal_basis, multiplier_bases = half_newton_polytope(
+        _algebra_element(p),
+        SemialgebraicSets.inequalities(v.inner),
+        v.variables,
+        maxdegree,
+        newton,
     )
+    return WithFixedBases(v.inner, multiplier_bases, ideal_basis)
 end
 
 function preprocessed_domain(
@@ -163,6 +165,34 @@ end
 
 ideal_certificate(certificate::Putinar) = certificate.ideal_certificate
 ideal_certificate(::Type{<:Putinar{MC,IC}}) where {MC,IC} = IC
+
+"""
+    gram_basis(
+        certificate::AbstractPreorderCertificate,
+        preprocessed,
+        poly,
+    )
+
+Return the gram basis of `σ_0`, the ideal multiplier in the Putinar-style
+decomposition `p = σ_0 + Σ g_i σ_i`.
+
+Whenever the certificate already pre-computes `σ_0`'s basis as a side-effect
+of [`preprocessed_domain`](@ref) (e.g. `Putinar{<:Newton}`, which gets it
+from [`half_newton_polytope`](@ref)), the preprocessed value is returned
+directly and `poly` is ignored. Otherwise (`Putinar{<:MaxDegree}` and
+similar), the fallback computes the basis by calling
+[`gram_basis`](@ref) on the inner [`ideal_certificate`](@ref) with `poly`.
+"""
+function gram_basis(::Putinar{<:Newton}, preprocessed::WithFixedBases, _poly)
+    return preprocessed.ideal_basis
+end
+
+function gram_basis(certificate::Putinar, preprocessed::WithVariables, poly)
+    return gram_basis(
+        ideal_certificate(certificate),
+        with_variables(poly, preprocessed),
+    )
+end
 
 function SumOfSquares.matrix_cone_type(::Type{<:Putinar{MC}}) where {MC}
     return SumOfSquares.matrix_cone_type(MC)

@@ -75,50 +75,18 @@ function MOI.Bridges.Constraint.bridge_constraint(
     implicit_basis = MB.implicit_basis(set.basis)
     preprocessed =
         Certificate.preprocessed_domain(set.certificate, set.domain, poly)
+    # σ_0's gram basis is obtained directly from the preorder certificate.
+    # `Putinar{<:Newton}` reuses the basis already computed by
+    # `half_newton_polytope` inside `preprocessed_domain` (which takes the
+    # inequality polynomials `g_i` into account); other certificates fall back
+    # to the ideal certificate's `gram_basis` on `poly_reduced`.
+    sigma_0_basis =
+        Certificate.gram_basis(set.certificate, preprocessed, poly_reduced)
     # Use the same `sparse_coefficients`-based construction for the unit
     # weight as for the polynomial g_i weights so they all share the same
     # concrete element type and fit in a homogeneous `Vector{W}`.
     some_mono = first(MB.keys_as_monomials(set.basis))
     unit_poly = MP.polynomial(MP.term(one(T), MP.constant_monomial(some_mono)))
-    # Collect the multiplier bases (σ_1, σ_2, …) and the inequality
-    # polynomials g_i.
-    multiplier_bases = Any[]
-    g_polynomials = []
-    for index in Certificate.preorder_indices(set.certificate, preprocessed)
-        push!(
-            multiplier_bases,
-            Certificate.multiplier_basis(set.certificate, index, preprocessed),
-        )
-        push!(
-            g_polynomials,
-            Certificate.generator(set.certificate, index, preprocessed),
-        )
-    end
-    # σ_0's gram basis must absorb both `p` and the monomials produced by
-    # `g_i * b_i_j * b_i_k`. We mirror the original two-bridge pipeline by
-    # symbolically augmenting `poly_reduced` with the unit-coefficient
-    # versions of those products before asking the ideal certificate for
-    # the gram basis — otherwise the Newton polytope would be that of `p`
-    # alone, which is generally too small to host an SOS decomposition.
-    augmented = SOS.MA.copy(poly_reduced)
-    for (mb, g_i) in zip(multiplier_bases, g_polynomials)
-        g_alg = MB.algebra_element(
-            MB.sparse_coefficients(one(T) * similar(g_i, T)),
-            implicit_basis,
-        )
-        block_iter = mb isa AbstractVector ? mb : (mb,)
-        for block in block_iter
-            for b1 in block, b2 in block
-                term = MB.algebra_element(SA.star(b1) * b2)
-                MA.operate!(SA.UnsafeAddMul(*), augmented, term, g_alg)
-            end
-        end
-    end
-    MA.operate!(SA.canonical, SA.coeffs(augmented))
-    sigma_0_basis = Certificate.gram_basis(
-        ideal_cert,
-        Certificate.with_variables(augmented, set.domain),
-    )
     # Build `[g_1, …, 1]` weights and `[σ_1_basis, …, σ_0_basis]` gram
     # bases. σ_0 goes last so that downstream `Variable.KernelBridge`
     # allocates the σ_i gram variables before the σ_0 ones — matching the
@@ -126,8 +94,12 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # the order assumed by the cached `Mock/` tests).
     gram_bases_raw = Any[]
     weights_raw = W[]
-    for (mb, g_i) in zip(multiplier_bases, g_polynomials)
-        push!(gram_bases_raw, mb)
+    for index in Certificate.preorder_indices(set.certificate, preprocessed)
+        push!(
+            gram_bases_raw,
+            Certificate.multiplier_basis(set.certificate, index, preprocessed),
+        )
+        g_i = Certificate.generator(set.certificate, index, preprocessed)
         push!(
             weights_raw,
             MB.algebra_element(
