@@ -55,6 +55,10 @@ function MOI.Bridges.Constraint.bridge_constraint(
     set::SOS.SOSPolynomialSet{<:SemialgebraicSets.BasicSemialgebraicSet},
 ) where {T,F,DT,CT,BT,M,NB,GB,W}
     @assert MOI.output_dimension(f) == length(set.basis)
+    # MOI does not modify the coefficients of the functions so we can modify `p`.
+    # without altering `f`.
+    # The monomials may be copied by MA however so we need to copy it.
+    # TODO remove `collect` when `DynamicPolynomials.MonomialVector` can be used as keys
     poly = MB.algebra_element(
         SA.SparseCoefficients(
             copy(collect(set.basis.keys)),

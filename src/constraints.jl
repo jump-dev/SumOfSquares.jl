@@ -334,12 +334,25 @@ end
 
 function PolyJuMP.bridges(
     F::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:WeightedSOSCone},
-) # Needed so that `Variable.KernelBridge` is added as well
-    return Tuple{Type,Type}[(
-        MOI.Bridges.Constraint.VectorSlackBridge,
-        PolyJuMP.coefficient_type_or_float(F),
-    )]
+    ::Type{<:WeightedSOSCone{M,B}},
+) where {M,B}
+    T = PolyJuMP.coefficient_type_or_float(F)
+    # `VectorSlackBridge` is needed so that `Variable.KernelBridge` /
+    # `Variable.LowRankBridge` (registered by
+    # `PolyJuMP.bridges(::Type{<:WeightedSOSCone})`) are added as well via the
+    # variable-bridge chain. `Bridges.Constraint.ImageBridge` is the
+    # constraint-side counterpart; it must be listed here too so that JuMP
+    # recursively registers the bridges for ImageBridge's target types (e.g.
+    # `Constraint.PositiveSemidefinite2x2Bridge`) — otherwise
+    # `MOI.Bridges.bridging_cost` overestimates the constraint-side cost and
+    # picks the variable-side path even when `ImageBridge` should win.
+    # `ImageBridge` doesn't handle `LagrangeBasis`; mirror its
+    # `supports_constraint` check so JuMP only registers it where applicable.
+    bridges = Tuple{Type,Type}[(MOI.Bridges.Constraint.VectorSlackBridge, T)]
+    if !(B <: MB.LagrangeBasis)
+        push!(bridges, (Bridges.Constraint.ImageBridge, T))
+    end
+    return bridges
 end
 
 function _bridge_coefficient_type(

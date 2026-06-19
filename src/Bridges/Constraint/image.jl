@@ -354,9 +354,13 @@ end
 function MOI.supports_constraint(
     ::Type{ImageBridge{T}},
     ::Type{<:MOI.AbstractVectorFunction},
-    ::Type{<:SOS.WeightedSOSCone},
-) where {T}
-    return true
+    ::Type{<:SOS.WeightedSOSCone{M,B}},
+) where {T,M,B}
+    # `LagrangeBasis` dispatches to `Variable.LowRankBridge`; the image-form
+    # bridge cannot iterate over its samples (`bridge_constraint` walks the
+    # source basis monomial-by-monomial), so excluding it here both fixes the
+    # runtime error and lets the cost graph correctly favour `LowRankBridge`.
+    return !(B <: MB.LagrangeBasis)
 end
 
 function MOI.Bridges.added_constrained_variable_types(::Type{<:ImageBridge})
