@@ -1,6 +1,31 @@
 # PSD constraints on 2x2 matrices are SOC representable.
 # [Q11 Q12] is PSD iff Q11, Q22 ≥ 0 and       Q11*Q22 ≥     Q12 ^2
 # [Q12 Q22]                             <=> 2*Q11*Q22 ≥ (√2*Q12)^2
+
+"""
+    PositiveSemidefinite2x2Bridge{T,F} <: Bridges.Constraint.AbstractBridge
+
+`PositiveSemidefinite2x2Bridge` implements a reformulation from
+[`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref) into a rotated
+second-order cone constraint.
+
+A symmetric ``2 \\times 2`` matrix is PSD iff
+``Q_{11}, Q_{22} \\ge 0`` and ``Q_{11} Q_{22} \\ge Q_{12}^2``, which
+rewrites as ``2 Q_{11} Q_{22} \\ge (\\sqrt{2} Q_{12})^2``, exactly the
+definition of `MOI.RotatedSecondOrderCone(3)`.
+
+## Source node
+
+`PositiveSemidefinite2x2Bridge` supports:
+
+  * `G` in [`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref)
+
+## Target nodes
+
+`PositiveSemidefinite2x2Bridge` creates:
+
+  * `F` in `MOI.RotatedSecondOrderCone` (of dimension 3)
+"""
 struct PositiveSemidefinite2x2Bridge{T,F} <:
        MOI.Bridges.Constraint.AbstractBridge
     rsoc::MOI.ConstraintIndex{F,MOI.RotatedSecondOrderCone}

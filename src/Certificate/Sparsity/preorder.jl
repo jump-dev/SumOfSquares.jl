@@ -85,6 +85,20 @@ function SumOfSquares.Certificate.generator(
     )
 end
 
+function SumOfSquares.Certificate.gram_basis(
+    certificate::Preorder,
+    preprocessed::Domain,
+    poly,
+)
+    # σ_0's basis under sparsity is governed by the `Sparsity.Ideal` wrapper of
+    # the inner ideal certificate, which produces a `Vector` of bases (one per
+    # sparsity block). We forward `poly` so it can drive the sparsity pattern.
+    return SumOfSquares.Certificate.gram_basis(
+        SumOfSquares.Certificate.ideal_certificate(certificate),
+        SumOfSquares.Certificate.with_variables(poly, preprocessed.domain),
+    )
+end
+
 function SumOfSquares.Certificate.ideal_certificate(certificate::Preorder)
     return Ideal(
         certificate.sparsity,

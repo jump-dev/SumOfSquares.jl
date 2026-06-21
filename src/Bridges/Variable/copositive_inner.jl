@@ -1,3 +1,30 @@
+"""
+    CopositiveInnerBridge{T,S} <: Bridges.Variable.AbstractBridge
+
+`CopositiveInnerBridge` implements a reformulation from
+`SumOfSquares.CopositiveInnerCone` into a PSD-like inner cone plus
+a nonnegativity constraint on the strictly off-diagonal entries.
+
+The cone of inner-copositive matrices contains symmetric matrices that can
+be written as the sum of a matrix in `set.psd_inner` (e.g. PSD) and a
+matrix that is zero on the diagonal and has nonnegative off-diagonal
+entries. The bridge introduces constrained variables for each summand.
+
+## Source node
+
+`CopositiveInnerBridge` supports:
+
+  * `SumOfSquares.CopositiveInnerCone{S}`
+
+## Target nodes
+
+`CopositiveInnerBridge` creates:
+
+  * `MOI.VectorOfVariables` in `S` (the inner PSD-like cone, e.g.
+    `MOI.PositiveSemidefiniteConeTriangle`)
+  * `MOI.VectorOfVariables` in `MOI.Nonnegatives` (one per strictly
+    upper-triangular entry)
+"""
 struct CopositiveInnerBridge{T,S} <: MOI.Bridges.Variable.AbstractBridge
     matrix_variables::Vector{MOI.VariableIndex}
     matrix_constraint::MOI.ConstraintIndex{MOI.VectorOfVariables,S}

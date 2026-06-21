@@ -1,3 +1,21 @@
+"""
+    EmptyBridge{T,F<:MOI.AbstractVectorFunction} <: Bridges.Constraint.AbstractBridge
+
+`EmptyBridge` is a no-op bridge for [`SumOfSquares.EmptyCone`](@ref). It is
+used as the inner-most node when an SOS decomposition produces no gram
+entries (e.g. when the basis is empty), so that the bridge graph still has
+a target node to terminate at.
+
+## Source node
+
+`EmptyBridge` supports:
+
+  * `F` in [`SumOfSquares.EmptyCone`](@ref)
+
+## Target nodes
+
+`EmptyBridge` creates no constraints and no variables.
+"""
 struct EmptyBridge{T,F<:MOI.AbstractVectorFunction} <:
        MOI.Bridges.Constraint.AbstractBridge end
 
