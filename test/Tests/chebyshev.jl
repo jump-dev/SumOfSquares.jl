@@ -26,7 +26,7 @@ function chebyshev_test(optimizer, config::MOI.Test.Config)
 
     @objective(model, Max, γ)
 
-    JuMP.optimize!(model)
+    _optimize!(model, config)
 
     @test JuMP.termination_status(model) == MOI.OPTIMAL
     @test JuMP.primal_status(model) == MOI.FEASIBLE_POINT
