@@ -16,7 +16,10 @@ struct Pattern{GT,AT<:SymbolicWedderburn.Action}
     action::AT
 end
 
+import SparseArrays
+
 include("utils.jl")
+include("invariant_basis.jl")
 include("wedderburn.jl")
 include("block_diag.jl")
 

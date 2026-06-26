@@ -100,7 +100,7 @@ function _multi_basis_type(::Type{BT}, ::Type{T}) where {BT<:SA.SubBasis,T}
         Vector{T},
         MA.promote_operation(MB.implicit_basis, BT),
     )
-    return Vector{MB.SemisimpleBasis{AE,MB.SimpleBasis{AE}}}
+    return Vector{MB.SimpleBasis{AE}}
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.gram_basis),
@@ -119,7 +119,7 @@ function MA.promote_operation(
     ::Type{G},
     ::Type{W},
 ) where {C,B,D,G,W}
-    return MA.promote_operation(
+    inner = MA.promote_operation(
         SumOfSquares.Certificate.zero_basis,
         C,
         B,
@@ -127,7 +127,15 @@ function MA.promote_operation(
         G,
         W,
     )
+    return _invariant_basis_type(inner)
 end
+
+function _invariant_basis_type(::Type{EB}) where {EB<:SA.ExplicitBasis}
+    T = eltype(EB)
+    IB = MA.promote_operation(MB.implicit_basis, EB)
+    return InvariantBasis{T,Int,IB,EB,SparseArrays.SparseVector{Float64,Int}}
+end
+_invariant_basis_type(::Type{T}) where {T} = T  # passthrough for non-ExplicitBasis (e.g. QuotientBasis)
 SumOfSquares.Certificate.zero_basis(::Ideal) = MB.Monomial
 function SumOfSquares.Certificate.reduced_polynomial(
     certificate::Ideal,
@@ -147,14 +155,33 @@ function SumOfSquares.Certificate.zero_basis(
     gram_bases,
     weights,
 )
-    return SumOfSquares.Certificate.zero_basis(
+    inner = SumOfSquares.Certificate.zero_basis(
         certificate.certificate,
         basis,
         domain,
         gram_bases,
         weights,
     )
+    return _invariant_basis(certificate.pattern, inner)
 end
+
+function _invariant_basis(pattern::Pattern, monomial_basis::SA.ExplicitBasis)
+    tbl = SymbolicWedderburn.Characters.CharacterTable(
+        Rational{Int},
+        pattern.group,
+    )
+    invs = SymbolicWedderburn.invariant_vectors(
+        tbl,
+        pattern.action,
+        monomial_basis,
+    )
+    # Coerce to a uniform `SparseVector{Float64,Int}` so that the bridge's
+    # concrete parametric type can be predicted by `promote_operation`.
+    invs_uniform = [convert(SparseArrays.SparseVector{Float64,Int}, iv) for iv in invs]
+    return InvariantBasis(monomial_basis, invs_uniform)
+end
+# Fallback for non-SubBasis inner zero_basis (e.g. QuotientBasis): leave it.
+_invariant_basis(::Pattern, basis) = basis
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.zero_basis),
     ::Type{Ideal{S,C}},
@@ -201,6 +228,23 @@ function SumOfSquares.Certificate.gram_basis(cert::Ideal, poly)
     return _gram_basis(cert.pattern, basis, _coeff_type(typeof(cert)))
 end
 
+function SumOfSquares.Certificate.gram_weights(
+    cert::Ideal,
+    gram_basis,
+    poly,
+    ::Type{T},
+) where {T}
+    # `gram_basis` is the Pattern result: `Vector{SimpleBasis}` of length |χ|.
+    # We multiply each χ-block's contribution by `degree(χ)` so that the
+    # invariant-vector-projected SDP constraint matches the polynomial.
+    inner_basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
+    degrees = gram_character_degrees(cert.pattern, inner_basis, _coeff_type(typeof(cert)))
+    # Build per-χ weights via `constant_algebra_element(_, T(d))` so that the
+    # SparseCoefficients storage matches what the bridge's `W` parameter
+    # expects (Tuple-backed, like the default `MB.constant_algebra_element(_, T)`).
+    return [MB.constant_algebra_element(SA.basis(poly), T(d)) for d in degrees]
+end
+
 function _fixed_basis(F, basis)
     return MB.SimpleBasis(
         map(eachrow(F)) do row
@@ -213,93 +257,36 @@ function _fixed_basis(F, basis)
 end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
-    # We set `semisimple=true` as we don't support simple yet since it would not give all the simple components but only one of them.
+    # `semisimple=false` returns one simple `DirectSummand` per character χ.
+    # The numerical block-diagonalization that previously lived here is now
+    # inside `SymbolicWedderburn` (numerical_simple.jl) and runs automatically
+    # if the symbolic minimal projection cannot reduce to a simple summand.
     summands = SymbolicWedderburn.symmetry_adapted_basis(
         T,
         pattern.group,
         pattern.action,
         basis,
-        semisimple = true,
     )
-    # We have a new basis `b = vcat(R * basis.monomials for R in summands)``.
-    # SymbolicWedderburn guarantees that the invariant subspace spanned by the
-    # polynomials of the vector `R * basis.monomials` is invariant under the
-    # action of the group. That is, the matrix representation `ρ(g)` induced by
-    # this basis is block-diagonal with one block for each summand.
-    # That block is the matrix `S` computed below.
-    # So an invariant solution `b'*Q*b` satisfies `Diagonal(S' for S in ...) * Q * Diagonal(S for S in ...) = Q`.
-    # Or in equivalently: `Q * Diagonal(S for S in ...) = Diagonal(inv(S') for S in ...) * Q`.
-    form = if T <: Union{AbstractFloat,Complex{<:AbstractFloat}}
-        _OrthogonalMatrix()
-    else
-        _RowEchelonMatrix()
-    end
     return map(summands) do summand
-        R = SymbolicWedderburn.image_basis(summand)
-        m = SymbolicWedderburn.multiplicity(summand)
-        N = size(R, 1)
-        d = SymbolicWedderburn.degree(summand)
-        S = matrix_reps(pattern, R, basis, T, form)
-        #S = matrix_reps(pattern, R, basis, T, _RowEchelonMatrix())
-        decomose_semisimple = d > 1
-        if decomose_semisimple
-            # If it's not orthogonal, how can we conclude that we can still use the semisimple summands block-decomposition ?
-            # In Example 1.7.2 of Sagan's book, he uses Corollary 1.6.6 which requires that `X` and `Y` are irreducible
-            # (where `X` and `Y` are here the `S` corresponding to two different summands).
-            # Here, given semisimple representations `X` and `Y`, they are not irreducible if `m > 1`.
-            # Furthermore, as they are not orthogonal, we have something like `T * X = inv(Y') * T`, so how can we know that
-            # `X` and `inv(Y')` are not equivalent (to exclude the case 1. of Corollary 1.6.6) ?
-            if !all(is_orthogonal, S)
-                R = orthogonalize(R)
-                S = matrix_reps(pattern, R, basis, T, _OrthogonalMatrix())
-                for i in axes(R, 1)
-                    R[i, :] = LinearAlgebra.normalize(R[i, :])
-                end
-                S = matrix_reps(pattern, R, basis, T, _OrthogonalMatrix())
-                if !all(is_orthogonal, S)
-                    error(
-                        "The matrix representation induced from the action on the polynomial basis is not orthogonal.",
-                    )
-                    # We would like to just throw this warning and just not decompose the semisimple summand but
-                    # as explained in the comment above, it's not even clear that the diagonalization induced by the simple summands is correct.
-                    #@warn("The matrix representation induced from the action on the polynomial basis is not orthogonal. The $(m * d)-dimensional semisimple summand can be decomposed onto $m simple summands of degree $d so that the $(m * d) x $(m * d) diagonal block is reduced to $d identical copied of a single $m x $m diagonal block. However, as the action is not orthogonal, this decomposition will not happen.")
-                    #decomose_semisimple = false
-                end
-            end
-        end
-        F = convert(Matrix{T}, R)
-        if d > 1
-            if m > 1
-                U = ordered_block_diag(S, d)
-                if isnothing(U)
-                    error(
-                        "Could not simultaneously block-diagonalize into $m identical $(d)x$d blocks",
-                    )
-                end
-            else
-                U = Matrix{T}(LinearAlgebra.I, N, N)
-            end
-            # From Example 1.7.3 of
-            # Sagan, The symmetric group, Springer Science & Business Media, 2001
-            # we know that there exists `C` such that `Q = kron(C, I)` if we use
-            # `(U[1:d] * F)' * basis.monomials`, `(U[d+1:2d] * F)' * basis.monomials`, ...
-            # where `C` are some complex numbers as they are eigenvalues (see Corollary 1.6.8).
-            # As `Q` is symmetric, we know the eigenvalues are real so we can take `C` real as well.
-            # Moreover, `Q = kron(C, I)` is not block diagonal but we can get a block-diagonal
-            # `Q = kron(I, Q)` by permuting the rows and columns:
-            # `(U[1:d:(1+d*(m-1))] * F)' * basis.monomials`, `(U[2:d:(2+d*(m-1))] * F)' * basis.monomials`, ...
-            return MB.SemisimpleBasis(
-                map(1:d) do i
-                    return _fixed_basis(
-                        transpose(U[:, i:d:(i+d*(m-1))]) * F,
-                        basis,
-                    )
-                end,
-            )
-        else
-            return MB.SemisimpleBasis([
-                _fixed_basis(convert(Matrix{T}, R), basis),
-            ])
-        end
+        R = convert(Matrix{T}, SymbolicWedderburn.image_basis(summand))
+        return _fixed_basis(R, basis)
     end
+end
+
+"""
+    gram_character_degrees(pattern, basis, ::Type{T})
+
+Return a `Vector{Int}` of degrees of the irreducible characters, parallel to
+[`_gram_basis`](@ref). Used to scale each χ-block by `d_χ` so that the
+invariant-vector-projected SDP constraint is satisfied (see
+`sos_problem.jl` in `SymbolicWedderburn/examples` for the analogous trick).
+"""
+function gram_character_degrees(pattern::Pattern, basis, ::Type{T}) where {T}
+    summands = SymbolicWedderburn.symmetry_adapted_basis(
+        T,
+        pattern.group,
+        pattern.action,
+        basis,
+    )
+    return [SymbolicWedderburn.degree(s) for s in summands]
 end

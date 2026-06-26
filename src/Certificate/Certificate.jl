@@ -31,6 +31,15 @@ abstract type Attribute end
 function cone end
 function zero_basis end
 function gram_basis end
+"""
+    gram_weights(certificate, gram_basis, ::Type{T})
+
+Return the (parallel) weights for each gram basis returned by `gram_basis`.
+The default is one constant `1` weight (single basis case). Certificates that
+return a `Vector` of bases (e.g. `Symmetry.Ideal`) can override this to attach
+a different weight to each basis (e.g. `degree(χ)` for symmetry-adapted blocks).
+"""
+function gram_weights end
 function reduced_polynomial end
 function ideal_certificate end
 function preprocessed_domain end
