@@ -380,8 +380,29 @@ function JuMP.build_constraint(
     return build_constraint(_error, f, extra; kws...)
 end
 
-_promote_coef_type(::Type{V}, ::Type) where {V<:JuMP.AbstractVariableRef} = V
-_promote_coef_type(::Type{F}, ::Type{T}) where {F,T} = promote_type(F, T)
+# The coefficients of the constraint are kept as is (numbers stay numbers) and
+# converted to the value type of the model in `JuMP.model_convert`, like JuMP
+# does for the coefficients of affine and quadratic constraints. The only thing
+# we cannot leave to `model_convert` is the promotion of real coefficients to
+# complex when a Hermitian SOS cone is used, since that depends on the cone.
+function _complex_coefficients(
+    coefs::Vector{F},
+    ::Type{S},
+) where {F<:Number,S}
+    G = _bridge_coefficient_type(F, S)
+    return G === F ? coefs : convert(Vector{G}, coefs)
+end
+function _complex_coefficients(
+    coefs::Vector{F},
+    ::Type{S},
+) where {F<:JuMP.AbstractJuMPScalar,S}
+    # A JuMP scalar already carries the value type of the model.
+    VT = JuMP.value_type(JuMP.variable_ref_type(F))
+    G = _bridge_coefficient_type(VT, S)
+    G === VT && return coefs
+    V = JuMP.variable_ref_type(F)
+    return convert(Vector{JuMP.GenericAffExpr{G,V}}, coefs)
+end
 
 function _default_basis(
     coeffs,
@@ -447,6 +468,12 @@ function _promote_bases(domain, p::SA.AlgebraElement)
     return _domain, _p
 end
 
+# `JuMP.build_constraint` does not have access to the model so it does not know
+# the value type of the `GenericModel`. As JuMP allows the function of a
+# `VectorConstraint` to be a vector of numbers (and not only of JuMP scalars),
+# we keep the coefficients of the polynomial as is and let `JuMP.model_convert`
+# convert them (and the bridge coefficient types) to the value type of the model,
+# like JuMP does for the coefficients of affine and quadratic constraints.
 function JuMP.build_constraint(
     _error::Function,
     p,
@@ -457,7 +484,7 @@ function JuMP.build_constraint(
     kws...,
 )
     domain, p = _promote_bases(domain, p)
-    __coefs, basis, gram_basis = _default_basis(p, basis)
+    coefs, basis, gram_basis = _default_basis(p, basis)
     set = JuMP.moi_set(
         cone,
         basis,
@@ -466,21 +493,21 @@ function JuMP.build_constraint(
         domain,
         kws...,
     )
-    _coefs = PolyJuMP.non_constant(__coefs)
-    # If a polynomial with real coefficients is used with the Hermitian SOS
-    # cone, we want to promote the coefficients to complex
-    T = _bridge_coefficient_type(
-        JuMP.value_type(JuMP.variable_ref_type(eltype(_coefs))),
-        typeof(set),
-    )
-    coefs = convert(Vector{_promote_coef_type(eltype(_coefs), T)}, _coefs)
-    shape = PolyJuMP.PolynomialShape(basis)
+    coefs = _complex_coefficients(PolyJuMP._vec(coefs), typeof(set))
     return PolyJuMP.bridgeable(
-        JuMP.VectorConstraint(coefs, set, shape),
-        JuMP.moi_function_type(typeof(coefs)),
+        JuMP.VectorConstraint(coefs, set, PolyJuMP.PolynomialShape(basis)),
+        _moi_function_type(typeof(coefs)),
         typeof(set),
     )
 end
+
+# `JuMP.moi_function_type` is not defined for a vector of numbers since JuMP
+# always converts the coefficients to JuMP scalars in `model_convert` before
+# calling it. We keep the coefficients as numbers until `model_convert` so we
+# need the function type before that conversion: a vector of numbers becomes a
+# constant `VectorAffineFunction`.
+_moi_function_type(::Type{<:Vector{T}}) where {T<:Number} = MOI.VectorAffineFunction{T}
+_moi_function_type(::Type{V}) where {V} = JuMP.moi_function_type(V)
 
 struct ValueNotSupported <: Exception end
 function Base.showerror(io::IO, ::ValueNotSupported)

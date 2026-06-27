@@ -1,5 +1,7 @@
 export DSOSPoly, SDSOSPoly, SOSPoly
 
+# The coefficient type is converted to the value type of the model in
+# `JuMP.model_convert`, so `Float64` here is just a placeholder.
 function _bridge_coefficient_type(::Type{<:WeightedSOSCone{M}}) where {M}
     return _complex(Float64, M)
 end
