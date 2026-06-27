@@ -109,6 +109,22 @@ abstract type SimpleIdealCertificate{C,G,Z} <: AbstractIdealCertificate end
 
 reduced_polynomial(::SimpleIdealCertificate, poly, domain) = poly
 
+"""
+    gram_weights(cert::AbstractCertificate, gram_basis, poly, ::Type{T})
+
+Default implementation: returns `[constant_algebra_element(SA.basis(poly), T)]`
+(one constant `1` weight). Certificates whose `gram_basis` returns a `Vector`
+of bases can override to provide a parallel vector of per-basis weights.
+"""
+function gram_weights(
+    ::AbstractCertificate,
+    gram_basis,
+    poly,
+    ::Type{T},
+) where {T}
+    return [MB.constant_algebra_element(SA.basis(poly), T)]
+end
+
 cone(certificate::SimpleIdealCertificate) = certificate.cone
 function SumOfSquares.matrix_cone_type(
     ::Type{<:SimpleIdealCertificate{CT}},
