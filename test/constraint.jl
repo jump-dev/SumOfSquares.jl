@@ -70,3 +70,23 @@ end
     @test SumOfSquares.Bridges.Variable.KernelBridge{ComplexF64} in
           model.bridge_types
 end
+
+@testset "Generic value type `$T`" for T in [BigFloat, Float32]
+    @polyvar x y
+    model = GenericModel{T}()
+    # The coefficients of the polynomial are converted to the value type `T` of
+    # the model, like JuMP does for affine and quadratic constraints. Here, the
+    # constant `one(T)` is a `Real`, not a JuMP scalar, and used to leak `Float64`.
+    @constraint(model, one(T) + x^2 in SOSCone())
+    F = JuMP.GenericAffExpr{T,JuMP.GenericVariableRef{T}}
+    @test any(list_of_constraint_types(model)) do (Fi, Si)
+        return Fi == Vector{F} && Si <: SumOfSquares.SOSPolynomialSet
+    end
+    @test SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{T} in
+          model.bridge_types
+    @test SumOfSquares.Bridges.Variable.KernelBridge{T} in model.bridge_types
+    # The `domain` polynomials used to leak `Float64` into the multiplier bridge.
+    @constraint(model, one(T) - x^2 in SOSCone(), domain = @set y >= one(T))
+    @test SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge{T} in
+          model.bridge_types
+end
