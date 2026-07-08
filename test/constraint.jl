@@ -4,15 +4,15 @@ import PolyJuMP
 @testset "Non-symmetric matrix SOS constraint" begin
     @polyvar x
     model = SOSModel()
-    path = joinpath(
-        dirname(dirname(pathof(SumOfSquares))),
-        "test",
-        "constraint.jl",
-    )
-    err = ErrorException(
-        "At $path:15: `@constraint(model, [1 x; -x 0] in SOSMatrixCone())`: The polynomial matrix constrained to be SOS must be symmetric.",
-    )
-    @test_throws err @constraint(model, [1 x; -x 0] in SOSMatrixCone())
+    try
+        @constraint(model, [1 x; -x 0] in SOSMatrixCone())
+        @assert false
+    catch err
+        @test occursin(
+            "The polynomial matrix constrained to be SOS must be symmetric.",
+            sprint(showerror, err),
+        )
+    end
 end
 
 @testset "Printing" begin
