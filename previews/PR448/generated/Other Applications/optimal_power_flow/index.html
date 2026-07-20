@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Optimal Power Flow · SumOfSquares</title><meta name="title" content="Optimal Power Flow · SumOfSquares"/><meta property="og:title" content="Optimal Power Flow · SumOfSquares"/><meta property="twitter:title" content="Optimal Power Flow · SumOfSquares"/><meta name="description" content="Documentation for SumOfSquares."/><meta property="og:description" content="Documentation for SumOfSquares."/><meta property="twitter:description" content="Documentation for SumOfSquares."/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/citations.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../../../reference/standard_form/">Standard form</a></li><li><a class="tocitem" href="../../../reference/constraints/">Constraints</a></li><li><a class="tocitem" href="../../../reference/certificate/">Certificate</a></li><li><a class="tocitem" href="../../../reference/internal/">Internal functions</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-6-1" type="checkbox"/><label class="tocitem" for="menuitem-6-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/circle/">Nonnegative over a variety</a></li><li><a class="tocitem" href="../../Getting started/dualization/">On the importance of Dualization</a></li><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sampling/">Sampling basis</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li><li><a class="tocitem" href="../../Getting started/univariate/">Minimization of a univariate polynomial</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-2" type="checkbox"/><label class="tocitem" for="menuitem-6-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Polynomial Optimization/bilinear/">Bilinear terms</a></li><li><a class="tocitem" href="../../Polynomial Optimization/bound_on_global_extremum/">Bound on Global Extremum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/ellipsoid/">Exterior of ellipsoid</a></li><li><a class="tocitem" href="../../Polynomial Optimization/goldstein_price/">Goldstein-price function</a></li><li><a class="tocitem" href="../../Polynomial Optimization/min_univariate/">Maximizing as minimum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/polynomial_optimization/">Polynomial Optimization</a></li><li><a class="tocitem" href="../../Polynomial Optimization/qcqp/">Nonconvex quadratically constrained quadratic programs</a></li><li><a class="tocitem" href="../../Polynomial Optimization/qp/">Nonconvex QP</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-3" type="checkbox"/><label class="tocitem" for="menuitem-6-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Systems and Control/barrier_certificate/">Barrier certificates for collision avoidance</a></li><li><a class="tocitem" href="../../Systems and Control/julia_set/">Outer approximation of Julia set</a></li><li><a class="tocitem" href="../../Systems and Control/lyapunov_function_search/">Lyapunov Function Search</a></li><li><a class="tocitem" href="../../Systems and Control/stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-4" type="checkbox" checked/><label class="tocitem" for="menuitem-6-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../bounds_in_probability/">Bounds in Probability</a></li><li class="is-active"><a class="tocitem" href>Optimal Power Flow</a><ul class="internal"><li><a class="tocitem" href="#Loading-the-instance"><span>Loading the instance</span></a></li><li><a class="tocitem" href="#Building-the-polynomial-optimization-problem"><span>Building the polynomial optimization problem</span></a></li><li><a class="tocitem" href="#The-first-order-relaxation"><span>The first-order relaxation</span></a></li><li><a class="tocitem" href="#Summary"><span>Summary</span></a></li></ul></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-5" type="checkbox"/><label class="tocitem" for="menuitem-6-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/chsh/">CHSH</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-6" type="checkbox"/><label class="tocitem" for="menuitem-6-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/sign_symmetry/">Sign symmetry</a></li><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-7" type="checkbox"/><label class="tocitem" for="menuitem-6-7"><span class="docs-label">Symmetry</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Symmetry/cyclic/">Cyclic symmetry for Sums of Hermitian Squares</a></li><li><a class="tocitem" href="../../Symmetry/dihedral/">Dihedral symmetry of the Robinson form</a></li><li><a class="tocitem" href="../../Symmetry/even_reduction/">Even reduction</a></li><li><a class="tocitem" href="../../Symmetry/permutation_symmetry/">Symmetry reduction</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-8" type="checkbox"/><label class="tocitem" for="menuitem-6-8"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Extension/certificate/">Certificate</a></li><li><a class="tocitem" href="../../Extension/hypercube/">Hypercube</a></li><li><a class="tocitem" href="../../Extension/typed/">Multivariate polynomials implementations</a></li><li><a class="tocitem" href="../../Extension/univariate_solver/">Univariate Solver</a></li></ul></li></ul></li><li><a class="tocitem" href="../../../bibliography/">Bibliography</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Other Applications</a></li><li class="is-active"><a href>Optimal Power Flow</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Optimal Power Flow</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/main/docs/src/tutorials/Other Applications/optimal_power_flow.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Optimal-Power-Flow"><a class="docs-heading-anchor" href="#Optimal-Power-Flow">Optimal Power Flow</a><a id="Optimal-Power-Flow-1"></a><a class="docs-heading-anchor-permalink" href="#Optimal-Power-Flow" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR448/generated/Other Applications/optimal_power_flow.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR448/generated/Other Applications/optimal_power_flow.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Adapted from</strong>: Section 4 of [MW21] and the <code>pop_opf_real</code> model of <a href="https://github.com/wangjie212/TSSOS">TSSOS</a>&#39;s <code>example/modelopf.jl</code>.</p><p>[MW21] Magron, Victor and Wang, Jie. <em>TSSOS: a Julia library to exploit sparsity for large-scale polynomial optimization</em>. arXiv preprint arXiv:2103.00915 (2021).</p><p>The Alternating Current Optimal Power Flow (AC-OPF) problem looks for the cheapest way to operate a power network subject to the physical laws governing the flow of electricity. Writing the complex voltage at each bus in <em>rectangular</em> coordinates <span>$v = e + \mathrm{i}f$</span>, the problem is a Polynomial Optimization Problem (POP): the objective (generation cost) and every constraint (voltage magnitude bounds, generation bounds, line angle differences, thermal limits and the power-flow balance equations) are polynomials of degree at most two in the variables <span>$(e, f, p^g, q^g)$</span> where <span>$p^g, q^g$</span> are the active and reactive power injected by the generators.</p><p>This is exactly the <code>pop_opf_real</code> formulation shipped with <a href="https://github.com/wangjie212/TSSOS">TSSOS</a>. In this tutorial we build the same POP from a <a href="https://github.com/power-grid-lib/pglib-opf">PGLib</a> instance and solve its first-order (Shor) moment-SOS relaxation. We then show that the <strong>correlative</strong> and <strong>term</strong> sparsity patterns implemented in SumOfSquares reproduce the block structure exploited by <code>CS-TSSOS</code>: the maximal semidefinite block shrinks dramatically while the bound is preserved.</p><pre><code class="language-julia hljs">using SumOfSquares</code></pre><h2 id="Loading-the-instance"><a class="docs-heading-anchor" href="#Loading-the-instance">Loading the instance</a><a id="Loading-the-instance-1"></a><a class="docs-heading-anchor-permalink" href="#Loading-the-instance" title="Permalink"></a></h2><p>We load a small instance of the <a href="https://github.com/power-grid-lib/pglib-opf">PGLib</a> benchmark library with <a href="https://github.com/lanl-ansi/PGLib.jl">PGLib.jl</a>; it returns the network data already parsed by <a href="https://github.com/lanl-ansi/PowerModels.jl">PowerModels</a>.</p><pre><code class="language-julia hljs">import PowerModels
+import PGLib
+PowerModels.silence()
+
+data = PGLib.pglib(&quot;pglib_opf_case14_ieee&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Any} with 13 entries:
+  &quot;bus&quot;            =&gt; Dict{String, Any}(&quot;4&quot;=&gt;Dict{String, Any}(&quot;zone&quot;=&gt;1, &quot;bus_…
+  &quot;source_type&quot;    =&gt; &quot;matpower&quot;
+  &quot;name&quot;           =&gt; &quot;pglib_opf_case14_ieee&quot;
+  &quot;dcline&quot;         =&gt; Dict{String, Any}()
+  &quot;source_version&quot; =&gt; &quot;2&quot;
+  &quot;gen&quot;            =&gt; Dict{String, Any}(&quot;4&quot;=&gt;Dict{String, Any}(&quot;pg&quot;=&gt;0.0, &quot;mode…
+  &quot;branch&quot;         =&gt; Dict{String, Any}(&quot;4&quot;=&gt;Dict{String, Any}(&quot;br_r&quot;=&gt;0.05811,…
+  &quot;storage&quot;        =&gt; Dict{String, Any}()
+  &quot;switch&quot;         =&gt; Dict{String, Any}()
+  &quot;baseMVA&quot;        =&gt; 100.0
+  &quot;per_unit&quot;       =&gt; true
+  &quot;shunt&quot;          =&gt; Dict{String, Any}(&quot;1&quot;=&gt;Dict{String, Any}(&quot;source_id&quot;=&gt;Any…
+  &quot;load&quot;           =&gt; Dict{String, Any}(&quot;4&quot;=&gt;Dict{String, Any}(&quot;source_id&quot;=&gt;Any…</code></pre><p>As a reference point, we compute a locally optimal solution with the interior point solver <a href="https://github.com/jump-dev/Ipopt.jl">Ipopt</a>. Its objective value <code>AC</code> is an upper bound on the global optimum, so any lower bound <code>opt</code> provided by a relaxation yields the optimality gap <code>100 (AC - opt) / AC</code>.</p><pre><code class="language-julia hljs">import Ipopt
+local_solution = PowerModels.solve_ac_opf(
+    data,
+    optimizer_with_attributes(Ipopt.Optimizer, &quot;print_level&quot; =&gt; 0),
+)
+AC = local_solution[&quot;objective&quot;]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2178.080410819641</code></pre><h2 id="Building-the-polynomial-optimization-problem"><a class="docs-heading-anchor" href="#Building-the-polynomial-optimization-problem">Building the polynomial optimization problem</a><a id="Building-the-polynomial-optimization-problem-1"></a><a class="docs-heading-anchor-permalink" href="#Building-the-polynomial-optimization-problem" title="Permalink"></a></h2><p>The function below is a port of <code>pop_opf_real</code> from TSSOS&#39; <code>modelopf.jl</code>. It returns the objective <code>f</code> to be <em>minimized</em>, the vectors <code>ineqs</code> (the <code>≥ 0</code> constraints) and <code>eqs</code> (the <code>= 0</code> constraints), together with the variables <code>x</code>. Each generator contributes the active/reactive powers <code>x[2nbus+i]</code>/<code>x[2nbus+ng+i]</code> while bus <code>i</code> contributes the rectangular voltage coordinates <code>x[i] = e_i</code> and <code>x[i+nbus] = f_i</code>.</p><pre><code class="language-julia hljs">using DynamicPolynomials
+
+bfind(v, x) = findfirst(isequal(x), v)
+fl_sum(itr) = mapreduce(identity, +, itr, init = 0.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">fl_sum (generic function with 1 method)</code></pre><p>Each constraint is provided as a support/coefficient pair, exactly as in TSSOS, where a support entry is a list of variable indices (repetition encodes powers). We normalize every constraint by its largest coefficient; since this is a positive scaling it leaves the feasible set (and hence the relaxation) unchanged but improves the conditioning.</p><pre><code class="language-julia hljs">function mkpoly(x, supp, coe)
+    return sum(
+        coe[t] * prod(j -&gt; x[j], supp[t]; init = one(eltype(coe))) for
+        t in eachindex(coe)
+    )
+end
+normalize_poly(p) = p / maximum(abs, coefficients(p))
+
+function build_opf_pop(data; AngleCons = true, LineLimit = &quot;relax&quot;)
+    PowerModels.standardize_cost_terms!(data, order = 2)
+    ref = PowerModels.build_ref(data)[:it][PowerModels.pm_it_sym][:nw][0]
+    nbus = length(ref[:bus])
+    ng = length(ref[:gen])
+    n = 2 * nbus + 2 * ng
+    @polyvar x[1:n]
+    ineqs = Any[]
+    eqs = Any[]
+    gens = sort!(collect(keys(ref[:gen])))
+    bus = sort!(collect(keys(ref[:bus])))
+
+    # Objective: the sum of the (quadratic) generation costs.
+    coe = Float64[sum(gen[&quot;cost&quot;][3] for (_, gen) in ref[:gen])]
+    supp = Vector{Int}[Int[]]
+    for i in 1:ng
+        gen = ref[:gen][gens[i]]
+        push!(coe, gen[&quot;cost&quot;][2], gen[&quot;cost&quot;][1])
+        push!(supp, [2nbus + i], [2nbus + i, 2nbus + i])
+    end
+    f = mkpoly(x, supp, coe)
+
+    # Voltage magnitude: vmin² ≤ eᵢ² + fᵢ² ≤ vmax².
+    for i in 1:nbus
+        push!(ineqs, mkpoly(x, Vector{Int}[[], [i, i], [i+nbus, i+nbus]],
+            [-ref[:bus][bus[i]][&quot;vmin&quot;]^2, 1, 1]))
+        push!(ineqs, mkpoly(x, Vector{Int}[[], [i, i], [i+nbus, i+nbus]],
+            [ref[:bus][bus[i]][&quot;vmax&quot;]^2, -1, -1]))
+    end
+
+    # Angle differences and (relaxed) thermal limits, one pair per branch.
+    for (_, branch) in ref[:branch]
+        g, b = PowerModels.calc_branch_y(branch)
+        tr, ti = PowerModels.calc_branch_t(branch)
+        g_fr = branch[&quot;g_fr&quot;]; b_fr = branch[&quot;b_fr&quot;]
+        g_to = branch[&quot;g_to&quot;]; b_to = branch[&quot;b_to&quot;]
+        tm = branch[&quot;tap&quot;]
+        vr = bfind(bus, branch[&quot;f_bus&quot;])
+        vt = bfind(bus, branch[&quot;t_bus&quot;])
+        srt = sort([vr, vt])
+        if AngleCons
+            p1 = mkpoly(x, Vector{Int}[srt, srt .+ nbus, [vt, vr+nbus], [vr, vt+nbus]],
+                [tan(branch[&quot;angmax&quot;]), tan(branch[&quot;angmax&quot;]), -1, 1])
+            p2 = mkpoly(x, Vector{Int}[[vt, vr+nbus], [vr, vt+nbus], srt, srt .+ nbus],
+                [1, -1, -tan(branch[&quot;angmin&quot;]), -tan(branch[&quot;angmin&quot;])])
+            push!(ineqs, normalize_poly(p1), normalize_poly(p2))
+        end
+        if LineLimit == &quot;relax&quot;
+            ab1 = (g+g_fr)^2 + (b+b_fr)^2
+            cd1 = (-g*tr+b*ti)^2 + (b*tr+g*ti)^2
+            acbd1 = (g+g_fr)*(-g*tr+b*ti) - (b+b_fr)*(b*tr+g*ti)
+            bcad1 = -(b+b_fr)*(-g*tr+b*ti) - (g+g_fr)*(b*tr+g*ti)
+            ab2 = (g+g_to)^2*tm^4 + (b+b_to)^2*tm^4
+            cd2 = (g*tr+b*ti)^2 + (-b*tr+g*ti)^2
+            acbd2 = -(g+g_to)*tm^2*(g*tr+b*ti) + (b+b_to)*tm^2*(-b*tr+g*ti)
+            bcad2 = (b+b_to)*tm^2*(g*tr+b*ti) + (g+g_to)*tm^2*(-b*tr+g*ti)
+            mvr = ref[:bus][bus[vr]][&quot;vmin&quot;]^2
+            mvt = ref[:bus][bus[vt]][&quot;vmin&quot;]^2
+            p1 = mkpoly(x, Vector{Int}[[], [vr, vr], [vr+nbus, vr+nbus], [vt, vt], [vt+nbus, vt+nbus], srt, [vr, vt+nbus], [vt, vr+nbus], srt .+ nbus],
+                [branch[&quot;rate_a&quot;]^2*tm^4/mvr, -ab1, -ab1, -cd1, -cd1, -2acbd1, 2bcad1, -2bcad1, -2acbd1])
+            p2 = mkpoly(x, Vector{Int}[[], [vt, vt], [vt+nbus, vt+nbus], [vr, vr], [vr+nbus, vr+nbus], srt, [vt, vr+nbus], [vr, vt+nbus], srt .+ nbus],
+                [branch[&quot;rate_a&quot;]^2*tm^4/mvt, -ab2, -ab2, -cd2, -cd2, -2acbd2, 2bcad2, -2bcad2, -2acbd2])
+            push!(ineqs, normalize_poly(p1), normalize_poly(p2))
+        end
+    end
+
+    # Generation bounds: pmin ≤ pᵍ ≤ pmax and qmin ≤ qᵍ ≤ qmax.
+    for i in 1:ng
+        gen = ref[:gen][gens[i]]
+        p = mkpoly(x, Vector{Int}[[], [2nbus+i], [2nbus+i, 2nbus+i]],
+            [-gen[&quot;pmin&quot;]*gen[&quot;pmax&quot;], gen[&quot;pmin&quot;]+gen[&quot;pmax&quot;], -1])
+        push!(ineqs, normalize_poly(p))
+        p = mkpoly(x, Vector{Int}[[], [2nbus+ng+i], [2nbus+ng+i, 2nbus+ng+i]],
+            [-gen[&quot;qmin&quot;]*gen[&quot;qmax&quot;], gen[&quot;qmin&quot;]+gen[&quot;qmax&quot;], -1])
+        push!(ineqs, normalize_poly(p))
+    end
+
+    # Power-flow balance at each bus (Kirchhoff&#39;s laws): equality constraints.
+    for (r, i) in enumerate(bus)
+        bus_loads = [ref[:load][l] for l in ref[:bus_loads][i]]
+        bus_shunts = [ref[:shunt][s] for s in ref[:bus_shunts][i]]
+        na = 4 * length(ref[:bus_arcs][i]) + 3
+        coe1 = zeros(na); supp1 = Vector{Vector{Int}}(undef, na)
+        coe2 = zeros(na); supp2 = Vector{Vector{Int}}(undef, na)
+        supp1[1:3] = [Int[], [r, r], [r+nbus, r+nbus]]
+        supp2[1:3] = [Int[], [r, r], [r+nbus, r+nbus]]
+        coe1[1] = fl_sum(load[&quot;pd&quot;] for load in bus_loads)
+        coe2[1] = fl_sum(load[&quot;qd&quot;] for load in bus_loads)
+        sgs = fl_sum(shunt[&quot;gs&quot;] for shunt in bus_shunts)
+        sbs = fl_sum(shunt[&quot;bs&quot;] for shunt in bus_shunts)
+        coe1[2:3] = [sgs, sgs]
+        coe2[2:3] = [-sbs, -sbs]
+        j = 1
+        for flow in ref[:bus_arcs][i]
+            branch = ref[:branch][flow[1]]
+            vr = bfind(bus, branch[&quot;f_bus&quot;])
+            vt = bfind(bus, branch[&quot;t_bus&quot;])
+            srt = sort([vr, vt])
+            g, b = PowerModels.calc_branch_y(branch)
+            tr, ti = PowerModels.calc_branch_t(branch)
+            g_fr = branch[&quot;g_fr&quot;]; b_fr = branch[&quot;b_fr&quot;]
+            g_to = branch[&quot;g_to&quot;]; b_to = branch[&quot;b_to&quot;]
+            tm = branch[&quot;tap&quot;]
+            a1 = (g+g_fr)/tm^2; b1 = -(b+b_fr)/tm^2
+            c1 = (-g*tr+b*ti)/tm^2; d1 = (b*tr+g*ti)/tm^2
+            a2 = g+g_to; b2 = -(b+b_to)
+            c2 = -(g*tr+b*ti)/tm^2; d2 = -(-b*tr+g*ti)/tm^2
+            supp1[j+3:j+6] = [srt, [vt, vr+nbus], [vr, vt+nbus], srt .+ nbus]
+            supp2[j+3:j+6] = [srt, [vt, vr+nbus], [vr, vt+nbus], srt .+ nbus]
+            if vr == r
+                coe1[2:3] .+= a1; coe1[j+3:j+6] = [c1, -d1, d1, c1]
+                coe2[2:3] .+= b1; coe2[j+3:j+6] = [d1, c1, -c1, d1]
+            else
+                coe1[2:3] .+= a2; coe1[j+3:j+6] = [c2, d2, -d2, c2]
+                coe2[2:3] .+= b2; coe2[j+3:j+6] = [d2, -c2, c2, d2]
+            end
+            j += 4
+        end
+        for gen_id in ref[:bus_gens][i]
+            gen = bfind(gens, gen_id)
+            push!(supp1, [2nbus + gen]); push!(coe1, -1)
+            push!(supp2, [2nbus + ng + gen]); push!(coe2, -1)
+        end
+        push!(eqs, mkpoly(x, supp1, coe1))
+        push!(eqs, mkpoly(x, supp2, coe2))
+    end
+
+    # Reference bus: the imaginary part of the voltage is set to zero.
+    for key in keys(ref[:ref_buses])
+        i = bfind(bus, key)
+        push!(eqs, mkpoly(x, Vector{Int}[[i+nbus, i+nbus]], Float64[1]))
+    end
+    return x, f, ineqs, eqs
+end
+
+x, f, ineqs, eqs = build_opf_pop(data)
+length(x), length(ineqs), length(eqs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(38, 118, 29)</code></pre><h2 id="The-first-order-relaxation"><a class="docs-heading-anchor" href="#The-first-order-relaxation">The first-order relaxation</a><a id="The-first-order-relaxation-1"></a><a class="docs-heading-anchor-permalink" href="#The-first-order-relaxation" title="Permalink"></a></h2><p>We look for the largest <code>t</code> such that <code>f - t</code> is nonnegative over the feasible set, certified by a Putinar-type representation of degree two (the first order of the moment-SOS hierarchy, also known as Shor&#39;s relaxation for this Quadratically Constrained Quadratic Program).</p><p>TSSOS handles an equality constraint <code>h = 0</code> with a <em>free</em> polynomial multiplier. This is equivalent to enforcing <code>h ≥ 0</code> and <code>-h ≥ 0</code> with Sum-of-Squares multipliers: the difference of the two Gram matrices spans all symmetric matrices, recovering an arbitrary (sign-free) multiplier. Modeling equalities this way keeps everything in the preorder and avoids computing a Gröbner basis of the balance equations.</p><pre><code class="language-julia hljs">import Clarabel
+
+function build_domain(ineqs, eqs)
+    gs = vcat(ineqs, eqs, [-h for h in eqs])
+    return mapreduce(g -&gt; (@set g &gt;= 0), intersect, gs)
+end
+
+function relaxation(f, ineqs, eqs; sparsity = Sparsity.NoPattern())
+    model = SOSModel(Clarabel.Optimizer)
+    set_silent(model)
+    @variable(model, t)
+    @objective(model, Max, t)
+    con_ref = @constraint(
+        model, f &gt;= t,
+        domain = build_domain(ineqs, eqs), maxdegree = 2, sparsity = sparsity,
+    )
+    optimize!(model)
+    return model, con_ref
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">relaxation (generic function with 1 method)</code></pre><p>The maximal size of the semidefinite blocks is what drives the cost of the SDP, so we define a small helper to read it off the Gram matrix of the certificate.</p><pre><code class="language-julia hljs">function block_sizes(con_ref)
+    g = gram_matrix(con_ref)
+    if g isa SumOfSquares.BlockDiagonalGramMatrix
+        return sort!([length(b.basis) for b in g.blocks]; rev = true)
+    else
+        return [length(g.basis)]
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">block_sizes (generic function with 1 method)</code></pre><h3 id="Dense-relaxation"><a class="docs-heading-anchor" href="#Dense-relaxation">Dense relaxation</a><a id="Dense-relaxation-1"></a><a class="docs-heading-anchor-permalink" href="#Dense-relaxation" title="Permalink"></a></h3><p>Without exploiting sparsity, the objective&#39;s Sum-of-Squares multiplier uses a single dense block indexed by <code>1</code> and all the variables.</p><pre><code class="language-julia hljs">model, con_ref = relaxation(f, ineqs, eqs)
+dense_bound = objective_value(model)
+solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Clarabel
+├ Termination
+│ ├ termination_status : OPTIMAL
+│ ├ result_count       : 1
+│ └ raw_status         : SOLVED
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : FEASIBLE_POINT
+│ ├ objective_value      : 2.17807e+03
+│ └ dual_objective_value : 2.17807e+03
+└ Work counters
+  ├ solve_time (sec)   : 3.33748e+00
+  └ barrier_iterations : 50</code></pre><pre><code class="language-julia hljs">dense_bound</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2178.0697626194883</code></pre><p>The gap with respect to the locally optimal <code>AC</code> value is essentially zero: the first-order relaxation is already tight for this instance.</p><pre><code class="language-julia hljs">gap(opt) = 100 * (AC - opt) / AC
+gap(dense_bound)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.0004888800294059475</code></pre><p>The single dense block indexes the constant <code>1</code> together with all <code>2 nbus + 2 ng</code> variables, hence has size <code>length(x) + 1</code>:</p><pre><code class="language-julia hljs">dense_blocks = block_sizes(con_ref)
+maximum(dense_blocks)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">39</code></pre><h3 id="Correlative-sparsity"><a class="docs-heading-anchor" href="#Correlative-sparsity">Correlative sparsity</a><a id="Correlative-sparsity-1"></a><a class="docs-heading-anchor-permalink" href="#Correlative-sparsity" title="Permalink"></a></h3><p><code>Sparsity.Variable</code> is the <em>correlative</em> sparsity of <code>CS-TSSOS</code>: it splits the variables into the maximal cliques of (a chordal extension of) the correlative sparsity graph and uses one semidefinite block per clique. The bound is essentially unchanged (here within 0.03%) but the maximal block is now the size of the largest clique.</p><pre><code class="language-julia hljs">model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Variable())
+correlative_bound = objective_value(model)
+gap(correlative_bound)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.014050146325121655</code></pre><pre><code class="language-julia hljs">correlative_blocks = block_sizes(con_ref)
+correlative_blocks</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">28-element Vector{Int64}:
+ 7
+ 7
+ 7
+ 7
+ 7
+ 7
+ 6
+ 6
+ 6
+ 6
+ ⋮
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2</code></pre><h3 id="Term-sparsity"><a class="docs-heading-anchor" href="#Term-sparsity">Term sparsity</a><a id="Term-sparsity-1"></a><a class="docs-heading-anchor-permalink" href="#Term-sparsity" title="Permalink"></a></h3><p><code>Sparsity.Monomial</code> is the <em>term</em> sparsity of <code>TSSOS</code>. With a chordal extension of the term sparsity graph it also breaks the dense block into many small ones while preserving the bound.</p><pre><code class="language-julia hljs">model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Monomial(ChordalCompletion()))
+term_bound = objective_value(model)
+gap(term_bound)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.02571910748024401</code></pre><pre><code class="language-julia hljs">term_blocks = block_sizes(con_ref)
+term_blocks</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">28-element Vector{Int64}:
+ 6
+ 6
+ 6
+ 6
+ 6
+ 6
+ 5
+ 5
+ 5
+ 5
+ ⋮
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2
+ 2</code></pre><h2 id="Summary"><a class="docs-heading-anchor" href="#Summary">Summary</a><a id="Summary-1"></a><a class="docs-heading-anchor-permalink" href="#Summary" title="Permalink"></a></h2><p>All three formulations certify essentially the same bound (matching the local solution to within 0.03%), but the sparsity-adapted certificates replace the single dense semidefinite block by many small ones — exactly the reformulation exploited by <code>TSSOS</code>/<code>CS-TSSOS</code> to scale to large networks.</p><pre><code class="language-julia hljs">using Printf
+for (name, bound, blocks) in [
+    (&quot;dense&quot;, dense_bound, dense_blocks),
+    (&quot;correlative&quot;, correlative_bound, correlative_blocks),
+    (&quot;term&quot;, term_bound, term_blocks),
+]
+    @printf(
+        &quot;%-12s bound = %.2f   gap = %6.3f%%   #blocks = %3d   max block = %d\n&quot;,
+        name, bound, gap(bound), length(blocks), maximum(blocks),
+    )
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">dense        bound = 2178.07   gap =  0.000%   #blocks =   1   max block = 39
+correlative  bound = 2177.77   gap =  0.014%   #blocks =  28   max block = 7
+term         bound = 2177.52   gap =  0.026%   #blocks =  28   max block = 6</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bounds_in_probability/">« Bounds in Probability</a><a class="docs-footer-nextpage" href="../../Noncommutative and Hermitian/chsh/">CHSH »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 20 July 2026 07:58">Monday 20 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
