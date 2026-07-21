@@ -42,6 +42,7 @@ include("Mock/mock_tests.jl")
 # Tests needing a solver
 # FIXME these tests should be converted to Literate and moved to `examples` or
 # converted to be used with `MockOptimizer` and moved to `test/Tests`
+include("optimizer.jl")
 include("solvers.jl")
 include("sospoly.jl")
 include("sosquartic.jl")
