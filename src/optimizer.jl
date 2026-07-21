@@ -41,13 +41,45 @@ MOI.get(::Optimizer, ::MOI.SolverName) = "SumOfSquares"
 
 PolyJuMP.nonnegativity_cone(::Optimizer) = SOSCone()
 
-# Solutions could be recovered from the moment matrix given by the dual of
-# the SOS constraint using `MultivariateMoments.atomic_measure`
+"""
+    PolyJuMP.recover_solutions(model::Optimizer, relaxation, cref, lagrangian)
+
+Recover candidate solutions from the dual of the SOS constraint `cref` of the
+Lagrangian. This dual is a moment matrix and, if the relaxation is tight and
+the moments correspond to an atomic measure, the atoms of this measure are
+optimal solutions [HL05]. The extraction of the atoms is implemented by
+`MultivariateMoments.atomic_measure`; an empty vector of solutions is
+returned when it detects that the moment matrix is not atomic.
+
+[HL05] Henrion, Didier, and Jean-Bernard Lasserre.
+"Detecting global optimality and extracting solutions in GloptiPoly."
+Positive polynomials in control. Springer (2005): 293-310.
+"""
 function PolyJuMP.recover_solutions(
-    ::Optimizer{T},
-    ::JuMP.GenericModel{T},
-    ::JuMP.ConstraintRef,
+    model::Optimizer{T},
+    relaxation::JuMP.GenericModel{T},
+    cref::JuMP.ConstraintRef,
     lagrangian,
 ) where {T}
-    return PolyJuMP.Solution{T}[]
+    solutions = PolyJuMP.Solution{T}[]
+    if JuMP.termination_status(relaxation) != MOI.OPTIMAL
+        return solutions
+    end
+    ν = MultivariateMoments.moment_matrix(cref)
+    measure = MultivariateMoments.atomic_measure(ν, sqrt(Base.rtoldefault(T)))
+    if isnothing(measure)
+        return solutions
+    end
+    x = MP.variables(model.model)
+    for atom in measure.atoms
+        values = zeros(T, length(x))
+        for (j, var) in enumerate(measure.variables)
+            values[findfirst(isequal(var), x)] = atom.center[j]
+        end
+        push!(
+            solutions,
+            PolyJuMP.Solution(values, model.model, model.feasibility_tolerance),
+        )
+    end
+    return solutions
 end
