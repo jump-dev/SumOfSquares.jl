@@ -66,6 +66,7 @@ Reexport.@reexport using JuMP
 include("utilities.jl")
 include("constraints.jl")
 include("variables.jl")
+include("optimizer.jl")
 
 export FirstMomentRounding, GaussianRounding
 export heuristic_projection, round_solution, rounding_candidates
