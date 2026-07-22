@@ -385,10 +385,7 @@ end
 # does for the coefficients of affine and quadratic constraints. The only thing
 # we cannot leave to `model_convert` is the promotion of real coefficients to
 # complex when a Hermitian SOS cone is used, since that depends on the cone.
-function _complex_coefficients(
-    coefs::Vector{F},
-    ::Type{S},
-) where {F<:Number,S}
+function _complex_coefficients(coefs::Vector{F}, ::Type{S}) where {F<:Number,S}
     G = _bridge_coefficient_type(F, S)
     return G === F ? coefs : convert(Vector{G}, coefs)
 end
@@ -506,7 +503,9 @@ end
 # calling it. We keep the coefficients as numbers until `model_convert` so we
 # need the function type before that conversion: a vector of numbers becomes a
 # constant `VectorAffineFunction`.
-_moi_function_type(::Type{<:Vector{T}}) where {T<:Number} = MOI.VectorAffineFunction{T}
+function _moi_function_type(::Type{<:Vector{T}}) where {T<:Number}
+    return MOI.VectorAffineFunction{T}
+end
 _moi_function_type(::Type{V}) where {V} = JuMP.moi_function_type(V)
 
 struct ValueNotSupported <: Exception end

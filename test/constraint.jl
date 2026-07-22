@@ -87,6 +87,7 @@ end
     @test SumOfSquares.Bridges.Variable.KernelBridge{T} in model.bridge_types
     # The `domain` polynomials used to leak `Float64` into the multiplier bridge.
     @constraint(model, one(T) - x^2 in SOSCone(), domain = @set y >= one(T))
-    @test SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge{T} in
-          model.bridge_types
+    @test SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge{
+        T,
+    } in model.bridge_types
 end
