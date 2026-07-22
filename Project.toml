@@ -24,7 +24,7 @@ SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 [compat]
 CliqueTrees = "1"
 DataStructures = "0.19"
-JuMP = "1.10"
+JuMP = "1.31"
 LowRankOpt = "0.2"
 MathOptInterface = "1.51.1"
 MultivariateBases = "0.3.4"
