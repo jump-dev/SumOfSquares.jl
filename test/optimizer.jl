@@ -14,8 +14,7 @@ function test_optimizer_attributes()
     optimizer = SumOfSquares.Optimizer(SOLVER)
     @test optimizer isa SumOfSquares.Optimizer{Float64}
     @test MOI.get(optimizer, MOI.SolverName()) == "SumOfSquares"
-    @test MOI.get(optimizer, MOI.TerminationStatus()) ==
-          MOI.OPTIMIZE_NOT_CALLED
+    @test MOI.get(optimizer, MOI.TerminationStatus()) == MOI.OPTIMIZE_NOT_CALLED
     @test MOI.get(optimizer, MOI.ResultCount()) == 0
     list = MOI.get(optimizer, MOI.Bridges.ListOfNonstandardBridges{Float64}())
     @test PolyJuMP.Bridges.Constraint.ToPolynomialBridge{Float64} in list
