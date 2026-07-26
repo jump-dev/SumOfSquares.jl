@@ -32,13 +32,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v3
-      - name: PolyJuMP
-        shell: julia --project=@. {0}
-        run: |
-          using Pkg
-          Pkg.add([
-              PackageSpec(name="PolyJuMP", rev="master"),
-          ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
 # # See https://github.com/oxfordcontrol/Clarabel.jl/pull/230
