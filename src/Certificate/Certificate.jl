@@ -85,7 +85,15 @@ function maxdegree_gram_basis(
     )
     sub = MB.SubBasis{B}(monos)
     new_sub, new_full = SA.promote_bases(sub, full)
-    @assert new_full === full
+    if new_full !== full
+        error(
+            "the Gram basis spans variables `$(MP.variables(new_sub))` that are not " *
+            "all in the target basis `$(MP.variables(full))`. This typically means a " *
+            "generator (e.g. `1 - x_i^2`) was expressed over fewer variables than the " *
+            "certified polynomial; express generators over all variables of the " *
+            "problem (e.g. by promoting them with `StarAlgebras.promote_bases`).",
+        )
+    end
     return new_sub
 end
 
