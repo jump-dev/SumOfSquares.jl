@@ -31,7 +31,7 @@ model = Model(Ipopt.Optimizer)
 @variable(model, a >= 0)
 @variable(model, b >= 0)
 @constraint(model, a + b >= 1)
-@NLobjective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
+@objective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
 optimize!(model)
 
 # As we can see below, the termination status is `LOCALLY_SOLVED` and not of `OPTIMAL`
@@ -99,21 +99,53 @@ scs = SCS.Optimizer
 import Dualization
 dual_scs = Dualization.dual_optimizer(scs)
 
-# ...
+# The Sum-of-Squares approach can be applied to the same `model` by simply
+# changing its optimizer to `SumOfSquares.Optimizer`.
+# This optimizer computes a lower bound using the Sum-of-Squares relaxation
+# detailed in the section "How it works" below.
+# The SDP solver solving this relaxation is given as argument to its constructor:
 
-set_optimizer(model, SumOfSquare.Optimizer)
-set_attribute(model, "solver", dual_scs)
+set_optimizer(model, () -> SumOfSquares.Optimizer(dual_scs))
 optimize!(model)
 
-# ...
+# The termination status is now `OPTIMAL`: the relaxation was solved to
+# optimality so its objective value, queried with `objective_bound`, is a
+# **global** lower bound of `0` for the polynomial problem.
+# The `result_count` is however zero: no candidate solution could be recovered
+# from the relaxation (we detail why at the end of the section "How it works").
+# Combining this lower bound with the solution found by Ipopt, we know at this
+# point that the optimal value is in the interval $[0, 1/4]$.
 
 @test termination_status(model) == MOI.OPTIMAL #src
+@test objective_bound(model) ≈ 0 atol = 1e-3 #src
+@test result_count(model) == 0 #src
 solution_summary(model)
 
-# ...
+# ### SAGE approach
 
-@test value(a) ≈ 0.5 rtol=1e-5 #src
-@test value(b) ≈ 0.5 rtol=1e-5 #src
+# The Sum-of-Squares certificate is not the only nonnegativity certificate that
+# can be used in such relaxation. The SAGE certificate leads to a relative
+# entropy program, solved with `PolyJuMP.SAGE.Optimizer` as follows:
+
+set_optimizer(model, () -> PolyJuMP.SAGE.Optimizer(dual_scs))
+optimize!(model)
+
+# The SAGE relaxation also certifies (up to the tolerance of the solver) the
+# lower bound `0`. This time, a candidate solution is recovered from the dual
+# of the relaxation. It is feasible but its objective value $16/27 \approx 0.59$
+# does not close the gap with the lower bound; the interval is still $[0, 1/4]$.
+
+@test termination_status(model) == MOI.OPTIMAL #src
+@test objective_bound(model) ≈ 0 atol = 1e-2 #src
+@test result_count(model) == 1 #src
+@test primal_status(model) == MOI.FEASIBLE_POINT #src
+@test objective_value(model) ≈ 16/27 rtol = 1e-2 #src
+solution_summary(model)
+
+# The recovered candidate is the following:
+
+@test value(a) ≈ 2/3 rtol = 1e-2 #src
+@test value(b) ≈ 2/3 rtol = 1e-2 #src
 value(a), value(b)
 
 # ### How it works
