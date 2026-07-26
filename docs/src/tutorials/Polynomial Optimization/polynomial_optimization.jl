@@ -68,11 +68,11 @@ function ∇²f(H, a, b)
 end
 using Ipopt
 gmodel = Model(Ipopt.Optimizer)
-@variable(gmodel, a >= 0)
-@variable(gmodel, b >= 0)
-@constraint(gmodel, a + b >= 1)
+@variable(gmodel, α >= 0)
+@variable(gmodel, β >= 0)
+@constraint(gmodel, α + β >= 1)
 register(gmodel, :f, 2, f, ∇f, ∇²f)
-@NLobjective(gmodel, Min, f(a, b))
+@NLobjective(gmodel, Min, f(α, β))
 optimize!(gmodel)
 
 # Even if we have the algebraic expressions of gradient and hessian,
@@ -85,9 +85,9 @@ solution_summary(gmodel)
 
 # and the same solution is found:
 
-@test value(a) ≈ 0.5 rtol=1e-5 #src
-@test value(b) ≈ 0.5 rtol=1e-5 #src
-value(a), value(b)
+@test value(α) ≈ 0.5 rtol=1e-5 #src
+@test value(β) ≈ 0.5 rtol=1e-5 #src
+value(α), value(β)
 
 # ## Sum-of-Squares approach
 
@@ -99,6 +99,24 @@ scs = SCS.Optimizer
 import Dualization
 dual_scs = Dualization.dual_optimizer(scs)
 
+# ...
+
+set_optimizer(model, SumOfSquare.Optimizer)
+set_attribute(model, "solver", dual_scs)
+optimize!(model)
+
+# ...
+
+@test termination_status(model) == MOI.OPTIMAL #src
+solution_summary(model)
+
+# ...
+
+@test value(a) ≈ 0.5 rtol=1e-5 #src
+@test value(b) ≈ 0.5 rtol=1e-5 #src
+value(a), value(b)
+
+# ### How it works
 
 # A Sum-of-Squares certificate that $p \ge \alpha$ over the domain `S`, ensures that $\alpha$ is a lower bound to the polynomial optimization problem.
 # The following program searches for the largest lower bound and finds zero.
