@@ -3,6 +3,11 @@ using Test, JuMP
 import StarAlgebras as SA
 using SumOfSquares
 
+function _optimize!(model, config)
+    JuMP.optimize!(model)
+    return inner_variable_value(model, config.atol + config.rtol)
+end
+
 function _model(optimizer::MOI.AbstractOptimizer)
     MOI.empty!(optimizer)
     return direct_model(optimizer)
