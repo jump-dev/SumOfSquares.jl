@@ -1,15 +1,29 @@
 """
-    struct ScaledDiagonallyDominantBridge{T} <: MOI.Bridges.Variable.AbstractBridge
-        side_dimension::Int
-        variables::Vector{Vector{MOI.VariableIndex}}
-        constraints::Vector{MOI.ConstraintIndex{
-            MOI.VectorOfVariables, SOS.PositiveSemidefinite2x2ConeTriangle}}
-    end
+    ScaledDiagonallyDominantBridge{T} <: Bridges.Variable.AbstractBridge
 
-A matrix is SDD iff it is the sum of psd matrices Mij that are zero except
-for entries ii, ij and jj [Ahmadi2017; Lemma 9](@cite). This bridge substitute the
-constrained variables in [`SOS.ScaledDiagonallyDominantConeTriangle`](@ref)
-into a sum of constrained variables in [`SOS.PositiveSemidefinite2x2ConeTriangle`](@ref).
+`ScaledDiagonallyDominantBridge` implements a reformulation from
+[`SumOfSquares.ScaledDiagonallyDominantConeTriangle`](@ref) into a sum of
+``2 \\times 2`` PSD blocks.
+
+A matrix is scaled diagonally dominant iff it is the sum of PSD matrices
+``M^{(i,j)}`` that are zero except on entries ``(i, i)``, ``(i, j)`` and
+``(j, j)`` [Ahmadi2017; Lemma 9](@cite). Each such block ``M^{(i,j)}`` is
+encoded by adding constrained variables in
+[`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref).
+
+## Source node
+
+`ScaledDiagonallyDominantBridge` supports:
+
+  * [`SumOfSquares.ScaledDiagonallyDominantConeTriangle`](@ref)
+
+## Target nodes
+
+`ScaledDiagonallyDominantBridge` creates:
+
+  * `MOI.VectorOfVariables` in
+    [`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref), one per
+    strictly upper-triangular position ``(i, j)``
 """
 struct ScaledDiagonallyDominantBridge{T} <: MOI.Bridges.Variable.AbstractBridge
     side_dimension::Int

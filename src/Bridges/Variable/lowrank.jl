@@ -1,3 +1,42 @@
+"""
+    LowRankBridge{T,M} <: Bridges.Variable.AbstractBridge
+
+`LowRankBridge` implements a reformulation from
+[`SumOfSquares.WeightedSOSCone`](@ref) with a Lagrange basis into
+`LowRankOpt.SetDotProducts` over a PSD-style cone.
+
+When the gram basis is sampled at a fixed set of points (a Lagrange basis),
+the polynomial-coefficient ⇄ gram-matrix linear map factorises through a
+list of rank-1 outer products, one per Lagrange node. This bridge exposes
+that structure by adding constrained variables in
+`LowRankOpt.SetDotProducts{WITHOUT_SET}` over
+`SOS.matrix_cone(M, length(b_i))`, with the `LowRankOpt.Factorization` of
+each node carrying the basis-transformation row and the weight value.
+Solvers that understand `LowRankOpt.SetDotProducts` (e.g.
+[Loraine.jl](https://github.com/kocvara/Loraine.jl) and
+[BurerMonteiro](https://github.com/blegat/LowRankOpt.jl) backends of
+`LowRankOpt`) can then exploit the rank-1 structure directly; otherwise,
+the [`LowRankOpt` bridges](https://github.com/blegat/LowRankOpt.jl) unfold
+the cone into a plain PSD constraint.
+
+For non-Lagrange bases, the structure is no longer rank-1 and the bridge
+falls back to [`SumOfSquares.Bridges.Variable.KernelBridge`](@ref).
+
+## Source node
+
+`LowRankBridge` supports:
+
+  * [`SumOfSquares.WeightedSOSCone{M,B}`](@ref) when
+    `B <: MB.LagrangeBasis`
+
+## Target nodes
+
+`LowRankBridge` creates:
+
+  * `MOI.VectorOfVariables` in
+    `LowRankOpt.SetDotProducts{WITHOUT_SET, S, LowRankOpt.TriangleVectorization{T,LowRankOpt.Factorization{T,Vector{T},Array{T,0}}}}`
+    wrapping `SOS.matrix_cone(M, length(b_i))` for each gram basis ``b_i``
+"""
 struct LowRankBridge{T,M} <: MOI.Bridges.Variable.AbstractBridge
     affine::Vector{MOI.ScalarAffineFunction{T}}
     variables::Vector{Vector{MOI.VariableIndex}}

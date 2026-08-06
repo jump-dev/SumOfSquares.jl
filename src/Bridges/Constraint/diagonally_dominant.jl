@@ -1,3 +1,31 @@
+"""
+    DiagonallyDominantBridge{T,F,G} <: Bridges.Constraint.AbstractBridge
+
+`DiagonallyDominantBridge` implements a reformulation from
+[`SumOfSquares.DiagonallyDominantConeTriangle`](@ref) into a set of linear
+constraints.
+
+A diagonally dominant matrix ``Q`` satisfies ``Q_{jj} \\ge \\sum_{i \\ne j} |Q_{ij}|``
+for every row ``j``. The bridge introduces auxiliary variables ``t_{ij}``
+for each off-diagonal entry with the constraints ``t_{ij} \\ge +Q_{ij}`` and
+``t_{ij} \\ge -Q_{ij}`` (so that ``t_{ij} \\ge |Q_{ij}|``), and then the row
+dominance inequality ``Q_{jj} - \\sum_{i \\ne j} t_{ij} \\ge 0``.
+
+## Source node
+
+`DiagonallyDominantBridge` supports:
+
+  * `G` in [`SumOfSquares.DiagonallyDominantConeTriangle`](@ref)
+
+## Target nodes
+
+`DiagonallyDominantBridge` creates:
+
+  * `F` in `MOI.GreaterThan{T}` (the row dominance inequalities)
+  * `MOI.ScalarAffineFunction{T}` in `MOI.GreaterThan{T}` (the
+    ``t_{ij} \\ge \\pm Q_{ij}`` inequalities), when `F` is not already
+    `MOI.ScalarAffineFunction{T}`
+"""
 struct DiagonallyDominantBridge{T,F,G} <: MOI.Bridges.Constraint.AbstractBridge
     # |Qij| variables
     abs_vars::Vector{MOI.VariableIndex}

@@ -1,3 +1,25 @@
+"""
+    PositiveSemidefinite2x2Bridge{T} <: Bridges.Variable.AbstractBridge
+
+`PositiveSemidefinite2x2Bridge` is the variable counterpart of
+[`SumOfSquares.Bridges.Constraint.PositiveSemidefinite2x2Bridge`](@ref): it
+reformulates constrained variables in
+[`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref) into
+constrained variables in `MOI.RotatedSecondOrderCone(3)`, using
+``Q_{11} Q_{22} \\ge Q_{12}^2 \\Leftrightarrow 2 Q_{11} Q_{22} \\ge (\\sqrt 2 Q_{12})^2``.
+
+## Source node
+
+`PositiveSemidefinite2x2Bridge` supports:
+
+  * [`SumOfSquares.PositiveSemidefinite2x2ConeTriangle`](@ref)
+
+## Target nodes
+
+`PositiveSemidefinite2x2Bridge` creates:
+
+  * `MOI.VectorOfVariables` in `MOI.RotatedSecondOrderCone` (of dimension 3)
+"""
 struct PositiveSemidefinite2x2Bridge{T} <: MOI.Bridges.Variable.AbstractBridge
     variables::Vector{MOI.VariableIndex}
     rsoc::MOI.ConstraintIndex{MOI.VectorOfVariables,MOI.RotatedSecondOrderCone}

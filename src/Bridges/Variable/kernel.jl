@@ -1,3 +1,42 @@
+"""
+    KernelBridge{T,M} <: Bridges.Variable.AbstractBridge
+
+`KernelBridge` implements a reformulation from
+[`SumOfSquares.WeightedSOSCone`](@ref) into one PSD-style constrained
+variable per gram basis.
+
+For each gram basis ``b_i`` and weight ``w_i`` of the source cone,
+`KernelBridge` adds the corresponding gram matrix ``Q_i`` as constrained
+variables in `matrix_cone(M, length(b_i))` (which downstream bridges may
+unfold further, e.g. into `MOI.PositiveSemidefiniteConeTriangle`). It then
+sets the bridged polynomial-coefficient functions to the affine combination
+``\\sum_i w_i \\cdot b_i^\\top Q_i b_i`` expressed in the source basis.
+
+This is one of the two main back-ends for `WeightedSOSCone`. The other is
+[`SumOfSquares.Bridges.Constraint.ImageBridge`](@ref). `KernelBridge` is
+preferred for solvers that natively support PSD as constrained variables
+(e.g. Mosek's `barvar` matrix variables), while `ImageBridge` is preferred
+for solvers that only support PSD as a constraint (e.g. Clarabel). The
+choice is driven by `MOI.Bridges.bridging_cost`.
+
+`KernelBridge` does not handle `MultivariateBases.LagrangeBasis` —
+those bases dispatch to [`SumOfSquares.Bridges.Variable.LowRankBridge`](@ref)
+instead.
+
+## Source node
+
+`KernelBridge` supports:
+
+  * [`SumOfSquares.WeightedSOSCone{M,B}`](@ref) when
+    `!(B <: MB.LagrangeBasis)`
+
+## Target nodes
+
+`KernelBridge` creates:
+
+  * `MOI.VectorOfVariables` in `SOS.matrix_cone(M, length(b_i))` for each
+    gram basis ``b_i`` of the cone
+"""
 struct KernelBridge{T,M} <: MOI.Bridges.Variable.AbstractBridge
     affine::Vector{MOI.ScalarAffineFunction{T}}
     variables::Vector{Vector{MOI.VariableIndex}}

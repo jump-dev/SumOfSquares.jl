@@ -4,8 +4,26 @@ using Test
 import Clarabel
 using DynamicPolynomials
 import Dualization
+using JuMP
 import MultivariateBases as MB
+import MultivariatePolynomials as MP
 using SumOfSquares
+
+# Build a `Putinar(Newton, Newton, maxdegree)` certificate, matching what
+# `@constraint(model, ... in SOSCone(), domain = K, maxdegree = d)` produces
+# under the hood.
+function _newton_putinar(vars, maxdegree)
+    full_basis = MB.FullBasis{MB.Monomial}(vars)
+    newton = SumOfSquares.Certificate.Newton(
+        SOSCone(),
+        full_basis,
+        full_basis,
+        SumOfSquares.Certificate.NewtonFilter(
+            SumOfSquares.Certificate.NewtonDegreeBounds(tuple()),
+        ),
+    )
+    return SumOfSquares.Certificate.Putinar(newton, newton, maxdegree)
+end
 
 function runtests()
     for name in names(@__MODULE__; all = true)
@@ -67,11 +85,9 @@ end
 # Wrapping `Clarabel.Optimizer` in `Dualization.dual_optimizer` flips
 # Clarabel's `VAF`-in-`PositiveSemidefiniteConeTriangle` support into
 # `PositiveSemidefiniteConeTriangle` supported as constrained variables on
-# the outer bridge graph. `Constraint.ImageBridge` would still win on cost
-# (the cost bump in `image.jl` only switches when the *immediate*
-# `PositiveSemidefiniteConeTriangle` is variable-side, which the dualization
-# wrapper hides one level deeper), so we explicitly remove it to expose the
-# variable-side route: `VectorSlackBridge` lifts the `VAF`-in-`WeightedSOSCone`
+# the outer bridge graph. The cost graph propagates the inner solver's
+# support through the dualization layer, so the variable-side route wins
+# naturally: `VectorSlackBridge` lifts the `VAF`-in-`WeightedSOSCone`
 # constraint into constrained variables in `WeightedSOSCone`, which
 # `Variable.KernelBridge` then breaks into PSD blocks.
 function test_dual_clarabel_uses_kernel_bridge()
@@ -83,10 +99,6 @@ function test_dual_clarabel_uses_kernel_bridge()
         with_bridge_type = T,
     )
     SumOfSquares.Bridges.add_all_bridges(optimizer, T)
-    MOI.Bridges.remove_bridge(
-        optimizer,
-        SumOfSquares.Bridges.Constraint.ImageBridge{T},
-    )
     set = SumOfSquares.WeightedSOSCone{MOI.PositiveSemidefiniteConeTriangle}(
         MB.SubBasis{MB.Monomial}([y^4, x * y^3, x^2 * y^2, x^3 * y, x^4]),
         [MB.SubBasis{MB.Monomial}([y^2, x * y, x^2])],
@@ -100,6 +112,133 @@ function test_dual_clarabel_uses_kernel_bridge()
     outer = MOI.Bridges.bridge(optimizer, ci)
     @test outer isa MOI.Bridges.Constraint.VectorSlackBridge
     inner = MOI.Bridges.bridge(optimizer, outer.slack_in_set)
+    @test inner isa SumOfSquares.Bridges.Variable.KernelBridge
+    return
+end
+
+# With a `domain` keyword, the constraint enters the bridge graph as
+# `SOSPolynomialSet{<:BasicSemialgebraicSet}`, which
+# `SOSPolynomialInSemialgebraicSetBridge` reformulates into a single
+# `WeightedSOSCone`. From there, Clarabel — which natively supports
+# `MOI.PositiveSemidefiniteConeTriangle` as a constraint — routes through
+# `Constraint.ImageBridge`, mirroring `test_clarabel_uses_image_bridge`.
+function test_clarabel_with_domain_uses_image_bridge()
+    T = Float64
+    @polyvar x
+    optimizer = MOI.instantiate(
+        Clarabel.Optimizer;
+        with_cache_type = T,
+        with_bridge_type = T,
+    )
+    SumOfSquares.Bridges.add_all_bridges(optimizer, T)
+    basis = MB.SubBasis{MB.Monomial}([x, x^2])
+    domain = (@set x >= 0)
+    cert = _newton_putinar([x], 2)
+    set = SumOfSquares.SOSPolynomialSet(domain, basis, cert)
+    F = MOI.VectorAffineFunction{T}
+    S = typeof(set)
+    # `SOSPolynomialInSemialgebraicSetBridge` (cost 1) + `ImageBridge` path
+    # (cost 6 for Clarabel; same as `test_clarabel_uses_image_bridge`).
+    @test MOI.Bridges.bridging_cost(optimizer, F, S) == 7.0
+    func = MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[1, 1])
+    ci = MOI.add_constraint(optimizer, func, set)
+    outer = MOI.Bridges.bridge(optimizer, ci)
+    @test outer isa
+          SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge
+    inner = MOI.Bridges.bridge(optimizer, outer.constraint)
+    @test inner isa SumOfSquares.Bridges.Constraint.ImageBridge
+    return
+end
+
+# Wrapping `Clarabel.Optimizer` in `Dualization.dual_optimizer` flips
+# Clarabel's `VAF`-in-`PositiveSemidefiniteConeTriangle` support into
+# `PositiveSemidefiniteConeTriangle` supported as constrained variables on
+# the outer bridge graph. As in `test_dual_clarabel_uses_kernel_bridge`,
+# the cost graph propagates this through the layers and the variable-side
+# route wins naturally: `SOSPolynomialInSemialgebraicSetBridge` →
+# `VectorSlackBridge` → `Variable.KernelBridge`.
+function test_dual_clarabel_with_domain_uses_kernel_bridge()
+    T = Float64
+    @polyvar x
+    optimizer = MOI.instantiate(
+        Dualization.dual_optimizer(Clarabel.Optimizer);
+        with_cache_type = T,
+        with_bridge_type = T,
+    )
+    SumOfSquares.Bridges.add_all_bridges(optimizer, T)
+    basis = MB.SubBasis{MB.Monomial}([x, x^2])
+    domain = (@set x >= 0)
+    cert = _newton_putinar([x], 2)
+    set = SumOfSquares.SOSPolynomialSet(domain, basis, cert)
+    func = MOI.VectorAffineFunction{T}(MOI.VectorAffineTerm{T}[], T[1, 1])
+    ci = MOI.add_constraint(optimizer, func, set)
+    outer = MOI.Bridges.bridge(optimizer, ci)
+    @test outer isa
+          SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge
+    slack = MOI.Bridges.bridge(optimizer, outer.constraint)
+    @test slack isa MOI.Bridges.Constraint.VectorSlackBridge
+    inner = MOI.Bridges.bridge(optimizer, slack.slack_in_set)
+    @test inner isa SumOfSquares.Bridges.Variable.KernelBridge
+    return
+end
+
+# Walk the bridge chain on a JuMP model directly (no `MOI.instantiate`,
+# no explicit `add_all_bridges` call). `PolyJuMP.bridges` is responsible
+# for transitively registering every bridge the chain might use; if any
+# is missing, the lazy cost graph picks the wrong path. The JuMP-side
+# chain should match `test_clarabel_with_domain_uses_image_bridge`.
+function test_clarabel_with_domain_uses_image_bridge_jump()
+    @polyvar x
+    model = Model(Clarabel.Optimizer)
+    set_silent(model)
+    @variable(model, α)
+    @objective(model, Max, α)
+    S = @set x >= 0
+    @constraint(model, α - x^2 in SOSCone(), domain = S, maxdegree = 2)
+    optimize!(model)
+    lbo = JuMP.backend(model).optimizer
+    cis = MOI.ConstraintIndex[]
+    for (F, S) in MOI.get(lbo, MOI.ListOfConstraintTypesPresent())
+        if S <: SumOfSquares.SOSPolynomialSet
+            append!(cis, MOI.get(lbo, MOI.ListOfConstraintIndices{F,S}()))
+        end
+    end
+    @test length(cis) == 1
+    outer = MOI.Bridges.bridge(lbo, only(cis))
+    @test outer isa
+          SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge
+    inner = MOI.Bridges.bridge(lbo, outer.constraint)
+    @test inner isa SumOfSquares.Bridges.Constraint.ImageBridge
+    return
+end
+
+# JuMP counterpart of `test_dual_clarabel_with_domain_uses_kernel_bridge`:
+# wrap Clarabel in `Dualization.dual_optimizer` and verify the chain is
+# `SOSPolynomialInSemialgebraicSetBridge` → `VectorSlackBridge` →
+# `Variable.KernelBridge` without any explicit bridge removal.
+function test_dual_clarabel_with_domain_uses_kernel_bridge_jump()
+    @polyvar x
+    model = Model(Dualization.dual_optimizer(Clarabel.Optimizer))
+    set_silent(model)
+    @variable(model, α)
+    @objective(model, Max, α)
+    S = @set x >= 0
+    @constraint(model, α - x^2 in SOSCone(), domain = S, maxdegree = 2)
+    optimize!(model)
+    lbo = JuMP.backend(model).optimizer
+    cis = MOI.ConstraintIndex[]
+    for (F, S) in MOI.get(lbo, MOI.ListOfConstraintTypesPresent())
+        if S <: SumOfSquares.SOSPolynomialSet
+            append!(cis, MOI.get(lbo, MOI.ListOfConstraintIndices{F,S}()))
+        end
+    end
+    @test length(cis) == 1
+    outer = MOI.Bridges.bridge(lbo, only(cis))
+    @test outer isa
+          SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge
+    slack = MOI.Bridges.bridge(lbo, outer.constraint)
+    @test slack isa MOI.Bridges.Constraint.VectorSlackBridge
+    inner = MOI.Bridges.bridge(lbo, slack.slack_in_set)
     @test inner isa SumOfSquares.Bridges.Variable.KernelBridge
     return
 end

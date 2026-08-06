@@ -1,3 +1,29 @@
+"""
+    SOSPolynomialBridge{T,F,DT,M,BT,B,G,CT,W} <: Bridges.Constraint.SetMapBridge
+
+`SOSPolynomialBridge` implements a reformulation from
+[`SumOfSquares.SOSPolynomialSet{<:AbstractAlgebraicSet}`](@ref) into
+[`SumOfSquares.WeightedSOSCone`](@ref).
+
+The polynomial coefficients are first reduced modulo the algebraic ideal
+``\\mathcal{V}`` of the source domain, and the gram basis is computed by
+the inner ideal `certificate`. The resulting decomposition
+``p = b^\\top Q b`` is encoded as a `WeightedSOSCone` with a single gram
+basis and unit weight (one for each sparsity block when the certificate
+exploits sparsity, after `_flatten`).
+
+## Source node
+
+`SOSPolynomialBridge` supports:
+
+  * `F` in [`SumOfSquares.SOSPolynomialSet{<:SemialgebraicSets.AbstractAlgebraicSet}`](@ref)
+
+## Target nodes
+
+`SOSPolynomialBridge` creates:
+
+  * `F` in [`SumOfSquares.WeightedSOSCone`](@ref)
+"""
 struct SOSPolynomialBridge{
     T,
     F<:MOI.AbstractVectorFunction,
