@@ -137,8 +137,15 @@ function test_dummymosek_uses_kernel_bridge()
         [MB.algebra_element(one(T) * x^0 * y^0)],
     )
     S = typeof(set)
+    # Both routes convert a `VectorOfVariables`-in-`Nonnegatives` into
+    # `VectorAffineFunction`, whose cost changed from 1.0 to 0.5 in MOI v1.54 with
+    # https://github.com/jump-dev/MathOptInterface.jl/pull/3063
+    conv = MOI.Bridges.Constraint.conversion_cost(
+        MOI.VectorAffineFunction{T},
+        MOI.VectorOfVariables,
+    )
     # With every bridge enabled, `KernelBridge` (variable side) wins.
-    @test MOI.Bridges.bridging_cost(optimizer, S) == 6.0
+    @test MOI.Bridges.bridging_cost(optimizer, S) == 5.0 + conv
     @test MOI.Bridges.is_variable_bridged(optimizer, S)
     # Removing `KernelBridge` exposes the `ImageBridge` constraint-side
     # fallback, which goes through a free variable + `ImageBridge` chain.
@@ -146,7 +153,7 @@ function test_dummymosek_uses_kernel_bridge()
         optimizer,
         SumOfSquares.Bridges.Variable.KernelBridge{T},
     )
-    @test MOI.Bridges.bridging_cost(optimizer, S) == 7.0
+    @test MOI.Bridges.bridging_cost(optimizer, S) == 6.0 + conv
     @test !MOI.Bridges.is_variable_bridged(optimizer, S)
     return
 end
