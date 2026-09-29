@@ -20,7 +20,7 @@ p(x=>1, y=>0), p(x=>1//2, y=>1//2), p(x=>0, y=>1)
 
 # ## Local search
 
-# A local solver only uses the **local** information given by the the value, gradient and hessian
+# A local solver only uses the **local** information given by the the value, gradient and Hessian
 # of the objective function and constraints at a given solution. When it converges, it therefore only
 # guarantees that the found solution is a **local** minimum.
 # In this example, the optimal solutions are $(x, y) = (1, 0)$ and $(x, y) = (0, 1)$ with objective value $0$ but
@@ -48,7 +48,7 @@ solution_summary(model)
 value(a), value(b)
 
 # Note that the problem can be written equivalently as follows using [registered functions](https://jump.dev/JuMP.jl/stable/manual/nlp/#Register-a-function).
-# The difference is that the gradient and hessian will be computed via the *Symbolic Differentiation* provided
+# The difference is that the gradient and Hessian will be computed via the *Symbolic Differentiation* provided
 # by MultivariatePolynomials instead of JuMP's *Automatic Differentiation*:
 
 f(a, b) = p(x => a, y => b)
@@ -75,7 +75,7 @@ register(gmodel, :f, 2, f, ∇f, ∇²f)
 @NLobjective(gmodel, Min, f(a, b))
 optimize!(gmodel)
 
-# Even if we have the algebraic expressions of gradient and hessian,
+# Even if we have the algebraic expressions of gradient and Hessian,
 # Ipopt is not using these symbolic expressions but only local information
 # hence it can still only provide local guarantees:
 
@@ -92,7 +92,7 @@ value(a), value(b)
 # ## Sum-of-Squares approach
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import SCS
 scs = SCS.Optimizer
@@ -111,7 +111,7 @@ optimize!(model)
 
 # This time, the termination status is `OPTIMAL` but this does not necessarily mean that we found
 # the optimal solution to the polynomial optimization problem.
-# This only means that CSDP founds an optimal solution to the Sum-of-Squares relaxation.
+# This only means that SCS found an optimal solution to the Sum-of-Squares relaxation.
 
 @test termination_status(model) == MOI.OPTIMAL #src
 @test objective_value(model) ≈ 0.0 atol=1e-3 #src
