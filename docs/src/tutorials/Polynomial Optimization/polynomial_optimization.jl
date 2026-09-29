@@ -188,10 +188,14 @@ dual_ν4 = moment_matrix(dual_model4[:c])
 using LinearAlgebra
 svdvals(Matrix(dual_ν4.Q))
 
-# The solution we extract is `(0.5, 0.5)` which is the solution found by Ipopt:
+# The atoms we extract lie on the line `x + y = 1` but they are not the global minimizers.
+# Which atoms we get depends on the solver: with SCS v2.6, it is `(0.5, 0.5)`,
+# the solution found by Ipopt.
 
 dual_atoms4 = atomic_measure(dual_ν4, FixedRank(4)) #src
-@test dual_atoms4.atoms[1].center ≈ [0.5, 0.5] rtol=1e-1 #src
+for atom in dual_atoms4.atoms #src
+    @test sum(atom.center) ≈ 1 rtol=1e-2 #src
+end #src
 atomic_measure(dual_ν4, FixedRank(4))
 
 # This process is quite sensitive numerically so let's try to solve it without dualization as well:
