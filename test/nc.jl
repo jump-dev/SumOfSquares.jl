@@ -4,14 +4,14 @@ using Test
 using SumOfSquares
 using DynamicPolynomials
 using JuMP
-import Clarabel
+import Hypatia
 import StarAlgebras as SA
 import MultivariateBases as MB
 import MultivariatePolynomials as MP
 using MultivariateMoments: SymMatrix
 
 const nc_optimizer =
-    optimizer_with_attributes(Clarabel.Optimizer, "verbose" => false)
+    optimizer_with_attributes(Hypatia.Optimizer, MOI.Silent() => false)
 
 function test_GramMatrix_with_NC_variables()
     @ncpolyvar x y
