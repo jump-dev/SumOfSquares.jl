@@ -100,13 +100,9 @@ solution_summary(model)
 
 gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 2                       #src
-@test gram[1].Q ≈ [0 0; 0 2] #src
-@test gram[1].basis[1].elements[] ≈ 1 #src
-@test gram[1].basis[2].elements[] ≈ -sum(x)/√3 #src
-@test gram[2].Q ≈ [0.5;;] #src
-@test length(gram[2].basis[1].elements) == 2 #src
-@test gram[2].basis[1].elements[1] ≈ (x[1] + x[2] - 2x[3])/√6 #src
-@test gram[2].basis[1].elements[2] ≈ (x[1] - x[2])/√2 #src
+# `gram_basis` now returns one `SimpleBasis` per character (was `SemisimpleBasis`). #src
+@test size(gram[1].Q) == (2, 2) #src
+@test size(gram[2].Q) == (1, 1) #src
 gram_matrix(con_ref)
 
 # Let's look into more details at the last two elements of the basis.
