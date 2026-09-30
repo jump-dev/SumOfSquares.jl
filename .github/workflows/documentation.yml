@@ -17,6 +17,13 @@ jobs:
         with:
           # Build documentation on the latest Julia 1.x
           version: '1'
+      - name: PolyJuMP
+        shell: julia --project=docs/ {0}
+        run: |
+          using Pkg
+          Pkg.add([
+              PackageSpec(name="PolyJuMP", rev="master"),
+          ])
       - name: Install dependencies
         shell: julia --project=docs/ {0}
         run: |
