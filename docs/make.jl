@@ -67,6 +67,7 @@ makedocs(
             "reference/standard_form.md",
             "reference/constraints.md",
             "reference/certificate.md",
+            "reference/optimizers.md",
             "reference/internal.md",
         ],
         "Tutorials" => tutorials,
