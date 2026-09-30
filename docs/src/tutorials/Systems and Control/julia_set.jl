@@ -106,7 +106,7 @@ function julia_plot(poly, c, n=200, m=1000; tol=1e-6, res = 1000)
     return p
 end
 
-# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import Clarabel
 solver = optimizer_with_attributes(Clarabel.Optimizer, MOI.Silent() => true)

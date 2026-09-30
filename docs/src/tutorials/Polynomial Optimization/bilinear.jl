@@ -29,7 +29,7 @@ K = @set 0.0025 * (x[4] + x[6]) <= 1 &&
     10 <= x[8] && x[8] <= 1000
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import Clarabel
 solver = Clarabel.Optimizer
