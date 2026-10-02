@@ -55,7 +55,8 @@ optimize!(model)
 
 solution_summary(model)
 
-set_optimizer(model, () -> PolyJuMP.SAGE.Optimizer(dual_scs))
+import Clarabel
+set_optimizer(model, () -> PolyJuMP.SAGE.Optimizer(Clarabel.Optimizer))
 optimize!(model)
 
 solution_summary(model)

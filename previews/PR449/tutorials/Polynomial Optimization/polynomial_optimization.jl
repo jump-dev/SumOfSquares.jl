@@ -125,27 +125,32 @@ solution_summary(model)
 
 # The Sum-of-Squares certificate is not the only nonnegativity certificate that
 # can be used in such relaxation. The SAGE certificate leads to a relative
-# entropy program, solved with `PolyJuMP.SAGE.Optimizer` as follows:
+# entropy program, solved with `PolyJuMP.SAGE.Optimizer` as follows.
+# The candidate solution is recovered from the dual of the relaxation, which
+# is not unique, so it depends on the solver used. We use the interior-point
+# solver Clarabel that converges to the center of the optimal face which gives
+# a reproducible candidate.
 
-set_optimizer(model, () -> PolyJuMP.SAGE.Optimizer(dual_scs))
+import Clarabel
+set_optimizer(model, () -> PolyJuMP.SAGE.Optimizer(Clarabel.Optimizer))
 optimize!(model)
 
 # The SAGE relaxation also certifies (up to the tolerance of the solver) the
 # lower bound `0`. This time, a candidate solution is recovered from the dual
-# of the relaxation. It is feasible but its objective value $16/27 \approx 0.59$
+# of the relaxation. It is feasible but its objective value $27/32 \approx 0.84$
 # does not close the gap with the lower bound; the interval is still $[0, 1/4]$.
 
 @test termination_status(model) == MOI.OPTIMAL #src
-@test objective_bound(model) ≈ 0 atol = 1e-2 #src
+@test objective_bound(model) ≈ 0 atol = 1e-3 #src
 @test result_count(model) == 1 #src
 @test primal_status(model) == MOI.FEASIBLE_POINT #src
-@test objective_value(model) ≈ 16/27 rtol = 1e-2 #src
+@test objective_value(model) ≈ 27/32 rtol = 1e-3 #src
 solution_summary(model)
 
 # The recovered candidate is the following:
 
-@test value(a) ≈ 2/3 rtol = 1e-2 #src
-@test value(b) ≈ 2/3 rtol = 1e-2 #src
+@test value(a) ≈ 3/4 rtol = 1e-3 #src
+@test value(b) ≈ 3/4 rtol = 1e-3 #src
 value(a), value(b)
 
 # ### How it works
