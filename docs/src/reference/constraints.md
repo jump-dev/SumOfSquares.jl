@@ -28,3 +28,16 @@ SAGE decomposition attribute:
 SumOfSquares.PolyJuMP.SAGE.Decomposition
 SumOfSquares.PolyJuMP.SAGE.DecompositionAttribute
 ```
+
+## Rounding
+
+Heuristics to find a feasible solution from the moments computed by the
+Sum-of-Squares program:
+```@docs
+round_solution
+SumOfSquares.AbstractRounding
+FirstMomentRounding
+GaussianRounding
+rounding_candidates
+heuristic_projection
+```

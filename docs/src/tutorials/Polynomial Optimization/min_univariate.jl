@@ -15,7 +15,7 @@
 
 using Test #src
 using DynamicPolynomials
-DynamicPolynomials.@polyvar x[1:2]
+@polyvar x[1:2]
 p = -sum(x)
 using SumOfSquares
 f1 = 2x[1]^4 - 8x[1]^3 + 8x[1]^2 + 2
@@ -31,81 +31,6 @@ using Plots
 plot(xs, f1.(xs), label = "f1")
 plot!(xs, f2.(xs), label = "f2")
 plot!(xs, 4 * ones(length(xs)), label = nothing)
-
-import MultivariatePolynomials as MP
-
-function nonlinear_vars!(vars, p)
-    for mono in MP.monomials(p)
-        if MP.degree(mono) > 1
-            for var in MP.effective_variables(mono)
-                push!(vars, var)
-            end
-        end
-    end
-end
-
-function nonlinear_vars(K::BasicSemialgebraicSet{T,P}) where {T,P}
-    vars = Set{MP.variable_union_type(P)}()
-    for p in inequalities(K)
-        nonlinear_vars!(vars, p)
-    end
-    for p in equalities(K)
-        nonlinear_vars!(vars, p)
-    end
-    return sort(collect(vars), rev=true)
-end
-
-function polyhedral_proj!(vars, v, K)
-    nl_vars = nonlinear_vars(K)
-    lin_vars = setdiff(vars, nl_vars)
-end
-
-function proj!(v)
-    v[1] = min(max(v[1], 0), 3)
-    v[2] = min(v[2], f1(v[1]))
-    v[2] = min(v[2], f2(v[1]))
-    v[2] = min(max(v[2], 0), 4)
-    return v
-end
-
-proj!([3, 4])
-
-function laurent(ν)
-    μ = measure(ν)
-    v = [moment_value(μ, var) for var in x]
-    @show v
-    proj!(v)
-    return v, p(x => v)
-end
-
-import MultivariatePolynomials as MP
-function gaussian(ν, leading::Bool = true)
-    monos = MP.monomials(MP.variables(ν.basis.monomials), 0:1)
-    I = [MultivariateMoments._index(ν.basis, mono) for mono in monos]
-    Q = ν.Q[I, I]
-    F = eigen(Q)
-    display(F)
-    best_v = nothing
-    best_obj = Inf
-    J = leading ? size(F.vectors, 2) : axes(F.vectors, 2)
-    for i in J
-        v = F.vectors[:, i]
-        @show v
-        v /= v[1]
-        v = v[2:end]
-        @show v
-        proj!(v)
-        @show v
-        obj = p(x => v)
-        @show obj
-        if obj < best_obj
-            best_v = v
-            best_obj = obj
-        end
-    end
-    return best_v, best_obj
-end
->>>>>>> ba36ab4b (Projection in minimizer extraction tuto):docs/src/tutorials/Polynomial Optimization/extracting_minimizers.jl
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
 # We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
@@ -132,23 +57,36 @@ model4 = solve(4)
 nothing # hide
 @test objective_value(model4) ≈ -7 rtol=1e-4 #src
 @test termination_status(model4) == MOI.OPTIMAL #src
-ν4 = moment_matrix(model4[:c])
-laurent(ν4)
 
-import MultivariateMoments as MM
-function _vec(Q)
-    n = size(Q, 2)
-    return [Q[i, j] for j in 1:n for i in 1:j]
-end
-function truncate(ν, d)
-    vars = MP.variables(ν.basis)
-    monos = MP.monomials(vars, 0:d)
-    I = [MM._index(ν.basis, mono) for mono in monos]
-    return MM.MomentMatrix(
-        MM.SymMatrix(_vec(ν.Q[I, I]), length(I)),
-        MonomialBasis(monos),
-    )
-end
+# The moment matrix is not flat so we cannot extract a minimizer with
+# `atomic_measure`. We can still look for a feasible solution close to the
+# vector of first-order moments ``(\mathbb{E}[x_1], \mathbb{E}[x_2])``,
+# as suggested in [Laurent2008](@cite).
+# This vector is not necessarily feasible so [`round_solution`](@ref)
+# projects it onto `K` with [`heuristic_projection`](@ref).
+# The constraints `0 ≤ x[1] ≤ 3` only depend on `x[1]` so `x[1]` is first
+# projected onto `[0, 3]`. Once `x[1]` is fixed, the remaining constraints only
+# depend on `x[2]` so `x[2]` is then projected onto `[0, min(4, f1(x[1]), f2(x[1]))]`.
+
+ν4 = moment_matrix(model4[:c])
+x4 = round_solution(ν4, K, p)
+@test x4 ≈ [3, 0] atol=1e-6 #src
+
+# The objective value at this feasible point is an upper bound to the optimal
+# objective value so we now know that it is between `-7` and `-3`.
+
+p(x4)
+
+# Instead of only considering the first-order moments, we can sample
+# from the Gaussian distribution with the same moments of order up to 2,
+# project the samples and keep the best feasible point found.
+# This generalizes the random hyperplane rounding of [Goemans1995](@cite),
+# see also [Barak2016](@cite). We fix the seed of the random number generator
+# so that the results are reproducible.
+
+import Random
+gaussian = GaussianRounding(rng = Random.MersenneTwister(0))
+p(round_solution(ν4, K, p, rounding = gaussian))
 
 # The second level improves the lower bound
 
@@ -156,8 +94,19 @@ model5 = solve(5)
 nothing # hide
 @test objective_value(model5) ≈ -20/3 rtol=1e-4 #src
 @test termination_status(model5) == MOI.OPTIMAL #src
+
+# The upper bound obtained from the first-order moments is improved as well:
+
 ν5 = moment_matrix(model5[:c])
-laurent(ν5)
+x5 = round_solution(ν5, K, p)
+@test p(x5) ≈ -3.9012 rtol=1e-3 #src
+p(x5)
+
+# With the Gaussian rounding, we obtain a better upper bound:
+
+x5_gaussian = round_solution(ν5, K, p, rounding = gaussian)
+@test objective_value(model5) <= p(x5_gaussian) <= p(x5) #src
+p(x5_gaussian)
 
 # The third level finds the optimal objective value as lower bound...
 
@@ -169,45 +118,22 @@ nothing # hide
 # ...and proves it by exhibiting the minimizer.
 
 ν7 = moment_matrix(model7[:c])
-laurent(ν7)
 η = atomic_measure(ν7, 1e-3)
 @test length(η.atoms) == 1 #src
 @test η.atoms[1].center ≈ [2.3295, 3.1785] rtol=1e-4 #src
 
+# The first-order moments now coincide with the minimizer so
+# [`round_solution`](@ref) finds it too:
+
+@test round_solution(ν7, K, p) ≈ [2.3295, 3.1785] rtol=1e-4 #src
+round_solution(ν7, K, p)
+
 # We can indeed verify that the objective value at `x_opt` is equal to the lower bound.
 
-opt = [2.3295, 3.1785]
 x_opt = η.atoms[1].center
 @test x_opt ≈ [2.3295, 3.1785] rtol=1e-4 #src
 p(x_opt)
-<<<<<<< HEAD:docs/src/tutorials/Polynomial Optimization/min_univariate.jl
 
 # We can see visualize the solution as follows:
 
 scatter!([x_opt[1]], [x_opt[2]], markershape = :star, label = nothing)
-=======
-#x_opt = 
-
-#atomic_measure(ν4, UserRank())
-
-compute_support!(ν5, FixedRank(1))
-ν5.support
-
-ν5_2 = truncate(ν5, 1)
-compute_support!(ν5_2, FixedRank(2))
-ν5_2.support
-
-[p(x => x_opt) for p in ν5.support.I.p]
-[p(x => [2.6666, 1.23456]) for p in ν5.support.I.p]
-compute_support!(ν5, FixedRank(2))
-ν5.support
-pp = -6.945530612461534 - 2.2636172932906113*x[2] + x[2]^2
-
-lag, system = PolyJuMP.lagrangian_kkt(MOI.MIN_SENSE, 1.0 * p, K)
-
-using Macaulay
-νmax3 = moment_matrix(system.I.p, Clarabel.Optimizer, 3)
-laurent(νmax3)
-νmax4 = moment_matrix(system.I.p, Clarabel.Optimizer, 4)
-laurent(νmax4)
->>>>>>> ba36ab4b (Projection in minimizer extraction tuto):docs/src/tutorials/Polynomial Optimization/extracting_minimizers.jl
