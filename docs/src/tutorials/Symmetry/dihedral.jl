@@ -148,15 +148,19 @@ function solve(G)
 
     g = gram_matrix(con_ref).blocks #src
     @test length(g) == 4            #src
-    @test length(g[4].basis[1].elements) == 2 #src
-    @test g[4].basis[1].elements[1] ≈ y^3 #src
-    @test g[4].basis[2].elements[1] ≈ x^2*y #src
-    @test g[4].basis[3].elements[1] ≈ y #src
-    @test g[4].basis[1].elements[2] ≈ -x^3 #src
-    @test g[4].basis[2].elements[2] ≈ -x*y^2 #src
-    @test g[4].basis[3].elements[2] ≈ -x #src
-    I = 3:-1:1                      #src
-    Q = g[4].Q[I, I]                #src
+    b4 = g[4].basis                 #src
+    @test length(b4) == 3           #src
+    @test all(b -> length(b.elements) == 2, b4) #src
+    # The order and signs of the basis depend on the Julia version #src
+    m1 = [y, x^2*y, y^3]            #src
+    m2 = [x, x*y^2, x^3]            #src
+    I = [findfirst(b -> b.elements[1] ≈ m || b.elements[1] ≈ -m, b4) for m in m1] #src
+    s = [b4[i].elements[1] ≈ m ? 1 : -1 for (i, m) in zip(I, m1)] #src
+    t = b4[I[1]].elements[2] ≈ s[1] * m2[1] ? 1 : -1 #src
+    for k in 1:3                    #src
+        @test b4[I[k]].elements[2] ≈ t * s[k] * m2[k] #src
+    end                             #src
+    Q = s .* g[4].Q[I, I] .* s'     #src
     @test size(Q) == (3, 3)         #src
     @test Q[2, 2] ≈  1    rtol=1e-2 #src
     @test Q[1, 2] ≈  5/8  rtol=1e-2 #src
