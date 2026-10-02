@@ -32,6 +32,7 @@ include("gram_matrix.jl")
 
 include("nc.jl")
 include("sets.jl")
+include("rounding.jl")
 
 include("variable.jl")
 include("constraint.jl")
