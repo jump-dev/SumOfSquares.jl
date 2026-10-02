@@ -65,6 +65,7 @@ Reexport.@reexport using JuMP
 include("utilities.jl")
 include("constraints.jl")
 include("variables.jl")
+include("optimizer.jl")
 
 function setdefaults!(data::PolyJuMP.Data)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPoly, SOSCone)
