@@ -28,14 +28,32 @@ end
 model4 = solve(4)
 nothing # hide
 
+ν4 = moment_matrix(model4[:c])
+x4 = round_solution(ν4, K, p)
+
+p(x4)
+
+import Random
+gaussian = GaussianRounding(rng = Random.MersenneTwister(0))
+p(round_solution(ν4, K, p, rounding = gaussian))
+
 model5 = solve(5)
 nothing # hide
+
+ν5 = moment_matrix(model5[:c])
+x5 = round_solution(ν5, K, p)
+p(x5)
+
+x5_gaussian = round_solution(ν5, K, p, rounding = gaussian)
+p(x5_gaussian)
 
 model7 = solve(7)
 nothing # hide
 
 ν7 = moment_matrix(model7[:c])
-η = atomic_measure(ν7, 1e-3) # Returns nothing as the dual is not atomic
+η = atomic_measure(ν7, 1e-3)
+
+round_solution(ν7, K, p)
 
 x_opt = η.atoms[1].center
 p(x_opt)

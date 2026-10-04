@@ -58,12 +58,55 @@ nothing # hide
 @test objective_value(model4) ≈ -7 rtol=1e-4 #src
 @test termination_status(model4) == MOI.OPTIMAL #src
 
+# The moment matrix is not flat so we cannot extract a minimizer with
+# `atomic_measure`. We can still look for a feasible solution close to the
+# vector of first-order moments ``(\mathbb{E}[x_1], \mathbb{E}[x_2])``,
+# as suggested in [Laurent2008](@cite).
+# This vector is not necessarily feasible so [`round_solution`](@ref)
+# projects it onto `K` with [`heuristic_projection`](@ref).
+# The constraints `0 ≤ x[1] ≤ 3` only depend on `x[1]` so `x[1]` is first
+# projected onto `[0, 3]`. Once `x[1]` is fixed, the remaining constraints only
+# depend on `x[2]` so `x[2]` is then projected onto `[0, min(4, f1(x[1]), f2(x[1]))]`.
+
+ν4 = moment_matrix(model4[:c])
+x4 = round_solution(ν4, K, p)
+@test x4 ≈ [3, 0] atol=1e-6 #src
+
+# The objective value at this feasible point is an upper bound to the optimal
+# objective value so we now know that it is between `-7` and `-3`.
+
+p(x4)
+
+# Instead of only considering the first-order moments, we can sample
+# from the Gaussian distribution with the same moments of order up to 2,
+# project the samples and keep the best feasible point found.
+# This generalizes the random hyperplane rounding of [Goemans1995](@cite),
+# see also [Barak2016](@cite). We fix the seed of the random number generator
+# so that the results are reproducible.
+
+import Random
+gaussian = GaussianRounding(rng = Random.MersenneTwister(0))
+p(round_solution(ν4, K, p, rounding = gaussian))
+
 # The second level improves the lower bound
 
 model5 = solve(5)
 nothing # hide
 @test objective_value(model5) ≈ -20/3 rtol=1e-4 #src
 @test termination_status(model5) == MOI.OPTIMAL #src
+
+# The upper bound obtained from the first-order moments is improved as well:
+
+ν5 = moment_matrix(model5[:c])
+x5 = round_solution(ν5, K, p)
+@test p(x5) ≈ -3.9012 rtol=1e-3 #src
+p(x5)
+
+# With the Gaussian rounding, we obtain a better upper bound:
+
+x5_gaussian = round_solution(ν5, K, p, rounding = gaussian)
+@test objective_value(model5) <= p(x5_gaussian) <= p(x5) #src
+p(x5_gaussian)
 
 # The third level finds the optimal objective value as lower bound...
 
@@ -75,9 +118,15 @@ nothing # hide
 # ...and proves it by exhibiting the minimizer.
 
 ν7 = moment_matrix(model7[:c])
-η = atomic_measure(ν7, 1e-3) # Returns nothing as the dual is not atomic
+η = atomic_measure(ν7, 1e-3)
 @test length(η.atoms) == 1 #src
 @test η.atoms[1].center ≈ [2.3295, 3.1785] rtol=1e-4 #src
+
+# The first-order moments now coincide with the minimizer so
+# [`round_solution`](@ref) finds it too:
+
+@test round_solution(ν7, K, p) ≈ [2.3295, 3.1785] rtol=1e-4 #src
+round_solution(ν7, K, p)
 
 # We can indeed verify that the objective value at `x_opt` is equal to the lower bound.
 
