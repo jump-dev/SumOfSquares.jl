@@ -112,11 +112,11 @@ SemialgebraicSets.compute_gröbner_basis!(ideal(ν4.support))
 collect(ν4.support)
 
 using HomotopyContinuation
-algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false)
+algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false, seed = UInt32(1))
 atomic_measure(ν4, FixedRank(3), Echelon(), algebraic_solver)
 
 F = HomotopyContinuation.System(ν4.support)
-res = HomotopyContinuation.solve(F, algebraic_solver.options...)
+res = HomotopyContinuation.solve(F; algebraic_solver.options...)
 path_results(res)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl

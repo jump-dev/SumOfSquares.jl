@@ -287,9 +287,11 @@ collect(ν4.support)
 # using floating point coefficients, homotopy continuation is recommended as it is
 # more numerically robust than Gröbner basis computation.
 # The following uses homotopy continuation to solve the system of equations.
+# Note that we fix the seed to be reproducible, it's not needed if reproducibility
+# is not a concern.
 
 using HomotopyContinuation
-algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false)
+algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false, seed = UInt32(1))
 atoms4 = atomic_measure(ν4, FixedRank(3), Echelon(), algebraic_solver) #src
 @test length(atoms4.atoms) == 2 #src
 @test atoms4.atoms[1].weight + atoms4.atoms[2].weight ≈ 1.0 rtol=1e-1 #src
@@ -306,10 +308,12 @@ atomic_measure(ν4, FixedRank(3), Echelon(), algebraic_solver)
 # by comparing the infinity norm of the residuals of the equations at the solution with `excess_residual_tol`.
 # It also filters out solution for which the absolute value of the imaginary part of one of the entry
 # is larger than `real_tol` and strips out the imaginary part.
+# We also fix the `seed` of the random start system used by HomotopyContinuation
+# so that the result is reproducible.
 # The raw solutions obtained by HomotopyContinuation can be obtained as follows:
 
 F = HomotopyContinuation.System(ν4.support)
-res = HomotopyContinuation.solve(F, algebraic_solver.options...)
+res = HomotopyContinuation.solve(F; algebraic_solver.options...)
 r = path_results(res) #src
 @test length(r) == 4 #src
 @test all(HomotopyContinuation.is_excess_solution, r) #src
