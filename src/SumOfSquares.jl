@@ -1,6 +1,7 @@
 module SumOfSquares
 
 using LinearAlgebra
+import Random
 
 import Reexport
 
@@ -65,6 +66,10 @@ Reexport.@reexport using JuMP
 include("utilities.jl")
 include("constraints.jl")
 include("variables.jl")
+
+export FirstMomentRounding, GaussianRounding
+export heuristic_projection, round_solution, rounding_candidates
+include("rounding.jl")
 
 function setdefaults!(data::PolyJuMP.Data)
     PolyJuMP.setdefault!(data, PolyJuMP.NonNegPoly, SOSCone)
