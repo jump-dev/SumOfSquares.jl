@@ -148,14 +148,31 @@ function solve(G)
 
     g = gram_matrix(con_ref).blocks #src
     @test length(g) == 4            #src
-    # `gram_basis` returns one `SimpleBasis` per irreducible character now #src
-    # (was a `SemisimpleBasis` with `d` inner bases). Q sizes are unchanged. #src
-    @test size(g[4].Q) == (3, 3)    #src
-    @test size(g[1].Q) == (2, 2)    #src
-    @test size(g[2].Q) == (1, 1)    #src
-    @test size(g[3].Q) == (1, 1)    #src
-    @test g[2].Q[1, 1] ≈ 0   atol=1e-2 #src
-    @test g[3].Q[1, 1] ≈ 0   atol=1e-2 #src
+    # `gram_basis` now returns one `SimpleBasis` per character χ (was a #src
+    # `SemisimpleBasis` with `degree(χ)` inner bases). Access polynomials #src
+    # directly via `basis[k]` instead of `basis[k].elements[]`. #src
+    @test g[4].basis[1] ≈ -(√2/2)*(x + y)             #src
+    @test g[4].basis[2] ≈ -(√2/2)*(x^3 + y^3)         #src
+    @test g[4].basis[3] ≈ -(√2/2)*(x^2*y + x*y^2)     #src
+    @test size(g[4].Q) == (3, 3)                       #src
+    @test g[4].Q[1, 1] ≈ 25/64 rtol=1e-2               #src
+    @test g[4].Q[1, 2] ≈ -5/8  rtol=1e-2               #src
+    @test g[4].Q[1, 3] ≈  5/8  rtol=1e-2               #src
+    @test g[4].Q[2, 2] ≈  1    rtol=1e-2               #src
+    @test g[4].Q[2, 3] ≈ -1    rtol=1e-2               #src
+    @test g[4].Q[3, 3] ≈  1    rtol=1e-2               #src
+    @test g[1].basis[1] ≈ 1.0                          #src
+    @test g[1].basis[2] ≈ -(√2/2)*x^2 - (√2/2)*y^2     #src
+    @test size(g[1].Q) == (2, 2)                       #src
+    @test g[1].Q[1, 1] ≈ 7921/4096 rtol=1e-2           #src
+    @test g[1].Q[1, 2] ≈ 0.983 rtol=1e-2               #src
+    @test g[1].Q[2, 2] ≈ 1/2 rtol=1e-2                 #src
+    @test g[2].basis[1] ≈ x * y                        #src
+    @test size(g[2].Q) == (1, 1)                       #src
+    @test g[2].Q[1, 1] ≈ 0   atol=1e-2                 #src
+    @test g[3].basis[1] ≈ -(√2/2)*y^2 + (√2/2)*x^2     #src
+    @test size(g[3].Q) == (1, 1)                       #src
+    @test g[3].Q[1, 1] ≈ 0   atol=1e-2                 #src
     gram_matrix(con_ref)
 end
 solve(G)

@@ -46,4 +46,8 @@ value(t)
 
 @test length(gram_matrix(con_ref).blocks) == 2 #src
 # `gram_basis` now returns one `SimpleBasis` per character (was `SemisimpleBasis`). #src
+# Access polynomials via `basis[k]` (not `basis[k].elements[]`). #src
+@test gram_matrix(con_ref).blocks[1].basis[1] ≈ 1 #src
+@test gram_matrix(con_ref).blocks[1].basis[2] ≈ x^2 #src
+@test gram_matrix(con_ref).blocks[2].basis[1] ≈ x #src
 gram_matrix(con_ref)
