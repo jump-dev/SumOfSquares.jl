@@ -48,8 +48,23 @@ value(t)
 gram = gram_matrix(con_ref).blocks    #src
 @test length(gram) == 3                          #src
 # `gram_basis` now returns one `SimpleBasis` per character (was `SemisimpleBasis`). #src
-# Q sizes still match the multiplicity of each irreducible character. #src
-@test size(gram[1].Q) == (2, 2)                  #src
-@test size(gram[2].Q) == (1, 1)                  #src
-@test size(gram[3].Q) == (1, 1)                  #src
+# Access polynomials directly via `basis[k]` (not `basis[k].elements[]`).      #src
+@test gram[1].basis[1] ≈ 1                            #src
+@test gram[1].basis[2] ≈ -0.5 * sum(x)                #src
+@test size(gram[1].Q) == (2, 2)                       #src
+@test gram[1].Q[1, 1] ≈ 1.0 atol=1e-6                 #src
+@test gram[1].Q[1, 2] ≈ -1.0 atol=1e-6                #src
+@test gram[1].Q[2, 2] ≈ 1.0 atol=1e-6                 #src
+# For the deg-2 (complex-conjugate-pair) character C₄ has multiplicity 1, so #src
+# the symbolic minimal-projection rank stays at 2 and the simple block has #src
+# 2 basis polynomials (the two real components of the complex pair).        #src
+@test gram[2].basis[1] ≈ (x[2] - x[4]) / √2           #src
+@test gram[2].basis[2] ≈ (x[1] - x[3]) / √2           #src
+@test size(gram[2].Q) == (2, 2)                       #src
+@test gram[2].Q[1, 1] ≈ 0.5 atol=1e-6                 #src
+@test gram[2].Q[2, 2] ≈ 0.5 atol=1e-6                 #src
+@test gram[2].Q[1, 2] ≈ 0   atol=1e-6                 #src
+@test gram[3].basis[1] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
+@test size(gram[3].Q) == (1, 1)                       #src
+@test gram[3].Q[1, 1] ≈ 1.0 atol=1e-6                 #src
 gram_matrix(con_ref)
