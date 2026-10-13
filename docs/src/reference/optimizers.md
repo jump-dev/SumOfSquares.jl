@@ -15,6 +15,11 @@ PolyJuMP.recover_solutions
 PolyJuMP.MultiplierMaxdegree
 ```
 
+SumOfSquares/Lasserre relaxation:
+```@docs
+SumOfSquares.Optimizer
+```
+
 SAGE relaxation:
 ```@docs
 PolyJuMP.SAGE.Optimizer
