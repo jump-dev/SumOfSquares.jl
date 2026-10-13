@@ -101,8 +101,15 @@ solution_summary(model)
 gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 2                       #src
 # `gram_basis` now returns one `SimpleBasis` per character (was `SemisimpleBasis`). #src
-@test size(gram[1].Q) == (2, 2) #src
-@test size(gram[2].Q) == (1, 1) #src
+# Access polynomials via `basis[k]` (not `basis[k].elements[]`). For the #src
+# complex-conjugate-pair character C₃ has multiplicity 1, so the simple #src
+# block has 2 basis polynomials (the two real components of the pair). #src
+@test gram[1].Q ≈ [0 0; 0 2] #src
+@test gram[1].basis[1] ≈ 1 #src
+@test gram[1].basis[2] ≈ -sum(x)/√3 #src
+@test size(gram[2].Q) == (2, 2) #src
+@test gram[2].basis[1] ≈ (x[1] + x[2] - 2x[3])/√6 #src
+@test gram[2].basis[2] ≈ (x[1] - x[2])/√2 #src
 gram_matrix(con_ref)
 
 # Let's look into more details at the last two elements of the basis.
