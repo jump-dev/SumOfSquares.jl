@@ -1,3 +1,5 @@
+using Test, SumOfSquares, DynamicPolynomials
+import MultivariateBases as MB
 import PolyJuMP
 
 @testset "Creating polynomial with empty MonomialVector" begin
@@ -14,6 +16,12 @@ end
     @variable model β
     @polyvar x y
     q = GramMatrix([α β; β α], [x, y])
+    p = polynomial(q)
+    for op in (+, -, *)
+        @test op(q, β) == op(p, β)
+        @test op(β, q) == op(β, p)
+    end
+    @test (@expression(model, q + β)) == p + β
     JuMP.fix(α, 2)
     JuMP.fix(β, 3)
     @test_broken JuMP.value(q) == 2x^2 + 2y^2 + 6x * y
