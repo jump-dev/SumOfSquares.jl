@@ -76,7 +76,7 @@ end
 function maxdegree_gram_basis(
     full::MB.FullBasis{B},
     bounds::DegreeBounds,
-) where {B<:MB.AbstractMonomial}
+) where {B<:MB.AbstractMonomialBasis}
     variables = MP.variables(bounds.variablewise_maxdegree)
     monos = MP.monomials(
         variables,

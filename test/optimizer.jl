@@ -5,10 +5,42 @@ using Test
 import MathOptInterface as MOI
 using JuMP
 using SumOfSquares
+using DynamicPolynomials
+import MultivariateBases as MB
 
 import Clarabel
 const SOLVER =
     optimizer_with_attributes(Clarabel.Optimizer, MOI.Silent() => true)
+
+function test_polynomial_bases()
+    @polyvar x
+    for B in (MB.Monomial, MB.ScaledMonomial, MB.Chebyshev)
+        p = MB.convert_basis(MB.FullBasis{B}(x), polynomial(1 + x^2))
+        model = SOSModel(SOLVER)
+        @variable(model, t)
+        cref = @constraint(model, p - t in SOSCone())
+        @objective(model, Max, t)
+        optimize!(model)
+        @test termination_status(model) == MOI.OPTIMAL
+        @test value(t) ≈ 1 atol = 1e-6
+        @test polynomial(gram_matrix(cref)) ≈ p - value(t) atol = 1e-6
+        @test polynomial(sos_decomposition(cref)) ≈ p - value(t) atol = 1e-6
+    end
+    return
+end
+
+function test_noncommutative_polynomial()
+    @ncpolyvar x y
+    q = x * y + x^2
+    p = q' * q
+    model = SOSModel(SOLVER)
+    cref = @constraint(model, p in SOSCone())
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test polynomial(gram_matrix(cref)) ≈ p atol = 1e-6
+    @test polynomial(sos_decomposition(cref)) ≈ p atol = 1e-6
+    return
+end
 
 function test_optimizer_attributes()
     optimizer = SumOfSquares.Optimizer(SOLVER)
