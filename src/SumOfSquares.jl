@@ -8,6 +8,7 @@ import Reexport
 import MutableArithmetics as MA
 import StarAlgebras as SA
 import LowRankOpt as LRO
+import JuMP
 
 # MultivariatePolynomials extension
 

@@ -1,7 +1,10 @@
 using Test
 import Combinatorics
 using SumOfSquares
+using DynamicPolynomials
 import MultivariateBases as MB
+import MultivariatePolynomials as MP
+import StarAlgebras as SA
 
 function _algebra_element(monos)
     basis = MB.FullBasis{MB.Monomial}(MP.variables(monos))
@@ -324,10 +327,10 @@ function l09()
         )
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         newt = Certificate.NewtonDegreeBounds(tuple())
-        @test SOS.Certificate.monomials_half_newton_polytope(
+        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             monomials(f),
             newt,
-        ) == [
+        ) == monomial_vector([
             x[1]^2 * x[2],
             x[1] * x[2]^2,
             x[1]^2,
@@ -336,11 +339,11 @@ function l09()
             x[1],
             x[2],
             1,
-        ]
-        @test SOS.Certificate.monomials_half_newton_polytope(
+        ])
+        @test SumOfSquares.Certificate.monomials_half_newton_polytope(
             monomials(f),
             Certificate.NewtonFilter(newt),
-        ) == [x[1]^2 * x[2], x[1] * x[2]^2, 1]
+        ) == monomial_vector([x[1]^2 * x[2], x[1] * x[2]^2, 1])
         expected = Set(
             monomial_vector.([
                 [x[1]^2 * x[2]],

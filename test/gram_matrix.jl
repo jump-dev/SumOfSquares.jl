@@ -1,4 +1,9 @@
 using LinearAlgebra, Test, SumOfSquares
+using DynamicPolynomials
+import MathOptInterface as MOI
+import MultivariateBases as MB
+import MultivariatePolynomials as MP
+import StarAlgebras as SA
 
 _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
 
@@ -80,15 +85,16 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
             p = GramMatrix([2 3; 3 2], [x, y])
             q = GramMatrix(5 * ones(1, 1), [x])
             r = @inferred gram_operate(/, q, 5)
+            @test polynomial(r) == q / 5
             @test r.Q == ones(1, 1)
             @test MB.keys_as_monomials(r.basis) == [x]
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [2 3; 3 7]
-            @test MB.keys_as_monomials(r.basis) == [x, y]
+            @test MB.keys_as_monomials(r.basis) == [y, x]
             q = GramMatrix(5 * ones(1, 1), [y])
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [7 3; 3 2]
-            @test MB.keys_as_monomials(r.basis) == [x, y]
+            @test MB.keys_as_monomials(r.basis) == [y, x]
             q = GramMatrix([5.0 7; 7 9], [x * y, 1])
             r = @inferred gram_operate(+, p, q)
             @test r.Q == [
@@ -104,7 +110,7 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
             g = GramMatrix(SymMatrix([a, a, a], 2), [x, y])
             U = MOI.ScalarAffineFunction{Float64}
             @test coefficient_type(g) == U
-            @test g isa AbstractPolynomialLike{U}
+            @test g isa SumOfSquares.AbstractDecomposition{U}
             @test polynomial_type(g) <: AbstractPolynomial{U}
             @test polynomial_type(typeof(g)) <: AbstractPolynomial{U}
             @test polynomial(g) isa AbstractPolynomial{U}
@@ -133,8 +139,7 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
         #       @test isapprox(GramMatrix(SOSDecomposition(P)), P)
         P = GramMatrix{Int}((i, j) -> i + j, [x^2, x * y, y^2])
         @test polynomial_type(SOSDecomposition(P)) <: AbstractPolynomialLike
-        @test sprint(show, _sos_dec([x + y, x - y])) ==
-              "(1·y + 1·x)^2 + (-1·y + 1·x)^2"
+        @test sprint(show, _sos_dec([x + y, x - y])) == "(y + x)^2 + (-y + x)^2"
         @test polynomial(_sos_dec([x + y, x - y])) == (x + y)^2 + (x - y)^2
         @test polynomial(_sos_dec([x + y, x - y]), Float64) ==
               (x + y)^2 + (x - y)^2
@@ -151,12 +156,12 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
         end
         @testset "With VariableIndex" begin
             a = MOI.VariableIndex(1)
-            p = polynomial([a], [x])
-            q = polynomial([a], [y])
+            p = polynomial(term(a, x))
+            q = polynomial(term(a, y))
             s = _sos_dec([p, q])
             U = MOI.ScalarQuadraticFunction{Float64}
             @test coefficient_type(s) == U
-            @test s isa AbstractPolynomialLike{U}
+            @test s isa SumOfSquares.AbstractDecomposition{U}
             @test polynomial_type(s) <: AbstractPolynomial{U}
             @test polynomial_type(typeof(s)) <: AbstractPolynomial{U}
         end
@@ -172,7 +177,7 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
         V = typeof(SA.coeffs(first(ps.ps)))
         @test [ps, ps1] isa Vector{SOSDecomposition{Int,A,V,Int}}
         @test sprint(show, SOSDecompositionWithDomain(ps, [ps1, ps2], K)) ==
-              "(1·y + 1·x)^2 + (-1·y + 1·x)^2 + (1·x)^2 * (1 - x^2) + (1·y)^2 * (1 - y^2)"
+              "(y + x)^2 + (-y + x)^2 + (x)^2 * (1 - x^2) + (y)^2 * (1 - y^2)"
 
         @testset "SOSDecompositionWithDomain equality" begin
             @polyvar x y

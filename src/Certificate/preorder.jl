@@ -52,24 +52,13 @@ struct WithFixedBases{S,B}
     bases::Vector{B}
 end
 
-# TODO temporary workaround because SS doesn't support AlgebraElement yet
-function with_variables(p::SA.AlgebraElement, ::FullSpace)
-    return WithVariables(p, MP.variables(p))
-end
-
-function with_variables(p::SA.AlgebraElement, domain)
-    _, q = SumOfSquares._promote_bases(domain, p)
-    return WithVariables(q, MP.variables(q))
-end
-
-# TODO not needed
 function with_variables(p::MP.AbstractPolynomialLike, ::FullSpace)
     return WithVariables(p, MP.variables(p))
 end
 
 function with_variables(p::MP.AbstractPolynomialLike, domain)
-    inner, outer = SumOfSquares._promote_bases(p, domain)
-    return WithVariables(inner, MP.variables(outer))
+    _, q = SumOfSquares._promote_bases(domain, p)
+    return WithVariables(q, MP.variables(q))
 end
 
 function with_variables(domain, p::WithVariables)
