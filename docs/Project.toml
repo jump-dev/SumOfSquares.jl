@@ -42,3 +42,14 @@ DynamicPolynomials = "0.6"
 KnuthBendix = "0.5"
 PolyJuMP = "0.8"
 SymbolicWedderburn = "0.5"
+
+[sources]
+DynamicPolynomials = {url = "https://github.com/JuliaAlgebra/DynamicPolynomials.jl", rev = "bl/sa_term"}
+MultivariateBases = {url = "https://github.com/JuliaAlgebra/MultivariateBases.jl", rev = "bl/simple"}
+MultivariateMoments = {url = "https://github.com/JuliaAlgebra/MultivariateMoments.jl", rev = "bl/sa_refactor"}
+MultivariatePolynomials = {url = "https://github.com/JuliaAlgebra/MultivariatePolynomials.jl", rev = "bl/sa_poly"}
+MutableArithmetics = {url = "https://github.com/jump-dev/MutableArithmetics.jl", rev = "main"}
+PolyJuMP = {url = "https://github.com/jump-dev/PolyJuMP.jl", rev = "bl/sa_refactor"}
+StarAlgebras = {url = "https://github.com/JuliaAlgebra/StarAlgebras.jl", rev = "bl/term"}
+SumOfSquares = {path = ".."}
+TypedPolynomials = {url = "https://github.com/JuliaAlgebra/TypedPolynomials.jl", rev = "bl/sa_poly"}
