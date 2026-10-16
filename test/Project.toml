@@ -23,7 +23,16 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TypedPolynomials = "afbbf031-7a57-5f58-a1b9-b774a0fad08d"
 
 [sources]
+DynamicPolynomials = {url = "https://github.com/JuliaAlgebra/DynamicPolynomials.jl", rev = "bl/sa_term"}
+MultivariateBases = {url = "https://github.com/JuliaAlgebra/MultivariateBases.jl", rev = "bl/simple"}
+MultivariateMoments = {url = "https://github.com/JuliaAlgebra/MultivariateMoments.jl", rev = "bl/sa_refactor"}
+MultivariatePolynomials = {url = "https://github.com/JuliaAlgebra/MultivariatePolynomials.jl", rev = "bl/sa_poly"}
+MutableArithmetics = {url = "https://github.com/jump-dev/MutableArithmetics.jl", rev = "main"}
+PolyJuMP = {url = "https://github.com/jump-dev/PolyJuMP.jl", rev = "bl/sa_refactor"}
+SemialgebraicSets = {url = "https://github.com/JuliaAlgebra/SemialgebraicSets.jl", rev = "bl/sa_refactor"}
+StarAlgebras = {url = "https://github.com/JuliaAlgebra/StarAlgebras.jl", rev = "bl/term"}
 SumOfSquares = {path = ".."}
+TypedPolynomials = {url = "https://github.com/JuliaAlgebra/TypedPolynomials.jl", rev = "bl/sa_poly"}
 
 [compat]
 DynamicPolynomials = "0.6"
