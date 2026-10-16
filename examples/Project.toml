@@ -18,9 +18,11 @@ RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 SumOfSquares = "4b9e565b-77fc-50a5-a571-1244f986bda1"
 SymbolicWedderburn = "858aa9a9-4c7c-4c62-b466-2421203962a2"
 
+[compat]
+MutableArithmetics = "1.9"
+
 [sources]
 DynamicPolynomials = {url = "https://github.com/JuliaAlgebra/DynamicPolynomials.jl", rev = "bl/sa_term"}
 MultivariateBases = {url = "https://github.com/JuliaAlgebra/MultivariateBases.jl", rev = "bl/simple"}
 MultivariatePolynomials = {url = "https://github.com/JuliaAlgebra/MultivariatePolynomials.jl", rev = "bl/sa_poly"}
-MutableArithmetics = {url = "https://github.com/jump-dev/MutableArithmetics.jl", rev = "main"}
 SumOfSquares = {path = ".."}
