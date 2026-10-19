@@ -25,14 +25,16 @@ Base.:^(el::CyclicElem, k::Integer) = CyclicElem(el.n, (el.id * k) % el.n)
 Base.conj(a::CyclicElem, b::CyclicElem) = inv(b) * a * b
 Base.:^(a::CyclicElem, b::CyclicElem) = conj(a, b)
 
-function PermutationGroups.order(el::CyclicElem)
-    return div(el.n, gcd(el.n, el.id))
+function PermutationGroups.order(::Type{T}, el::CyclicElem) where {T}
+    return convert(T, div(el.n, gcd(el.n, el.id)))
 end
 
 struct CyclicGroup <: Group
     n::Int
 end
+Base.parent(el::CyclicElem) = CyclicGroup(el.n)
 Base.eltype(::CyclicGroup) = CyclicElem
+Base.isfinite(::CyclicGroup) = true
 Base.one(c::Union{CyclicGroup, CyclicElem}) = CyclicElem(c.n, 0)
 PermutationGroups.gens(c::CyclicGroup) = [CyclicElem(c.n, 1)]
 PermutationGroups.order(::Type{T}, c::CyclicGroup) where {T} = convert(T, c.n)
@@ -149,12 +151,12 @@ solution_summary(model)
 gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 3                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-@test gram[1].basis[1].elements[] ≈ 1 #src
-@test gram[1].basis[2].elements[] ≈ -sum(x)/√3 #src
+@test gram[1].basis[1] ≈ 1 #src
+@test gram[1].basis[2] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] rtol = 1e-6 #src
-@test gram[2].basis[1].elements[] ≈ (basis[1] + basis[2] * im) / √2  #src
+@test gram[2].basis[1] ≈ (basis[1] + basis[2] * im) / √2  #src
 @test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
-@test gram[3].basis[1].elements[] ≈ (basis[1] - basis[2] * im) / √2 #src
+@test gram[3].basis[1] ≈ (basis[1] - basis[2] * im) / √2 #src
 gram_matrix(con_ref)
 
 # We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:
