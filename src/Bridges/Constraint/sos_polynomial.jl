@@ -79,8 +79,10 @@ function MOI.Bridges.Constraint.bridge_constraint(
         poly =
             MB.algebra_element(SA.coeffs(poly, implicit_basis), implicit_basis)
     end
-    gram_weights = SOS.Certificate.gram_weights(set.certificate, gram_basis, poly, T)
-    if gram_basis isa Vector{<:SA.AbstractBasis} && length(gram_weights) == length(gram_basis)
+    gram_weights =
+        SOS.Certificate.gram_weights(set.certificate, gram_basis, poly, T)
+    if gram_basis isa Vector{<:SA.AbstractBasis} &&
+       length(gram_weights) == length(gram_basis)
         # Per-basis weights (e.g. Pattern certificate with one d_χ weight per χ).
         gram_bases = [[b] for b in gram_basis]
         weights = gram_weights

@@ -119,14 +119,8 @@ function MA.promote_operation(
     ::Type{G},
     ::Type{W},
 ) where {C,B,D,G,W}
-    inner = MA.promote_operation(
-        SumOfSquares.Certificate.zero_basis,
-        C,
-        B,
-        D,
-        G,
-        W,
-    )
+    inner =
+        MA.promote_operation(SumOfSquares.Certificate.zero_basis, C, B, D, G, W)
     return _invariant_basis_type(inner)
 end
 
@@ -177,7 +171,8 @@ function _invariant_basis(pattern::Pattern, monomial_basis::SA.ExplicitBasis)
     )
     # Coerce to a uniform `SparseVector{Float64,Int}` so that the bridge's
     # concrete parametric type can be predicted by `promote_operation`.
-    invs_uniform = [convert(SparseArrays.SparseVector{Float64,Int}, iv) for iv in invs]
+    invs_uniform =
+        [convert(SparseArrays.SparseVector{Float64,Int}, iv) for iv in invs]
     return InvariantBasis(monomial_basis, invs_uniform)
 end
 # Fallback for non-SubBasis inner zero_basis (e.g. QuotientBasis): leave it.
@@ -238,7 +233,11 @@ function SumOfSquares.Certificate.gram_weights(
     # We multiply each χ-block's contribution by `degree(χ)` so that the
     # invariant-vector-projected SDP constraint matches the polynomial.
     inner_basis = SumOfSquares.Certificate.gram_basis(cert.certificate, poly)
-    degrees = gram_character_degrees(cert.pattern, inner_basis, _coeff_type(typeof(cert)))
+    degrees = gram_character_degrees(
+        cert.pattern,
+        inner_basis,
+        _coeff_type(typeof(cert)),
+    )
     # Build per-χ weights via `constant_algebra_element(_, T(d))` so that the
     # SparseCoefficients storage matches what the bridge's `W` parameter
     # expects (Tuple-backed, like the default `MB.constant_algebra_element(_, T)`).

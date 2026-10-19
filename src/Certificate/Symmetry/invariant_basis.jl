@@ -15,8 +15,13 @@ emits one scalar equality per invariant orbit rather than one per monomial,
 which is what allows the gram side to use a single simple basis per irreducible
 character without breaking polynomial-identity equality.
 """
-struct InvariantBasis{T,I,IB<:SA.ImplicitBasis,EB<:SA.ExplicitBasis,IV<:SparseArrays.AbstractSparseVector} <:
-       SA.ExplicitBasis{T,I}
+struct InvariantBasis{
+    T,
+    I,
+    IB<:SA.ImplicitBasis,
+    EB<:SA.ExplicitBasis,
+    IV<:SparseArrays.AbstractSparseVector,
+} <: SA.ExplicitBasis{T,I}
     implicit_basis::IB
     monomial_basis::EB
     invariant_vectors::Vector{IV}
@@ -28,7 +33,13 @@ function InvariantBasis(
 )
     IB = parent(monomial_basis)
     T = eltype(IB)
-    return InvariantBasis{T,Int,typeof(IB),typeof(monomial_basis),eltype(invariant_vectors)}(
+    return InvariantBasis{
+        T,
+        Int,
+        typeof(IB),
+        typeof(monomial_basis),
+        eltype(invariant_vectors),
+    }(
         IB,
         monomial_basis,
         invariant_vectors,
