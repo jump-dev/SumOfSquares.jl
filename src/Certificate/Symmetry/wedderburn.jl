@@ -1,5 +1,5 @@
 function SymbolicWedderburn.decompose(
-    p::MB.Polynomial,
+    p::MB.BasisElement,
     hom::SymbolicWedderburn.InducedActionHomomorphism,
 )
     return [hom[p]], [1]
@@ -45,11 +45,11 @@ abstract type OnMonomials <: SymbolicWedderburn.ByLinearTransformation end
 function SymbolicWedderburn.action(
     a::Union{VariablePermutation,OnMonomials},
     el,
-    p::MB.Polynomial{MB.Monomial},
+    p::MB.BasisElement{MB.Monomial},
 )
     res = SymbolicWedderburn.action(a, el, MP.monomial(p))
     if res isa MP.AbstractMonomial
-        return MB.Polynomial{MB.Monomial}(res)
+        return MB.BasisElement{MB.Monomial}(res)
     else
         return MB.algebra_element(res)
     end
