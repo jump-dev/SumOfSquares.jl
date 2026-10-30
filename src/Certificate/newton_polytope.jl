@@ -76,7 +76,7 @@ end
 function min_degree(p::SA.AlgebraElement, v)
     return mapreduce(Base.Fix2(min_degree, v), min, SA.supp(p))
 end
-function min_degree(p::MB.Polynomial{B}, v) where {B}
+function min_degree(p::MB.BasisElement{B}, v) where {B}
     if _is_monomial_basis(B)
         return MP.degree(MP.monomial(p), v)
     else
@@ -94,7 +94,7 @@ end
 function max_degree(p::SA.AlgebraElement, v)
     return mapreduce(Base.Fix2(max_degree, v), max, SA.supp(p))
 end
-max_degree(p::MB.Polynomial, v) = MP.degree(MP.monomial(p), v)
+max_degree(p::MB.BasisElement, v) = MP.degree(MP.monomial(p), v)
 
 function min_shift(d, shift)
     return max(0, d - shift)
@@ -238,14 +238,14 @@ function _maxdegree(a::SA.AlgebraElement, vars)
 end
 #_mindegree(basis::MB.SubBasis{MB.Monomial}) = MP.mindegree(basis.monomials)
 #_maxdegree(basis::MB.SubBasis{MB.Monomial}) = MP.maxdegree(basis.monomials)
-function _mindegree(p::MB.Polynomial{B}, vars) where {B}
+function _mindegree(p::MB.BasisElement{B}, vars) where {B}
     if _is_monomial_basis(B)
         _sum_degree(MP.monomial(p), vars)
     else
         error("TODO $B")
     end
 end
-_maxdegree(p::MB.Polynomial, vars) = _sum_degree(MP.monomial(p), vars)
+_maxdegree(p::MB.BasisElement, vars) = _sum_degree(MP.monomial(p), vars)
 function _degree(mono, var::MP.AbstractVariable, comm::Bool)
     if comm
         return MP.degree(mono, var)
@@ -267,7 +267,7 @@ end
 _is_monomial_basis(::Type{<:MB.AbstractMonomialIndexed}) = false
 _is_monomial_basis(::Type{<:Union{MB.Monomial,MB.ScaledMonomial}}) = true
 function _is_monomial_basis(
-    ::Type{<:SA.AbstractBasis{<:MB.Polynomial{B}}},
+    ::Type{<:SA.AbstractBasis{<:MB.BasisElement{B}}},
 ) where {B}
     return _is_monomial_basis(B)
 end
@@ -293,7 +293,7 @@ end
 
 # Maximum degree of a gram basis for a gram matrix `s`
 # such that the maximum degree of `s * g` is at most `maxdegree`.
-# Here, we assume that the degree of `*(a::MB.Polynomial, b::MB.Polynomial)`
+# Here, we assume that the degree of `*(a::MB.BasisElement, b::MB.BasisElement)`
 # is bounded by the sum of the degree of `a` and `b` for any basis.
 function _multiplier_maxdegree(maxdegree, g::SA.AlgebraElement, vars)
     return _max_half(maxdegree - _maxdegree(g, vars))
@@ -655,12 +655,12 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
     return c
 end
 
-function _term(α, p::MB.Polynomial)
+function _term(α, p::MB.BasisElement)
     return MP.term_element(α, p)
 end
 
-function _term_constant_monomial(α, p::MB.Polynomial{B,M}) where {B,M}
-    return _term(α, MB.Polynomial{B}(MP.constant_monomial(MP.monomial(p))))
+function _term_constant_monomial(α, p::MB.BasisElement{B,M}) where {B,M}
+    return _term(α, MB.BasisElement{B}(MP.constant_monomial(MP.monomial(p))))
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
