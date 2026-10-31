@@ -1,5 +1,21 @@
+using Test
+using SumOfSquares
+using DynamicPolynomials
 import SemialgebraicSets
 import PolyJuMP
+
+@testset "Certificate basis index mapping" begin
+    @polyvar x
+    attr = SumOfSquares.CertificateBasis()
+    index_map = MOI.Utilities.IndexMap()
+    for B in (Monomial, ScaledMonomial, Chebyshev)
+        basis = SubBasis{B}([x^0, x])
+        for value in (basis, [basis], [[basis]])
+            @test MOI.Utilities.map_indices(index_map, attr, value) === value
+            @test MOI.Utilities.map_indices(identity, attr, value) === value
+        end
+    end
+end
 
 @testset "Non-symmetric matrix SOS constraint" begin
     @polyvar x

@@ -6,6 +6,11 @@ A constraint attribute for the basis indexing the
 """
 struct CertificateBasis <: MOI.AbstractConstraintAttribute end
 
+# Certificate bases contain polynomial variables, not MOI variable indices.
+function MOI.Utilities.map_indices(::Any, ::CertificateBasis, basis)
+    return basis
+end
+
 """
     GramMatrixAttribute(
         multiplier_index::Int = 0,
