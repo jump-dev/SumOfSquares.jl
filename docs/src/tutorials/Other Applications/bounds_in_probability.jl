@@ -45,11 +45,11 @@ model = SOSModel(solver);
 # Nonnegative on the support:
 
 K = @set 0 <= x && x <= 5
-con_ref = @constraint(model, polynomial(poly) >= 0, domain = K)
+con_ref = @constraint(model, poly >= 0, domain = K)
 
 # Greater than one on the event:
 
-@constraint(model, polynomial(poly) >= 1, domain = (@set 4 <= x && x <= 5))
+@constraint(model, poly >= 1, domain = (@set 4 <= x && x <= 5))
 
 # The bound (we use `LinearAlgebra` for the `⋅` syntax for the scalar product):
 
