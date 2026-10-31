@@ -1,6 +1,13 @@
+if !@isdefined(linear_tests)
+    include("utilities.jl")
+    const linear_tests = Dict{String,Function}()
+    const soc_tests = Dict{String,Function}()
+    const sd_tests = Dict{String,Function}()
+end
+
 using Test
 import MultivariatePolynomials as MP
-import MultivariateBases
+import MultivariateBases as MB
 using DynamicPolynomials
 
 function _test_moments(test_values, μ, monos)
@@ -61,7 +68,8 @@ function quadratic_test(
     a = moment_value.(μ)
     @test a[2] ≈ -1.0 atol = atol rtol = rtol
     @test a[1] + a[3] ≈ 2.0 atol = atol rtol = rtol
-    @test μ[2].polynomial == MB.Polynomial{MB.Monomial}(bivariate ? x * y : x^1)
+    @test μ[2].polynomial ==
+          MB.BasisElement{MB.Monomial}(bivariate ? x * y : x^1)
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
     _test_moments(dual(cref), monos) do vals
