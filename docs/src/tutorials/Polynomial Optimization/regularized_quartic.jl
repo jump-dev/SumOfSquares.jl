@@ -35,8 +35,8 @@ quad = 2 * sum(s .^ 2) + 8 * (s[1] * s[2] + s[1] * s[3] + s[2] * s[3])
 # We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 using SumOfSquares
-import Clarabel
-solver = optimizer_with_attributes(Clarabel.Optimizer, MOI.Silent() => true)
+import Hypatia
+solver = optimizer_with_attributes(Hypatia.Optimizer, MOI.Silent() => true)
 
 # The following function computes the largest $\gamma$ such that
 # `multiplier * (p - γ)` is a sum of squares. With the default `multiplier`,
@@ -133,11 +133,11 @@ m_E = quad + σ / 4 * sum(s .^ 2)^2
 γ_E
 
 # The global minimizers form the circle $s_1 + s_2 + s_3 = 0$,
-# $\|s\|_2 = 2/\sqrt{\sigma}$. Even if there are infinitely many of them,
-# the low rank decomposition of the moment matrix still finds a few points
-# of this circle:
+# $\|s\|_2 = 2/\sqrt{\sigma}$. We use an approximation of rank 4 to extract
+# a few points of this circle. This is a heuristic for finding minimizers;
+# the resulting atomic measure need not reproduce all the moments:
 
-atoms = atomic_measure(moment_matrix(con_ref), 1e-4)
+atoms = atomic_measure(moment_matrix(con_ref), FixedRank(4))
 
 # We can verify that they belong to the circle:
 
