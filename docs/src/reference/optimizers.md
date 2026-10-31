@@ -11,6 +11,7 @@ Optimizers for polynomial optimization problems:
 PolyJuMP.AbstractPolynomialOptimizer
 PolyJuMP.AbstractRelaxationOptimizer
 PolyJuMP.nonnegativity_cone
+PolyJuMP.matrix_nonnegativity_cone
 PolyJuMP.recover_solutions
 PolyJuMP.MultiplierMaxdegree
 ```
