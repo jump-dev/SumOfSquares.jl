@@ -403,17 +403,17 @@ end
 
 function _default_basis(
     coeffs,
-    basis::MB.SubBasis{B},
-    gram_basis::MB.MonomialIndexedBasis{G},
-) where {B,G}
+    basis::SA.ExplicitBasis,
+    gram_basis::SA.AbstractBasis,
+)
     return coeffs, basis
 end
 
 function _default_basis(
     p::SA.AbstractCoefficients,
-    basis::MB.FullBasis{B},
-    gram_basis::MB.MonomialIndexedBasis{G},
-) where {B,G}
+    basis::SA.ImplicitBasis,
+    gram_basis::SA.AbstractBasis,
+)
     return _default_basis(
         collect(SA.values(p)),
         SA.sub_basis(basis, collect(SA.keys(p))),
@@ -421,18 +421,15 @@ function _default_basis(
     )
 end
 
-function _default_gram_basis(b::MB.MonomialIndexedBasis, ::Nothing)
+function _default_gram_basis(b::SA.AbstractBasis, ::Nothing)
     return MB.implicit_basis(b)
 end
 
-function _default_gram_basis(
-    b::MB.MonomialIndexedBasis{_B,M},
-    ::Type{B},
-) where {_B,B,M}
+function _default_gram_basis(b::SA.AbstractBasis, ::Type{B}) where {B}
     return MB.FullBasis{B}(MP.variables(b))
 end
 
-function _default_gram_basis(_, basis::MB.MonomialIndexedBasis)
+function _default_gram_basis(_, basis::SA.AbstractBasis)
     return basis
 end
 
@@ -442,14 +439,8 @@ function _default_basis(a::SA.AlgebraElement, basis)
     return _default_basis(SA.coeffs(a), b, gram)..., gram
 end
 
-function _default_basis(p::MP.AbstractPolynomialLike, basis)
-    return _default_basis(
-        MB.algebra_element(
-            MB.sparse_coefficients(p),
-            MB.FullBasis{MB.Monomial}(p),
-        ),
-        basis,
-    )
+function _default_basis(p::MP.AbstractTermLike, basis)
+    return _default_basis(MP.polynomial(p), basis)
 end
 
 _default_zero_basis(basis, ::Nothing) = MB.implicit_basis(basis)
@@ -458,11 +449,8 @@ function _default_zero_basis(basis, nodes::MB.AbstractNodes)
 end
 
 _promote_bases(domain, p) = SA.promote_bases(domain, p)
-_promote_bases(domain::FullSpace, p::SA.AlgebraElement) = domain, p
-function _promote_bases(domain, p::SA.AlgebraElement)
-    _domain, _ = SA.promote_bases(domain, MP.polynomial(p))
-    _, _p = SA.promote_bases(MB.algebra_element(prod(MP.variables(domain))), p)
-    return _domain, _p
+function _promote_bases(domain, p::AbstractDecomposition)
+    return SA.promote_bases(domain, MP.polynomial(p))
 end
 
 # `JuMP.build_constraint` does not have access to the model so it does not know
