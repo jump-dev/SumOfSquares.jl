@@ -127,9 +127,8 @@ solution_summary(model)
 # can be used in such relaxation. The SAGE certificate leads to a relative
 # entropy program, solved with `PolyJuMP.SAGE.Optimizer` as follows.
 # The candidate solution is recovered from the dual of the relaxation, which
-# is not unique, so it depends on the solver used. We use the interior-point
-# solver Clarabel that converges to the center of the optimal face which gives
-# a reproducible candidate.
+# is not unique, so the candidate depends on the solver and its numerical
+# tolerances. We use the interior-point solver Clarabel.
 
 import Clarabel
 set_optimizer(model, () -> PolyJuMP.SAGE.Optimizer(Clarabel.Optimizer))
@@ -137,20 +136,22 @@ optimize!(model)
 
 # The SAGE relaxation also certifies (up to the tolerance of the solver) the
 # lower bound `0`. This time, a candidate solution is recovered from the dual
-# of the relaxation. It is feasible but its objective value $27/32 \approx 0.84$
-# does not close the gap with the lower bound; the interval is still $[0, 1/4]$.
+# of the relaxation. It is feasible but its objective value does not improve
+# on the solution found by Ipopt; the interval is still $[0, 1/4]$.
 
 @test termination_status(model) == MOI.OPTIMAL #src
 @test objective_bound(model) ≈ 0 atol = 1e-3 #src
 @test result_count(model) == 1 #src
 @test primal_status(model) == MOI.FEASIBLE_POINT #src
-@test objective_value(model) ≈ 27/32 rtol = 1e-3 #src
+@test objective_value(model) > 1/4 #src
 solution_summary(model)
 
 # The recovered candidate is the following:
 
-@test value(a) ≈ 3/4 rtol = 1e-3 #src
-@test value(b) ≈ 3/4 rtol = 1e-3 #src
+@test value(a) >= -1e-6 #src
+@test value(b) >= -1e-6 #src
+@test value(a) + value(b) >= 1 - 1e-6 #src
+@test objective_value(model) ≈ p(x => value(a), y => value(b)) rtol = 1e-6 #src
 value(a), value(b)
 
 # ### How it works

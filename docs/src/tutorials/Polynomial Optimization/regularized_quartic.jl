@@ -36,7 +36,10 @@ quad = 2 * sum(s .^ 2) + 8 * (s[1] * s[2] + s[1] * s[3] + s[2] * s[3])
 
 using SumOfSquares
 import Hypatia
-solver = optimizer_with_attributes(Hypatia.Optimizer, MOI.Silent() => true)
+import Dualization
+solver = Dualization.dual_optimizer(
+    optimizer_with_attributes(Hypatia.Optimizer, MOI.Silent() => true),
+)
 
 # The following function computes the largest $\gamma$ such that
 # `multiplier * (p - γ)` is a sum of squares. With the default `multiplier`,

@@ -40,7 +40,7 @@ julia> @variable(model, p, Poly(X))
 julia> @variable(model, q, Poly(X))
 (_[11])·1 + (_[12])·x₃ + (_[13])·x₂ + (_[14])·x₁ + (_[15])·x₃² + (_[16])·x₂x₃ + (_[17])·x₂² + (_[18])·x₁x₃ + (_[19])·x₁x₂ + (_[20])·x₁²
 
-julia> @constraint(model, p + q == 1)
+julia> @constraint(model, polynomial(p) + polynomial(q) == 1)
 (_[1] + _[11] - 1)·1 + (_[2] + _[12])·x₃ + (_[3] + _[13])·x₂ + (_[4] + _[14])·x₁ + (_[5] + _[15])·x₃² + (_[6] + _[16])·x₂x₃ + (_[7] + _[17])·x₂² + (_[8] + _[18])·x₁x₃ + (_[9] + _[19])·x₁x₂ + (_[10] + _[20])·x₁² ∈ PolyJuMP.ZeroPoly()
 ```
 
