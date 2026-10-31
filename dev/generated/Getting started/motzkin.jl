@@ -28,7 +28,7 @@ X = monomials([x, y], 0:2)
 
 @variable(model, deno, Poly(X))
 
-@constraint(model, deno >= 1)
+@constraint(model, polynomial(deno) >= 1)
 @constraint(model, deno * motzkin >= 0)
 optimize!(model)
 

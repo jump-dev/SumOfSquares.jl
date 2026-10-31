@@ -5,8 +5,11 @@ using DynamicPolynomials
 quad = 2 * sum(s .^ 2) + 8 * (s[1] * s[2] + s[1] * s[3] + s[2] * s[3])
 
 using SumOfSquares
-import Clarabel
-solver = optimizer_with_attributes(Clarabel.Optimizer, MOI.Silent() => true)
+import Hypatia
+import Dualization
+solver = Dualization.dual_optimizer(
+    optimizer_with_attributes(Hypatia.Optimizer, MOI.Silent() => true),
+)
 
 function sos_lower_bound(p; multiplier = 1)
     model = SOSModel(solver)
@@ -45,7 +48,7 @@ m_E = quad + σ / 4 * sum(s .^ 2)^2
 γ_E, con_ref = sos_lower_bound(m_E)
 γ_E
 
-atoms = atomic_measure(moment_matrix(con_ref), 1e-4)
+atoms = atomic_measure(moment_matrix(con_ref), FixedRank(4))
 
 for atom in atoms.atoms
     x = atom.center

@@ -84,8 +84,8 @@ Symmetry.SymbolicWedderburn.action(action, g, poly)
 
 # Let's now find the minimum of `p` by exploiting this symmetry.
 
-import Clarabel
-solver = Clarabel.Optimizer
+import Hypatia
+solver = Hypatia.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)

@@ -18,9 +18,9 @@ monos = monomials(x, 0:4)
 @variable(model, B, Poly(monos))
 
 ε = 0.001
-@constraint(model, B >= ε, domain = @set(g₁ >= 0))
+@constraint(model, polynomial(B) >= ε, domain = @set(g₁ >= 0))
 
-@constraint(model, B <= 0, domain = @set(h₁ >= 0))
+@constraint(model, polynomial(B) <= 0, domain = @set(h₁ >= 0))
 
 using LinearAlgebra # Needed for `dot`
 dBdt = dot(differentiate(B, x), f)

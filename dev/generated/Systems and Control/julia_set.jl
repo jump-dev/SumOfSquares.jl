@@ -46,7 +46,7 @@ function outer_approximation(solver, d::Int, c; α = 1/2)
     @variable(model, w1, SOSPoly(monomials(x, 0:(d - 1))))
     @constraint(model, α * v(x => julia_map(x, c)) <= v, domain = S)
     w = w0 + w1 * (r^2 - sum(x.^2))
-    @constraint(model, w >= v + 1, domain = S)
+    @constraint(model, w >= polynomial(v) + 1, domain = S)
     @objective(model, Min, disk_integral(w, r))
     optimize!(model)
     if primal_status(model) == MOI.NO_SOLUTION

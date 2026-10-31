@@ -19,9 +19,9 @@ model = SOSModel(solver);
 @variable(model, poly, Poly(monos))
 
 K = @set 0 <= x && x <= 5
-con_ref = @constraint(model, poly >= 0, domain = K)
+con_ref = @constraint(model, polynomial(poly) >= 0, domain = K)
 
-@constraint(model, poly >= 1, domain = (@set 4 <= x && x <= 5))
+@constraint(model, polynomial(poly) >= 1, domain = (@set 4 <= x && x <= 5))
 
 using LinearAlgebra
 @objective(model, Min, poly ⋅ μ)
