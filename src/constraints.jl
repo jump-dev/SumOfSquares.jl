@@ -448,8 +448,10 @@ function _default_zero_basis(basis, nodes::MB.AbstractNodes)
     return MB.ImplicitLagrangeBasis(MP.variables(basis), nodes)
 end
 
-_promote_bases(domain, p) = SA.promote_bases(domain, p)
-function _promote_bases(domain, p::AbstractDecomposition)
+function SA.promote_bases(
+    domain::AbstractSemialgebraicSet,
+    p::AbstractDecomposition,
+)
     return SA.promote_bases(domain, MP.polynomial(p))
 end
 
@@ -468,7 +470,7 @@ function JuMP.build_constraint(
     domain::AbstractSemialgebraicSet = FullSpace(),
     kws...,
 )
-    domain, p = _promote_bases(domain, p)
+    domain, p = SA.promote_bases(domain, p)
     coefs, basis, gram_basis = _default_basis(p, basis)
     set = JuMP.moi_set(
         cone,

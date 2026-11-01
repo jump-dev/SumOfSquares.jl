@@ -2,6 +2,9 @@ using Test, SumOfSquares, DynamicPolynomials
 import MathOptInterface as MOI
 import SemialgebraicSets
 import PolyJuMP
+import MultivariateBases as MB
+import MultivariatePolynomials as MP
+import StarAlgebras as SA
 
 @testset "Non-symmetric matrix SOS constraint" begin
     @polyvar x
@@ -92,4 +95,47 @@ end
     @test SumOfSquares.Bridges.Constraint.SOSPolynomialInSemialgebraicSetBridge{
         T,
     } in model.bridge_types
+end
+
+@testset "Domain promotion preserves $B" for B in (
+    MP.Monomial,
+    MB.ScaledMonomial,
+    MB.Chebyshev,
+)
+    @polyvar x y
+    basis = MB.FullBasis{B}([y])
+    p = MB.convert_basis(basis, 1.0 + y^2)
+    gram = GramMatrix([1.0 0.0; 0.0 1.0], MB.SubBasis{B}([y^0, y]))
+    decomposition = SOSDecomposition([one(p), MB.convert_basis(basis, 1.0y)])
+    for operand in (p, gram, decomposition)
+        expected = MP.polynomial(operand)
+        for domain in (FullSpace(), @set(x^2 == 1), @set(x >= 0))
+            promoted_domain, promoted = SA.promote_bases(domain, operand)
+            vars = domain isa FullSpace ? [y] : [x, y]
+            @test promoted == expected
+            @test eltype(SA.basis(promoted)) <: MP.BasisElement{B}
+            @test MP.variables(promoted) == vars
+            @test MP.variables(expected) == [y]
+            if !(domain isa FullSpace)
+                @test MP.variables(promoted_domain) == vars
+            end
+            # The semialgebraic bridge still requires monomial-basis inputs.
+            # Promotion itself supports every basis family tested here.
+            if domain isa BasicSemialgebraicSet && B !== MP.Monomial
+                continue
+            end
+            model = SOSModel()
+            cref = @constraint(model, operand in SOSCone(), domain = domain)
+            obj = JuMP.constraint_object(cref)
+            output = JuMP.reshape_vector(obj.func, JuMP.shape(obj))
+            @test output == expected
+            @test typeof(SA.object(parent(output))) ===
+                  typeof(SA.object(parent(expected)))
+            @test MP.variables(output) == vars
+            @test MP.variables(expected) == [y]
+            if !(domain isa FullSpace)
+                @test MP.variables(obj.set.domain) == vars
+            end
+        end
+    end
 end
