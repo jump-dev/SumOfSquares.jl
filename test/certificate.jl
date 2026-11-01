@@ -25,6 +25,26 @@ const SOS = SumOfSquares
     @test MP.variables(v) == [a, b]
 end
 
+@testset "with_variables preserves $B" for B in (
+    MP.Monomial,
+    MB.ScaledMonomial,
+    MB.Chebyshev,
+)
+    @polyvar x y
+    p = MB.convert_basis(MB.FullBasis{B}([y]), y^2 + 1)
+    domain = @set x >= 0
+    v = Certificate.with_variables(p, domain)
+    @test v.inner == p
+    @test typeof(SA.object(parent(v.inner))) === typeof(SA.object(parent(p)))
+    @test MP.variables(v) == [x, y]
+    @test MP.variables(v.inner) == [x, y]
+    @test MP.variables(p) == [y]
+    d = Certificate.with_variables(domain, v)
+    @test MP.variables(d) == [x, y]
+    @test MP.variables(d.inner) == [x, y]
+    @test only(inequalities(d.inner)) == x
+end
+
 @testset "Monomial selection for certificate" begin
     @polyvar x y z
     @ncpolyvar a b
