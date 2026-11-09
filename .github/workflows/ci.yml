@@ -32,6 +32,12 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v3
+      - name: Install PolyJuMP main on Julia 1.10
+        if: matrix.version == '1.10'
+        shell: julia --project=. {0}
+        run: |
+          using Pkg
+          Pkg.add(PackageSpec(url="https://github.com/jump-dev/PolyJuMP.jl", rev="main"))
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
 # # See https://github.com/oxfordcontrol/Clarabel.jl/pull/230

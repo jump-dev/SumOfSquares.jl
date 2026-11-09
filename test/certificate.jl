@@ -211,10 +211,7 @@ function certificate_api(certificate::Certificate.AbstractIdealCertificate, x)
     _certificate_api(certificate)
     poly = x + 1
     domain = @set x == 1
-    a = MB.algebra_element(
-        MB.sparse_coefficients(poly),
-        MB.FullBasis{MB.Monomial}(x^2),
-    )
+    a = MB.algebra_element(SA.coeffs(poly), MB.FullBasis{MB.Monomial}(x^2))
     @test Certificate.reduced_polynomial(certificate, a, domain) isa
           SA.AlgebraElement
     gram_basis = Certificate.gram_basis(
@@ -252,10 +249,7 @@ function certificate_api(
     _certificate_api(certificate)
     poly = x + 1
     domain = @set x >= 1
-    a = MB.algebra_element(
-        MB.sparse_coefficients(poly),
-        MB.FullBasis{MB.Monomial}(x),
-    )
+    a = MB.algebra_element(SA.coeffs(poly), MB.FullBasis{MB.Monomial}(x))
     processed = Certificate.preprocessed_domain(
         certificate,
         domain,
@@ -361,10 +355,8 @@ function test_putinar_ijk(i, j, k, default::Bool, post_filter::Bool = default)
         )
         certificate = Certificate.Putinar(cert, cert, max(2i, 2j + 1, 2k + 1))
     end
-    alg_el = MB.algebra_element(
-        MB.sparse_coefficients(poly),
-        MB.FullBasis{MB.Monomial}(poly),
-    )
+    alg_el =
+        MB.algebra_element(SA.coeffs(poly), MB.FullBasis{MB.Monomial}(poly))
     processed = Certificate.preprocessed_domain(certificate, domain, alg_el)
     for idx in Certificate.preorder_indices(certificate, processed)
         monos = MB.keys_as_monomials(

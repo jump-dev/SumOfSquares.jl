@@ -6,6 +6,19 @@ import MultivariateBases as MB
 import MultivariatePolynomials as MP
 import StarAlgebras as SA
 
+@testset "Slack bridge registration" begin
+    for S in (
+        SumOfSquares.WeightedSOSCone,
+        SumOfSquares.ScaledDiagonallyDominantConeTriangle,
+    )
+        for F in (MOI.VectorOfVariables, MOI.VectorAffineFunction{Float64})
+            for (BT, T) in PolyJuMP.bridges(F, S)
+                @test MOI.supports_constraint(BT{T}, F, S)
+            end
+        end
+    end
+end
+
 @testset "Certificate basis index mapping" begin
     @polyvar x
     attr = SumOfSquares.CertificateBasis()

@@ -83,7 +83,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
             p,
             cache,
             MB.algebra_element(
-                MB.sparse_coefficients(-one(T) * similar(g, T)),
+                SA.coeffs(-one(T) * similar(g, T)),
                 implicit_basis,
             ),
         )

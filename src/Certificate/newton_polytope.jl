@@ -656,7 +656,7 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
 end
 
 function _term(α, p::MB.BasisElement)
-    return MP.term_element(α, p)
+    return SA.algebra_element(MP.term(α, p))
 end
 
 function _term_constant_monomial(α, p::MB.BasisElement{B,M}) where {B,M}
@@ -801,7 +801,7 @@ function _weight_type(::Type{T}, ::Type{BT}) where {T,BT}
             MA.promote_operation(MB.implicit_basis, BT),
         ),
         MA.promote_operation(
-            MB.sparse_coefficients,
+            SA.coeffs,
             MP.polynomial_type(MP.monomial_type(BT), T),
         ),
     }
