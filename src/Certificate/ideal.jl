@@ -72,23 +72,138 @@ end
 
 function __reduce_with_domain(
     basis::MB.SubBasis{MB.Monomial},
-    ::MB.FullBasis{MB.Monomial},
+    zero_basis::MB.FullBasis{MB.Monomial},
     domain,
 )
+    return __reduce_with_domain(basis, zero_basis, ideal(domain))
+end
+
+function __reduce_with_domain(
+    basis::MB.SubBasis{MB.Monomial},
+    ::MB.FullBasis{MB.Monomial},
+    I::SemialgebraicSets.AbstractPolynomialIdeal,
+)
+    T = float(MP.coefficient_type(typeof(I)))
+    return MB.QuotientBasis(basis, _remainder_matrix(basis, I, T))
+end
+
+# The Gröbner basis of the ideal of an `AlgebraicSet` may not be computed and
+# computing it may be expensive. In that case, we consider instead the
+# condition that the polynomial is in the row space of the Macaulay matrix
+# of the equalities of degree `maxdegree(basis)`. This corresponds to
+# searching for multipliers `λ_i` of the equalities `h_i` such that the degree
+# of `λ_i * h_i` is at most `maxdegree(basis)`.
+# If the Gröbner basis is already computed, we use the remainder modulo the
+# ideal instead. In both cases, the result is a `QuotientBasis` with a sparse
+# matrix so that the type of the zero basis can be inferred from the type of
+# the domain.
+function __reduce_with_domain(
+    basis::MB.SubBasis{MB.Monomial},
+    ::MB.FullBasis{MB.Monomial},
+    domain::AlgebraicSet{T},
+) where {T}
     I = ideal(domain)
-    # set of standard monomials that are hit
-    standard = Set{MP.monomial_type(basis)}()
-    for mono in MB.keys_as_monomials(basis)
-        r = rem(mono, I)
-        # `FixedVariablesSet`, use substitutions which makes us
-        # loose variables
-        s, _ = SA.promote_bases(r, mono)
-        union!(standard, MP.monomials(s))
+    if SemialgebraicSets.is_gröbner_basis(I)
+        W = _remainder_matrix(basis, I, float(T))
+    else
+        W = _macaulay_zero_matrix(basis, equalities(domain), float(T))
     end
-    return MB.QuotientBasis(
-        MB.SubBasis{MB.Monomial}(MP.monomial_vector(collect(standard))),
-        I,
+    return MB.QuotientBasis(basis, W)
+end
+
+# Sparse matrix `R` such that `R[i, j]` is the coefficient of the `i`th
+# standard monomial in the remainder of the `j`th monomial of `basis` modulo
+# `I`. Its number of nonzeros is the total number of terms of the remainders.
+function _remainder_matrix(basis, I, ::Type{T}) where {T}
+    if isempty(basis)
+        return SparseArrays.spzeros(T, 0, 0)
+    end
+    rems = [rem(mono, I) for mono in MB.keys_as_monomials(basis)]
+    standard = MP.monomial_vector(reduce(vcat, MP.monomials.(rems)))
+    rows = Int[]
+    cols = Int[]
+    vals = T[]
+    for (j, r) in enumerate(rems)
+        for t in MP.terms(r)
+            push!(rows, searchsortedfirst(standard, MP.monomial(t)))
+            push!(cols, j)
+            push!(vals, MP.coefficient(t))
+        end
+    end
+    return SparseArrays.sparse(
+        rows,
+        cols,
+        vals,
+        length(standard),
+        length(basis),
     )
+end
+
+# Sparse matrix `W` such that a polynomial `t` with support in `basis` is in
+# the row space of the Macaulay matrix of degree `d` of `equalities` if and
+# only if `W * coefficients(t, basis) = 0` where `d = maxdegree(basis)`.
+function _macaulay_zero_matrix(basis, equalities, ::Type{T}) where {T}
+    n = length(basis)
+    if isempty(basis)
+        return SparseArrays.spzeros(T, 0, 0)
+    end
+    monos = MB.keys_as_monomials(basis)
+    # The shifts should be in all the variables and not only in the variables
+    # of the equalities
+    vars =
+        MP.variables(MP.monomial_vector([monos; MP.monomials.(equalities)...]))
+    M = MB.macaulay(equalities, MP.maxdegree(basis), vars)
+    null = MM.MacaulayNullspace(M)
+    columns = MP.variables(null.basis)
+    rows = Int[]
+    found = Int[]
+    others = Int[]
+    for (i, mono) in enumerate(monos)
+        j = SA.key_index(null.basis, MP.exponents(mono, columns))
+        if isnothing(j)
+            # The monomial is not in any row of the Macaulay matrix so it is
+            # independent of the other ones
+            push!(others, i)
+        else
+            push!(rows, j)
+            push!(found, i)
+        end
+    end
+    Z = null.matrix[rows, :]
+    if isempty(Z)
+        r = 0
+    else
+        F = LinearAlgebra.svd(Z)
+        rank_check = MM.LeadingRelativeRankTol(Base.rtoldefault(T))
+        r = MM.rank_from_singular_values(F.S, rank_check)
+    end
+    if r == length(found)
+        # No monomial of `basis` is dependent so the polynomial must be zero
+        return SparseArrays.sparse(one(T) * LinearAlgebra.I, n, n)
+    end
+    # The equations `transpose(F.U[:, 1:r]) * coefficients(t, basis) = 0` are
+    # orthonormal but they are dense which is an issue for sparse solvers.
+    # As any invertible recombination of the equations is equivalent, we
+    # take the reduced row echelon form instead. The pivots are the smallest
+    # independent monomials so if they coincide with the standard monomials
+    # of a Gröbner basis, it coincides with the matrix of `_remainder_matrix`.
+    E = Matrix(transpose(F.U[:, 1:r]))
+    tol = Base.rtoldefault(T)
+    RowEchelon.rref!(E, tol)
+    # Remove the numerical noise so that the zeros are skipped
+    E[abs.(E) .< tol] .= zero(T)
+    # The pivot of each row of `W`, we sort the rows according to their
+    # pivots so that the equations are in the order of `basis`
+    pivots = [
+        [found[findfirst(!iszero, view(E, k, :))] for k in 1:r]
+        others
+    ]
+    W = zeros(T, length(pivots), n)
+    W[1:r, found] = E
+    for (k, i) in enumerate(others)
+        W[r+k, i] = one(T)
+    end
+    return SparseArrays.sparse(W[sortperm(pivots), :])
 end
 
 function zero_basis(
@@ -307,18 +422,6 @@ function SumOfSquares.matrix_cone_type(::Type{Remainder{GCT}}) where {GCT}
     return SumOfSquares.matrix_cone_type(GCT)
 end
 
-function _quotient_basis_type(
-    ::Type{B},
-    ::Type{D},
-) where {T,I,B<:SA.AbstractBasis{T,I},D}
-    return MB.QuotientBasis{
-        T,
-        I,
-        B,
-        MA.promote_operation(SemialgebraicSets.ideal, D),
-    }
-end
-
 _zero_basis(c::SimpleIdealCertificate) = c.zero_basis
 
 function _zero_basis_type(::Type{<:SimpleIdealCertificate{C,G,Z}}) where {C,G,Z}
@@ -326,6 +429,19 @@ function _zero_basis_type(::Type{<:SimpleIdealCertificate{C,G,Z}}) where {C,G,Z}
 end
 
 _zero_basis(c::Remainder) = _zero_basis(c.gram_certificate)
+
+# The polynomial was already reduced with `rem` by `reduced_polynomial` so the
+# Gröbner basis is computed and we use the remainder matrix.
+function zero_basis(cert::Remainder, basis, domain, gram_bases, weights)
+    return _reduce_with_domain(
+        _combine_with_gram(basis, gram_bases, weights),
+        _zero_basis(cert),
+        _remainder_domain(domain),
+    )
+end
+
+_remainder_domain(domain) = ideal(domain)
+_remainder_domain(domain::FullSpace) = domain
 
 function _zero_basis_type(::Type{Remainder{C}}) where {C}
     return _zero_basis_type(C)
@@ -350,5 +466,12 @@ function MA.promote_operation(
     ::Type,
     ::Type,
 ) where {B,D}
-    return _quotient_basis_type(B, D)
+    return _quotient_basis_type(B, float(MP.coefficient_type(D)))
+end
+
+function _quotient_basis_type(
+    ::Type{B},
+    ::Type{T},
+) where {E,I,B<:SA.AbstractBasis{E,I},T}
+    return MB.QuotientBasis{E,I,B,SparseArrays.SparseMatrixCSC{T,Int}}
 end

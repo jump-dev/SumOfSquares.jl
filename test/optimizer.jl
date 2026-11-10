@@ -107,6 +107,38 @@ function test_optimizer_equality()
     @test objective_value(model) ≈ -1 rtol = 1e-3
 end
 
+function test_algebraic_set_without_groebner_basis()
+    @polyvar x y z
+    # A single equation is a Gröbner basis so we add a redundant one
+    K = @set x^2 + y^2 + z^2 == 1 && 2x^2 + 2y^2 + 2z^2 == 2
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    @objective(model, Max, t)
+    # `x + 1 = ((x + 1)^2 + y^2 + z^2) / 2` on the sphere
+    @constraint(model, x - t in SOSCone(), domain = K, maxdegree = 2)
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test value(t) ≈ -1 rtol = 1e-6
+    # The equations are obtained from the Macaulay matrix instead
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(K))
+    return
+end
+
+function test_algebraic_set_sparse_equations()
+    # The dense equations obtained without the reduced row echelon form
+    # gave `NUMERICAL_ERROR` with Clarabel
+    @polyvar x y z
+    # A single equation is a Gröbner basis so we add a redundant one
+    K = @set x^2 + y^2 + z^2 == 1 && 2x^2 + 2y^2 + 2z^2 == 2
+    p = x^4 * y^2 + x^2 * y^4 + z^6 - 3x^2 * y^2 * z^2 + 1
+    model = SOSModel(SOLVER)
+    @constraint(model, p in SOSCone(), domain = K)
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(K))
+    return
+end
+
 function runtests()
     for name in names(@__MODULE__; all = true)
         if startswith("$name", "test_")

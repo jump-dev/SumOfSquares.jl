@@ -37,11 +37,14 @@ function term_fixed_test(
     @test MB.keys_as_monomials(p.basis) == [x]
 
     @test dual_status(model) == MOI.FEASIBLE_POINT
-    for (m, μ) in [(x^2, moments(cref))]
-        @test μ isa AbstractMeasure{Float64}
-        @test length(moments(μ)) == 1
-        @test moment_value(moments(μ)[1]) ≈ 1.0 atol = atol rtol = rtol
-        @test MP.monomial(moments(μ)[1].polynomial) == m
+    μ = moments(cref)
+    @test μ isa AbstractMeasure{Float64}
+    # The moments are given for the whole support, including `x^2 * y` which
+    # is reduced to `x^2`
+    @test length(moments(μ)) == 2
+    for (i, m) in enumerate([x^2, x^2 * y])
+        @test moment_value(moments(μ)[i]) ≈ 1.0 atol = atol rtol = rtol
+        @test MP.monomial(moments(μ)[i].polynomial) == m
     end
 
     ν = moment_matrix(cref)
