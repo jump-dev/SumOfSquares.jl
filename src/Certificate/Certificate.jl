@@ -4,6 +4,10 @@ import MutableArithmetics as MA
 import StarAlgebras as SA
 import MultivariatePolynomials as MP
 import MultivariateBases as MB
+import MultivariateMoments as MM
+import LinearAlgebra
+import RowEchelon
+import SparseArrays
 using SemialgebraicSets
 
 using SumOfSquares

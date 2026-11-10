@@ -77,15 +77,21 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
     if remainder
-        @test length(moments(μ)) == 3
+        # The moments are given for the whole support, including `x^2`
+        # which is not a standard monomial
+        @test length(moments(μ)) == 4
         @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[2].polynomial) == y
         @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[3].polynomial) == y^2
+        @test moment_value(moments(μ)[4]) ≈ -8 / 3 atol = atol rtol = rtol
+        @test MP.monomial(moments(μ)[4].polynomial) == x^2
     else
-        @test length(moments(μ)) == 5
+        # The moments are given for the whole support, including `x^2`
+        # which is not a standard monomial
+        @test length(moments(μ)) == 6
         @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ 1 atol = atol rtol = rtol
@@ -96,6 +102,8 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
         @test MP.monomial(moments(μ)[4].polynomial) == y^2
         @test moment_value(moments(μ)[5]) ≈ 0 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[5].polynomial) == x * y
+        @test moment_value(moments(μ)[6]) ≈ 0 atol = atol rtol = rtol
+        @test MP.monomial(moments(μ)[6].polynomial) == x^2
     end
 
     @objective(model, Min, α)
@@ -138,15 +146,21 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
     μ = moments(cref)
     @test μ isa AbstractMeasure{Float64}
     if remainder
-        @test length(moments(μ)) == 3
+        # The moments are given for the whole support, including `x^2`
+        # which is not a standard monomial
+        @test length(moments(μ)) == 4
         @test moment_value(moments(μ)[1]) ≈ 1 / 3 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[2].polynomial) == y
         @test moment_value(moments(μ)[3]) ≈ 3 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[3].polynomial) == y^2
+        @test moment_value(moments(μ)[4]) ≈ -8 / 3 atol = atol rtol = rtol
+        @test MP.monomial(moments(μ)[4].polynomial) == x^2
     else
-        @test length(moments(μ)) == 5
+        # The moments are given for the whole support, including `x^2`
+        # which is not a standard monomial
+        @test length(moments(μ)) == 6
         @test moment_value(moments(μ)[1]) ≈ 1 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[1].polynomial) == 1
         @test moment_value(moments(μ)[2]) ≈ -1 atol = atol rtol = rtol
@@ -157,6 +171,8 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
         @test MP.monomial(moments(μ)[4].polynomial) == y^2
         @test moment_value(moments(μ)[5]) ≈ 0 atol = atol rtol = rtol
         @test MP.monomial(moments(μ)[5].polynomial) == x * y
+        @test moment_value(moments(μ)[6]) ≈ 0 atol = atol rtol = rtol
+        @test MP.monomial(moments(μ)[6].polynomial) == x^2
     end
 
     return model

@@ -380,6 +380,118 @@ end
     end
 end
 
+@testset "Zero basis of AlgebraicSet" begin
+    @polyvar x y z
+    Certificate = SumOfSquares.Certificate
+    _zero_basis(basis, domain) = Certificate.__reduce_with_domain(
+        basis,
+        MB.FullBasis{MB.Monomial}(MP.variables(basis)),
+        domain,
+    )
+    _coeffs(p, basis) = SA.coeffs(MB.algebra_element(p), basis)
+    # The bridge converts the domain to the coefficient type of the model
+    domain = MP.similar(@set(x * y == 1 && x^2 == y), Float64)
+    I = ideal(domain)
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials((x, y), 0:2))
+    zbasis = _zero_basis(basis, domain)
+    # The Gröbner basis is not computed
+    @test !SemialgebraicSets.is_gröbner_basis(I)
+    @test zbasis isa MB.QuotientBasis
+    # Monomials `[1, y, x, y^2, x * y, x^2]`, `x * y` is reduced to `1` and
+    # `x^2` to `y`
+    @test zbasis.matrix ≈ transpose([
+        1 0 0 0
+        0 1 0 0
+        0 0 1 0
+        0 0 0 1
+        1 0 0 0
+        0 1 0 0
+    ])
+    @test norm(_coeffs((x * y - 1) + 2 * (x^2 - y), zbasis)) < 1e-12
+    # `y^2 - x` is in the ideal but it requires multipliers of degree 2
+    @test _coeffs(y^2 - x, zbasis) ≈ [0, 0, -1, 1]
+    # The shifts are in all the variables
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials((x, y, z), 0:3))
+    zbasis = _zero_basis(basis, domain)
+    @test norm(_coeffs(z * (x^2 - y), zbasis)) < 1e-12
+    @test norm(_coeffs(y^2 - x, zbasis)) < 1e-12
+    @test !SemialgebraicSets.is_gröbner_basis(I)
+    # No dependent monomial
+    basis = MB.SubBasis{MB.Monomial}([x^0, x^2])
+    @test _zero_basis(basis, domain).matrix == [1 0; 0 1]
+    basis = MB.SubBasis{MB.Monomial}([x^0, x])
+    @test _zero_basis(basis, domain).matrix == [1 0; 0 1]
+    basis = MB.empty_basis(typeof(basis))
+    @test size(_zero_basis(basis, domain).matrix) == (0, 0)
+    # The Gröbner basis is computed
+    SemialgebraicSets.compute_gröbner_basis!(I)
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials((x, y), 0:2))
+    zbasis = _zero_basis(basis, domain)
+    @test zbasis.matrix ≈ transpose([
+        1 0 0
+        0 1 0
+        0 0 1
+        0 0 1
+        1 0 0
+        0 1 0
+    ])
+    @test norm(_coeffs(y^2 - x, zbasis)) < 1e-12
+    # A single equation is a Gröbner basis so the Macaulay matrix of degree
+    # `2000` is not needed
+    domain = MP.similar(@set(x^1000 == x), Float64)
+    @test SemialgebraicSets.is_gröbner_basis(ideal(domain))
+    sparse_basis = MB.SubBasis{MB.Monomial}([x^0, x, x^1000, x^1001, x^2000])
+    @test _zero_basis(sparse_basis, domain).matrix ≈ [
+        1 0 0 0 0
+        0 1 1 0 0
+        0 0 0 1 1
+    ]
+    # `@set x == 1` gives a `FixedVariablesSet`, it should give the same zero
+    # basis as `@set x - 1 == 0`
+    for domain in [
+        MP.similar(@set(x == 1), Float64),
+        MP.similar(@set(x - 1 == 0), Float64),
+    ]
+        zbasis = _zero_basis(basis, domain)
+        @test zbasis isa MB.QuotientBasis
+        # Monomials `[1, y, x, y^2, x * y, x^2]` are reduced to
+        # `[1, y, 1, y^2, y, 1]`
+        @test zbasis.matrix ≈ [
+            1 0 1 0 0 1
+            0 1 0 0 1 0
+            0 0 0 1 0 0
+        ]
+    end
+    # Type inference
+    domain = MP.similar(@set(x^2 + y^2 == 1), Float64)
+    full_basis = MB.FullBasis{MB.Monomial}(x * y)
+    certificate = Certificate.MaxDegree(SOSCone(), full_basis, full_basis, 2)
+    poly = 1 - x^2 + y
+    a = MB.algebra_element(poly)
+    gram = Certificate.gram_basis(
+        certificate,
+        Certificate.WithVariables(a, MP.variables(poly)),
+    )
+    weight = MB.constant_algebra_element(SA.basis(a), Float64)
+    zbasis = Certificate.zero_basis(
+        certificate,
+        MB.explicit_basis(a),
+        domain,
+        [gram],
+        [weight],
+    )
+    @test zbasis isa MA.promote_operation(
+        Certificate.zero_basis,
+        typeof(certificate),
+        typeof(MB.explicit_basis(a)),
+        typeof(domain),
+        Vector{typeof(gram)},
+        Vector{typeof(weight)},
+    )
+    # `x^2` is reduced to `1 - y^2`
+    @test length(zbasis) == 5
+end
+
 include("ceg_test.jl")
 include("csp_test.jl")
 include("sparsity.jl")
