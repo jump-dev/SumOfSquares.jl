@@ -99,7 +99,7 @@ monomial_basis = FullBasis{Monomial}(x) #src
 # they both yields the same Sum-of-Squares decomposition:
 
 cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
-cheby_ps = convert_basis.(monomial_basis, cheby_sos_dec.ps) #src
+cheby_ps = convert_basis.(Ref(monomial_basis), cheby_sos_dec.ps) #src
 @test isapprox(cheby_ps, [expected], rtol=1e-4) || isapprox(cheby_ps, [-expected], rtol=1e-4) #src
 
 # The gram matrix in the Chebyshev basis can be understood as follows.
