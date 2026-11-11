@@ -79,8 +79,7 @@ function outer_approximation(solver, d::Int, c; α = 1/2)
     @objective(model, Min, disk_integral(w, r))
     optimize!(model)
     @test termination_status(model) in [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL] #src
-    @test primal_status(model) in
-          [MOI.FEASIBLE_POINT, MOI.NEARLY_FEASIBLE_POINT] #src
+    @test primal_status(model) in [MOI.FEASIBLE_POINT, MOI.NEARLY_FEASIBLE_POINT] #src
     if primal_status(model) == MOI.NO_SOLUTION
         return
     end

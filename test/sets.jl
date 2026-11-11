@@ -42,5 +42,5 @@ using LinearAlgebra
         Float64,
     )
     p_scaled = MP.polynomial(gram_scaled)
-    @test p_scaled ≈ p_expected
+    @test MP.convert_basis(SA.basis(p_expected), p_scaled) ≈ p_expected
 end

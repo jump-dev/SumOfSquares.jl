@@ -93,12 +93,14 @@ cheby_g = gram_matrix(cheby_cref)
 @show cheby_g.basis
 cheby_g.Q
 
-@test polynomial(g) ≈ polynomial(cheby_g) rtol=1e-4 #src
+monomial_basis = FullBasis{Monomial}(x) #src
+@test polynomial(g) ≈ convert_basis(monomial_basis, polynomial(cheby_g)) rtol=1e-4 #src
 
 # they both yields the same Sum-of-Squares decomposition:
 
 cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
-@test isapprox(cheby_sos_dec.ps, [expected], rtol=1e-4) || isapprox(cheby_sos_dec.ps, [-expected], rtol=1e-4) #src
+cheby_ps = convert_basis.(monomial_basis, cheby_sos_dec.ps) #src
+@test isapprox(cheby_ps, [expected], rtol=1e-4) || isapprox(cheby_ps, [-expected], rtol=1e-4) #src
 
 # The gram matrix in the Chebyshev basis can be understood as follows.
 # To express the polynomial $-x^2 + 2x + 3$ in the Chebyshev basis, we start by
