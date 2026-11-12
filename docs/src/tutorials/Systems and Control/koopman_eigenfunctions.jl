@@ -40,8 +40,9 @@ J = [j(x => zeros(2)) for j in differentiate(F, x)]
 # Its eigenvalues have negative real part. The linear term `w ⋅ x` of a
 # Koopman eigenfunction must satisfy `J' * w = λ * w`, so we need a **left**
 # eigenvector of `J`. A right eigenvector leaves a nonzero linear residual
-# which the higher-degree terms cannot cancel. Example 2.6 calls `w` a
-# right eigenvector, but this contradicts Eq. (2.7) on p. 42 of the book.
+# which the higher-degree terms cannot cancel. We therefore use a left
+# eigenvector instead of the right eigenvector stated in Example 2.6,
+# consistently with Eq. (2.7) on p. 42 of the book.
 
 E = eigen(J')
 λ = E.values[end]
@@ -181,8 +182,6 @@ inner = [u^2 + v^2 ≤ (r / 2)^2 for v in x2s, u in x1s]
 maximum(abs, laplace[inner] - ϕs[inner])
 @test maximum(abs, laplace[inner] - ϕs[inner]) < 1e-4 #src
 
-# The book reports an overall error of `2.5e-3`, but does not specify the
-# observable used for the Laplace average, its finite integration horizon,
-# or the error norm. That number cannot be directly compared with the
-# finite-time identity discrepancies above, especially when eigenfunctions
-# have different scalar normalizations.
+# The finite-time identity discrepancies above need not match the error
+# reported in the book, especially when eigenfunctions have different
+# scalar normalizations.
