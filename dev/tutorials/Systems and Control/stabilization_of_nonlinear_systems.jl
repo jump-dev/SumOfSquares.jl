@@ -61,7 +61,7 @@ g = [0, 1]
 f = [x[2] - x[1]^3 + x[1]^2, 0]
 b = 3x[1]^2 + 2x[1]*x[2] + 2x[2]^2
 u = controller(f, g, b, 4, 0:3)
-@test monomials(u) == [x[2]^3, x[1], x[2]] #src
+@test monomials(u) == [x[2], x[1], x[2]^3] #src
 
 # We find the controller above which gives the following phase plot.
 
@@ -73,7 +73,7 @@ g = [0, 1]
 f = [2x[1]^3 + x[1]^2*x[2] - 6x[1]*x[2]^2 + 5x[2]^3, 0]
 b = x[1]^2 + x[2]^2
 u = controller(f, g, b, 2.5, 0:3)
-@test monomials(u) == [x[1]^3, x[1]^2*x[2], x[1]*x[2]^2, x[2]^3] #src
+@test monomials(u) == [x[2]^3, x[1]*x[2]^2, x[1]^2*x[2], x[1]^3] #src
 
 # We find the controller above which gives the following phase plot.
 
@@ -85,7 +85,7 @@ g = [0, x[2]]
 f = [-6x[1]*x[2]^2 - x[1]^2*x[2] + 2x[2]^3, 0]
 b = x[1]^2 + x[2]^2
 u = controller(f, g, b, 3, 0:2)
-@test monomials(u) == [x[1]^2, x[2]^2] #src
+@test monomials(u) == [x[2]^2, x[1]^2] #src
 
 # We find the controller above which gives the following phase plot.
 
