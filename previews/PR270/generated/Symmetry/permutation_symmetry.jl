@@ -1,9 +1,6 @@
-import MutableArithmetics
-const MA = MutableArithmetics
+import MutableArithmetics as MA
 using MultivariatePolynomials
-const MP = MultivariatePolynomials
 using MultivariateBases
-const MB = MultivariateBases
 
 using DynamicPolynomials
 @polyvar x[1:4]
@@ -15,8 +12,8 @@ using SumOfSquares
 using PermutationGroups
 G = PermGroup([perm"(1,2,3,4)"])
 
-import CSDP
-solver = CSDP.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -25,9 +22,6 @@ con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 value(t)
 
-for g in gram_matrix(con_ref).sub_gram_matrices
-    println(g.basis.polynomials)
-end
+gram_matrix(con_ref)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

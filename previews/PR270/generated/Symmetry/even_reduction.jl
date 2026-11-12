@@ -19,8 +19,8 @@ function SymbolicWedderburn.action(::OnSign, p::Permutation, mono::AbstractMonom
 end
 G = PermGroup([perm"(1,2)"])
 
-import CSDP
-solver = CSDP.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -32,4 +32,3 @@ value(t)
 gram_matrix(con_ref)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

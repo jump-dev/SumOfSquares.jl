@@ -18,20 +18,20 @@ sos_dec = sos_decomposition(cref, 1e-4)
 ν = moment_matrix(cref)
 ν.Q
 
-η = extractatoms(ν, 1e-4)
+η = atomic_measure(ν, 1e-4)
 minimizers = [η.atoms[1].center; η.atoms[2].center]
 
-η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), ν.basis.monomials)
+η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), keys_as_monomials(ν.basis))
 η1.Q
 
-η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), ν.basis.monomials)
+η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), keys_as_monomials(ν.basis))
 η2.Q
 
 Q12 = η1.Q * η.atoms[1].weight + η2.Q * η.atoms[2].weight
 
 model = SOSModel(CSDP.Optimizer)
 @variable(model, σ)
-@constraint(model, cheby_cref, p >= σ, basis = ChebyshevBasisFirstKind)
+@constraint(model, cheby_cref, p >= σ, basis = Chebyshev)
 @objective(model, Max, σ)
 optimize!(model)
 solution_summary(model)
@@ -46,9 +46,8 @@ cheby_g.Q
 
 cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
 
-cheby_coefs = [-1/2, 2, 5/2]
+cheby_coefs = [5/2, 2, -1/2]
 
 cheby_coefs * cheby_coefs'
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

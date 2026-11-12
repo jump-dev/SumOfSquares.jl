@@ -13,7 +13,7 @@ using DynamicPolynomials
 @polyvar x y
 p = 2*x^4 + 2*x^3*y - x^2*y^2 + 5*y^4
 
-# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
 using SumOfSquares
@@ -29,18 +29,18 @@ primal_status(model)
 # We now inspect this solution:
 
 q = gram_matrix(con_ref)
-Q = getmat(q) #src
-@test isapprox(Q[1, 1], 2, rtol=1e-5) #src
-@test isapprox(Q[1, 2], 1, rtol=1e-5) #src
-@test isapprox(Q[3, 3], 5, rtol=1e-5) #src
-@test abs(Q[2, 3]) < 1e-5 #src
+Q = value_matrix(q) #src
+@test isapprox(Q[1, 1], 5, rtol=1e-5) #src
+@test isapprox(Q[3, 2], 1, rtol=1e-5) #src
+@test isapprox(Q[3, 3], 2, rtol=1e-5) #src
+@test abs(Q[2, 1]) < 1e-5 #src
 @test isapprox(Q[2, 2] + 2Q[1, 3], -1, rtol=1e-5) #src
 
 # We can get the SOS decomposition from the gram matrix as follows:
 
 sosdec = SOSDecomposition(q)
 @test isapprox(sosdec, sos_decomposition(con_ref)) #src
-@test isapprox(sum(sosdec.ps.^2), p; rtol=1e-4, ztol=1e-6) #src
+@test isapprox(polynomial(sosdec), p; rtol=1e-4, ztol=1e-6) #src
 
 # We now seek for the SOS decomposition of the following polynomial:
 

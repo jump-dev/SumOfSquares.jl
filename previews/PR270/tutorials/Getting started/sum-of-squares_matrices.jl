@@ -2,12 +2,7 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Getting started/sum-of-squares_matrices.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Getting started/sum-of-squares_matrices.ipynb)
-# **Adapted from**: Examples 3.77 of [BPT12]
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
-
+# **Adapted from**: [Blekherman2012; Examples 3.77](@cite)
 
 # ### Introduction
 
@@ -30,7 +25,7 @@ P = [x^2 - 2x + 2 x
 
 using SumOfSquares
 
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
@@ -69,13 +64,15 @@ p = vec(y)' * P * vec(y)
 # without exploiting this multipartite structure gives the following 6 monomials.
 
 X = monomials(p)
-@test Certificate.monomials_half_newton_polytope(X, tuple(), apply_post_filter = false) == [x * y[1], x * y[2], y[1] * y[2], x, y[1], y[2]] #src
-Certificate.monomials_half_newton_polytope(X, tuple(), apply_post_filter = false) #!jl
+unipartite = Certificate.NewtonDegreeBounds(tuple())
+@test Certificate.monomials_half_newton_polytope(X, unipartite) == [y[2], y[1], x, y[1] * y[2], x * y[2], x * y[1]] #src
+Certificate.monomials_half_newton_polytope(X, unipartite) #!jl
 
 # Exploiting the multipartite structure gives 4 monomials.
 
-@test Certificate.monomials_half_newton_polytope(X, ([x], y), apply_post_filter = false) == [x * y[1], x * y[2], y[1], y[2]] #src
-Certificate.monomials_half_newton_polytope(X, ([x], y), apply_post_filter = false) #!jl
+multipartite = Certificate.NewtonDegreeBounds(([x], y))
+@test Certificate.monomials_half_newton_polytope(X, multipartite) == [y[2], y[1], x * y[2], x * y[1]] #src
+Certificate.monomials_half_newton_polytope(X, multipartite) #!jl
 
 # In the example above, there were only 3 monomials, where does the difference come from ?
 # Using the monomial basis, the only product of two monomials that is equal to
@@ -84,12 +81,12 @@ Certificate.monomials_half_newton_polytope(X, ([x], y), apply_post_filter = fals
 # hence the whole column and row will be zero as well.
 # Therefore, we can remove this monomial.
 
-@test Certificate.monomials_half_newton_polytope(X, ([x], y)) == [x * y[1], x * y[2], y[1]] #src
-Certificate.monomials_half_newton_polytope(X, ([x], y)) #!jl
+@test Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(multipartite)) == [y[1], x * y[2], x * y[1]] #src
+Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(multipartite)) #!jl
 
 # The same reasoning can be used for monomials `y[1]y[2]` and `x` therefore whether
 # we exploit the multipartite structure or not, we get only 3 monomials thanks
 # to this post filter.
 
-@test Certificate.monomials_half_newton_polytope(X, tuple()) == [x * y[1], x * y[2], y[1]] #src
-Certificate.monomials_half_newton_polytope(X, tuple()) #!jl
+@test Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(unipartite)) == [y[1], x * y[2], x * y[1]] #src
+Certificate.monomials_half_newton_polytope(X, Certificate.NewtonFilter(unipartite)) #!jl

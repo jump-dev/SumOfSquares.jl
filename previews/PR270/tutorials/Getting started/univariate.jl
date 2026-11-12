@@ -47,18 +47,18 @@ expected = x^2 - 2x - 3 #src
 # This matrix is the convex combination of the moment matrices corresponding to two atomic measures at `-1` and `3`
 # which allows us to conclude that `-1` and `3` are global minimizers.
 
-η = extractatoms(ν, 1e-4)
+η = atomic_measure(ν, 1e-4)
 minimizers = [η.atoms[1].center; η.atoms[2].center]
 
 # Below are more details on what we mean by convex combination.
 # The moment matrix of the atomic measure at the first minimizer is:
 
-η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), ν.basis.monomials)
+η1 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[1])), keys_as_monomials(ν.basis))
 η1.Q
 
 # The moment matrix of the atomic measure at the second minimizer is:
 
-η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), ν.basis.monomials)
+η2 = moment_matrix(dirac(monomials(x, 0:4), x => round(minimizers[2])), keys_as_monomials(ν.basis))
 η2.Q
 
 # And the moment matrix is the convex combination of both:
@@ -76,7 +76,7 @@ Q12 = η1.Q * η.atoms[1].weight + η2.Q * η.atoms[2].weight
 
 model = SOSModel(CSDP.Optimizer)
 @variable(model, σ)
-@constraint(model, cheby_cref, p >= σ, basis = ChebyshevBasisFirstKind)
+@constraint(model, cheby_cref, p >= σ, basis = Chebyshev)
 @objective(model, Max, σ)
 optimize!(model)
 solution_summary(model)
@@ -93,12 +93,14 @@ cheby_g = gram_matrix(cheby_cref)
 @show cheby_g.basis
 cheby_g.Q
 
-@test polynomial(g) ≈ polynomial(cheby_g) rtol=1e-4 #src
+monomial_basis = FullBasis{Monomial}(x) #src
+@test polynomial(g) ≈ convert_basis(monomial_basis, polynomial(cheby_g)) rtol=1e-4 #src
 
 # they both yields the same Sum-of-Squares decomposition:
 
 cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
-@test isapprox(cheby_sos_dec.ps, [expected], rtol=1e-4) || isapprox(cheby_sos_dec.ps, [-expected], rtol=1e-4) #src
+cheby_ps = convert_basis.(Ref(monomial_basis), cheby_sos_dec.ps) #src
+@test isapprox(cheby_ps, [expected], rtol=1e-4) || isapprox(cheby_ps, [-expected], rtol=1e-4) #src
 
 # The gram matrix in the Chebyshev basis can be understood as follows.
 # To express the polynomial $-x^2 + 2x + 3$ in the Chebyshev basis, we start by
@@ -108,7 +110,7 @@ cheby_sos_dec = sos_decomposition(cheby_cref, 1e-4)
 # $-(2\cos(\theta) - 1) /2 + 2 \cos(\theta) + 5/2.$
 # Therefore, the coefficients in the Chebyshev basis is:
 
-cheby_coefs = [-1/2, 2, 5/2]
+cheby_coefs = [5/2, 2, -1/2]
 
 # We can indeed observe that we obtain the same matrix as `cheby_g.Q`
 

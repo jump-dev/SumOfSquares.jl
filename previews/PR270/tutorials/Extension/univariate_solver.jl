@@ -17,12 +17,10 @@ using Test #src
 module MyUnivariateSolver
 
 import LinearAlgebra
-import MathOptInterface
-const MOI = MathOptInterface
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
-import SumOfSquares
-const SOS = SumOfSquares
+import MathOptInterface as MOI
+import MultivariatePolynomials as MP
+import MultivariateBases as MB
+import SumOfSquares as SOS
 
 function decompose(p::MP.AbstractPolynomial, tol=1e-6)
     vars = MP.effective_variables(p)
@@ -30,7 +28,7 @@ function decompose(p::MP.AbstractPolynomial, tol=1e-6)
         error("$p is not univariate")
     end
     x = first(vars)
-    lead = MP.leadingcoefficient(p)
+    lead = MP.leading_coefficient(p)
     if !isone(lead)
         p = p / lead
     end
@@ -57,9 +55,9 @@ function decompose(p::MP.AbstractPolynomial, tol=1e-6)
         end
         i += 2
     end
-    q1 = MP.mapcoefficientsnz(real, q)
-    q2 = MP.mapcoefficientsnz(imag, q)
-    return SOS.SOSDecomposition([q1, q2])
+    q1 = MP.map_coefficients(real, q)
+    q2 = MP.map_coefficients(imag, q)
+    return SOS.SOSDecomposition([MB.algebra_element(q1), MB.algebra_element(q2)])
 end
 
 mutable struct Optimizer <: MOI.AbstractOptimizer
@@ -87,7 +85,7 @@ function MOI.add_constraint(optimizer::Optimizer, func::MOI.VectorAffineFunction
     if !isempty(func.terms)
         error("Only supports constant polynomials")
     end
-    optimizer.p = MP.polynomial(func.constants, set.monomials)
+    optimizer.p = MP.polynomial(MB.algebra_element(func.constants, set.basis))
     return MOI.ConstraintIndex{typeof(func),typeof(set)}(1) # There will be only ever one constraint so the index does not matter.
 end
 
@@ -133,11 +131,7 @@ function decompose(p, solver)
 end
 
 # We consider the following univariate polynomial from
-# Example 3.35 of [BPT12].
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
+# [Blekherman2012; Example 3.35](@cite).
 
 # Using our solver we find the following decomposition in two squares.
 

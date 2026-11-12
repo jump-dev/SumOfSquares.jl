@@ -22,17 +22,17 @@ function controller(f, g, b, α, degs)
         @warn("Termination status $(termination_status(model)): $(raw_status(model))")
     end
     u = value(c_poly) / value(a)
-    return MultivariatePolynomials.mapcoefficientsnz(coef -> abs(coef) < 1e-6 ? 0.0 : coef, u)
+    return MultivariatePolynomials.map_coefficients(coef -> abs(coef) < 1e-6 ? 0.0 : coef, u)
 end
 
-import DifferentialEquations, Plots
-function phase_plot(f, quiver_scaling, Δt, X0, solver = DifferentialEquations.Tsit5())
+import OrdinaryDiffEqTsit5, Plots
+function phase_plot(f, quiver_scaling, Δt, X0, solver = OrdinaryDiffEqTsit5.Tsit5())
     ∇(vx, vy) = [fi(x[1] => vx, x[2] => vy) for fi in f]
     ∇pt(v, p, t) = ∇(v[1], v[2])
     function traj(v0)
         tspan = (0.0, Δt)
-        prob = DifferentialEquations.ODEProblem(∇pt, v0, tspan)
-        return DifferentialEquations.solve(prob, solver, reltol=1e-8, abstol=1e-8)
+        prob = OrdinaryDiffEqTsit5.ODEProblem(∇pt, v0, tspan)
+        return OrdinaryDiffEqTsit5.solve(prob, solver, reltol=1e-8, abstol=1e-8)
     end
     ticks = -5:0.5:5
     X = repeat(ticks, 1, length(ticks))
@@ -72,4 +72,3 @@ push!(X0, [ 4, -ε])
 phase_plot(f + g * u, 2000, 10.0, X0)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

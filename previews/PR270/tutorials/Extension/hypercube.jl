@@ -32,7 +32,7 @@ using SumOfSquares
 S = algebraicset([xi^2 - 1 for xi in x])
 
 # We will now search for the minimum of `x` over `S` using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
@@ -56,7 +56,7 @@ min_algebraic(S)
 
 # We can see that the Gröbner basis of `S` was computed
 
-@show S.I.gröbnerbasis
+@show S.I.gröbner_basis
 S.I.algo
 
 # The Gröbner basis is simple to compute in this case as the vector
@@ -64,6 +64,7 @@ S.I.algo
 # However, we still need to divide polynomials by the Gröbner basis
 # which can be simplified in this case.
 
+import MutableArithmetics as MA
 const MP = MultivariatePolynomials
 const SS = SemialgebraicSets
 struct HypercubeIdeal{V} <: SS.AbstractPolynomialIdeal
@@ -74,8 +75,12 @@ struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
 end
 MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
-MP.changecoefficienttype(set::HypercubeSet, ::Type) = set
+Base.similar(set::HypercubeSet, ::Type) = set
 SS.ideal(set::HypercubeSet) = set.ideal
+function MA.promote_operation(::typeof(SS.ideal), ::Type{HypercubeSet{V}}) where {V}
+    return HypercubeIdeal{V}
+end
+MP.similar_type(S::Type{<:HypercubeSet}, ::Type) = S
 function Base.rem(p, set::HypercubeIdeal)
     return MP.polynomial(map(MP.terms(p)) do term
         mono = MP.monomial(term)

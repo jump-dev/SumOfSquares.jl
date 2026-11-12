@@ -24,4 +24,3 @@ JuMP.primal_status(model)
 objective_value(model)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

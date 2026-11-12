@@ -8,13 +8,9 @@
 # abstract interface. [DynamicPolynomials](https://github.com/JuliaAlgebra/DynamicPolynomials.jl/)
 # is an implementation of this abstract interface so it can be used with
 # SumOfSquares. Moreover, any other implementation can be used as well. To
-# illustrate, we solve Examples 3.38 of [BPT12] with
+# illustrate, we solve of [Blekherman2012; Examples 3.38](@cite) with
 # [TypedPolynomials](https://github.com/JuliaAlgebra/TypedPolynomials.jl),
 # another implementation of [MultivariatePolynomials](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl).
-#
-# [BPT12] Blekherman, G. & Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
 
 using Test #src
 import TypedPolynomials
@@ -24,6 +20,7 @@ import CSDP
 model = SOSModel(CSDP.Optimizer)
 con_ref = @constraint(model, 2x^4 + 5y^4 - x^2*y^2 >= -2(x^3*y + x + 1))
 optimize!(model)
+@test is_solved_and_feasible(model) #src
 solution_summary(model)
 
 # We see that the problem is feasible. The Sum-of-Squares decomposition can be
@@ -62,7 +59,7 @@ using BenchmarkTools
 @btime let
     TypedPolynomials.@polyvar x y
     S = @set x^3 * y + x == 2x^2 * y^2 && 3x^4 == y
-    SemialgebraicSets.computegröbnerbasis!(S.I)
+    SemialgebraicSets.compute_gröbner_basis!(S.I)
 end
 
 # The time taken by DynamicPolynomials is as follows:
@@ -71,7 +68,7 @@ import DynamicPolynomials
 @btime let
     DynamicPolynomials.@polyvar x y
     S = @set x^3 * y + x == 2x^2 * y^2 && 3x^4 == y
-    SemialgebraicSets.computegröbnerbasis!(S.I)
+    SemialgebraicSets.compute_gröbner_basis!(S.I)
 end
 
 # We see that TypedPolynomials is faster.

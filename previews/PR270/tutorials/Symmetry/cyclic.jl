@@ -50,8 +50,8 @@ end
 # cyclically. So for instance, `CyclicElem(3, 1)` would transform
 # `x_1^3*x_2*x_3^4` into `x_1^4*x_2^3*x_3`.
 
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
+import MultivariateBases as MB
 
 using SumOfSquares
 
@@ -60,7 +60,7 @@ struct Action{V<:MP.AbstractVariable} <: Symmetry.OnMonomials
 end
 Symmetry.SymbolicWedderburn.coeff_type(::Action) = Float64
 function Symmetry.SymbolicWedderburn.action(a::Action, el::CyclicElem, mono::MP.AbstractMonomial)
-    return prod(MP.powers(mono), init=MP.constantmonomial(mono)) do (var, exp)
+    return prod(MP.powers(mono), init=MP.constant_monomial(mono)) do (var, exp)
         index = findfirst(isequal(var), a.variables)
         new_index = mod1(index + el.id, el.n)
         return a.variables[new_index]^exp
@@ -84,8 +84,8 @@ Symmetry.SymbolicWedderburn.action(action, g, poly)
 
 # Let's now find the minimum of `p` by exploiting this symmetry.
 
-import CSDP
-solver = CSDP.Optimizer
+import Hypatia
+solver = Hypatia.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -98,26 +98,20 @@ solution_summary(model)
 
 # Let's look at the symmetry adapted basis used.
 
-gram = gram_matrix(con_ref).sub_gram_matrices #src
-@test length(gram) == 3                       #src
+gram = gram_matrix(con_ref).blocks #src
+@test length(gram) == 2                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-@test length(gram[1].basis.polynomials) == 2 #src
-@test gram[1].basis.polynomials[1] == 1 #src
-@test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
+@test gram[1].basis[1].elements[] ≈ 1 #src
+@test gram[1].basis[2].elements[] ≈ -sum(x)/√3 #src
 @test gram[2].Q ≈ [0.5;;] #src
-@test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (-2x[1] + x[2] + x[3])/√6 #src
-@test gram[3].Q == gram[2].Q #src
-@test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (-x[2] + x[3])/√2 #src
-for gram in gram_matrix(con_ref).sub_gram_matrices
-    println(gram.basis.polynomials)
-    display(gram.Q)
-end
+@test length(gram[2].basis[1].elements) == 2 #src
+@test gram[2].basis[1].elements[1] ≈ (x[1] + x[2] - 2x[3])/√6 #src
+@test gram[2].basis[1].elements[2] ≈ (x[1] - x[2])/√2 #src
+gram_matrix(con_ref)
 
 # Let's look into more details at the last two elements of the basis.
 
-basis = [(-2x[1] + x[2] + x[3])/√6, (-x[2] + x[3])/√2]
+basis = [(x[1] + x[2] - 2x[3])/√6, (x[1] - x[2])/√2]
 
 # This actually constitutes the basis for an invariant subspace corresponding
 # to a group character of degree 2 and multiplicity 1.
@@ -132,46 +126,33 @@ image = [Symmetry.SymbolicWedderburn.action(action, g, p) for p in basis]
 # We can see that they are both still in the same 2-dimensional subspace.
 
 a = -1/2
-b = -√3/2
+b = √3/2
 @test all(image .≈ [a -b; b a] * basis) #src
 [a -b; b a] * basis
 
 # In fact, these last two basis comes from the real decomposition of a complex one.
 
-import CSDP
-solver = CSDP.Optimizer
 model = Model(solver)
-add_bridge(model, SumOfSquares.COI.Bridges.Variable.HermitianToSymmetricPSDBridge)
-add_bridge(model, SumOfSquares.COI.Bridges.Constraint.SplitZeroBridge)
-MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.ZeroPolynomialBridge{Complex{Float64}})
-MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{Complex{Float64}})
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
-cone = SumOfSquares.NonnegPolyInnerCone{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}()
-pp = (1.0 + 0.0im) * poly - (1.0 + 0.0im) * t
-con_ref = @constraint(model, pp in cone, symmetry = pattern)
+cone = SumOfSquares.NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
+con_ref = @constraint(model, poly - t in cone, symmetry = pattern)
 optimize!(model)
 @test termination_status(model) == MOI.OPTIMAL #src
 @test objective_value(model) ≈ 0.0 atol=1e-4 #src
 solution_summary(model)
 
-gram = gram_matrix(con_ref).sub_gram_matrices #src
+gram = gram_matrix(con_ref).blocks #src
 @test length(gram) == 3                       #src
 @test gram[1].Q ≈ [0 0; 0 2] #src
-@test length(gram[1].basis.polynomials) == 2 #src
-@test gram[1].basis.polynomials[1] == 1 #src
-@test gram[1].basis.polynomials[2] ≈ -sum(x)/√3 #src
-@test gram[2].Q ≈ [0.5;;] #src
-@test length(gram[2].basis.polynomials) == 1 #src
-@test gram[2].basis.polynomials[1] ≈ (basis[1] + basis[2] * im) / √2  #src
-@test gram[3].Q ≈ [0.5;;] #src
-@test length(gram[3].basis.polynomials) == 1 #src
-@test gram[3].basis.polynomials[1] ≈ (basis[1] - basis[2] * im) / √2 #src
-for gram in gram_matrix(con_ref).sub_gram_matrices
-    println(gram.basis.polynomials)
-    display(gram.Q)
-end
+@test gram[1].basis[1].elements[] ≈ 1 #src
+@test gram[1].basis[2].elements[] ≈ -sum(x)/√3 #src
+@test gram[2].Q ≈ [0.5;;] rtol = 1e-6 #src
+@test gram[2].basis[1].elements[] ≈ (basis[1] + basis[2] * im) / √2  #src
+@test gram[3].Q ≈ [0.5;;] rtol = 1e-6 #src
+@test gram[3].basis[1].elements[] ≈ (basis[1] - basis[2] * im) / √2 #src
+gram_matrix(con_ref)
 
 # We can see that the real invariant subspace was in fact coming from two complex conjugate complex invariant subspaces:
 

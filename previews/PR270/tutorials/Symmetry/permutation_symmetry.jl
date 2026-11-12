@@ -4,12 +4,9 @@
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Symmetry/symmetry_reduction.ipynb)
 # **Adapted from**: [SymbolicWedderburn example](https://github.com/kalmarek/SymbolicWedderburn.jl/blob/tw/ex_sos/examples/ex_C4.jl)
 
-import MutableArithmetics
-const MA = MutableArithmetics
+import MutableArithmetics as MA
 using MultivariatePolynomials
-const MP = MultivariatePolynomials
 using MultivariateBases
-const MB = MultivariateBases
 
 using Test #src
 using DynamicPolynomials
@@ -35,8 +32,8 @@ G = PermGroup([perm"(1,2,3,4)"])
 
 # We can use this certificate as follows:
 
-import CSDP
-solver = CSDP.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -48,27 +45,20 @@ value(t)
 
 # We indeed find `-1`, let's verify that symmetry was exploited:
 
-g = gram_matrix(con_ref).sub_gram_matrices    #src
-@test length(g) == 4                          #src
-@test length(g[1].basis.polynomials) == 2     #src
-@test g[1].basis.polynomials[1] == 1.0        #src
-@test g[1].basis.polynomials[2] ≈ -0.5 * sum(x) #src
-@test size(g[1].Q) == (2, 2)                  #src
-@test g[1].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-@test g[1].Q[1, 2] ≈ -1.0 atol=1e-6            #src
-@test g[1].Q[2, 2] ≈ 1.0 atol=1e-6            #src
-@test length(g[2].basis.polynomials) == 1     #src
-@test g[2].basis.polynomials[1] ≈ (x[3] - x[1]) / √2 #src
-@test size(g[2].Q) == (1, 1)                  #src
-@test g[2].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-@test length(g[3].basis.polynomials) == 1     #src
-@test g[3].basis.polynomials[1] ≈ (x[4] - x[2]) / √2 #src
-@test size(g[3].Q) == (1, 1)                  #src
-@test g[3].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-@test length(g[4].basis.polynomials) == 1     #src
-@test g[4].basis.polynomials[1] ≈ (-x[1] + x[2] - x[3] + x[4]) / 2 #src
-@test size(g[4].Q) == (1, 1)                  #src
-@test g[4].Q[1, 1] ≈ 1.0 atol=1e-6            #src
-for g in gram_matrix(con_ref).sub_gram_matrices
-    println(g.basis.polynomials)
-end
+gram = gram_matrix(con_ref).blocks    #src
+@test length(gram) == 3                          #src
+@test gram[1].basis[1].elements[] ≈ 1        #src
+@test gram[1].basis[2].elements[] ≈ -0.5 * sum(x) #src
+@test size(gram[1].Q) == (2, 2)                  #src
+@test gram[1].Q[1, 1] ≈ 1.0 atol=1e-6            #src
+@test gram[1].Q[1, 2] ≈ -1.0 atol=1e-6            #src
+@test gram[1].Q[2, 2] ≈ 1.0 atol=1e-6            #src
+@test length(gram[2].basis[1].elements) == 2 #src
+@test gram[2].basis[1].elements[1] ≈ (x[2] - x[4]) / √2 #src
+@test size(gram[2].Q) == (1, 1)                  #src
+@test gram[2].Q[1, 1] ≈ 1.0 atol=1e-6            #src
+@test gram[2].basis[1].elements[2] ≈ (x[1] - x[3]) / √2 #src
+@test gram[3].basis[1].elements[] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
+@test size(gram[3].Q) == (1, 1)                  #src
+@test gram[3].Q[1, 1] ≈ 1.0 atol=1e-6            #src
+gram_matrix(con_ref)

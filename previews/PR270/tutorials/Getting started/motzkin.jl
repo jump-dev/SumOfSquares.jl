@@ -2,11 +2,7 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Getting started/motzkin.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Getting started/motzkin.ipynb)
-# **Adapted from**: (3.6) and (3.19) of [BPT12]
-#
-# [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-# *Semidefinite Optimization and Convex Algebraic Geometry*.
-# Society for Industrial and Applied Mathematics, **2012**.
+# **Adapted from**: [Blekherman2012; (3.6) and (3.19)](@cite)
 
 # The first explicit example of nonnegative polynomial that is not a sum of squares was found by Motzkin in 1967. By the [Arithmetic-geometric mean](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean),
 # $$ \frac{x^4y^2 + x^2y^4 + 1}{3} \ge \sqrt[3]{x^4y^2 \cdot x^2y^4 \cdot 1} = x^2y^2 $$
@@ -20,7 +16,7 @@ using DynamicPolynomials
 motzkin = x^4*y^2 + x^2*y^4 + 1 - 3x^2*y^2
 
 # The Motzkin polynomial is nonnegative but is not a sum of squares as we can verify numerically as follows.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 using SumOfSquares
 import CSDP
@@ -94,7 +90,7 @@ value(deno)
 # We can easily extend `Plots` by adding a recipe to plot bivariate polynomials.
 
 using RecipesBase
-@recipe function f(x::AbstractVector, y::AbstractVector, p::Polynomial)
+@recipe function f(x::AbstractVector, y::AbstractVector, p::AbstractPolynomial)
     x, y, (x, y) -> p(variables(p) => [x, y])
 end
 import Plots

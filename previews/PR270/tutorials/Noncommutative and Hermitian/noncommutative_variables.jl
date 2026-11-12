@@ -14,11 +14,12 @@
 # $(x * y + x^2)^2 = x^4 + x^3y + xyx^2 + xyxy$ is tested to be sum-of-squares.
 
 using Test #src
+import StarAlgebras as SA #src
 using DynamicPolynomials
 @ncpolyvar x y
 p = (x * y + x^2)^2
 
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 using SumOfSquares
 import CSDP
@@ -45,7 +46,7 @@ sos_decomposition(con_ref)
 
 dec = sos_decomposition(con_ref, 1e-6)                    #src
 @test length(dec.ps) == 1                                 #src
-@test sign(first(coefficients(dec.ps[1]))) * dec.ps[1] ≈ x * y + x^2 rtol=1e-5 atol=1e-5 #src
+@test sign(first(SA.coeffs(dec.ps[1]))) * dec.ps[1] ≈ x * y + x^2 rtol=1e-5 atol=1e-5 #src
 sos_decomposition(con_ref, 1e-6)
 
 # ## Example 2.2

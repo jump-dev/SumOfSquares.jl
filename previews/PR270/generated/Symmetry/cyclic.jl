@@ -37,8 +37,8 @@ function Base.iterate(c::CyclicGroup, prev::CyclicElem=CyclicElem(c.n, -1))
     end
 end
 
-import MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
+import MultivariateBases as MB
 
 using SumOfSquares
 
@@ -47,7 +47,7 @@ struct Action{V<:MP.AbstractVariable} <: Symmetry.OnMonomials
 end
 Symmetry.SymbolicWedderburn.coeff_type(::Action) = Float64
 function Symmetry.SymbolicWedderburn.action(a::Action, el::CyclicElem, mono::MP.AbstractMonomial)
-    return prod(MP.powers(mono), init=MP.constantmonomial(mono)) do (var, exp)
+    return prod(MP.powers(mono), init=MP.constant_monomial(mono)) do (var, exp)
         index = findfirst(isequal(var), a.variables)
         new_index = mod1(index + el.id, el.n)
         return a.variables[new_index]^exp
@@ -65,8 +65,8 @@ G = CyclicGroup(N)
 poly = sum(x[i] * x[mod1(i + 1, N)] for i in 1:N) + sum(x.^2)
 Symmetry.SymbolicWedderburn.action(action, g, poly)
 
-import CSDP
-solver = CSDP.Optimizer
+import Hypatia
+solver = Hypatia.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -75,39 +75,26 @@ con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
 solution_summary(model)
 
-for gram in gram_matrix(con_ref).sub_gram_matrices
-    println(gram.basis.polynomials)
-    display(gram.Q)
-end
+gram_matrix(con_ref)
 
-basis = [(-2x[1] + x[2] + x[3])/√6, (-x[2] + x[3])/√2]
+basis = [(x[1] + x[2] - 2x[3])/√6, (x[1] - x[2])/√2]
 
 image = [Symmetry.SymbolicWedderburn.action(action, g, p) for p in basis]
 
 a = -1/2
-b = -√3/2
+b = √3/2
 [a -b; b a] * basis
 
-import CSDP
-solver = CSDP.Optimizer
 model = Model(solver)
-add_bridge(model, SumOfSquares.COI.Bridges.Variable.HermitianToSymmetricPSDBridge)
-add_bridge(model, SumOfSquares.COI.Bridges.Constraint.SplitZeroBridge)
-MOI.Bridges.add_bridge(backend(model).optimizer, PolyJuMP.ZeroPolynomialBridge{Complex{Float64}})
-MOI.Bridges.add_bridge(backend(model).optimizer, SumOfSquares.Bridges.Constraint.SOSPolynomialBridge{Complex{Float64}})
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
-cone = SumOfSquares.NonnegPolyInnerCone{SumOfSquares.COI.HermitianPositiveSemidefiniteConeTriangle}()
-pp = (1.0 + 0.0im) * poly - (1.0 + 0.0im) * t
-con_ref = @constraint(model, pp in cone, symmetry = pattern)
+cone = SumOfSquares.NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
+con_ref = @constraint(model, poly - t in cone, symmetry = pattern)
 optimize!(model)
 solution_summary(model)
 
-for gram in gram_matrix(con_ref).sub_gram_matrices
-    println(gram.basis.polynomials)
-    display(gram.Q)
-end
+gram_matrix(con_ref)
 
 complex_basis = basis[1] + im * basis[2]
 image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)
@@ -115,4 +102,3 @@ image = Symmetry.SymbolicWedderburn.action(action, g, complex_basis)
 (a + b * im) * complex_basis
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

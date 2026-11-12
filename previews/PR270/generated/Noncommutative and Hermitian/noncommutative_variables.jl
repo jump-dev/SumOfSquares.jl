@@ -36,4 +36,3 @@ gram_matrix(con_ref).Q
 sos_decomposition(con_ref, 1e-6)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

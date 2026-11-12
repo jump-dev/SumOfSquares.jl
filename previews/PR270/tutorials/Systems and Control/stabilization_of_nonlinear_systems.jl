@@ -33,17 +33,17 @@ function controller(f, g, b, α, degs)
         @warn("Termination status $(termination_status(model)): $(raw_status(model))")
     end
     u = value(c_poly) / value(a)
-    return MultivariatePolynomials.mapcoefficientsnz(coef -> abs(coef) < 1e-6 ? 0.0 : coef, u)
+    return MultivariatePolynomials.map_coefficients(coef -> abs(coef) < 1e-6 ? 0.0 : coef, u)
 end
 
-import DifferentialEquations, Plots
-function phase_plot(f, quiver_scaling, Δt, X0, solver = DifferentialEquations.Tsit5())
+import OrdinaryDiffEqTsit5, Plots
+function phase_plot(f, quiver_scaling, Δt, X0, solver = OrdinaryDiffEqTsit5.Tsit5())
     ∇(vx, vy) = [fi(x[1] => vx, x[2] => vy) for fi in f]
     ∇pt(v, p, t) = ∇(v[1], v[2])
     function traj(v0)
         tspan = (0.0, Δt)
-        prob = DifferentialEquations.ODEProblem(∇pt, v0, tspan)
-        return DifferentialEquations.solve(prob, solver, reltol=1e-8, abstol=1e-8)
+        prob = OrdinaryDiffEqTsit5.ODEProblem(∇pt, v0, tspan)
+        return OrdinaryDiffEqTsit5.solve(prob, solver, reltol=1e-8, abstol=1e-8)
     end
     ticks = -5:0.5:5
     X = repeat(ticks, 1, length(ticks))
@@ -61,7 +61,7 @@ g = [0, 1]
 f = [x[2] - x[1]^3 + x[1]^2, 0]
 b = 3x[1]^2 + 2x[1]*x[2] + 2x[2]^2
 u = controller(f, g, b, 4, 0:3)
-@test monomials(u) == [x[2]^3, x[1], x[2]] #src
+@test monomials(u) == [x[2], x[1], x[2]^3] #src
 
 # We find the controller above which gives the following phase plot.
 
@@ -73,7 +73,7 @@ g = [0, 1]
 f = [2x[1]^3 + x[1]^2*x[2] - 6x[1]*x[2]^2 + 5x[2]^3, 0]
 b = x[1]^2 + x[2]^2
 u = controller(f, g, b, 2.5, 0:3)
-@test monomials(u) == [x[1]^3, x[1]^2*x[2], x[1]*x[2]^2, x[2]^3] #src
+@test monomials(u) == [x[2]^3, x[1]*x[2]^2, x[1]^2*x[2], x[1]^3] #src
 
 # We find the controller above which gives the following phase plot.
 
@@ -85,7 +85,7 @@ g = [0, x[2]]
 f = [-6x[1]*x[2]^2 - x[1]^2*x[2] + 2x[2]^3, 0]
 b = x[1]^2 + x[2]^2
 u = controller(f, g, b, 3, 0:2)
-@test monomials(u) == [x[1]^2, x[2]^2] #src
+@test monomials(u) == [x[2]^2, x[1]^2] #src
 
 # We find the controller above which gives the following phase plot.
 

@@ -19,9 +19,10 @@ end
 
 min_algebraic(S)
 
-@show S.I.gröbnerbasis
+@show S.I.gröbner_basis
 S.I.algo
 
+import MutableArithmetics as MA
 const MP = MultivariatePolynomials
 const SS = SemialgebraicSets
 struct HypercubeIdeal{V} <: SS.AbstractPolynomialIdeal
@@ -32,8 +33,12 @@ struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
 end
 MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
-MP.changecoefficienttype(set::HypercubeSet, ::Type) = set
+Base.similar(set::HypercubeSet, ::Type) = set
 SS.ideal(set::HypercubeSet) = set.ideal
+function MA.promote_operation(::typeof(SS.ideal), ::Type{HypercubeSet{V}}) where {V}
+    return HypercubeIdeal{V}
+end
+MP.similar_type(S::Type{<:HypercubeSet}, ::Type) = S
 function Base.rem(p, set::HypercubeIdeal)
     return MP.polynomial(map(MP.terms(p)) do term
         mono = MP.monomial(term)
@@ -66,4 +71,3 @@ min_algebraic_rational(H, 0)
 min_algebraic_rational(H, 1)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
-

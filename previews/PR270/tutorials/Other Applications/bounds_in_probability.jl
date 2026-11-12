@@ -2,7 +2,7 @@
 
 #md # [![](https://mybinder.org/badge_logo.svg)](@__BINDER_ROOT_URL__/generated/Other Applications/bounds_in_probability.ipynb)
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Other Applications/bounds_in_probability.ipynb)
-# **Adapted from**: SOSTOOLS' SOSDEMO8 (See Section 4.8 of [SOSTOOLS User's Manual](http://sysos.eng.ox.ac.uk/sostools/sostools.pdf))
+# **Adapted from**: SOSTOOLS' SOSDEMO8 (See Section 4.8 of [SOSTOOLS User's Manual](https://github.com/oxfordcontrol/SOSTOOLS/blob/SOSTOOLS400/docs/SOSTOOLS_400.pdf))
 
 using Test #src
 
@@ -28,9 +28,9 @@ using DynamicPolynomials
 @polyvar x
 monos = [1, x, x^2]
 using SumOfSquares
-μ = measure([μ0, μ1, μ2], monos)
+μ = moment_vector([μ0, μ1, μ2], monos)
 
-# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.8/installation/#Supported-solvers) for a list of the available choices.
+# We need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 # We use `SOSModel` instead of `Model` to be able to use the `>=` syntax for Sum-of-Squares constraints.
 
 using CSDP
