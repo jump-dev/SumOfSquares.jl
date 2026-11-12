@@ -40,7 +40,8 @@ J = [j(x => zeros(2)) for j in differentiate(F, x)]
 # Its eigenvalues have negative real part. The linear term `w ⋅ x` of a
 # Koopman eigenfunction must satisfy `J' * w = λ * w`, so we need a **left**
 # eigenvector of `J`. A right eigenvector leaves a nonzero linear residual
-# which the higher-degree terms cannot cancel.
+# which the higher-degree terms cannot cancel. Example 2.6 calls `w` a
+# right eigenvector, but this contradicts Eq. (2.7) on p. 42 of the book.
 
 E = eigen(J')
 λ = E.values[end]
@@ -50,6 +51,10 @@ w = E.vectors[:, end]
 
 # Eigenfunctions are defined up to a scalar factor. We choose a unit gradient
 # with positive second component to fix the sign of the contour labels.
+# Figure 2.3 appears to use the original coordinates, with the equilibrium
+# at `(x_eq, x_eq)`, and a different normalization. Our axes are shifted to
+# the equilibrium and our gradient has unit norm, so the contour labels
+# need not coincide with those in the book.
 
 if w[2] < 0
     w = -w
@@ -175,3 +180,9 @@ maximum(abs, laplace[inside] - ϕs[inside])
 inner = [u^2 + v^2 ≤ (r / 2)^2 for v in x2s, u in x1s]
 maximum(abs, laplace[inner] - ϕs[inner])
 @test maximum(abs, laplace[inner] - ϕs[inner]) < 1e-4 #src
+
+# The book reports an overall error of `2.5e-3`, but does not specify the
+# observable used for the Laplace average, its finite integration horizon,
+# or the error norm. That number cannot be directly compared with the
+# finite-time identity discrepancies above, especially when eigenfunctions
+# have different scalar normalizations.
