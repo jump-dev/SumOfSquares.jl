@@ -14,8 +14,9 @@ e = A * x - y
 f = e'e - bz'bz / 4
 K = @set sum(x) <= 4 && 3x[2] + x[3] <= 6 && f >= 0 && 0 <= x[1] && x[1] <= 2 && 0 <= x[2] && 0 <= x[3] && x[3] <= 3
 
-import Clarabel
-solver = Clarabel.Optimizer
+import Hypatia
+using Dualization
+solver = dual_optimizer(Hypatia.Optimizer)
 
 function solve(d)
     model = SOSModel(solver)
