@@ -72,7 +72,7 @@ X = monomials([x, y], 0:2)
 
 # We want the denominator polynomial to be strictly positive, this prevents the trivial solution deno = 0 for instance.
 
-@constraint(model, polynomial(deno) >= 1)
+@constraint(model, deno >= 1)
 @constraint(model, deno * motzkin >= 0)
 optimize!(model)
 
