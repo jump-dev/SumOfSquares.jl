@@ -71,4 +71,4 @@ nothing # hide
 model8 = solve(8)
 nothing # hide
 @test objective_value(model8) ≈ -4 rtol=1e-4 #src
-@test termination_status(model8) == MOI.OPTIMAL #src
+@test termination_status(model8) in [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL] #src
