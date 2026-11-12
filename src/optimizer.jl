@@ -9,6 +9,19 @@ The level of the hierarchy is chosen for each constraint with the
 `PolyJuMP.MultiplierMaxdegree` constraint attribute.
 The relaxation is solved with `solver` and the bound can be queried with
 `MOI.ObjectiveBound()`.
+
+*Polynomial matrix inequalities* `G_k(x) ⪰ 0` are also supported with
+[`SOSMatrixCone`](@ref) as certificate of positive semidefiniteness of their
+multiplier [HL06], see [`PolyJuMP.matrix_nonnegativity_cone`](@ref). Such a
+constraint is added by constraining a matrix of polynomial expressions to
+`PSDCone()`; a [`SOSCone`](@ref) constraint whose coefficients are affine in
+`x` is also reformulated into one by the Sum-of-Squares bridges, its Gram
+matrix becoming `G_k`.
+
+[HL06] Henrion, Didier and Lasserre, Jean-Bernard.
+*Convergent relaxations of polynomial matrix inequalities and static output
+feedback.*
+IEEE Transactions on Automatic Control 51.2 (2006): 192-202.
 """
 mutable struct Optimizer{T} <: PolyJuMP.AbstractRelaxationOptimizer{T}
     model::PolyJuMP.Model{T}
@@ -40,6 +53,8 @@ Optimizer(solver; kws...) = Optimizer{Float64}(solver; kws...)
 MOI.get(::Optimizer, ::MOI.SolverName) = "SumOfSquares"
 
 PolyJuMP.nonnegativity_cone(::Optimizer) = SOSCone()
+
+PolyJuMP.matrix_nonnegativity_cone(::Optimizer) = SOSMatrixCone()
 
 """
     PolyJuMP.recover_solutions(model::Optimizer, relaxation, cref, lagrangian)
