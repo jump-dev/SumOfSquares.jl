@@ -5,7 +5,6 @@ using Test
 using LinearAlgebra
 import MathOptInterface as MOI
 using JuMP
-using DynamicPolynomials
 using SumOfSquares
 using DynamicPolynomials
 import MultivariateBases as MB
