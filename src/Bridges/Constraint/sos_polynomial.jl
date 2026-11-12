@@ -60,17 +60,20 @@ function MOI.Bridges.Constraint.bridge_constraint(
     # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
     # FIXME convert needed because the coefficient type of `r` is `Any` otherwise if `domain` is `AlgebraicSet`
     domain = MP.similar(set.domain, T)
-    poly = SOS.Certificate.reduced_polynomial(
-        set.certificate,
-        # MOI does not modify the coefficients of the functions so we can modify `p`.
-        # without altering `f`.
-        # The basis may be copied by MA however so we need to copy it.
-        _poly(MOI.Utilities.scalarize(func), set.basis), # TODO use `copy(set.basis)` once https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/83 is done
-        domain,
-    )
+    # MOI does not modify the coefficients of the functions so we can modify `p`.
+    # without altering `f`.
+    # The basis may be copied by MA however so we need to copy it.
+    poly = _poly(MOI.Utilities.scalarize(func), set.basis) # TODO use `copy(set.basis)` once https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/83 is done
+    # The reduced polynomial is only used to compute the Gram basis. The zero
+    # basis already maps the coefficients of `poly` to the coefficients of its
+    # reduction so we keep `poly` for the constraint. This way, the adjoint map
+    # is also defined for the monomials of `poly` that are reduced.
     gram_basis = SOS.Certificate.gram_basis(
         set.certificate,
-        SOS.Certificate.with_variables(poly, set.domain),
+        SOS.Certificate.with_variables(
+            SOS.Certificate.reduced_polynomial(set.certificate, poly, domain),
+            set.domain,
+        ),
     )
     implicit_basis = MB.implicit_basis(set.certificate)
     if SA.basis(poly) != implicit_basis
@@ -144,7 +147,6 @@ function MOI.Bridges.inverse_map_function(::SOSPolynomialBridge, f)
             "The linear map is not invertible for some basis transformation, use a `CachingOptimizer` layer",
         ),
     )
-    # Does not work with QuotientBasis
     #return SA.coeffs(MP.polynomial(f, bridge.new_basis), bridge.set.basis)
 end
 
@@ -168,13 +170,27 @@ function MOI.get(
     bridge::SOSPolynomialBridge,
 )
     set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
-    return MultivariateMoments.moment_vector(
+    return _moment_vector(
         MOI.get(
             model,
             MOI.ConstraintDual(attr.result_index),
             bridge.constraint,
         ),
         set.basis,
+    )
+end
+
+function _moment_vector(values, basis)
+    return MultivariateMoments.moment_vector(values, basis)
+end
+
+# The coefficients in `basis` are `basis.matrix` times the coefficients in
+# `basis.basis` so the moments of the elements of `basis.basis` are obtained
+# with the adjoint map.
+function _moment_vector(values, basis::MB.QuotientBasis)
+    return MultivariateMoments.moment_vector(
+        transpose(basis.matrix) * values,
+        basis.basis,
     )
 end
 
