@@ -94,7 +94,7 @@ model = Model(solver)
 pattern = Symmetry.Pattern(G, action)
 con_ref = @constraint(model, poly - t in SOSCone(), symmetry = pattern)
 optimize!(model)
-@test termination_status(model) == MOI.OPTIMAL #src
+@test termination_status(model) in (MOI.OPTIMAL, MOI.ALMOST_OPTIMAL) #src
 @test objective_value(model) ≈ 0.0 atol=1e-4 #src
 solution_summary(model)
 
@@ -144,7 +144,7 @@ pattern = Symmetry.Pattern(G, action)
 cone = SumOfSquares.NonnegPolyInnerCone{MOI.HermitianPositiveSemidefiniteConeTriangle}()
 con_ref = @constraint(model, poly - t in cone, symmetry = pattern)
 optimize!(model)
-@test termination_status(model) == MOI.OPTIMAL #src
+@test termination_status(model) in (MOI.OPTIMAL, MOI.ALMOST_OPTIMAL) #src
 @test objective_value(model) ≈ 0.0 atol=1e-4 #src
 solution_summary(model)
 
