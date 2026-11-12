@@ -267,7 +267,7 @@ end
 _is_monomial_basis(::Type{<:MB.AbstractMonomialIndexed}) = false
 _is_monomial_basis(::Type{<:Union{MB.Monomial,MB.ScaledMonomial}}) = true
 function _is_monomial_basis(
-    ::Type{<:Union{MB.FullBasis{B},MB.SubBasis{B}}},
+    ::Type{<:SA.AbstractBasis{<:MB.Polynomial{B}}},
 ) where {B}
     return _is_monomial_basis(B)
 end
@@ -514,7 +514,7 @@ function half_newton_polytope(
                 for i in 1:div(MP.degree(mono), 2)
                     w = _chip(mono, -i)
                     if within_bounds(w, bounds)
-                        push!(keys, MP.exponents(w, MP.variables(full)))
+                        push!(keys, full[w])
                     end
                 end
             end
@@ -523,22 +523,6 @@ function half_newton_polytope(
         basis = SA.SubBasis(full, keys)
         return basis, typeof(basis)[]
     end
-end
-
-function half_newton_polytope(
-    p::SA.AlgebraElement,
-    gs::AbstractVector{<:MP.AbstractPolynomialLike},
-    vars,
-    maxdegree,
-    filter,
-)
-    return half_newton_polytope(
-        p,
-        MB.algebra_element.(gs),
-        vars,
-        maxdegree,
-        filter,
-    )
 end
 
 function half_newton_polytope(
@@ -672,7 +656,7 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
 end
 
 function _term(α, p::MB.Polynomial)
-    return MB.term_element(α, p)
+    return MP.term_element(α, p)
 end
 
 function _term_constant_monomial(α, p::MB.Polynomial{B,M}) where {B,M}
@@ -710,14 +694,8 @@ function post_filter(
     # We use `_DictCoefficients` instead `SA.SparseCoefficients` because
     # we need to keep it canonicalized (without duplicate actually)
     # and don't care about the list of monomials being ordered
-    # TODO Base.promote_op is a bit hacky, MA.promote_operation or MP.exponents_type would be better
     counter = MB.algebra_element(
-        _DictCoefficients(
-            Dict{
-                Base.promote_op(MP.exponents, MP.monomial_type(typeof(poly))),
-                SignCount,
-            }(),
-        ),
+        _DictCoefficients(Dict{SA.key_type(SA.basis(poly)),SignCount}()),
         MB.implicit_basis(SA.basis(poly)),
     )
     cache = zero(SignCount, MB.algebra(MB.implicit_basis(SA.basis(poly))))

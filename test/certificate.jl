@@ -1,4 +1,5 @@
-using LinearAlgebra
+using LinearAlgebra, Test, SumOfSquares, DynamicPolynomials
+import MathOptInterface as MOI
 import StarAlgebras as SA
 import MutableArithmetics as MA
 import MultivariatePolynomials as MP
@@ -20,8 +21,8 @@ const SOS = SumOfSquares
     q = a * b + b * a
     v = SumOfSquares.Certificate.with_variables(q, FullSpace())
     @test v.inner === q
-    @test MP.variables(v.inner) == [a, b, a]
-    @test MP.variables(v) == [a, b, a]
+    @test MP.variables(v.inner) == [a, b]
+    @test MP.variables(v) == [a, b]
 end
 
 @testset "Monomial selection for certificate" begin

@@ -3,17 +3,48 @@ export GramMatrix, BlockDiagonalGramMatrix
 import MultivariateMoments: vectorized_symmetric_matrix, SymMatrix, value_matrix
 export gram_operate, value_matrix
 
-abstract type AbstractDecomposition{T} <: MP.AbstractPolynomialLike{T} end
+abstract type AbstractDecomposition{T} end
 
-Base.:(+)(x::_APL, y::AbstractDecomposition) = x + MP.polynomial(y)
-Base.:(+)(x::AbstractDecomposition, y::_APL) = MP.polynomial(x) + y
-function Base.:(+)(x::AbstractDecomposition, y::AbstractDecomposition)
-    return MP.polynomial(x) + MP.polynomial(y)
+function MP.coefficient_type(
+    ::Union{AbstractDecomposition{T},Type{<:AbstractDecomposition{T}}},
+) where {T}
+    return T
 end
-Base.:(-)(x::_APL, y::AbstractDecomposition) = x - MP.polynomial(y)
-Base.:(-)(x::AbstractDecomposition, y::_APL) = MP.polynomial(x) - y
-function Base.:(-)(x::AbstractDecomposition, y::AbstractDecomposition)
-    return MP.polynomial(x) - MP.polynomial(y)
+Base.eltype(::Type{<:AbstractDecomposition{T}}) where {T} = T
+Base.broadcastable(p::AbstractDecomposition) = Ref(p)
+
+for op in (:+, :-, :*, :(==))
+    @eval begin
+        function Base.$op(
+            x::Union{_AE_APL,JuMP.AbstractJuMPScalar,Number,T},
+            y::AbstractDecomposition{T},
+        ) where {T}
+            return $op(x, MP.polynomial(y))
+        end
+        function Base.$op(
+            x::AbstractDecomposition{T},
+            y::Union{_AE_APL,JuMP.AbstractJuMPScalar,Number,T},
+        ) where {T}
+            return $op(MP.polynomial(x), y)
+        end
+        function Base.$op(x::AbstractDecomposition, y::AbstractDecomposition)
+            return $op(MP.polynomial(x), MP.polynomial(y))
+        end
+    end
+end
+
+Base.:-(p::AbstractDecomposition) = -MP.polynomial(p)
+function Base.:/(p::AbstractDecomposition{T}, α::Union{T,Number}) where {T}
+    return MP.polynomial(p) / α
+end
+function LinearAlgebra.norm(p::AbstractDecomposition, r::Real = 2)
+    return norm(MP.polynomial(p), r)
+end
+function MP.differentiate(p::AbstractDecomposition, x)
+    return MP.differentiate(MP.polynomial(p), x)
+end
+function MP.subs(p::AbstractDecomposition, s::MP.AbstractSubstitution...)
+    return MP.subs(MP.polynomial(p), s...)
 end
 
 abstract type AbstractGramMatrix{T,B,U} <: AbstractDecomposition{U} end
@@ -41,9 +72,6 @@ function MP.polynomial_type(
 ) where {T,B,U}
     return MP.polynomial_type(G, U)
 end
-
-Base.:(==)(p::_APL, q::AbstractGramMatrix) = p == MP.polynomial(q)
-Base.:(==)(p::AbstractGramMatrix, q::AbstractGramMatrix) = iszero(p - q)
 
 """
     struct GramMatrix{T, B, U, MT <: AbstractMatrix{T}} <: AbstractGramMatrix{T, B, U}
