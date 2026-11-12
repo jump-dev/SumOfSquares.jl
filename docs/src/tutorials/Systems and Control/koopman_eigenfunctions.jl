@@ -6,10 +6,12 @@
 #
 # [MAI20] Mauroy, Alexandre, Aivar Sootla, and Igor Mezić.
 # *Koopman framework for global stability analysis.*
-# The Koopman Operator in Systems and Control: Concepts, Methodologies, and Applications (2020): 35-58.
+# The Koopman Operator in Systems and Control: Concepts, Methodologies,
+# and Applications (2020): 35-58.
 
 using Test #src
 using DynamicPolynomials
+using LinearAlgebra
 @polyvar x[1:2]
 
 a = 1
@@ -18,90 +20,158 @@ I = 0.05
 γ = 1
 F0 = [-x[2] - x[1] * (x[1] - 1) * (x[1] - a) + I, ε * (x[1] - γ * x[2])]
 
-# We move equilibrium `(0.0256, 0.0256)` to the origin
+# We move the equilibrium, approximately `(0.0256, 0.0256)`, to the origin.
+# Since `γ = 1`, both coordinates are equal. Newton's method refines the
+# rounded value so that the translated vector field vanishes at the origin.
 
-x1 = x2 = 0.0256
-F = [f(x => [x[1] + x1, x[2] + x2]) for f in F0]
+x_eq = let z = 0.0256
+    for _ in 1:5
+        z -= (-z - z * (z - 1)^2 + I) / (-2 + 4z - 3z^2)
+    end
+    z
+end
+F = [f(x => x .+ x_eq) for f in F0]
+@test norm([f(x => zeros(2)) for f in F]) < 1e-14 #src
 
-# We compute the Jacobian at the equilibrium
+# We compute the Jacobian at the equilibrium.
 
 J = [j(x => zeros(2)) for j in differentiate(F, x)]
 
-# We see that its eigenvalues indeed have negative real part:
-using LinearAlgebra
-E = eigen(J)
+# Its eigenvalues have negative real part. The linear term `w ⋅ x` of a
+# Koopman eigenfunction must satisfy `J' * w = λ * w`, so we need a **left**
+# eigenvector of `J`. A right eigenvector leaves a nonzero linear residual
+# which the higher-degree terms cannot cancel.
 
-# We set `w` as its dominant eigenvector:
-
+E = eigen(J')
 λ = E.values[end]
 w = E.vectors[:, end]
+@test all(<(0), E.values) #src
+@test J' * w ≈ λ * w #src
+
+# Eigenfunctions are defined up to a scalar factor. We choose a unit gradient
+# with positive second component to fix the sign of the contour labels.
+
+if w[2] < 0
+    w = -w
+end
+
+# We approximate the eigenfunction on the disk of radius `r`. Working in
+# coordinates `y = x / r` avoids the very small high-degree monomials on
+# this disk. The scaled vector field is `G(y) = F(r * y) / r`.
 
 using SumOfSquares
 r = 0.3
-X = @set x[1]^2 + x[2]^2 ≤ r^2
+@polyvar y[1:2]
+G = [f(x => r .* y) / r for f in F]
+X = @set y[1]^2 + y[2]^2 ≤ 1
 
-# We define the the program for the FitzHugh-Nagumo problem below:
+# We define the program for the FitzHugh-Nagumo problem below:
 # `N` is the degree of `ϕN` as defined in [MAI20, p. 50] and `M` is the
 # degree of the multipliers for the constraints of `X`.
 # As `maxdegree` corresponds to the degree of the multiplier multiplied
-# by `r^2 - x[1]^2 - x[2]^2`, we set it to `M + 2`.
+# by `1 - y[1]^2 - y[2]^2`, we set it to `M + 2`.
 
 function fitzhugh_nagumo(solver, N, M)
     model = SOSModel(solver)
-    @variable(model, γ)
-    @objective(model, Min, γ)
-    @variable(model, ϕN, Poly(monomials(x, 2:N)))
-    ϕ = w ⋅ x + ϕN
-    ∇ϕ = differentiate(ϕ, x)
-    @constraint(model, -γ ≤ F ⋅ ∇ϕ - λ * ϕ, domain = X, maxdegree = M + 2)
-    @constraint(model, F ⋅ ∇ϕ - λ * ϕ ≤ γ, domain = X, maxdegree = M + 2)
+    @variable(model, η)
+    @objective(model, Min, η)
+    @variable(model, ϕN, Poly(monomials(y, 2:N)))
+    ϕ = r * (w ⋅ y) + ϕN
+    residual = G ⋅ differentiate(ϕ, y) - λ * ϕ
+    @constraint(model, -η ≤ residual, domain = X, maxdegree = M + 2)
+    @constraint(model, residual ≤ η, domain = X, maxdegree = M + 2)
     optimize!(model)
-    return ϕ, model
+    return ϕ(y => x ./ r), model
 end
 
-# In [MAI20, p. 50], we read that the result is obtained with `N = 10` and
-# `M = 20`.
+# In [MAI20, p. 50], the result is obtained with `N = 10` and `M = 20`.
 
 import CSDP
-ϕ, model = fitzhugh_nagumo(CSDP.Optimizer, 10, 20)
+solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
+ϕ, model = fitzhugh_nagumo(solver, 10, 20)
 solution_summary(model)
+@test termination_status(model) in [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL] #src
+@test primal_status(model) in [MOI.FEASIBLE_POINT, MOI.NEARLY_FEASIBLE_POINT] #src
+@test 0 ≤ objective_value(model) < 1e-5 #src
 
-# The optimal value of `ϕ` is obtained as follows:
+# The optimal polynomial is obtained as follows:
 
 ϕ_opt = value(ϕ)
+residual_opt = F ⋅ differentiate(ϕ_opt, x) - λ * ϕ_opt
+@test abs(ϕ_opt(x => zeros(2))) < 1e-14 #src
+@test [d(x => zeros(2)) for d in differentiate(ϕ_opt, x)] ≈ w #src
 
-# Its plot is given below:
+# We plot its level sets inside the disk where the residual is constrained.
+# Values outside this disk are extrapolations and are excluded from both
+# the plot and the error calculation below.
 
 using Plots
-x1s = x2s = range(-0.3, stop = 0.3, length = 40)
-ϕs = ϕ_opt.(x1s', x2s)
-contour(x1s, x2s, ϕs, levels=[-0.2, -0.1, 0, 0.1, 0.2, 0.5, 0.7])
-θ = range(0, stop = 2π, length = 100)
+x1s = x2s = range(-r, r, length = 40)
+inside = [u^2 + v^2 ≤ r^2 for v in x2s, u in x1s]
+ϕs = [
+    inside[i, j] ? ϕ_opt(x => [u, v]) : NaN for
+    (i, v) in enumerate(x2s), (j, u) in enumerate(x1s)
+]
+residuals = [residual_opt(x => [u, v]) for v in x2s, u in x1s] #src
+@test maximum(abs, residuals[inside]) ≤ objective_value(model) + 1e-7 #src
+contour(
+    x1s,
+    x2s,
+    ϕs;
+    levels = [-0.2, -0.1, 0, 0.1, 0.2, 0.5, 0.7],
+    aspect_ratio = :equal,
+    xlabel = "x₁",
+    ylabel = "x₂",
+)
+θ = range(0, 2π, length = 100)
 plot!(r * cos.(θ), r * sin.(θ), label = "")
 scatter!([0], [0], label = "")
 
-# We can compute the Laplace average as follows:
+# We can check the Koopman identity using the finite-time Laplace average
+# of `ϕ_opt`. An exact eigenfunction satisfies
+# `exp(-λ * t) * ϕ(S(t, x)) = ϕ(x)` along a trajectory.
+# Solve each trajectory once, then integrate using its dense interpolant.
+# Tight tolerances matter because `exp(-λ * t)` amplifies integration errors.
 
-using DifferentialEquations
-function S(t, x1, x2, solver = DifferentialEquations.Tsit5())
-    tspan = (0.0, t)
-    prob = DifferentialEquations.ODEProblem((v, p, t) -> [f(x => v) for f in F], [x1, x2], tspan)
-    traj = DifferentialEquations.solve(prob, solver, reltol=1e-4, abstol=1e-4)
-    return traj[end]
-end
-
+import OrdinaryDiffEqTsit5
 using QuadGK
-function laplace_average(f, λ, x1, x2, T = 10, args...)
-    v, _ = quadgk(0, T, rtol=1e-3) do t
-        s = S(t, x1, x2, args...)
-        return f(S(t, x1, x2, args...)) * exp(-λ * t)
-    end
+function laplace_average(f, λ, x1, x2, T = 10.0)
+    prob = OrdinaryDiffEqTsit5.ODEProblem(
+        (v, p, t) -> [g(x => v) for g in F],
+        [x1, x2],
+        (0.0, T),
+    )
+    traj = OrdinaryDiffEqTsit5.solve(
+        prob,
+        OrdinaryDiffEqTsit5.Tsit5();
+        reltol = 1e-11,
+        abstol = 1e-13,
+    )
+    v, _ = quadgk(t -> f(traj(t)) * exp(-λ * t), 0.0, T; rtol = 1e-7)
     return v / T
 end
 
-lap(x1, x2) = laplace_average(v -> ϕ_opt(x => v), λ, x1, x2, 10)
-laplace = lap.(x1s', x2s)
+lap(x1, x2) = laplace_average(v -> ϕ_opt(x => v), λ, x1, x2)
+laplace = [
+    inside[i, j] ? lap(u, v) : NaN for
+    (i, v) in enumerate(x2s), (j, u) in enumerate(x1s)
+]
 
-# The error is given by:
+# We report the maximum absolute discrepancy on the disk. Unlike a matrix
+# norm over the enclosing square, this error excludes unconstrained points
+# and does not grow merely because the grid is refined. It checks the
+# eigenfunction identity over a finite time, rather than providing a bound
+# on the error with respect to the exact eigenfunction.
 
-norm(laplace - ϕs)
+maximum(abs, laplace[inside] - ϕs[inside])
+
+# The disk is not forward invariant: some trajectories starting inside it
+# leave it, so a small residual on the disk does not guarantee a small
+# Laplace-average discrepancy for all those initial states. Increasing `T`
+# does not fix extrapolation outside the approximation domain. For initial
+# states in the smaller disk of radius `r / 2`, the discrepancy is much
+# smaller:
+
+inner = [u^2 + v^2 ≤ (r / 2)^2 for v in x2s, u in x1s]
+maximum(abs, laplace[inner] - ϕs[inner])
+@test maximum(abs, laplace[inner] - ϕs[inner]) < 1e-4 #src
