@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="referrer" content="no-referrer"/><title>Trajectory planning around obstacles · SumOfSquares</title><meta name="title" content="Trajectory planning around obstacles · SumOfSquares"/><meta property="og:title" content="Trajectory planning around obstacles · SumOfSquares"/><meta property="twitter:title" content="Trajectory planning around obstacles · SumOfSquares"/><meta name="description" content="Documentation for SumOfSquares."/><meta property="og:description" content="Documentation for SumOfSquares."/><meta property="twitter:description" content="Documentation for SumOfSquares."/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/documentercitations/citations-hover.css" rel="stylesheet" type="text/css"/><link href="../../../assets/documentercitations/citations.css" rel="stylesheet" type="text/css"/><link href="../../../assets/citations.css" rel="stylesheet" type="text/css"/><script src="../../../assets/documentercitations/citations-data.js"></script><script src="../../../assets/documentercitations/citations-hover.js"></script><script src="../../../assets/documentercitations/citations-backlinks.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">SumOfSquares</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Index</a></li><li><a class="tocitem" href="../../../sumofsquares/">Sum-of-Squares Programming</a></li><li><a class="tocitem" href="../../../variables/">Variables</a></li><li><a class="tocitem" href="../../../constraints/">Constraints</a></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../../../reference/standard_form/">Standard form</a></li><li><a class="tocitem" href="../../../reference/constraints/">Constraints</a></li><li><a class="tocitem" href="../../../reference/certificate/">Certificate</a></li><li><a class="tocitem" href="../../../reference/optimizers/">Optimizers</a></li><li><a class="tocitem" href="../../../reference/internal/">Internal functions</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-6-1" type="checkbox"/><label class="tocitem" for="menuitem-6-1"><span class="docs-label">Getting started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Getting started/circle/">Nonnegative over a variety</a></li><li><a class="tocitem" href="../../Getting started/dualization/">On the importance of Dualization</a></li><li><a class="tocitem" href="../../Getting started/getting_started/">Getting started</a></li><li><a class="tocitem" href="../../Getting started/motzkin/">Motzkin</a></li><li><a class="tocitem" href="../../Getting started/sampling/">Sampling basis</a></li><li><a class="tocitem" href="../../Getting started/sos_decomposition/">A trivial SOS decomposition example</a></li><li><a class="tocitem" href="../../Getting started/sum-of-squares_matrices/">Sum-of-Squares matrices</a></li><li><a class="tocitem" href="../../Getting started/univariate/">Minimization of a univariate polynomial</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-2" type="checkbox"/><label class="tocitem" for="menuitem-6-2"><span class="docs-label">Polynomial Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Polynomial Optimization/bilinear/">Bilinear terms</a></li><li><a class="tocitem" href="../../Polynomial Optimization/bound_on_global_extremum/">Bound on Global Extremum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/ellipsoid/">Exterior of ellipsoid</a></li><li><a class="tocitem" href="../../Polynomial Optimization/goldstein_price/">Goldstein-price function</a></li><li><a class="tocitem" href="../../Polynomial Optimization/min_univariate/">Maximizing as minimum</a></li><li><a class="tocitem" href="../../Polynomial Optimization/polynomial_optimization/">Polynomial Optimization</a></li><li><a class="tocitem" href="../../Polynomial Optimization/qcqp/">Nonconvex quadratically constrained quadratic programs</a></li><li><a class="tocitem" href="../../Polynomial Optimization/qp/">Nonconvex QP</a></li><li><a class="tocitem" href="../../Polynomial Optimization/regularized_quartic/">Quartically regularized polynomials</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-3" type="checkbox" checked/><label class="tocitem" for="menuitem-6-3"><span class="docs-label">Systems and Control</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../barrier_certificate/">Barrier certificates for collision avoidance</a></li><li><a class="tocitem" href="../julia_set/">Outer approximation of Julia set</a></li><li><a class="tocitem" href="../koopman_eigenfunctions/">Eigenfunctions of the Koopman operator</a></li><li><a class="tocitem" href="../lyapunov_function_search/">Lyapunov Function Search</a></li><li class="is-active"><a class="tocitem" href>Trajectory planning around obstacles</a><ul class="internal"><li><a class="tocitem" href="#Geometry"><span>Geometry</span></a></li><li><a class="tocitem" href="#Mixed-integer-SOS-model"><span>Mixed-integer SOS model</span></a></li><li><a class="tocitem" href="#Minimum-jerk-objective"><span>Minimum-jerk objective</span></a></li><li><a class="tocitem" href="#Visualization"><span>Visualization</span></a></li><li><a class="tocitem" href="#Animation-and-video"><span>Animation and video</span></a></li></ul></li><li><a class="tocitem" href="../stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-4" type="checkbox"/><label class="tocitem" for="menuitem-6-4"><span class="docs-label">Other Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Other Applications/bounds_in_probability/">Bounds in Probability</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-5" type="checkbox"/><label class="tocitem" for="menuitem-6-5"><span class="docs-label">Noncommutative and Hermitian</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Noncommutative and Hermitian/chsh/">CHSH</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/noncommutative_variables/">Noncommutative variables</a></li><li><a class="tocitem" href="../../Noncommutative and Hermitian/sums_of_hermitian_squares/">Sums of Hermitian squares</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-6" type="checkbox"/><label class="tocitem" for="menuitem-6-6"><span class="docs-label">Sparsity</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Sparsity/sign_symmetry/">Sign symmetry</a></li><li><a class="tocitem" href="../../Sparsity/term_sparsity/">Term sparsity</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-7" type="checkbox"/><label class="tocitem" for="menuitem-6-7"><span class="docs-label">Symmetry</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Symmetry/cyclic/">Cyclic symmetry for Sums of Hermitian Squares</a></li><li><a class="tocitem" href="../../Symmetry/dihedral/">Dihedral symmetry of the Robinson form</a></li><li><a class="tocitem" href="../../Symmetry/even_reduction/">Even reduction</a></li><li><a class="tocitem" href="../../Symmetry/permutation_symmetry/">Symmetry reduction</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6-8" type="checkbox"/><label class="tocitem" for="menuitem-6-8"><span class="docs-label">Extension</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../Extension/certificate/">Certificate</a></li><li><a class="tocitem" href="../../Extension/hypercube/">Hypercube</a></li><li><a class="tocitem" href="../../Extension/typed/">Multivariate polynomials implementations</a></li><li><a class="tocitem" href="../../Extension/univariate_solver/">Univariate Solver</a></li></ul></li></ul></li><li><a class="tocitem" href="../../../bibliography/">Bibliography</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Systems and Control</a></li><li class="is-active"><a href>Trajectory planning around obstacles</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Trajectory planning around obstacles</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jump-dev/SumOfSquares.jl/blob/main/docs/src/tutorials/Systems and Control/obstacles.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Trajectory-planning-around-obstacles"><a class="docs-heading-anchor" href="#Trajectory-planning-around-obstacles">Trajectory planning around obstacles</a><a id="Trajectory-planning-around-obstacles-1"></a><a class="docs-heading-anchor-permalink" href="#Trajectory-planning-around-obstacles" title="Permalink"></a></h1><p><a href="https://mybinder.org/v2/gh/jump-dev/SumOfSquares.jl/gh-pages?filepath=previews/PR257/generated/Systems and Control/obstacles.ipynb"><img src="https://mybinder.org/badge_logo.svg" alt/></a> <a href="https://nbviewer.jupyter.org/github/jump-dev/SumOfSquares.jl/blob/gh-pages/previews/PR257/generated/Systems and Control/obstacles.ipynb"><img src="https://img.shields.io/badge/show-nbviewer-579ACA.svg" alt/></a> <strong>Adapted from</strong>: Joey Huchette&#39;s SIAM Optimization 2017 talk, <a href="https://docs.google.com/presentation/d/1ASfjB1TdLJmYxT0b6rnyGh9eLbMc-66bTOt3_3yvc90/edit">Mixed-Integer Sum of Squares Optimization: Computation and Application</a>. We use a compact slalom with two obstacles to illustrate the formulation.</p><p>We plan a smooth trajectory for a circular vehicle. Binary variables choose a safe chamber for each time interval, and sum-of-squares constraints keep the trajectory in that chamber for the <strong>entire</strong> interval. In particular, collision avoidance does not rely on a time discretization.</p><pre><code class="language-julia hljs">using SumOfSquares
+using DynamicPolynomials
+using LinearAlgebra</code></pre><h2 id="Geometry"><a class="docs-heading-anchor" href="#Geometry">Geometry</a><a id="Geometry-1"></a><a class="docs-heading-anchor-permalink" href="#Geometry" title="Permalink"></a></h2><p>The workspace is <code>[0, 12] × [0, 8]</code>. Two walls force the vehicle to go above the first obstacle and below the second. The free space is covered by five overlapping rectangular chambers.</p><pre><code class="language-julia hljs">struct Box
+    xl::Float64
+    yl::Float64
+    xu::Float64
+    yu::Float64
+end
+
+obstacles = [Box(3, 0, 5, 5), Box(7, 3, 9, 8)]
+boxes = [
+    Box(0, 0, 3, 8),
+    Box(0, 5, 7, 8),
+    Box(5, 0, 7, 8),
+    Box(5, 0, 12, 3),
+    Box(9, 0, 12, 8),
+]
+start = [1.0, 1.0]
+goal = [11.0, 7.0]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+ 11.0
+  7.0</code></pre><p>Shrinking each chamber by the vehicle radius ensures that the whole vehicle fits in the original chamber when its center lies in the smaller chamber. The overlaps allow smooth transitions between chambers.</p><pre><code class="language-julia hljs">vehicle_radius = 0.2
+safe_boxes = [
+    Box(
+        b.xl + vehicle_radius,
+        b.yl + vehicle_radius,
+        b.xu - vehicle_radius,
+        b.yu - vehicle_radius,
+    ) for b in boxes
+]
+
+function in_box(point, box; atol = 0.0)
+    return box.xl - atol ≤ point[1] ≤ box.xu + atol &amp;&amp;
+           box.yl - atol ≤ point[2] ≤ box.yu + atol
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">in_box (generic function with 1 method)</code></pre><h2 id="Mixed-integer-SOS-model"><a class="docs-heading-anchor" href="#Mixed-integer-SOS-model">Mixed-integer SOS model</a><a id="Mixed-integer-SOS-model-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-integer-SOS-model" title="Permalink"></a></h2><p>Pajarito combines a mixed-integer linear solver with a continuous conic solver. Here we use HiGHS for the integer decisions and Clarabel for the semidefinite and second-order cone subproblems.</p><pre><code class="language-julia hljs">import Pajarito, HiGHS, Clarabel
+solver = optimizer_with_attributes(
+    Pajarito.Optimizer,
+    &quot;oa_solver&quot; =&gt; optimizer_with_attributes(
+        HiGHS.Optimizer,
+        MOI.Silent() =&gt; true,
+        &quot;mip_rel_gap&quot; =&gt; 1e-6,
+    ),
+    &quot;conic_solver&quot; =&gt;
+        optimizer_with_attributes(Clarabel.Optimizer, MOI.Silent() =&gt; true),
+    &quot;time_limit&quot; =&gt; 120.0,
+    &quot;tol_rel_gap&quot; =&gt; 1e-4,
+)
+model = SOSModel(solver)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">A JuMP Model
+├ solver: Pajarito
+├ objective_sense: FEASIBILITY_SENSE
+├ num_variables: 0
+├ num_constraints: 0
+└ Names registered in the model: none</code></pre><p>We use six one-second intervals and a quintic polynomial for each coordinate on each interval. Every segment uses a local time <code>t ∈ [0, 1]</code>, which avoids high powers of the global time. The same construction can be used with higher-degree polynomials by also increasing the quadrature order in the objective below.</p><pre><code class="language-julia hljs">N = 6
+trajectory_degree = 5
+@polyvar t
+interval = @set t * (1 - t) ≥ 0
+@variable(model, p[1:2, 1:N], Poly(monomials([t], 0:trajectory_degree)))
+@variable(model, H[1:N, 1:length(boxes)], Bin)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6×5 Matrix{VariableRef}:
+ H[1,1]  H[1,2]  H[1,3]  H[1,4]  H[1,5]
+ H[2,1]  H[2,2]  H[2,3]  H[2,4]  H[2,5]
+ H[3,1]  H[3,2]  H[3,3]  H[3,4]  H[3,5]
+ H[4,1]  H[4,2]  H[4,3]  H[4,4]  H[4,5]
+ H[5,1]  H[5,2]  H[5,3]  H[5,4]  H[5,5]
+ H[6,1]  H[6,2]  H[6,3]  H[6,4]  H[6,5]</code></pre><p>Exactly one chamber is selected on each interval. The following big-M constraints reduce to the selected chamber&#39;s bounds when <code>H[j, k] = 1</code>. Otherwise they reduce to the workspace bounds, so the constants come directly from the geometry. The degree-six SOS certificates are sufficient for these quintic univariate bounds on the interval.</p><pre><code class="language-julia hljs">for j in 1:N
+    @constraint(model, sum(H[j, :]) == 1)
+    for (k, box) in enumerate(safe_boxes)
+        lower = (box.xl, box.yl)
+        upper = (box.xu, box.yu)
+        workspace_upper = (12, 8)
+        for axis in 1:2
+            @constraint(
+                model,
+                p[axis, j] ≥ lower[axis] * H[j, k],
+                domain = interval,
+                maxdegree = trajectory_degree + 1
+            )
+            @constraint(
+                model,
+                p[axis, j] ≤
+                workspace_upper[axis] +
+                (upper[axis] - workspace_upper[axis]) * H[j, k],
+                domain = interval,
+                maxdegree = trajectory_degree + 1
+            )
+        end
+    end
+end</code></pre><p>The vehicle starts and finishes at rest, with zero acceleration. Matching position, velocity, and acceleration at every junction makes the complete trajectory twice continuously differentiable.</p><pre><code class="language-julia hljs">velocity = differentiate.(p, t)
+acceleration = differentiate.(velocity, t)
+jerk = differentiate.(acceleration, t)
+for (order, derivative) in enumerate((p, velocity, acceleration)), axis in 1:2
+    @constraint(
+        model,
+        derivative[axis, 1](t =&gt; 0) == (order == 1 ? start[axis] : 0)
+    )
+    @constraint(
+        model,
+        derivative[axis, N](t =&gt; 1) == (order == 1 ? goal[axis] : 0)
+    )
+    for j in 1:(N-1)
+        @constraint(
+            model,
+            derivative[axis, j](t =&gt; 1) == derivative[axis, j+1](t =&gt; 0)
+        )
+    end
+end</code></pre><p>Two consecutive chambers must overlap. These redundant linear constraints help the integer solver rule out impossible transitions before solving an SDP. Similarly, the first and last chamber must contain the endpoints.</p><pre><code class="language-julia hljs">compatible = [
+    max(a.xl, b.xl) ≤ min(a.xu, b.xu) &amp;&amp; max(a.yl, b.yl) ≤ min(a.yu, b.yu)
+    for a in safe_boxes, b in safe_boxes
+]
+for k in eachindex(safe_boxes)
+    if !in_box(start, safe_boxes[k])
+        fix(H[1, k], 0; force = true)
+    end
+    if !in_box(goal, safe_boxes[k])
+        fix(H[N, k], 0; force = true)
+    end
+    for j in 1:(N-1)
+        @constraint(
+            model,
+            H[j, k] ≤
+            sum(H[j+1, l] for l in eachindex(safe_boxes) if compatible[k, l])
+        )
+    end
+end</code></pre><h2 id="Minimum-jerk-objective"><a class="docs-heading-anchor" href="#Minimum-jerk-objective">Minimum-jerk objective</a><a id="Minimum-jerk-objective-1"></a><a class="docs-heading-anchor-permalink" href="#Minimum-jerk-objective" title="Permalink"></a></h2><p>We minimize the integral of squared jerk, a common measure of trajectory smoothness. The jerk of a quintic is quadratic, so three-point Gauss-Legendre quadrature integrates its square <strong>exactly</strong>. These points are only used for the objective; collision avoidance is still continuous. Dividing jerk by the workspace width improves numerical scaling without changing the minimizing trajectory.</p><pre><code class="language-julia hljs">nodes = [(1 - sqrt(3 / 5)) / 2, 0.5, (1 + sqrt(3 / 5)) / 2]
+weights = [5 / 18, 4 / 9, 5 / 18]
+weighted_jerk = [
+    sqrt(weight) / 12 * jerk[axis, j](t =&gt; node) for
+    axis in 1:2, j in 1:N, (node, weight) in zip(nodes, weights)
+]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×6×3 Array{AffExpr, 3}:
+[:, :, 1] =
+ 0.26352313834736496 _[4] + 0.11879798623086686 _[5] + 0.03347182722980223 _[6]     …  0.26352313834736496 _[64] + 0.11879798623086686 _[65] + 0.03347182722980223 _[66]
+ 0.26352313834736496 _[10] + 0.11879798623086686 _[11] + 0.03347182722980223 _[12]     0.26352313834736496 _[70] + 0.11879798623086686 _[71] + 0.03347182722980223 _[72]
+
+[:, :, 2] =
+ 0.3333333333333333 _[4] + 0.6666666666666666 _[5] + 0.8333333333333333 _[6]     …  0.3333333333333333 _[64] + 0.6666666666666666 _[65] + 0.8333333333333333 _[66]
+ 0.3333333333333333 _[10] + 0.6666666666666666 _[11] + 0.8333333333333333 _[12]     0.3333333333333333 _[70] + 0.6666666666666666 _[71] + 0.8333333333333333 _[72]
+
+[:, :, 3] =
+ 0.26352313834736496 _[4] + 0.9352945671585929 _[5] + 2.0747132795491177 _[6]     …  0.26352313834736496 _[64] + 0.9352945671585929 _[65] + 2.0747132795491177 _[66]
+ 0.26352313834736496 _[10] + 0.9352945671585929 _[11] + 2.0747132795491177 _[12]     0.26352313834736496 _[70] + 0.9352945671585929 _[71] + 2.0747132795491177 _[72]</code></pre><p>A rotated second-order cone bounds the sum of squared weighted jerk values by <code>jerk_cost</code>.</p><pre><code class="language-julia hljs">@variable(model, jerk_cost ≥ 0)
+@constraint(
+    model,
+    [jerk_cost / 2; 1; vec(weighted_jerk)] in RotatedSecondOrderCone()
+)
+@objective(model, Min, jerk_cost)
+optimize!(model)
+solution_summary(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solution_summary(; result = 1, verbose = false)
+├ solver_name          : Pajarito
+├ Termination
+│ ├ termination_status : OPTIMAL
+│ ├ result_count       : 1
+│ ├ raw_status         : OPTIMAL
+│ └ objective_bound    : 1.17935e+01
+├ Solution (result = 1)
+│ ├ primal_status        : FEASIBLE_POINT
+│ ├ dual_status          : NO_SOLUTION
+│ ├ objective_value      : 1.17935e+01
+│ └ relative_gap         : 0.00000e+00
+└ Work counters
+  ├ solve_time (sec)   : 5.67101e-01
+  └ node_count         : 1</code></pre><p>The chosen chambers and the polynomial coefficients are obtained as follows.</p><pre><code class="language-julia hljs">selection = [argmax(value.(H[j, :])) for j in 1:N]
+position_opt = value.(p)
+velocity_opt = value.(velocity)
+acceleration_opt = value.(acceleration)
+selection</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element Vector{Int64}:
+ 1
+ 1
+ 2
+ 3
+ 4
+ 5</code></pre><p>We check the endpoints, the junctions, and the selected chamber bounds. Sampling here is a numerical check of the returned solution, in addition to the SOS constraints imposed on the whole interval.</p><h2 id="Visualization"><a class="docs-heading-anchor" href="#Visualization">Visualization</a><a id="Visualization-1"></a><a class="docs-heading-anchor-permalink" href="#Visualization" title="Permalink"></a></h2><p>The left panel shows the path and the selected safe chamber. The circular marker has the same radius as the vehicle in the model. The right panels show the speed and acceleration, which remain continuous across segment boundaries.</p><pre><code class="language-julia hljs">import Plots
+
+function evaluate_trajectory(polynomials, time)
+    segment = min(floor(Int, time) + 1, N)
+    local_time = time - segment + 1
+    return [q(t =&gt; local_time) for q in polynomials[:, segment]]
+end
+
+sample_times = range(0, N; length = 601)
+path =
+    hcat([evaluate_trajectory(position_opt, time) for time in sample_times]...)
+speeds =
+    [norm(evaluate_trajectory(velocity_opt, time)) for time in sample_times]
+accelerations =
+    [norm(evaluate_trajectory(acceleration_opt, time)) for time in sample_times]
+
+function box_shape(box)
+    return Plots.Shape(
+        [box.xl, box.xu, box.xu, box.xl],
+        [box.yl, box.yl, box.yu, box.yu],
+    )
+end
+
+function motion_profile(values, time, title, unit)
+    plot = Plots.plot(
+        sample_times,
+        values;
+        color = &quot;#cbd5e1&quot;,
+        linewidth = 2,
+        label = false,
+        title = title,
+        xlabel = &quot;Time (s)&quot;,
+        ylabel = unit,
+        xlims = (0, N),
+        ylims = (0, 1.15 * maximum(values)),
+        gridalpha = 0.15,
+        framestyle = :box,
+        titlefontsize = 12,
+    )
+    past = sample_times .≤ time
+    Plots.plot!(
+        plot,
+        sample_times[past],
+        values[past];
+        color = &quot;#0d9488&quot;,
+        linewidth = 3,
+        label = false,
+    )
+    Plots.vline!(
+        plot,
+        [time];
+        color = &quot;#f59e0b&quot;,
+        linewidth = 2,
+        linestyle = :dash,
+        label = false,
+    )
+    return plot
+end
+
+function trajectory_figure(time = N)
+    segment = min(floor(Int, time) + 1, N)
+    scene = Plots.plot(;
+        xlims = (-0.4, 12.4),
+        ylims = (-0.4, 8.4),
+        aspect_ratio = :equal,
+        xlabel = &quot;x position&quot;,
+        ylabel = &quot;y position&quot;,
+        title = &quot;Minimum-jerk obstacle avoidance&quot;,
+        titlefontsize = 15,
+        grid = false,
+        framestyle = :box,
+        legend = :outerbottom,
+        legend_columns = 3,
+    )
+    for (i, obstacle) in enumerate(obstacles)
+        Plots.plot!(
+            scene,
+            box_shape(obstacle);
+            color = &quot;#1e293b&quot;,
+            linewidth = 0,
+            label = i == 1 ? &quot;Obstacle&quot; : false,
+        )
+    end
+    Plots.plot!(
+        scene,
+        box_shape(safe_boxes[selection[segment]]);
+        fillcolor = &quot;#99f6e4&quot;,
+        fillalpha = 0.35,
+        linecolor = &quot;#0d9488&quot;,
+        linestyle = :dash,
+        label = &quot;Active chamber&quot;,
+    )
+    Plots.plot!(
+        scene,
+        path[1, :],
+        path[2, :];
+        color = &quot;#cbd5e1&quot;,
+        linewidth = 2,
+        linestyle = :dash,
+        label = false,
+    )
+    past = sample_times .≤ time
+    Plots.plot!(
+        scene,
+        path[1, past],
+        path[2, past];
+        color = &quot;#0d9488&quot;,
+        linewidth = 4,
+        label = &quot;Trajectory&quot;,
+    )
+    junctions = hcat([evaluate_trajectory(position_opt, j) for j in 0:N]...)
+    Plots.scatter!(
+        scene,
+        junctions[1, :],
+        junctions[2, :];
+        color = &quot;#0d9488&quot;,
+        markersize = 3,
+        label = false,
+    )
+    Plots.scatter!(
+        scene,
+        [start[1]],
+        [start[2]];
+        color = &quot;#16a34a&quot;,
+        markersize = 6,
+        label = &quot;Start&quot;,
+    )
+    Plots.scatter!(
+        scene,
+        [goal[1]],
+        [goal[2]];
+        color = &quot;#f59e0b&quot;,
+        marker = :star5,
+        markersize = 9,
+        label = &quot;Goal&quot;,
+    )
+    point = evaluate_trajectory(position_opt, time)
+    angles = range(0, 2π; length = 40)
+    vehicle = Plots.Shape(
+        point[1] .+ vehicle_radius .* cos.(angles),
+        point[2] .+ vehicle_radius .* sin.(angles),
+    )
+    Plots.plot!(
+        scene,
+        vehicle;
+        fillcolor = &quot;#fef3c7&quot;,
+        linecolor = &quot;#d97706&quot;,
+        linewidth = 2,
+        label = &quot;Vehicle&quot;,
+    )
+    Plots.annotate!(
+        scene,
+        6,
+        8.15,
+        Plots.text(
+            &quot;t = $(round(time; digits = 2)) s  •  segment $segment / $N&quot;,
+            10,
+            &quot;#475569&quot;,
+        ),
+    )
+    speed = motion_profile(speeds, time, &quot;Speed&quot;, &quot;distance / s&quot;)
+    acceleration =
+        motion_profile(accelerations, time, &quot;Acceleration&quot;, &quot;distance / s²&quot;)
+    layout = Plots.@layout [a{0.72w} [b; c]]
+    return Plots.plot(
+        scene,
+        speed,
+        acceleration;
+        layout = layout,
+        size = (1280, 720),
+        margin = 6 * Plots.mm,
+        background_color = :white,
+    )
+end
+
+figure = trajectory_figure()
+Plots.savefig(figure, &quot;obstacles.png&quot;)
+figure</code></pre><img src="eccaf088.svg" alt="Example block output"/><h2 id="Animation-and-video"><a class="docs-heading-anchor" href="#Animation-and-video">Animation and video</a><a id="Animation-and-video-1"></a><a class="docs-heading-anchor-permalink" href="#Animation-and-video" title="Permalink"></a></h2><p>Plots records frames of the same figure as the vehicle follows the solved trajectory. At 20 frames per second this plays back in real time. Both formats use the same frames: an MP4 for sharing and an animated GIF that can be displayed directly in a notebook or this tutorial.</p><pre><code class="language-julia hljs">animation = Plots.@animate for time in range(0, N; length = 20N + 1)
+    trajectory_figure(time)
+end
+Plots.mp4(animation, &quot;obstacles.mp4&quot;; fps = 20);
+Plots.gif(animation, &quot;obstacles.gif&quot;; fps = 20)</code></pre><img src="6e0c965b.gif" alt="Example block output"/><p>Download the <a href="../obstacles.mp4">MP4 video</a> or the <a href="../obstacles.png">static plot</a>.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lyapunov_function_search/">« Lyapunov Function Search</a><a class="docs-footer-nextpage" href="../stabilization_of_nonlinear_systems/">Stabilization of nonlinear systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Thursday 12 November 2026 17:13">Thursday 12 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
