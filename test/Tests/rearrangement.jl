@@ -51,16 +51,16 @@ function rearrangement_test(optimizer, config::MOI.Test.Config)
     @test length(λ) == 4
     @test λ[1] isa SumOfSquares.BlockDiagonalGramMatrix
     @test length(λ[1].blocks) == 1
-    @test MB.keys_as_monomials(λ[1].blocks[1].basis) == [x, y, 1]
+    @test MB.keys_as_monomials(λ[1].blocks[1].basis) == [1, y, x]
     @test λ[2] isa SumOfSquares.BlockDiagonalGramMatrix
     @test length(λ[2].blocks) == 1
-    @test MB.keys_as_monomials(λ[2].blocks[1].basis) == [y, z, 1]
+    @test MB.keys_as_monomials(λ[2].blocks[1].basis) == [1, z, y]
     @test λ[3] isa SumOfSquares.BlockDiagonalGramMatrix
     @test length(λ[3].blocks) == 1
-    @test MB.keys_as_monomials(λ[3].blocks[1].basis) == [x, y, 1]
+    @test MB.keys_as_monomials(λ[3].blocks[1].basis) == [1, y, x]
     @test λ[4] isa SumOfSquares.BlockDiagonalGramMatrix
     @test length(λ[4].blocks) == 1
-    @test MB.keys_as_monomials(λ[4].blocks[1].basis) == [y, z, 1]
+    @test MB.keys_as_monomials(λ[4].blocks[1].basis) == [1, z, y]
 
     ν = moment_matrix(cref)
     @test ν isa BlockDiagonalMomentMatrix

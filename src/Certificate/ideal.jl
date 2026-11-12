@@ -279,7 +279,7 @@ function _rem(coeffs, basis::MB.FullBasis{MB.Monomial}, I)
     # `FixedVariablesSet`, use substitutions which makes us
     # loose variables
     s, _ = SA.promote_bases(r, poly)
-    return MB.algebra_element(MB.sparse_coefficients(s), basis)
+    return MB.algebra_element(SA.coeffs(s), basis)
 end
 
 function reduced_polynomial(::Remainder, a::SA.AlgebraElement, domain)

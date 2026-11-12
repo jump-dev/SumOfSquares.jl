@@ -72,20 +72,18 @@ function MOI.Bridges.Constraint.bridge_constraint(
         push!(λ_constraints, λ_constraint)
         push!(λ_bases, λ_basis)
         # As `*(::MOI.ScalarAffineFunction{T}, ::S)` is only defined if `S == T`, we
-        # need to call `similar`. This is critical since `T` is
+        # need to convert `g`. This is critical since `T` is
         # `Float64` when used with JuMP and the coefficient type is often `Int` if
         # `set.domain.V` is `FullSpace` or `FixedPolynomialSet`.
         g = Certificate.generator(set.certificate, index, preprocessed)
+        g = convert(MP.similar_type(typeof(g), T), g)
         MA.operate_to!(cache, +, λ)
         # TODO replace with `MA.sub_mul` when it works.
         p = MA.operate!(
             SA.UnsafeAddMul(*),
             p,
             cache,
-            MB.algebra_element(
-                MB.sparse_coefficients(-one(T) * similar(g, T)),
-                implicit_basis,
-            ),
+            MB.algebra_element(SA.coeffs(-one(T) * g), implicit_basis),
         )
     end
     MA.operate!(SA.canonical, SA.coeffs(p))

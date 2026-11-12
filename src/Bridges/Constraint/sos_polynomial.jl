@@ -42,9 +42,7 @@ end
 
 function _poly(coeffs, basis::MB.MonomialIndexedBasis{B,M}) where {B,M}
     return MB.algebra_element(
-        MB.sparse_coefficients(
-            MP.polynomial(coeffs, MB.keys_as_monomials(basis)),
-        ),
+        SA.coeffs(MP.polynomial(coeffs, MB.keys_as_monomials(basis))),
         MB.implicit_basis(basis),
     )
 end
@@ -133,7 +131,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
         SOS.Certificate.zero_basis,
         CT,
         BT,
-        SemialgebraicSets.similar_type(DT, T),
+        MP.similar_type(DT, T),
         Vector{BT},
         Vector{W},
     )

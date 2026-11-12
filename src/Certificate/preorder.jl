@@ -57,7 +57,7 @@ function with_variables(p::MP.AbstractPolynomialLike, ::FullSpace)
 end
 
 function with_variables(p::MP.AbstractPolynomialLike, domain)
-    _, q = SumOfSquares._promote_bases(domain, p)
+    _, q = SA.promote_bases(domain, p)
     return WithVariables(q, MP.variables(q))
 end
 
@@ -66,7 +66,7 @@ function with_variables(domain, p::WithVariables)
 end
 
 function with_variables(domain, p)
-    inner, outer = SumOfSquares._promote_bases(domain, p)
+    inner, outer = SA.promote_bases(domain, p)
     return WithVariables(inner, MP.variables(outer))
 end
 

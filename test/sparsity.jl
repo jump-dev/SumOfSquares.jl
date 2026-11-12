@@ -66,10 +66,7 @@ function wml19()
     )
     @testset "Example 4.2" begin
         f = 1 + x[1]^4 + x[2]^4 + x[3]^4 + prod(x) + x[2]
-        alg_el = MB.algebra_element(
-            MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial}(f),
-        )
+        alg_el = MB.algebra_element(SA.coeffs(f), MB.FullBasis{MB.Monomial}(f))
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         expected_1_false = Set(
             monomial_vector.([
@@ -182,10 +179,7 @@ function wml19()
             4,
         )
         f = x[1]^4 + x[2]^4 + x[1] * x[2]
-        alg_el = MB.algebra_element(
-            MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial}(f),
-        )
+        alg_el = MB.algebra_element(SA.coeffs(f), MB.FullBasis{MB.Monomial}(f))
         K = @set 1 - 2x[1]^2 - x[2]^2 >= 0
         @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in
                                                                            [
@@ -249,10 +243,7 @@ function wml19()
         f =
             x[3]^0 + x[1]^2 * x[2]^4 + x[1]^4 * x[2]^2 + x[1]^4 * x[2]^4 -
             x[1] * x[2]^2 - 3x[1]^2 * x[2]^2
-        alg_el = MB.algebra_element(
-            MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial}(f),
-        )
+        alg_el = MB.algebra_element(SA.coeffs(f), MB.FullBasis{MB.Monomial}(f))
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         basis = MB.SubBasis{MB.Monomial}(MP.monomials(f))
         @testset "$(nameof(typeof(completion))) $k $use_all_monomials" for completion in
@@ -321,10 +312,7 @@ function l09()
             tuple(),
         )
         f = 1 + x[1]^4 * x[2]^2 + x[1]^2 * x[2]^4
-        alg_el = MB.algebra_element(
-            MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial}(f),
-        )
+        alg_el = MB.algebra_element(SA.coeffs(f), MB.FullBasis{MB.Monomial}(f))
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         newt = Certificate.NewtonDegreeBounds(tuple())
         @test SumOfSquares.Certificate.monomials_half_newton_polytope(
@@ -384,10 +372,7 @@ function l09()
             tuple(),
         )
         f = 1 + x[1]^4 + x[1] * x[2] + x[2]^4 + x[3]^2
-        alg_el = MB.algebra_element(
-            MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial}(f),
-        )
+        alg_el = MB.algebra_element(SA.coeffs(f), MB.FullBasis{MB.Monomial}(f))
         with_var = SumOfSquares.Certificate.WithVariables(alg_el, x)
         @testset "$k $use_all_monomials" for k in 0:2,
             use_all_monomials in [false, true]
@@ -480,10 +465,7 @@ function square_domain(ideal_certificate, d)
     preorder_certificate =
         Certificate.Putinar(mult_cert, ideal_certificate(x * y), d)
     f = x^2 * y^4 + x^4 * y^2 - 3 * x^2 * y * 2 + 1
-    alg_el = MB.algebra_element(
-        MB.sparse_coefficients(f),
-        MB.FullBasis{MB.Monomial}(f),
-    )
+    alg_el = MB.algebra_element(SA.coeffs(f), MB.FullBasis{MB.Monomial}(f))
     K = @set(1 - x^2 >= 0 && 1 - y^2 >= 0)
     @testset "Square domain $k $use_all_monomials" for k in 0:4,
         use_all_monomials in [false, true]
@@ -597,10 +579,7 @@ function sum_square(n)
             tuple(),
         )
         f = sum((x[1:2:(2n-1)] .- x[2:2:(2n)]) .^ 2)
-        alg_el = MB.algebra_element(
-            MB.sparse_coefficients(f),
-            MB.FullBasis{MB.Monomial}(f),
-        )
+        alg_el = MB.algebra_element(SA.coeffs(f), MB.FullBasis{MB.Monomial}(f))
         expected = Set(
             monomial_vector.([
                 monomial_vector([x[(2i-1)], x[2i], 1]) for i in 1:n

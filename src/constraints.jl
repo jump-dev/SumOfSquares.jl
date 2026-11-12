@@ -326,20 +326,24 @@ function PolyJuMP.bridges(
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:ScaledDiagonallyDominantConeTriangle},
 ) # Needed so that `Variable.ScaledDiagonallyDominantBridge` is added as well
-    return Tuple{Type,Type}[(
-        MOI.Bridges.Constraint.VectorSlackBridge,
-        PolyJuMP.coefficient_type_or_float(F),
-    )]
+    bridge = if F == MOI.VectorOfVariables
+        MOI.Bridges.Constraint.VectorFunctionizeBridge
+    else
+        MOI.Bridges.Constraint.VectorSlackBridge
+    end
+    return Tuple{Type,Type}[(bridge, PolyJuMP.coefficient_type_or_float(F))]
 end
 
 function PolyJuMP.bridges(
     F::Type{<:MOI.AbstractVectorFunction},
     ::Type{<:WeightedSOSCone},
 ) # Needed so that `Variable.KernelBridge` is added as well
-    return Tuple{Type,Type}[(
-        MOI.Bridges.Constraint.VectorSlackBridge,
-        PolyJuMP.coefficient_type_or_float(F),
-    )]
+    bridge = if F == MOI.VectorOfVariables
+        MOI.Bridges.Constraint.VectorFunctionizeBridge
+    else
+        MOI.Bridges.Constraint.VectorSlackBridge
+    end
+    return Tuple{Type,Type}[(bridge, PolyJuMP.coefficient_type_or_float(F))]
 end
 
 function _bridge_coefficient_type(
@@ -448,8 +452,10 @@ function _default_zero_basis(basis, nodes::MB.AbstractNodes)
     return MB.ImplicitLagrangeBasis(MP.variables(basis), nodes)
 end
 
-_promote_bases(domain, p) = SA.promote_bases(domain, p)
-function _promote_bases(domain, p::AbstractDecomposition)
+function SA.promote_bases(
+    domain::AbstractSemialgebraicSet,
+    p::AbstractDecomposition,
+)
     return SA.promote_bases(domain, MP.polynomial(p))
 end
 
@@ -468,7 +474,7 @@ function JuMP.build_constraint(
     domain::AbstractSemialgebraicSet = FullSpace(),
     kws...,
 )
-    domain, p = _promote_bases(domain, p)
+    domain, p = SA.promote_bases(domain, p)
     coefs, basis, gram_basis = _default_basis(p, basis)
     set = JuMP.moi_set(
         cone,
