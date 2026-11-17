@@ -124,7 +124,7 @@ function MA.promote_operation(
     return _invariant_basis_type(inner)
 end
 
-function _invariant_basis_type(::Type{EB}) where {EB<:SA.ExplicitBasis}
+function _invariant_basis_type(::Type{EB}) where {EB<:SA.SubBasis}
     T = eltype(EB)
     IB = MA.promote_operation(MB.implicit_basis, EB)
     return InvariantBasis{T,Int,IB,EB,SparseArrays.SparseVector{Float64,Int}}
@@ -159,7 +159,7 @@ function SumOfSquares.Certificate.zero_basis(
     return _invariant_basis(certificate.pattern, inner)
 end
 
-function _invariant_basis(pattern::Pattern, monomial_basis::SA.ExplicitBasis)
+function _invariant_basis(pattern::Pattern, monomial_basis::SA.SubBasis)
     tbl = SymbolicWedderburn.Characters.CharacterTable(
         Rational{Int},
         pattern.group,
@@ -276,7 +276,7 @@ end
     gram_character_degrees(pattern, basis, ::Type{T})
 
 Return a `Vector{Int}` of degrees of the irreducible characters, parallel to
-[`_gram_basis`](@ref). Used to scale each χ-block by `d_χ` so that the
+`_gram_basis`. Used to scale each χ-block by `d_χ` so that the
 invariant-vector-projected SDP constraint is satisfied (see
 `sos_problem.jl` in `SymbolicWedderburn/examples` for the analogous trick).
 """

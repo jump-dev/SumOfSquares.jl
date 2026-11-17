@@ -32,7 +32,7 @@ function cone end
 function zero_basis end
 function gram_basis end
 """
-    gram_weights(certificate, gram_basis, ::Type{T})
+    gram_weights(certificate, gram_basis, poly, ::Type{T})
 
 Return the (parallel) weights for each gram basis returned by `gram_basis`.
 The default is one constant `1` weight (single basis case). Certificates that

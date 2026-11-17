@@ -59,7 +59,12 @@ end
 # Override `coeffs(cfs, source, target::InvariantBasis)` so that translating
 # coefficients into an invariant basis performs the invariant-vector projection.
 function SA.coeffs(cfs, source::SA.AbstractBasis, target::InvariantBasis)
-    res = SA.zero_coeffs(SA.value_type(cfs), target)
+    T = MA.promote_operation(
+        *,
+        SA.value_type(cfs),
+        eltype(eltype(target.invariant_vectors)),
+    )
+    res = SA.zero_coeffs(T, target)
     return SA.coeffs!(res, cfs, source, target)
 end
 
@@ -70,10 +75,14 @@ function SA.coeffs!(res, cfs, source::SA.AbstractBasis, target::InvariantBasis)
         mono = source[k]
         # `get(::SubBasis, key, ::Nothing)` returns the integer position or `nothing`.
         m = get(mb, mono, nothing)
-        isnothing(m) && continue
+        if isnothing(m)
+            continue
+        end
         for ki in eachindex(target.invariant_vectors)
             iv_at_m = target.invariant_vectors[ki][m]
-            iszero(iv_at_m) && continue
+            if iszero(iv_at_m)
+                continue
+            end
             res[ki] = MA.operate!!(MA.add_mul, res[ki], iv_at_m, v)
         end
     end

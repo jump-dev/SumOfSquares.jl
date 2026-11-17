@@ -2,6 +2,95 @@ module TestSymmetry
 
 using LinearAlgebra, SparseArrays, Test
 using SumOfSquares
+using DynamicPolynomials
+using PermutationGroups
+using SemialgebraicSets
+import Clarabel
+import MultivariateBases as MB
+import MutableArithmetics as MA
+import StarAlgebras as SA
+
+function test_invariant_basis_projection()
+    @polyvar x y
+    monomials = MB.SubBasis{MB.Monomial}([x, y])
+    vectors = [sparsevec([1, 2], [0.5, 0.5], 2)]
+    basis = Symmetry.InvariantBasis(monomials, vectors)
+    @test length(basis) == 1
+    @test parent(basis) == parent(monomials)
+    @test MB.implicit_basis(basis) == parent(monomials)
+    @test basis == Symmetry.InvariantBasis(monomials, copy(vectors))
+    @test basis !=
+          Symmetry.InvariantBasis(monomials, [sparsevec([1], [1.0], 2)])
+    poly = MB.algebra_element(2x + 4y + x^2)
+    @test SA.coeffs(poly, basis) == [3.0]
+    @test SA.coeffs(MB.algebra_element(x + 2y), basis) == [1.5]
+    result = [99.0]
+    @test SA.coeffs!(result, SA.coeffs(poly), SA.basis(poly), basis) === result
+    @test result == [3.0]
+    # Also exercise a zero entry of an invariant vector.
+    coordinate = Symmetry.InvariantBasis(monomials, [sparsevec([1], [1.0], 2)])
+    @test SA.coeffs(poly, coordinate) == [4.0]
+    return
+end
+
+function test_permutation_symmetry()
+    @polyvar x[1:3]
+    group = PermGroup([perm"(1,2,3)", perm"(1,2)"])
+    pattern = Symmetry.Pattern(group, Symmetry.VariablePermutation())
+    model = Model(Clarabel.Optimizer)
+    set_silent(model)
+    @variable(model, t)
+    @objective(model, Max, t)
+    con = @constraint(
+        model,
+        sum(x .^ 2) + sum(x) - t in SOSCone(),
+        symmetry = pattern
+    )
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test value(t) ≈ -3 / 4 atol = 1e-7
+    @test sort(size.(getfield.(gram_matrix(con).blocks, :Q), 1)) == [1, 2]
+    cert = constraint_object(con).set.certificate
+    poly = MB.algebra_element(sum(x .^ 2) + sum(x))
+    grams = Certificate.gram_basis(cert, poly)
+    weights = Certificate.gram_weights(cert, grams, poly, Float64)
+    @test sort([only(values(SA.coeffs(w))) for w in weights]) == [1, 2]
+    basis = Certificate.zero_basis(
+        cert,
+        MB.explicit_basis(poly),
+        FullSpace(),
+        grams,
+        weights,
+    )
+    @test basis isa Symmetry.InvariantBasis
+    @test length(basis) == 3
+    @test MA.promote_operation(
+        Certificate.zero_basis,
+        typeof(cert),
+        typeof(MB.explicit_basis(poly)),
+        FullSpace,
+        typeof(grams),
+        typeof(weights),
+    ) == typeof(basis)
+    domain = @set sum(x .^ 2) == 1
+    quotient_basis = Certificate.zero_basis(
+        cert,
+        MB.explicit_basis(poly),
+        domain,
+        grams,
+        weights,
+    )
+    @test quotient_basis isa MB.QuotientBasis
+    @test MA.promote_operation(
+        Certificate.zero_basis,
+        typeof(cert),
+        typeof(MB.explicit_basis(poly)),
+        typeof(domain),
+        typeof(grams),
+        typeof(weights),
+    ) == typeof(quotient_basis)
+    return
+end
 
 function test_linsolve()
     x = [1, 2]

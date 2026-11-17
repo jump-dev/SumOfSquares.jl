@@ -39,3 +39,10 @@ SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_edge!
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.add_clique!
 SumOfSquares.Certificate.Sparsity.ChordalExtensionGraph.completion
 ```
+
+Symmetry reduction:
+```@docs
+SumOfSquares.Certificate.Symmetry.InvariantBasis
+SumOfSquares.Certificate.Symmetry.gram_character_degrees
+SumOfSquares.Certificate.gram_weights
+```
