@@ -200,6 +200,44 @@ _sos_dec(polys) = SOSDecomposition(MB.algebra_element.(polys))
         end
     end
 
+    @testset "Empty blocks (issue #344)" begin
+        @polyvar x
+        basis = MB.SubBasis{MB.Monomial}([x])
+        for (bases, n) in (
+                ([basis], 1),
+                (typeof(basis)[], 0),
+                ([[basis]], 1),
+                ([typeof(basis)[]], 0),
+                (Vector{typeof(basis)}[], 0),
+            ),
+            M in (
+                MOI.PositiveSemidefiniteConeTriangle,
+                MOI.HermitianPositiveSemidefiniteConeTriangle,
+            ),
+            T in (Float64, ComplexF64)
+
+            model = MOI.Utilities.Model{Float64}()
+            g, = SumOfSquares.add_gram_matrix(model, M, bases, T)
+            reference = SumOfSquares.build_gram_matrix(
+                MOI.VariableIndex[MOI.VariableIndex(1)],
+                basis,
+                M,
+                T,
+            )
+            @test length(g.blocks) == n
+            @test eltype(g.blocks) === typeof(reference)
+            @test MOI.get(model, MOI.NumberOfVariables()) == n
+            for Q in (i -> Float64[1], i -> ComplexF64[1])
+                g = SumOfSquares.build_gram_matrix(Q, bases, M, T)
+                reference = SumOfSquares.build_gram_matrix(Q(1), basis, M, T)
+                @test length(g.blocks) == n
+                @test eltype(g.blocks) === typeof(reference)
+            end
+            m = SumOfSquares.build_moment_matrix(i -> Float64[1], bases)
+            @test length(m.blocks) == n
+        end
+    end
+
     @testset "build_gram_matrix" begin
         v = MOI.VariableIndex.(1:3)
         w = MOI.VariableIndex.(1:4)

@@ -89,13 +89,17 @@ function build_matrix(
     ]
 end
 
-function build_gram_matrix(Q::Function, bases::Vector, matrix_cone_type, T)
+# Julia 1.10 needs explicit specialization here: with empty `bases`, inference
+# otherwise produces `Vector{Any}`, which `BlockDiagonalGramMatrix` cannot accept.
+# Julia 1.13 infers the concrete block type without these annotations.
+function build_gram_matrix(
+    Q::F,
+    bases::Vector,
+    ::Type{M},
+    ::Type{T},
+) where {F<:Function,M,T}
     return BlockDiagonalGramMatrix(
-        build_matrix(
-            Q,
-            bases,
-            (Q, b) -> build_gram_matrix(Q, b, matrix_cone_type, T),
-        ),
+        build_matrix(Q, bases, (Q, b) -> build_gram_matrix(Q, b, M, T)),
     )
 end
 
