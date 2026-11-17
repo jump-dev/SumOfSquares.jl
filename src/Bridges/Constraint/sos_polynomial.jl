@@ -179,27 +179,13 @@ function MOI.get(
     bridge::SOSPolynomialBridge,
 )
     set = MOI.get(model, MOI.ConstraintSet(), bridge.constraint)
-    return _moment_vector(
+    return MultivariateMoments.moment_vector(
         MOI.get(
             model,
             MOI.ConstraintDual(attr.result_index),
             bridge.constraint,
         ),
         set.basis,
-    )
-end
-
-function _moment_vector(values, basis)
-    return MultivariateMoments.moment_vector(values, basis)
-end
-
-# The coefficients in `basis` are `basis.matrix` times the coefficients in
-# `basis.basis` so the moments of the elements of `basis.basis` are obtained
-# with the adjoint map.
-function _moment_vector(values, basis::MB.QuotientBasis)
-    return MultivariateMoments.moment_vector(
-        transpose(basis.matrix) * values,
-        basis.basis,
     )
 end
 
