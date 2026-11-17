@@ -26,10 +26,11 @@ f = e'e - bz'bz / 4
 K = @set sum(x) <= 4 && 3x[2] + x[3] <= 6 && f >= 0 && 0 <= x[1] && x[1] <= 2 && 0 <= x[2] && 0 <= x[3] && x[3] <= 3
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
-import Clarabel
-solver = Clarabel.Optimizer
+import Hypatia
+using Dualization
+solver = dual_optimizer(Hypatia.Optimizer)
 
 # A Sum-of-Squares certificate that $p \ge \alpha$ over the domain `S`, ensures that $\alpha$ is a lower bound to the polynomial optimization problem.
 # The following function searches for the largest lower bound and finds zero using the `d`th level of the hierarchy`.
@@ -70,4 +71,4 @@ nothing # hide
 model8 = solve(8)
 nothing # hide
 @test objective_value(model8) ≈ -4 rtol=1e-4 #src
-@test termination_status(model8) == MOI.OPTIMAL #src
+@test termination_status(model8) in [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL] #src

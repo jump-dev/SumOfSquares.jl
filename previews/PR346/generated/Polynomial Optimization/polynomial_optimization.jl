@@ -10,7 +10,7 @@ model = Model(Ipopt.Optimizer)
 @variable(model, a >= 0)
 @variable(model, b >= 0)
 @constraint(model, a + b >= 1)
-@NLobjective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
+@objective(model, Min, a^3 - a^2 + 2a*b - b^2 + b^3)
 optimize!(model)
 
 solution_summary(model)
@@ -34,21 +34,34 @@ function ∇²f(H, a, b)
 end
 using Ipopt
 gmodel = Model(Ipopt.Optimizer)
-@variable(gmodel, a >= 0)
-@variable(gmodel, b >= 0)
-@constraint(gmodel, a + b >= 1)
+@variable(gmodel, α >= 0)
+@variable(gmodel, β >= 0)
+@constraint(gmodel, α + β >= 1)
 register(gmodel, :f, 2, f, ∇f, ∇²f)
-@NLobjective(gmodel, Min, f(a, b))
+@NLobjective(gmodel, Min, f(α, β))
 optimize!(gmodel)
 
 solution_summary(gmodel)
 
-value(a), value(b)
+value(α), value(β)
 
 import SCS
 scs = SCS.Optimizer
 import Dualization
 dual_scs = Dualization.dual_optimizer(scs)
+
+set_optimizer(model, () -> SumOfSquares.Optimizer(dual_scs))
+optimize!(model)
+
+solution_summary(model)
+
+import Clarabel
+set_optimizer(model, () -> PolyJuMP.SAGE.Optimizer(Clarabel.Optimizer))
+optimize!(model)
+
+solution_summary(model)
+
+value(a), value(b)
 
 model = SOSModel(dual_scs)
 @variable(model, α)
@@ -112,11 +125,11 @@ SemialgebraicSets.compute_gröbner_basis!(ideal(ν4.support))
 collect(ν4.support)
 
 using HomotopyContinuation
-algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false)
+algebraic_solver = SemialgebraicSetsHCSolver(; excess_residual_tol = 1e-1, real_tol = 1e-1, compile = false, seed = UInt32(1))
 atomic_measure(ν4, FixedRank(3), Echelon(), algebraic_solver)
 
 F = HomotopyContinuation.System(ν4.support)
-res = HomotopyContinuation.solve(F, algebraic_solver.options...)
+res = HomotopyContinuation.solve(F; algebraic_solver.options...)
 path_results(res)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl

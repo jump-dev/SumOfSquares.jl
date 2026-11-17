@@ -38,7 +38,7 @@ SS.ideal(set::HypercubeSet) = set.ideal
 function MA.promote_operation(::typeof(SS.ideal), ::Type{HypercubeSet{V}}) where {V}
     return HypercubeIdeal{V}
 end
-SS.similar_type(S::Type{<:HypercubeSet}, ::Type) = S
+MP.similar_type(S::Type{<:HypercubeSet}, ::Type) = S
 function Base.rem(p, set::HypercubeIdeal)
     return MP.polynomial(map(MP.terms(p)) do term
         mono = MP.monomial(term)

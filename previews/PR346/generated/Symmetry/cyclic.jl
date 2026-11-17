@@ -65,8 +65,8 @@ G = CyclicGroup(N)
 poly = sum(x[i] * x[mod1(i + 1, N)] for i in 1:N) + sum(x.^2)
 Symmetry.SymbolicWedderburn.action(action, g, poly)
 
-import Clarabel
-solver = Clarabel.Optimizer
+import Hypatia
+solver = Hypatia.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)

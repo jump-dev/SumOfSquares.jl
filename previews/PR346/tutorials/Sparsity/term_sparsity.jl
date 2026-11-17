@@ -45,7 +45,7 @@ atomic_measure(ν, 1e-6)
 
 # We can see below that the basis contained 6 monomials hence we needed to use 6x6 PSD matrix variables.
 
-@test keys_as_monomials(ν.basis) == [x[1]*x[2], x[2]*x[3], x[1], x[2], x[3], 1] #src
+@test keys_as_monomials(ν.basis) == [1, x[3], x[2], x[1], x[2]*x[3], x[1]*x[2]] #src
 ν.basis
 
 # Using the monomial/term sparsity method of [WML20a] based on cluster completion, we find the same bound.
@@ -57,7 +57,7 @@ bound
 # Which is not suprising as no sparsity reduction could be performed.
 
 @test length(ν.blocks) == 1 #src
-@test keys_as_monomials(ν.blocks[1].basis) == [x[1]*x[2], x[2]*x[3], x[1], x[2], x[3], 1] #src
+@test keys_as_monomials(ν.blocks[1].basis) == [1, x[3], x[2], x[1], x[2]*x[3], x[1]*x[2]] #src
 [sub.basis for sub in ν.blocks]
 
 # Using the monomial/term sparsity method of [WML20b] based on chordal completion, the lower bound is smaller than 0.
