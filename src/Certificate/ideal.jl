@@ -273,18 +273,38 @@ MB.implicit_basis(certificate::Newton) = certificate.gram_basis
 
 gram_basis(certificate::Newton, poly) = gram_basis(certificate, poly, nothing)
 
+# Whether the domain has equalities, the terms of the Gram matrix may then
+# cancel modulo the equalities so the Newton polytope of the polynomial is not
+# valid. With `Remainder`, the domain is not given as the polynomial was
+# already reduced modulo the equalities.
+_has_equalities(::Nothing) = false
+_has_equalities(::FullSpace) = false
+function _has_equalities(domain::AbstractAlgebraicSet)
+    return SemialgebraicSets.nequalities(domain) > 0
+end
+_has_equalities(domain::BasicSemialgebraicSet) = _has_equalities(domain.V)
+
 function gram_basis(certificate::Newton, poly, domain)
     ideal = _truncated_ideal(domain)
     a = _algebra_element(poly)
     vars = MP.variables(poly)
-    if isnothing(ideal)
+    if !_has_equalities(domain)
         basis = half_newton_polytope(a, vars, certificate.newton)
     else
         if isnothing(certificate.maxdegree)
             throw(
                 ArgumentError(
-                    "The `maxdegree` of the `Newton` certificate is needed with truncated equalities.",
+                    "The `maxdegree` of the `Newton` certificate is needed with equalities.",
                 ),
+            )
+        end
+        if isnothing(ideal)
+            # The ideal is not truncated so the multipliers of the equalities
+            # can cancel terms of any degree
+            return maxdegree_gram_basis(
+                certificate.gram_basis,
+                vars,
+                certificate.maxdegree,
             )
         end
         basis, _ = half_newton_polytope(

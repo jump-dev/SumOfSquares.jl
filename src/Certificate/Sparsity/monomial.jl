@@ -182,6 +182,16 @@ function sparsity(
     end
     return _monomial_vector(cliques)
 end
+# As for the constraints in [WML20a], the support of the equalities is added
+# to the support of the polynomial.
+function _with_equalities(monos, ::Monomial, domain)
+    all_monos = collect(monos)
+    for h in _equalities(domain)
+        append!(all_monos, MP.monomials(h))
+    end
+    return MP.monomial_vector(all_monos)
+end
+
 # This also checks that it is indeed a monomial basis
 _monos(basis::MB.SubBasis{MB.Monomial}) = MB.keys_as_monomials(basis)
 function _gram_monos(vars, certificate::SumOfSquares.Certificate.MaxDegree)
@@ -256,10 +266,15 @@ function sparsity(
                     multiplier_generator_monos,
                 ),
             ),
+            domain.V,
         ),
     )
     cliques, multiplier_cliques = sparsity(
-        MB.keys_as_monomials(MB.explicit_basis(poly)),
+        _with_equalities(
+            MB.keys_as_monomials(MB.explicit_basis(poly)),
+            sp,
+            domain,
+        ),
         sp,
         gram_monos,
         multiplier_generator_monos,

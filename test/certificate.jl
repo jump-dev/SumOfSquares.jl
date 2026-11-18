@@ -523,9 +523,9 @@ include("symmetry.jl")
     # `x^2` is the leading monomial of `x^2 + y^2 - 1` so it is replaced by
     # smaller monomials [L24, Theorem 2]
     @test _gram(x^3 + y, domain, 4) == [1, y, x, y^2, x * y]
-    # Without truncation, the Newton polytope of `x^3 + y` is used and it is
-    # empty as `x^3` cannot be canceled
-    @test isempty(_gram(x^3 + y, V, 4))
+    # Without truncation, the multipliers of the equalities may cancel terms
+    # of any degree so the Newton polytope of `x^3 + y` cannot be used
+    @test _gram(x^3 + y, V, 4) == [1, y, x, y^2, x * y, x^2]
     certificate = Certificate.Newton(SOSCone(), full_basis, full_basis, tuple())
     a = MB.algebra_element(x^3 + y)
     @test_throws ArgumentError Certificate.gram_basis(
