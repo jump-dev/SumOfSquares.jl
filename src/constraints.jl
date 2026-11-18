@@ -258,6 +258,45 @@ function default_maxdegree(monos, domain)
     return max(MP.maxdegree(monos), _maxdegree(domain))
 end
 
+# If the equalities of `domain` do not have a known Gröbner basis and are not
+# already truncated with `SemialgebraicSets.truncated`, truncate them at degree
+# `maxdegree` so that the multipliers of the equalities have the same degree
+# bound as the multipliers of the inequalities.
+_truncate(domain, _) = domain
+
+function _truncate(domain::AlgebraicSet, maxdegree)
+    if SemialgebraicSets.is_gröbner_basis(SemialgebraicSets.ideal(domain))
+        return domain
+    end
+    _check_maxdegree(maxdegree)
+    return SemialgebraicSets.truncated(domain, maxdegree)
+end
+
+function _truncate(domain::SemialgebraicSets.TruncatedAlgebraicSet, maxdegree)
+    _check_maxdegree(maxdegree)
+    return domain
+end
+
+function _check_maxdegree(maxdegree)
+    if isnothing(maxdegree)
+        throw(
+            ArgumentError(
+                "Cannot use `maxdegree = nothing` with equalities whose Gröbner basis is not known, compute it with `SemialgebraicSets.compute_gröbner_basis!(SemialgebraicSets.ideal(domain))`.",
+            ),
+        )
+    end
+    return
+end
+
+function _truncate(domain::BasicSemialgebraicSet, maxdegree)
+    V = SemialgebraicSets.algebraic_set(domain)
+    W = _truncate(V, maxdegree)
+    if W === V
+        return domain
+    end
+    return BasicSemialgebraicSet(W, SemialgebraicSets.inequalities(domain))
+end
+
 function JuMP.moi_set(
     cone::SOSLikeCone,
     basis::SA.ExplicitBasis,
@@ -291,7 +330,7 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(domain, basis, certificate)
+    return SOSPolynomialSet(_truncate(domain, maxdegree), basis, certificate)
 end
 
 function PolyJuMP.bridges(

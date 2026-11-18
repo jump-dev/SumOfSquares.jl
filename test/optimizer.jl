@@ -140,28 +140,66 @@ function test_algebraic_set_sparse_equations()
     return
 end
 
+# Maximize `t` such that `p - t` is SOS on `domain`
+function _max_lower_bound(p, domain, maxdegree...)
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    @objective(model, Max, t)
+    if isempty(maxdegree)
+        @constraint(model, p - t in SOSCone(), domain = domain)
+    else
+        @constraint(
+            model,
+            p - t in SOSCone(),
+            domain = domain,
+            maxdegree = only(maxdegree),
+        )
+    end
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    return value(t)
+end
+
+# With a smaller degree, the problems are weakly infeasible so we do not test
+# them as the solver may not detect it.
 function test_truncated_algebraic_set()
     @polyvar x y
     # `x - y = y * (x * y - 1) - x * (y^2 - 1)` vanishes on `V` but it is only
     # in the truncation of the ideal at degree 3
     V = @set x * y == 1 && y^2 == 1
-    for (domain, status) in
-        [(V, MOI.INFEASIBLE), (SemialgebraicSets.truncated(V, 3), MOI.OPTIMAL)]
-        model = SOSModel(SOLVER)
-        @variable(model, t)
-        @objective(model, Max, t)
-        @constraint(
+    # The ideal is truncated at `maxdegree` and not at the degree of the
+    # zero basis which is 2
+    @test _max_lower_bound(x - y, V, 3) ≈ 0 atol = 1e-6
+    # The degree of the truncation is independent of `maxdegree` which is 2
+    # by default
+    T = SemialgebraicSets.truncated(V, 3)
+    @test _max_lower_bound(x - y, T) ≈ 0 atol = 1e-6
+    @test _max_lower_bound(x - y, T, 2) ≈ 0 atol = 1e-6
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    for domain in [V, T]
+        @test_throws ArgumentError @constraint(
             model,
             x - y - t in SOSCone(),
             domain = domain,
-            maxdegree = 0
+            maxdegree = nothing,
         )
-        optimize!(model)
-        @test termination_status(model) == status
-        if status == MOI.OPTIMAL
-            @test value(t) ≈ 0 atol = 1e-6
-        end
     end
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(V))
+    return
+end
+
+function test_truncated_algebraic_set_with_inequalities()
+    @polyvar x y
+    # On `K`, `x - 1 = (x - y) + (y - 1)` where `x - y` is only in the
+    # truncation of the ideal at degree 3
+    V = @set x * y == 1 && y^2 == 1
+    K = V ∩ @set(y - 1 >= 0)
+    @test _max_lower_bound(x, K, 3) ≈ 1 atol = 1e-6
+    # The multipliers of the inequalities have degree at most 2 while the
+    # multipliers of the equalities have degree at most 3
+    K = SemialgebraicSets.truncated(V, 3) ∩ @set(y - 1 >= 0)
+    @test _max_lower_bound(x, K) ≈ 1 atol = 1e-6
     @test !SemialgebraicSets.is_gröbner_basis(ideal(V))
     return
 end
