@@ -256,10 +256,6 @@ function _fixed_basis(F, basis)
 end
 
 function _gram_basis(pattern::Pattern, basis, ::Type{T}) where {T}
-    # `semisimple=false` returns one simple `DirectSummand` per character χ.
-    # The numerical block-diagonalization that previously lived here is now
-    # inside `SymbolicWedderburn` (numerical_simple.jl) and runs automatically
-    # if the symbolic minimal projection cannot reduce to a simple summand.
     summands = SymbolicWedderburn.symmetry_adapted_basis(
         T,
         pattern.group,
