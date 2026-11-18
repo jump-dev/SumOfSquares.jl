@@ -140,6 +140,32 @@ function test_algebraic_set_sparse_equations()
     return
 end
 
+function test_truncated_algebraic_set()
+    @polyvar x y
+    # `x - y = y * (x * y - 1) - x * (y^2 - 1)` vanishes on `V` but it is only
+    # in the truncation of the ideal at degree 3
+    V = @set x * y == 1 && y^2 == 1
+    for (domain, status) in
+        [(V, MOI.INFEASIBLE), (SemialgebraicSets.truncated(V, 3), MOI.OPTIMAL)]
+        model = SOSModel(SOLVER)
+        @variable(model, t)
+        @objective(model, Max, t)
+        @constraint(
+            model,
+            x - y - t in SOSCone(),
+            domain = domain,
+            maxdegree = 0
+        )
+        optimize!(model)
+        @test termination_status(model) == status
+        if status == MOI.OPTIMAL
+            @test value(t) ≈ 0 atol = 1e-6
+        end
+    end
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(V))
+    return
+end
+
 # `min ∫_{-1}^{1} p` over the polynomials `p = a + b * t + c * t^2` that are
 # nonnegative with `∫_{-1}^{1} p^2 = 1`. Substituting `p = λ(t - r)^2` and
 # setting the derivative in `u = r^2` to zero gives `(5u - 1)^2 = 0` hence the

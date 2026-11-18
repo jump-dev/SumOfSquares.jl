@@ -232,7 +232,9 @@ _max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init = 0)
 
 _maxdegree(domain) = 0
 
-function _maxdegree(domain::AlgebraicSet)
+function _maxdegree(
+    domain::Union{AlgebraicSet,SemialgebraicSets.TruncatedAlgebraicSet},
+)
     return _max_maxdegree(SemialgebraicSets.equalities(domain))
 end
 
