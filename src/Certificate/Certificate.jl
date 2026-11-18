@@ -53,6 +53,9 @@ function multiplier_basis_type end
 
 abstract type AbstractCertificate end
 
+# By default, the gram basis does not depend on the domain
+gram_basis(certificate, poly, _) = gram_basis(certificate, poly)
+
 function within_total_bounds(mono::MP.AbstractMonomial, bounds::DegreeBounds)
     return bounds.mindegree <= MP.degree(mono) <= bounds.maxdegree
 end

@@ -71,11 +71,12 @@ function __reduce_with_domain(_, _, _)
 end
 
 # If the Gröbner basis of the ideal is not known, computing it may be
-# expensive. `MM.quotient_basis` considers instead the condition that the
-# polynomial is in the row space of the Macaulay matrix of the equalities of
-# degree `maxdegree(basis)`. This corresponds to searching for multipliers
-# `λ_i` of the equalities `h_i` such that the degree of `λ_i * h_i` is at most
-# `maxdegree(basis)`.
+# expensive. The equalities are then truncated with
+# `SemialgebraicSets.truncated` and `MM.quotient_basis` considers instead the
+# condition that the polynomial is in the row space of the Macaulay matrix of
+# the equalities of the degree `d` of the truncation. This corresponds to
+# searching for multipliers `λ_i` of the equalities `h_i` such that the degree
+# of `λ_i * h_i` is at most `d`.
 function __reduce_with_domain(
     basis::MB.SubBasis{MB.Monomial},
     ::MB.FullBasis{MB.Monomial},
@@ -212,6 +213,7 @@ end
         gram_basis::G
         zero_basis::Z
         newton::N
+        maxdegree::Union{Nothing,Int}
     end
 
 The `Newton` certificate ensures the nonnegativity of `p(x)` for all `x` such that
@@ -222,6 +224,12 @@ The polynomial `σ(x)` is search over `cone` with a basis of type `basis`
 chosen using the multipartite Newton polytope with parts `variable_groups`.
 If `variable_groups = tuple()` then it falls back to the classical Newton polytope
 with all variables in the same part.
+
+If the equalities `h_i(x) = 0` are truncated with
+`SemialgebraicSets.truncated`, the multipliers of `h_i(x)` may cancel terms of
+`σ(x)` that are not in `p(x)` so the degree of `σ(x)` is bounded by `maxdegree`
+instead and the basis is reduced using the dependent monomials of the Macaulay
+matrix of the equalities.
 """
 struct Newton{
     C<:SumOfSquares.SOSLikeCone,
@@ -233,25 +241,61 @@ struct Newton{
     gram_basis::G
     zero_basis::Z
     newton::N
+    maxdegree::Union{Nothing,Int}
 end
 
-function Newton(cone, gram_basis, zero_basis, variable_groups::Tuple)
+function Newton(
+    cone,
+    gram_basis,
+    zero_basis,
+    newton::AbstractNewtonPolytopeApproximation,
+)
+    return Newton(cone, gram_basis, zero_basis, newton, nothing)
+end
+
+function Newton(
+    cone,
+    gram_basis,
+    zero_basis,
+    variable_groups::Tuple,
+    maxdegree = nothing,
+)
     return Newton(
         cone,
         gram_basis,
         zero_basis,
         NewtonFilter(NewtonDegreeBounds(variable_groups)),
+        maxdegree,
     )
 end
 
 MB.implicit_basis(certificate::Newton) = certificate.gram_basis
 
-function gram_basis(certificate::Newton, poly)
-    basis = half_newton_polytope(
-        _algebra_element(poly),
-        MP.variables(poly),
-        certificate.newton,
-    )
+gram_basis(certificate::Newton, poly) = gram_basis(certificate, poly, nothing)
+
+function gram_basis(certificate::Newton, poly, domain)
+    ideal = _truncated_ideal(domain)
+    a = _algebra_element(poly)
+    vars = MP.variables(poly)
+    if isnothing(ideal)
+        basis = half_newton_polytope(a, vars, certificate.newton)
+    else
+        if isnothing(certificate.maxdegree)
+            throw(
+                ArgumentError(
+                    "The `maxdegree` of the `Newton` certificate is needed with truncated equalities.",
+                ),
+            )
+        end
+        basis, _ = half_newton_polytope(
+            a,
+            _weight_type(Bool, typeof(SA.basis(a)))[],
+            vars,
+            certificate.maxdegree,
+            certificate.newton,
+            ideal,
+        )
+    end
     return MB.explicit_basis_covering(certificate.gram_basis, basis)
 end
 
@@ -295,6 +339,10 @@ end
 function gram_basis(certificate::Remainder, poly)
     return gram_basis(certificate.gram_certificate, poly)
 end
+
+# The polynomial is reduced modulo a Gröbner basis so the gram basis does not
+# depend on the domain
+gram_basis(certificate::Remainder, poly, _) = gram_basis(certificate, poly)
 
 function MA.promote_operation(
     ::typeof(gram_basis),

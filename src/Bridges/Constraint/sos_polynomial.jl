@@ -74,6 +74,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
             SOS.Certificate.reduced_polynomial(set.certificate, poly, domain),
             set.domain,
         ),
+        domain,
     )
     implicit_basis = MB.implicit_basis(set.certificate)
     if SA.basis(poly) != implicit_basis

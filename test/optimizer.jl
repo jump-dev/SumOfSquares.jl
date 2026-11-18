@@ -204,6 +204,43 @@ function test_truncated_algebraic_set_with_inequalities()
     return
 end
 
+function test_truncated_newton()
+    @polyvar x y z
+    # The equation is redundant so that it is not a Gröbner basis
+    V = @set x^2 + y^2 + z^2 == 1 && 2x^2 + 2y^2 + 2z^2 == 2
+    for (K, bound) in [(V, -1.1720537), (V ∩ @set(x >= 0), -1)]
+        sizes = map([true, false]) do newton
+            model = SOSModel(SOLVER)
+            @variable(model, t)
+            @objective(model, Max, t)
+            if newton
+                c = @constraint(
+                    model,
+                    x^3 + y - t in SOSCone(),
+                    domain = K,
+                    maxdegree = 4,
+                )
+            else
+                c = @constraint(
+                    model,
+                    x^3 + y - t in SOSCone(),
+                    domain = K,
+                    maxdegree = 4,
+                    newton_polytope = nothing,
+                )
+            end
+            optimize!(model)
+            @test termination_status(model) == MOI.OPTIMAL
+            @test value(t) ≈ bound rtol = 1e-5
+            return length(gram_matrix(c).basis)
+        end
+        # `x^2` is the leading monomial of `x^2 + y^2 + z^2 - 1`
+        @test sizes == [9, 10]
+    end
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(V))
+    return
+end
+
 # `min ∫_{-1}^{1} p` over the polynomials `p = a + b * t + c * t^2` that are
 # nonnegative with `∫_{-1}^{1} p^2 = 1`. Substituting `p = λ(t - r)^2` and
 # setting the derivative in `u = r^2` to zero gives `(5u - 1)^2 = 0` hence the

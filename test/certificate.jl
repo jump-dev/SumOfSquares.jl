@@ -496,3 +496,69 @@ include("ceg_test.jl")
 include("csp_test.jl")
 include("sparsity.jl")
 include("symmetry.jl")
+
+@testset "Newton with truncated equalities" begin
+    @polyvar x y
+    Certificate = SumOfSquares.Certificate
+    full_basis = MB.FullBasis{MB.Monomial}(x * y)
+    function _gram(poly, domain, maxdegree)
+        certificate = Certificate.Newton(
+            SOSCone(),
+            full_basis,
+            full_basis,
+            tuple(),
+            maxdegree,
+        )
+        a = MB.algebra_element(poly)
+        basis = Certificate.gram_basis(
+            certificate,
+            Certificate.WithVariables(a, MP.variables(poly)),
+            domain,
+        )
+        return MB.keys_as_monomials(basis)
+    end
+    # The equation is redundant so that it is not a Gröbner basis
+    V = MP.similar(@set(x^2 + y^2 == 1 && 2x^2 + 2y^2 == 2), Float64)
+    domain = SemialgebraicSets.truncated(V, 4)
+    # `x^2` is the leading monomial of `x^2 + y^2 - 1` so it is replaced by
+    # smaller monomials [L24, Theorem 2]
+    @test _gram(x^3 + y, domain, 4) == [1, y, x, y^2, x * y]
+    # Without truncation, the Newton polytope of `x^3 + y` is used and it is
+    # empty as `x^3` cannot be canceled
+    @test isempty(_gram(x^3 + y, V, 4))
+    certificate = Certificate.Newton(SOSCone(), full_basis, full_basis, tuple())
+    a = MB.algebra_element(x^3 + y)
+    @test_throws ArgumentError Certificate.gram_basis(
+        certificate,
+        Certificate.WithVariables(a, MP.variables(a)),
+        domain,
+    )
+    # `x^2` is in the support of `λ * (x^2 - y^2)` so its coefficient may be
+    # canceled [L24, Theorem 3]
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x^2 == y^2 && 2x^2 == 2y^2), Float64),
+        2,
+    )
+    @test _gram(1 + 0 * x * y, domain, 2) == [1, y, x]
+    # `x^2` and `y^2` are not in the support of `λ * x * y` so the diagonal
+    # entries of `x` and `y` are zero
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x * y == 0 && 2x * y == 0), Float64),
+        2,
+    )
+    @test _gram(1 + 0 * x * y, domain, 2) == [1]
+    # The degree of `x^3 - y` is larger than the degree of the truncation and
+    # the degree of the Macaulay matrix of [L24, Theorem 2] is negative
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x^2 + y^2 == 1 && x^3 == y), Float64),
+        2,
+    )
+    @test _gram(1 + 0 * x * y, domain, 6) == [1, y, x]
+    # All monomials of degree 2 are dependent so the maximal degree of the
+    # basis decreases and the degree of the Macaulay matrix increases
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x^2 == x && x * y == 0 && y^2 == y), Float64),
+        4,
+    )
+    @test _gram(1 + 0 * x * y, domain, 4) == [1, y, x]
+end

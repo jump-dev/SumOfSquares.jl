@@ -59,7 +59,7 @@ function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
 end
 
 function default_ideal_certificate(
-    ::AbstractAlgebraicSet,
+    domain::AbstractAlgebraicSet,
     gram_basis::SA.ImplicitBasis,
     zero_basis,
     cone,
@@ -68,10 +68,31 @@ function default_ideal_certificate(
 )
     if maxdegree === nothing
         return Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope)
+    elseif newton_polytope !== nothing && _truncated(domain)
+        # The multipliers of the equalities are bounded by the degree of the
+        # truncation so the Newton polytope reduction needs `maxdegree`
+        return Certificate.Newton(
+            cone,
+            gram_basis,
+            zero_basis,
+            newton_polytope,
+            maxdegree,
+        )
     else
         return Certificate.MaxDegree(cone, gram_basis, zero_basis, maxdegree)
     end
 end
+
+# Whether the equalities of `domain` are truncated, either by the user with
+# `SemialgebraicSets.truncated` or by `_truncate` because their Gröbner basis
+# is not known.
+_truncated(::AbstractAlgebraicSet) = false
+
+function _truncated(domain::AlgebraicSet)
+    return !SemialgebraicSets.is_gröbner_basis(SemialgebraicSets.ideal(domain))
+end
+
+_truncated(::SemialgebraicSets.TruncatedAlgebraicSet) = true
 function default_ideal_certificate(
     ::FixedVariablesSet,
     gram_basis::SA.ImplicitBasis,

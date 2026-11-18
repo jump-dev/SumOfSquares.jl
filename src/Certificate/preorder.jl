@@ -85,6 +85,7 @@ function with_fixed_basis(
             v.variables,
             maxdegree,
             newton,
+            _truncated_ideal(v.inner),
         )[2],
     )
 end
