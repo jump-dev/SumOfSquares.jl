@@ -148,9 +148,6 @@ function solve(G)
 
     g = gram_matrix(con_ref).blocks #src
     @test length(g) == 4            #src
-    # `gram_basis` now returns one `SimpleBasis` per character χ (was a #src
-    # `SemisimpleBasis` with `degree(χ)` inner bases). Access polynomials #src
-    # directly via `basis[k]` instead of `basis[k].elements[]`. #src
     @test g[4].basis[1] ≈ -(√2/2)*(x + y)             #src
     @test g[4].basis[2] ≈ -(√2/2)*(x^3 + y^3)         #src
     @test g[4].basis[3] ≈ -(√2/2)*(x^2*y + x*y^2)     #src
