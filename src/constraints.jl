@@ -66,9 +66,7 @@ function default_ideal_certificate(
     maxdegree,
     newton_polytope,
 )
-    if maxdegree === nothing
-        return Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope)
-    elseif newton_polytope !== nothing && _truncated(domain)
+    if newton_polytope !== nothing && _truncated(domain)
         # The multipliers of the equalities are bounded by the degree of the
         # truncation so the Newton polytope reduction needs `maxdegree`
         return Certificate.Newton(
@@ -165,13 +163,59 @@ end
 function default_ideal_certificate(
     domain::AbstractAlgebraicSet,
     newton_of_remainder::Bool,
-    args...,
+    symmetry,
+    sparsity,
+    gram_basis,
+    zero_basis,
+    cone,
+    maxdegree,
+    newton_polytope,
 )
-    c = default_ideal_certificate(domain, args...)
-    if newton_of_remainder && !(c isa SumOfSquares.Certificate.Remainder)
-        return SumOfSquares.Certificate.Remainder(c)
+    if !newton_of_remainder
+        return default_ideal_certificate(
+            domain,
+            symmetry,
+            sparsity,
+            gram_basis,
+            zero_basis,
+            cone,
+            maxdegree,
+            newton_polytope,
+        )
     end
-    return c
+    if _truncated(domain)
+        throw(
+            ArgumentError(
+                "`newton_of_remainder` requires the Gröbner basis of the equalities, compute it with `SemialgebraicSets.compute_gröbner_basis!(SemialgebraicSets.ideal(domain))`.",
+            ),
+        )
+    end
+    c = default_ideal_certificate(
+        domain,
+        symmetry,
+        sparsity,
+        gram_basis,
+        zero_basis,
+        cone,
+        nothing,
+        newton_polytope,
+    )
+    if c isa Certificate.Remainder
+        return c
+    end
+    return Certificate.Remainder(c)
+end
+
+# The degree is bounded by the Newton polytope of the remainder
+function default_ideal_certificate(
+    ::AbstractAlgebraicSet,
+    gram_basis::SA.ImplicitBasis,
+    zero_basis,
+    cone,
+    ::Nothing,
+    newton_polytope,
+)
+    return Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope)
 end
 
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
@@ -289,24 +333,7 @@ function _truncate(domain::AlgebraicSet, maxdegree)
     if SemialgebraicSets.is_gröbner_basis(SemialgebraicSets.ideal(domain))
         return domain
     end
-    _check_maxdegree(maxdegree)
     return SemialgebraicSets.truncated(domain, maxdegree)
-end
-
-function _truncate(domain::SemialgebraicSets.TruncatedAlgebraicSet, maxdegree)
-    _check_maxdegree(maxdegree)
-    return domain
-end
-
-function _check_maxdegree(maxdegree)
-    if isnothing(maxdegree)
-        throw(
-            ArgumentError(
-                "Cannot use `maxdegree = nothing` with equalities whose Gröbner basis is not known, compute it with `SemialgebraicSets.compute_gröbner_basis!(SemialgebraicSets.ideal(domain))`.",
-            ),
-        )
-    end
-    return
 end
 
 function _truncate(domain::BasicSemialgebraicSet, maxdegree)
@@ -325,7 +352,7 @@ function JuMP.moi_set(
     zero_basis::SA.AbstractBasis;
     domain::AbstractSemialgebraicSet = FullSpace(),
     newton_polytope::Union{Nothing,Tuple} = tuple(),
-    maxdegree::Union{Nothing,Int} = default_maxdegree(basis, domain),
+    maxdegree::Int = default_maxdegree(basis, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
     newton_of_remainder::Bool = false,

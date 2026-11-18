@@ -23,7 +23,7 @@ function Ideal(
     newton_polytope,
 )
     return error(
-        "`maxdegree` cannot be `nothing` when `sparsity` is `Sparsity.Variable`.",
+        "`newton_of_remainder` is not supported when `sparsity` is `Sparsity.Variable`.",
     )
 end
 function Ideal(

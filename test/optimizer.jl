@@ -182,7 +182,7 @@ function test_truncated_algebraic_set()
             model,
             x - y - t in SOSCone(),
             domain = domain,
-            maxdegree = nothing,
+            newton_of_remainder = true,
         )
     end
     @test !SemialgebraicSets.is_gröbner_basis(ideal(V))

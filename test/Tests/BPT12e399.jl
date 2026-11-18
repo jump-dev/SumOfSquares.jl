@@ -23,7 +23,6 @@ function BPT12e399_test(optimizer, config::MOI.Test.Config, remainder::Bool)
             model,
             10 - (x^2 + α * y) in SOSCone(),
             newton_of_remainder = true,
-            maxdegree = nothing,
             domain = @set x^2 + y^2 == 1
         )
     else

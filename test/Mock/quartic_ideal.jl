@@ -13,6 +13,9 @@ end
 @testset "quartic_ideal_2_rem $(typeof(mock))" for mock in mocks(optimize!)
     Tests.quartic_ideal_2_rem_test(mock, config)
 end
+@testset "quartic_ideal_4_rem $(typeof(mock))" for mock in mocks(optimize!)
+    Tests.quartic_ideal_4_rem_test(mock, config)
+end
 # The test does not check the solution so we just set zeros.
 function optimize!(mock)
     return MOI.Utilities.mock_optimize!(
@@ -26,7 +29,4 @@ end
 end
 @testset "quartic_ideal_4 $(typeof(mock))" for mock in mocks(optimize!)
     Tests.quartic_ideal_4_test(mock, config)
-end
-@testset "quartic_ideal_4_rem $(typeof(mock))" for mock in mocks(optimize!)
-    Tests.quartic_ideal_4_rem_test(mock, config)
 end

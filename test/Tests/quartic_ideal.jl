@@ -18,16 +18,27 @@ function quartic_ideal_test(
     # Set {-1, 0, 1}
     K = @set x^3 == x
     p = (x^2 - 1)^2
-    cref = @constraint(
-        model,
-        p in SOSCone(),
-        domain = K,
-        maxdegree = degree,
-        newton_of_remainder = remainder
-    )
+    if degree === nothing
+        cref = @constraint(
+            model,
+            p in SOSCone(),
+            domain = K,
+            newton_of_remainder = remainder
+        )
+    else
+        cref = @constraint(
+            model,
+            p in SOSCone(),
+            domain = K,
+            maxdegree = degree,
+            newton_of_remainder = remainder
+        )
+    end
     optimize!(model)
 
-    if remainder && (degree === nothing || degree < 4)
+    # The Newton polytope of the remainder `1 - x^2` is `[1]` whatever the
+    # `maxdegree` is
+    if remainder
         @test termination_status(model) in
               [MOI.INFEASIBLE, MOI.INFEASIBLE_OR_UNBOUNDED]
     else
