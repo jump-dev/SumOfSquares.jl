@@ -86,8 +86,8 @@ Symmetry.SymbolicWedderburn.action(action, g, poly)
 
 # Let's now find the minimum of `p` by exploiting this symmetry.
 
-import Hypatia
-solver = Hypatia.Optimizer
+import Clarabel
+solver = Clarabel.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)
@@ -130,7 +130,8 @@ b = √3/2
 
 # In fact, these last two basis comes from the real decomposition of a complex one.
 
-model = Model(solver)
+import Hypatia
+model = Model(Hypatia.Optimizer)
 @variable(model, t)
 @objective(model, Max, t)
 pattern = Symmetry.Pattern(G, action)
