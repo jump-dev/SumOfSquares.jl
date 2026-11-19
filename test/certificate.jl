@@ -562,3 +562,50 @@ include("symmetry.jl")
     )
     @test _gram(1 + 0 * x * y, domain, 4) == [1, y, x]
 end
+
+@testset "Gram basis of degree bounded by the domain" begin
+    @polyvar x y
+    Certificate = SumOfSquares.Certificate
+    full_basis = MB.FullBasis{MB.Monomial}(x * y)
+    function _gram(certificate, poly, domain)
+        a = MB.algebra_element(poly)
+        basis = Certificate.gram_basis(
+            certificate,
+            Certificate.WithVariables(a, MP.variables(poly)),
+            domain,
+        )
+        return MB.keys_as_monomials(basis)
+    end
+    _maxdegree(d) = Certificate.MaxDegree(SOSCone(), full_basis, full_basis, d)
+    _newton(d) =
+        Certificate.Newton(SOSCone(), full_basis, full_basis, tuple(), d)
+    # With a Gröbner basis, only the standard monomials are needed
+    V = MP.similar(@set(x^2 == 1), Float64)
+    @test _gram(_maxdegree(4), 1 + 0 * x * y, V) == [1, y, x, y^2, x * y]
+    @test _gram(_newton(4), 1 + 0 * x * y, V) == [1, y, x, y^2, x * y]
+    V = MP.similar(@set(x^2 == 1 && y^2 == 1), Float64)
+    SemialgebraicSets.compute_gröbner_basis!(ideal(V))
+    @test _gram(_maxdegree(1000), 1 + 0 * x * y, V) == [1, y, x, x * y]
+    K = MP.similar(@set(x^2 == 1 && y >= 0), Float64)
+    putinar = Certificate.Putinar(_maxdegree(4), _maxdegree(4), 4)
+    processed = Certificate.preprocessed_domain(
+        putinar,
+        K,
+        MB.algebra_element(1 + 0 * x * y),
+    )
+    @test MB.keys_as_monomials(
+        Certificate.multiplier_basis(
+            putinar,
+            first(Certificate.preorder_indices(putinar, processed)),
+            processed,
+        ),
+    ) == [1, y, x]
+    # With a truncated domain, the degree of `σ = p - ∑ λ_j h_j` is at most
+    # the maximum of the degree of `p` and the degree of the truncation
+    T = SemialgebraicSets.truncated(
+        MP.similar(@set(x^2 + y^2 == 1 && 2x^2 + 2y^2 == 2), Float64),
+        2,
+    )
+    @test _gram(_maxdegree(10), 1 + 0 * x * y, T) == [1, y, x]
+    @test _gram(_newton(10), 1 + 0 * x * y, T) == [1, y, x]
+end

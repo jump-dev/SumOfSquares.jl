@@ -163,6 +163,35 @@ function gram_basis(certificate::MaxDegree, poly)
     )
 end
 
+function gram_basis(certificate::MaxDegree, poly, domain)
+    vars = MP.variables(poly)
+    return maxdegree_gram_basis(
+        certificate.gram_basis,
+        vars,
+        _sos_maxdegree(certificate.maxdegree, poly, vars, domain),
+        domain,
+    )
+end
+
+# With a truncated domain, `σ = p - ∑ λ_j h_j` where the degree of `λ_j h_j` is
+# at most the degree `d` of the truncation so the degree of `σ` is at most
+# `max(maxdegree(p), d)`.
+_sos_maxdegree(maxdegree, _, _, _) = maxdegree
+
+function _sos_maxdegree(
+    maxdegree,
+    poly,
+    vars,
+    domain::SemialgebraicSets.TruncatedAlgebraicSet,
+)
+    d = _maxdegree(_algebra_element(poly), vars)
+    return min(maxdegree, max(d, domain.maxdegree))
+end
+
+function _sos_maxdegree(maxdegree, poly, vars, domain::BasicSemialgebraicSet)
+    return _sos_maxdegree(maxdegree, poly, vars, domain.V)
+end
+
 """
     struct FixedBasis{C<:SumOfSquares.SOSLikeCone,G<:SA.ExplicitBasis,Z<:SA.AbstractBasis} <:
         SimpleIdealCertificate{C,G,Z}
@@ -298,20 +327,22 @@ function gram_basis(certificate::Newton, poly, domain)
                 ),
             )
         end
+        maxdegree = _sos_maxdegree(certificate.maxdegree, poly, vars, domain)
         if isnothing(ideal)
             # The ideal is not truncated so the multipliers of the equalities
             # can cancel terms of any degree
             return maxdegree_gram_basis(
                 certificate.gram_basis,
                 vars,
-                certificate.maxdegree,
+                maxdegree,
+                domain,
             )
         end
         basis, _ = half_newton_polytope(
             a,
             _weight_type(Bool, typeof(SA.basis(a)))[],
             vars,
-            certificate.maxdegree,
+            maxdegree,
             certificate.newton,
             ideal,
         )

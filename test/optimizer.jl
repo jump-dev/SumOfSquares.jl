@@ -275,6 +275,22 @@ function test_sparsity_with_equalities()
     return
 end
 
+function test_groebner_standard_monomials()
+    @polyvar x
+    # `x^100 = 1` on the domain so the lower bound of `x^100 + x` is `0` and
+    # the default `maxdegree` is 100 but only the standard monomials `1` and
+    # `x` are needed in the Gram basis
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    @objective(model, Max, t)
+    c = @constraint(model, x^100 + x - t in SOSCone(), domain = @set(x^2 == 1))
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test value(t) ≈ 0 atol = 1e-6
+    @test MB.keys_as_monomials(gram_matrix(c).basis) == [1, x]
+    return
+end
+
 # `min ∫_{-1}^{1} p` over the polynomials `p = a + b * t + c * t^2` that are
 # nonnegative with `∫_{-1}^{1} p^2 = 1`. Substituting `p = λ(t - r)^2` and
 # setting the derivative in `u = r^2` to zero gives `(5u - 1)^2 = 0` hence the

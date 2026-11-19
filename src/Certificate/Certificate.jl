@@ -135,6 +135,47 @@ function _maxdegree_gram_basis(
     return new_sub
 end
 
+# Gram basis of `σ` such that the degree of `σ` is at most `maxdegree` for a
+# certificate where `σ` only needs to be determined modulo the ideal of
+# `domain`. If a Gröbner basis of the ideal is known, each polynomial `q` of
+# `σ = ∑ q^2` can be replaced by its remainder `r` modulo the Gröbner basis as
+# `q^2 - r^2 = (q + r) * (q - r)` is in the ideal. The degree of `r` is at most
+# the degree of `q` so only the standard monomials of degree at most
+# `maxdegree / 2` are needed, see [Section 4, PP12].
+#
+# [PP12] Permenter, Frank and Parrilo, Pablo A.
+# *Selecting a monomial basis for sums of squares programming over a quotient
+# ring*. 51st IEEE Conference on Decision and Control (2012): 1871-1876.
+function maxdegree_gram_basis(basis, variables, maxdegree::Int, _)
+    return maxdegree_gram_basis(basis, variables, maxdegree)
+end
+
+function maxdegree_gram_basis(
+    basis::MB.FullBasis{MB.Monomial},
+    variables,
+    maxdegree::Int,
+    domain::AlgebraicSet,
+)
+    I = SemialgebraicSets.ideal(domain)
+    if iszero(SemialgebraicSets.nequalities(domain)) ||
+       !SemialgebraicSets.is_gröbner_basis(I)
+        return maxdegree_gram_basis(basis, variables, maxdegree)
+    end
+    monos =
+        SemialgebraicSets.standard_monomials(I, variables, fld(maxdegree, 2))
+    sub, _ = SA.promote_bases(MB.SubBasis{MB.Monomial}(monos), basis)
+    return sub
+end
+
+function maxdegree_gram_basis(
+    basis,
+    variables,
+    maxdegree::Int,
+    domain::BasicSemialgebraicSet,
+)
+    return maxdegree_gram_basis(basis, variables, maxdegree, domain.V)
+end
+
 include("ideal.jl")
 include("preorder.jl")
 

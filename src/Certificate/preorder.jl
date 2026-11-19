@@ -130,6 +130,7 @@ function multiplier_basis(
         MP.variables(domain),
         # FIXME we ignore `certificate.multipliers_certificate.maxdegree` as it should be the same anyway
         multiplier_maxdegree(certificate.maxdegree, q),
+        domain.inner,
     )
 end
 function multiplier_basis(
