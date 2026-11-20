@@ -4,6 +4,7 @@
 #md # [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/Symmetry/symmetry_reduction.ipynb)
 # **Adapted from**: [SymbolicWedderburn example](https://github.com/kalmarek/SymbolicWedderburn.jl/blob/tw/ex_sos/examples/ex_C4.jl)
 
+import LinearAlgebra
 import MutableArithmetics as MA
 using MultivariatePolynomials
 using MultivariateBases
@@ -56,9 +57,8 @@ gram = gram_matrix(con_ref).blocks    #src
 @test gram[2].basis[1] ≈ (x[2] - x[4]) / √2           #src
 @test gram[2].basis[2] ≈ (x[1] - x[3]) / √2           #src
 @test size(gram[2].Q) == (2, 2)                       #src
-@test gram[2].Q[1, 1] ≈ 0.5 atol=1e-6                 #src
-@test gram[2].Q[2, 2] ≈ 0.5 atol=1e-6                 #src
-@test gram[2].Q[1, 2] ≈ 0   atol=1e-6                 #src
+# The invariant projection fixes the trace of this block. #src
+@test LinearAlgebra.tr(gram[2].Q) ≈ 1 atol=1e-6 #src
 @test gram[3].basis[1] ≈ (x[1] - x[2] + x[3] - x[4]) / 2 #src
 @test size(gram[3].Q) == (1, 1)                       #src
 @test gram[3].Q[1, 1] ≈ 1.0 atol=1e-6                 #src
