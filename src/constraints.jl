@@ -82,8 +82,8 @@ function default_ideal_certificate(
 end
 
 # Whether the equalities of `domain` are truncated, either by the user with
-# `SemialgebraicSets.truncated` or by `_truncate` because their Gröbner basis
-# is not known.
+# `SemialgebraicSets.truncated` or by `PolyJuMP.truncated_domain` because their
+# Gröbner basis is not known.
 _truncated(::AbstractAlgebraicSet) = false
 
 function _truncated(domain::AlgebraicSet)
@@ -291,60 +291,6 @@ function default_certificate(
     )
 end
 
-# Julia v1.0 does not support `init` keyword
-#_max_maxdegree(p) = maximum(MP.maxdegree, p, init=0)
-_max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init = 0)
-
-_maxdegree(domain) = 0
-
-function _maxdegree(
-    domain::Union{AlgebraicSet,SemialgebraicSets.TruncatedAlgebraicSet},
-)
-    return _max_maxdegree(SemialgebraicSets.equalities(domain))
-end
-
-function _maxdegree(domain::BasicSemialgebraicSet)
-    return max(
-        _max_maxdegree(SemialgebraicSets.inequalities(domain)),
-        _maxdegree(SemialgebraicSets.algebraic_set(domain)),
-    )
-end
-
-"""
-    default_maxdegree(monos, domain)
-
-Return the default `maxdegree` to use for certifying a polynomial with
-monomials `monos` to be Sum-of-Squares over the domain `domain`.
-By default, the maximum of the maxdegree of `monos` and of all multipliers
-of the domain are used so that at least constant multipliers can be used
-with a Putinar certificate.
-"""
-function default_maxdegree(monos, domain)
-    return max(MP.maxdegree(monos), _maxdegree(domain))
-end
-
-# If the equalities of `domain` do not have a known Gröbner basis and are not
-# already truncated with `SemialgebraicSets.truncated`, truncate them at degree
-# `maxdegree` so that the multipliers of the equalities have the same degree
-# bound as the multipliers of the inequalities.
-_truncate(domain, _) = domain
-
-function _truncate(domain::AlgebraicSet, maxdegree)
-    if SemialgebraicSets.is_gröbner_basis(SemialgebraicSets.ideal(domain))
-        return domain
-    end
-    return SemialgebraicSets.truncated(domain, maxdegree)
-end
-
-function _truncate(domain::BasicSemialgebraicSet, maxdegree)
-    V = SemialgebraicSets.algebraic_set(domain)
-    W = _truncate(V, maxdegree)
-    if W === V
-        return domain
-    end
-    return BasicSemialgebraicSet(W, SemialgebraicSets.inequalities(domain))
-end
-
 function JuMP.moi_set(
     cone::SOSLikeCone,
     basis::SA.ExplicitBasis,
@@ -352,7 +298,7 @@ function JuMP.moi_set(
     zero_basis::SA.AbstractBasis;
     domain::AbstractSemialgebraicSet = FullSpace(),
     newton_polytope::Union{Nothing,Tuple} = tuple(),
-    maxdegree::Int = default_maxdegree(basis, domain),
+    maxdegree::Int = PolyJuMP.default_maxdegree(basis, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
     newton_of_remainder::Bool = false,
@@ -378,7 +324,11 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(_truncate(domain, maxdegree), basis, certificate)
+    return SOSPolynomialSet(
+        PolyJuMP.truncated_domain(domain, maxdegree),
+        basis,
+        certificate,
+    )
 end
 
 function PolyJuMP.bridges(

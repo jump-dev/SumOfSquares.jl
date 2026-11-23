@@ -1,8 +1,10 @@
 # Certificate
 
-Default choice for the `maxdegree` keyword:
+Default choice for the `maxdegree` keyword and truncation of the equalities
+of the domain whose Gröbner basis is not known:
 ```@docs
-SumOfSquares.default_maxdegree
+PolyJuMP.default_maxdegree
+PolyJuMP.truncated_domain
 ```
 
 Types of sparsity
