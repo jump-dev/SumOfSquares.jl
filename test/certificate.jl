@@ -383,11 +383,11 @@ end
 @testset "Zero basis of AlgebraicSet" begin
     @polyvar x y z
     Certificate = SumOfSquares.Certificate
-    _zero_basis(basis, domain) = Certificate.__reduce_with_domain(
-        basis,
-        MB.FullBasis{MB.Monomial}(MP.variables(basis)),
-        domain,
-    )
+    function _zero_basis(basis, domain)
+        full_basis = MB.implicit_basis(basis)
+        set = JuMP.moi_set(SOSCone(), basis, full_basis, full_basis; domain)
+        return Certificate.__reduce_with_domain(basis, full_basis, set.domain)
+    end
     _coeffs(p, basis) = SA.coeffs(MB.algebra_element(p), basis)
     # The bridge converts the domain to the coefficient type of the model
     domain = MP.similar(@set(x * y == 1 && x^2 == y), Float64)
