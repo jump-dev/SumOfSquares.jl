@@ -48,12 +48,11 @@ MutableArithmetics = "1.9"
 # Clarabel v0.11.1 indexes an `OrderedSet` in its chordal decomposition,
 # which is not supported by OrderedCollections v2
 OrderedCollections = "1"
-PolyJuMP = "0.8"
+PolyJuMP = "0.9"
 SymbolicWedderburn = "0.5"
 
 [sources]
 HomotopyContinuation = {url = "https://github.com/blegat/HomotopyContinuation.jl", rev = "sa_refactor"}
 MixedSubdivisions = {url = "https://github.com/blegat/MixedSubdivisions.jl", rev = "bl/mp_v0.6"}
-PolyJuMP = {url = "https://github.com/jump-dev/PolyJuMP.jl", rev = "main"}
 SemialgebraicSets = {url = "https://github.com/JuliaAlgebra/SemialgebraicSets.jl", rev = "main"}
 SumOfSquares = {path = ".."}
