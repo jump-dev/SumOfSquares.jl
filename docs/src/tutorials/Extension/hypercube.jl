@@ -54,15 +54,15 @@ min_algebraic(S)
 # and there is an odd number of variables, their sum is odd.
 # Therefore it cannot be zero!
 
-# We can see that the Gröbner basis of `S` was computed
+# This constraint uses the equalities truncated at degree two.
+# The Gröbner basis flag therefore remains `false` after the solve.
 
-@show S.I.gröbner_basis
-S.I.algo
+SemialgebraicSets.is_gröbner_basis(S.I)
 
-# The Gröbner basis is simple to compute in this case as the vector
-# of `xi^2 - 1` is already a Gröbner basis.
-# However, we still need to divide polynomials by the Gröbner basis
-# which can be simplified in this case.
+# The generators already form a Gröbner basis. Since `xi^2 = 1`, the
+# remainder of a monomial is obtained by reducing each exponent modulo two.
+# The following custom domain implements this reduction directly. The
+# defining equalities have integer coefficients.
 
 import MutableArithmetics as MA
 const MP = MultivariatePolynomials
@@ -73,6 +73,7 @@ end
 struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
     ideal::HypercubeIdeal{V}
 end
+MP.coefficient_type(::Type{<:Union{HypercubeSet,HypercubeIdeal}}) = Int
 MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
 Base.similar(set::HypercubeSet, ::Type) = set
