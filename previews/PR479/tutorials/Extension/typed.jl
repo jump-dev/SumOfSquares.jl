@@ -45,6 +45,8 @@ sos_decomposition(con_ref)
 # using domain defined by equalities (possibly also with inequalities).
 # Computing a Gröbner basis before passing such a domain to SumOfSquares
 # can take a non-negligible amount of time for large systems of equalities.
+# So this is not done by default in SumOfSquares but we can request it
+# explicitly with `SemialgebraicSets.compute_gröbner_basis!`.
 
 # To illustrate this, consider the computation of Gröbner basis for the
 # following system from [CLO05, p. 17].
