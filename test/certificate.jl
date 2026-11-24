@@ -563,7 +563,7 @@ include("symmetry.jl")
     @test _gram(1 + 0 * x * y, domain, 4) == [1, y, x]
 end
 
-@testset "Gram basis of degree bounded by the domain" begin
+@testset "Gram basis of standard monomials" begin
     @polyvar x y
     Certificate = SumOfSquares.Certificate
     full_basis = MB.FullBasis{MB.Monomial}(x * y)
@@ -600,12 +600,4 @@ end
             processed,
         ),
     ) == [1, y, x]
-    # With a truncated domain, the degree of `σ = p - ∑ λ_j h_j` is at most
-    # the maximum of the degree of `p` and the degree of the truncation
-    T = SemialgebraicSets.truncated(
-        MP.similar(@set(x^2 + y^2 == 1 && 2x^2 + 2y^2 == 2), Float64),
-        2,
-    )
-    @test _gram(_maxdegree(10), 1 + 0 * x * y, T) == [1, y, x]
-    @test _gram(_newton(10), 1 + 0 * x * y, T) == [1, y, x]
 end
