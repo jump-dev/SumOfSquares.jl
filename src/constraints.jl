@@ -66,7 +66,9 @@ function default_ideal_certificate(
     maxdegree,
     newton_polytope,
 )
-    if newton_polytope !== nothing
+    truncated = PolyJuMP.truncated_domain(domain, maxdegree)
+    if newton_polytope !== nothing &&
+       !isnothing(Certificate._truncated_ideal(truncated, maxdegree))
         # The multipliers of the equalities are bounded by the degree of the
         # truncation, or by `maxdegree` if the Gröbner basis is known, so the
         # Newton polytope reduction needs `maxdegree`
