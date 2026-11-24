@@ -833,6 +833,43 @@ function _add_ideal_support!(
     return
 end
 
+function _weighted_gram_product(
+    ::SA.OrderedTermProduct,
+    cache,
+    _,
+    change,
+    a,
+    b,
+    generator,
+)
+    full = SA.basis(cache)
+    ms = SA.mstructure(cache)
+    key, weight = only(SA.nonzero_pairs(ms(full[a], full[b])))
+    count = convert(SignCount, weight * change)
+    # Multiplication by a fixed key maps distinct generator keys to distinct
+    # product keys, so these contributions can be used without canonicalizing.
+    return Iterators.map(
+        SA.nonzero_pairs(SA.coeffs(generator)),
+    ) do (g, coefficient)
+        product, scale = only(SA.nonzero_pairs(ms(key, g)))
+        return product => scale * (coefficient * count)
+    end
+end
+
+function _weighted_gram_product(
+    ::SA.GeneralTermProduct,
+    cache,
+    cache2,
+    change,
+    a,
+    b,
+    generator,
+)
+    MA.operate_to!(cache, *, _term(change, a), MB.algebra_element(b))
+    MA.operate_to!(cache2, *, cache, generator)
+    return SA.nonzero_pairs(SA.coeffs(cache2))
+end
+
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
 # two different monomials of `monos` and `mono` is not in `X` then, the corresponding
 # diagonal entry of the Gram matrix will be zero hence the whole column and row
@@ -864,15 +901,42 @@ function post_filter(
     vars = nothing,
     maxdegree = nothing,
 )
-    # We use `_DictCoefficients` instead `SA.SparseCoefficients` because
-    # we need to keep it canonicalized (without duplicate actually)
-    # and don't care about the list of monomials being ordered
-    counter = MB.algebra_element(
-        _DictCoefficients(Dict{SA.key_type(SA.basis(poly)),SignCount}()),
-        MB.implicit_basis(SA.basis(poly)),
+    full = MB.implicit_basis(SA.basis(poly))
+    alg = MB.algebra(full)
+    style =
+        if all(g -> SA.basis(g) == full, generators) &&
+           all(b -> MB.implicit_basis(b) == full, multipliers_gram_monos)
+            SA.term_product_style(SA.mstructure(alg), SA.comparable(full))
+        else
+            SA.GeneralTermProduct()
+        end
+    return _post_filter(
+        style,
+        poly,
+        generators,
+        multipliers_gram_monos,
+        ideal,
+        vars,
+        maxdegree,
+        alg,
     )
-    cache = zero(SignCount, MB.algebra(MB.implicit_basis(SA.basis(poly))))
-    cache2 = zero(SignCount, MB.algebra(MB.implicit_basis(SA.basis(poly))))
+end
+
+function _post_filter(
+    style,
+    poly,
+    generators,
+    multipliers_gram_monos,
+    ideal,
+    vars,
+    maxdegree,
+    alg,
+)
+    # The counter needs unique keys and does not need to keep them sorted.
+    counts = _DictCoefficients(Dict{SA.key_type(SA.basis(alg)),SignCount}())
+    counter = SA.AlgebraElement(counts, alg)
+    cache = zero(SignCount, alg)
+    cache2 = zero(SignCount, alg)
     for (mono, v) in SA.nonzero_pairs(SA.coeffs(poly))
         MA.operate!(
             SA.UnsafeAdd(),
@@ -881,6 +945,8 @@ function post_filter(
         )
     end
     _add_ideal_support!(counter, ideal, vars, maxdegree)
+    gram_counts = _DictCoefficients(empty(counts.inner))
+    gram = SA.AlgebraElement(gram_counts, alg)
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
         if MP.variables(mult) != MP.variables(poly)
             error(
@@ -892,73 +958,77 @@ function post_filter(
                 "Multipliers has variables $(MP.variables(gram_monos)) and poly $(MP.variables(poly))",
             )
         end
-        MA.operate_to!(
-            cache,
-            +,
+        empty!(gram_counts.inner)
+        MA.operate!(
+            SA.UnsafeAdd(),
+            gram,
             SA.QuadraticForm{SA.star}(SignGram(-1, gram_monos)),
         )
-        MA.operate!(SA.UnsafeAddMul(*), counter, mult, cache)
+        MA.operate!(SA.UnsafeAddMul(*), counter, mult, gram)
     end
+    back = Dict{SA.key_type(counts),Vector{Tuple{Int,Int}}}()
+    keep = [ones(Bool, length(monos)) for monos in multipliers_gram_monos]
+    # Finish consuming each product before reusing the multiplication caches.
+    pending = Tuple{Int,Int}[]
     function decrease(sign, a, b, generator)
-        MA.operate_to!(
+        product = _weighted_gram_product(
+            style,
             cache,
-            *,
-            _term(SignChange(sign, -1), a),
-            MB.algebra_element(b),
+            cache2,
+            SignChange(sign, -1),
+            a,
+            b,
+            generator,
         )
-        MA.operate_to!(cache2, *, cache, generator)
-        MA.operate!(SA.UnsafeAdd(), counter, cache2)
-        for mono in SA.supp(cache2)
-            count = SA.coeffs(counter)[SA.basis(counter)[mono]]
-            count_sign = _sign(count)
-            # This means the `counter` has a sign and it didn't have a sign before
-            # so we need to delete back edges
-            if !ismissing(count_sign) &&
-               (ismissing(count) || count != count_sign)
-                # TODO could see later if deleting the counter improves perf
-                if haskey(back, mono)
-                    for (i, j) in back[mono]
-                        delete(i, j)
-                    end
+        for (key, value) in product
+            SA.unsafe_push!(counts, key, value)
+            if !ismissing(_sign(counts[key]))
+                edges = pop!(back, key, nothing)
+                if edges !== nothing
+                    append!(pending, edges)
                 end
             end
         end
+        return
     end
-    back = Dict{eltype(eltype(multipliers_gram_monos)),Vector{Tuple{Int,Int}}}()
-    keep = [ones(Bool, length(monos)) for monos in multipliers_gram_monos]
-    function delete(i, j)
-        if !keep[i][j]
-            return
-        end
-        keep[i][j] = false
-        a = multipliers_gram_monos[i][j]
-        decrease(-1, a, a, generators[i])
-        for (k, b) in enumerate(multipliers_gram_monos[i])
-            if keep[i][k]
-                decrease(missing, a, b, generators[i])
-                decrease(missing, b, a, generators[i])
+    function delete_pending()
+        while !isempty(pending)
+            i, j = pop!(pending)
+            if !keep[i][j]
+                continue
+            end
+            keep[i][j] = false
+            a = multipliers_gram_monos[i][j]
+            decrease(-1, a, a, generators[i])
+            for (k, b) in enumerate(multipliers_gram_monos[i])
+                if keep[i][k]
+                    decrease(missing, a, b, generators[i])
+                    decrease(missing, b, a, generators[i])
+                end
             end
         end
+        return
     end
     for i in eachindex(generators)
         for (j, mono) in enumerate(multipliers_gram_monos[i])
-            MA.operate_to!(
+            product = _weighted_gram_product(
+                style,
                 cache,
-                *,
-                # Dummy coef to help convert to `SignCount` which is the `eltype` of `cache`
-                _term(SignChange(1, 1), mono),
-                MB.algebra_element(mono),
+                cache2,
+                SignChange(1, 1),
+                mono,
+                mono,
+                generators[i],
             )
-            # The `eltype` of `cache` is `SignCount`
-            # so there is no risk of term cancellation
-            MA.operate_to!(cache2, *, cache, generators[i])
-            for w in SA.supp(cache2)
-                if ismissing(_sign(SA.coeffs(counter)[SA.basis(counter)[w]]))
-                    push!(get!(back, w, Tuple{Int,Int}[]), (i, j))
+            for (key, _) in product
+                if ismissing(_sign(counts[key]))
+                    push!(get!(Vector{Tuple{Int,Int}}, back, key), (i, j))
                 else
-                    delete(i, j)
+                    push!(pending, (i, j))
+                    break
                 end
             end
+            delete_pending()
         end
     end
     return [
