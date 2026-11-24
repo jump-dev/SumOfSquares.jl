@@ -241,20 +241,20 @@ function test_truncated_newton()
     return
 end
 
-function _sparse_lower_bound(p, domain, sparsity)
+function _sparse_lower_bound(p, domain, sparsity, maxdegree = 2)
     model = SOSModel(SOLVER)
     @variable(model, t)
     @objective(model, Max, t)
-    @constraint(
+    c = @constraint(
         model,
         p - t in SOSCone(),
         domain = domain,
         sparsity = sparsity,
-        maxdegree = 2,
+        maxdegree = maxdegree,
     )
     optimize!(model)
     @test termination_status(model) == MOI.OPTIMAL
-    return value(t)
+    return value(t), c
 end
 
 function test_sparsity_with_equalities()
@@ -268,10 +268,47 @@ function test_sparsity_with_equalities()
     for domain in [V, W, SemialgebraicSets.truncated(W, 2)]
         for sparsity in
             [Sparsity.SignSymmetry(), Sparsity.Monomial(), Sparsity.Variable()]
-            @test _sparse_lower_bound(y, domain, sparsity) ≈ -1 / 4 rtol = 1e-5
+            bound, _ = _sparse_lower_bound(y, domain, sparsity)
+            @test bound ≈ -1 / 4 rtol = 1e-5
         end
     end
     @test !SemialgebraicSets.is_gröbner_basis(ideal(W))
+    return
+end
+
+function test_equality_multiplier_term_sparsity()
+    @polyvar x y z
+    # Multiplying the equality by z² gives the certificate (xz + z/2)².
+    # Its cross term x*z² is absent from both the objective and the equality.
+    V = SemialgebraicSets.truncated(@set(y == x^2 + x), 4)
+    for (K, pattern) in [
+        (V, Sparsity.Monomial()),
+        (
+            V ∩ @set(1 - z^2 >= 0),
+            Sparsity.Monomial(ChordalCompletion(), 1, true),
+        ),
+    ]
+        bound, c = _sparse_lower_bound(z^2 * (y + 0.25), K, pattern, 4)
+        @test bound ≈ 0 atol = 1e-6
+        @test any(gram_matrix(c).blocks) do block
+            monos = MB.keys_as_monomials(block.basis)
+            return z in monos && x * z in monos
+        end
+    end
+    return
+end
+
+function test_scalar_localizing_constraints()
+    @polyvar x y
+    circle = SemialgebraicSets.truncated(@set(x^2 + y^2 == 1), 2)
+    exterior = @set x^2 + y^2 >= 1
+    for domain in (circle, exterior)
+        bound, c = _sparse_lower_bound(x^2 + 2y^2, domain, Sparsity.Variable())
+        @test bound ≈ 1 atol = 1e-6
+        blocks = gram_matrix(c).blocks
+        @test Set(MB.keys_as_monomials(b.basis) for b in blocks) ==
+              Set(monomial_vector.([[1, x], [1, y]]))
+    end
     return
 end
 

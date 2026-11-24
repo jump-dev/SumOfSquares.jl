@@ -15,6 +15,13 @@ and `k = 0` corresponds to `Σ_*` defined in [(3.3), WML20a].
 If `use_all_monomials` is `false` then some monomials of the basis
 might be dropped from the basis if not needed.
 
+For a truncated equality `h = 0`, the support of its localizing matrix
+contributes to the term graph at every iteration [WML, Section 3.2].
+The polynomial identity is enforced modulo the full truncated ideal.
+
+[WML] Jie Wang, Victor Magron, and Jean-Bernard Lasserre.
+[Certifying global optimality of AC-OPF solutions via sparse polynomial optimization](https://arxiv.org/abs/2109.10005).
+
 [WML20a] Wang, Jie, Victor Magron, and Jean-Bernard Lasserre.
 *TSSOS: A Moment-SOS hierarchy that exploits term sparsity*.
 arXiv preprint arXiv:1912.08899 (2020).
@@ -182,15 +189,46 @@ function sparsity(
     end
     return _monomial_vector(cliques)
 end
-# [WML20a, (5.4)] adds the support of the inequality constraints to the
-# support of the polynomial. [WML20a] does not consider equality constraints;
-# by analogy, we add the support of the equalities.
+# Wang, Magron and Lasserre, "Certifying global optimality of AC-OPF
+# solutions via sparse polynomial optimization", equations (3.3)-(3.7).
+# Seed the objective graph with the supports of the constraints.
 function _with_equalities(monos, ::Monomial, domain)
     all_monos = collect(monos)
     for h in _equalities(domain)
         append!(all_monos, MP.monomials(h))
     end
     return MP.monomial_vector(all_monos)
+end
+
+# Each truncated equality has a localizing graph. Its diagonal and retained
+# edges propagate the support of u*v*h, just as for an inequality. The
+# quotient basis enforces the full truncated equality space without PSD
+# variables for the free multiplier.
+_equality_graphs(vars, domain) = Tuple[]
+
+function _equality_graphs(vars, domain::SemialgebraicSets.TruncatedAlgebraicSet)
+    return [
+        (
+            MP.monomials(vars, 0:fld(domain.maxdegree-MP.maxdegree(h), 2)),
+            MP.monomials(h),
+        ) for h in equalities(domain) if
+        !iszero(h) && MP.maxdegree(h) <= domain.maxdegree
+    ]
+end
+
+function _localizing_sparsity(monos, sp, gram_monos, inequalities, equalities)
+    if isempty(equalities)
+        return sparsity(monos, sp, gram_monos, inequalities)
+    end
+    support = Set(monos)
+    graphs = vcat(inequalities, equalities)
+    for (basis, generator) in (sp.use_all_monomials ? graphs : equalities)
+        for u in basis, m in generator
+            push!(support, MP.monomial(u^2 * m))
+        end
+    end
+    cliques, blocks = sparsity(collect(support), sp, gram_monos, graphs)
+    return cliques, blocks[eachindex(inequalities)]
 end
 
 # This also checks that it is indeed a monomial basis
@@ -270,7 +308,7 @@ function sparsity(
             domain.V,
         ),
     )
-    cliques, multiplier_cliques = sparsity(
+    cliques, multiplier_cliques = _localizing_sparsity(
         _with_equalities(
             MB.keys_as_monomials(MB.explicit_basis(poly)),
             sp,
@@ -279,6 +317,7 @@ function sparsity(
         sp,
         gram_monos,
         multiplier_generator_monos,
+        _equality_graphs(MP.variables(processed.inner), domain.V),
     )
     return MB.SubBasis{MB.Monomial}.(cliques),
     [MB.SubBasis{MB.Monomial}.(clique) for clique in multiplier_cliques]

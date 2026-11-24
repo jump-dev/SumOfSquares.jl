@@ -94,7 +94,7 @@ function sparsity(
     domain,
 )
     basis = MB.explicit_basis(poly)
-    H, cliques = chordal_csp_graph(basis, domain)
+    H, cliques = chordal_csp_graph(basis, domain, certificate.maxdegree)
     return map(cliques) do clique
         return _maxdegree_basis(
             certificate.gram_basis,
@@ -112,6 +112,28 @@ function sparsity(
         sparsity(monos, sp, MB.keys_as_monomials(gram_basis)),
     )
 end
+function sparsity(
+    poly,
+    sp::Monomial,
+    certificate::SumOfSquares.Certificate.AbstractIdealCertificate,
+    domain::SemialgebraicSets.TruncatedAlgebraicSet,
+)
+    monos = _with_equalities(
+        MB.keys_as_monomials(MB.explicit_basis(poly)),
+        sp,
+        domain,
+    )
+    basis = SumOfSquares.Certificate.gram_basis(certificate, poly, domain)
+    cliques, _ = _localizing_sparsity(
+        monos,
+        sp,
+        _monos(basis),
+        Tuple[],
+        _equality_graphs(MP.variables(poly), domain),
+    )
+    return MB.SubBasis{MB.Monomial}.(cliques)
+end
+
 function sparsity(
     poly,
     sp::Union{SignSymmetry,Monomial},
