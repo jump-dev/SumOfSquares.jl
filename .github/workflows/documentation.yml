@@ -9,7 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
       # Fix for Plots with GR backend, see https://github.com/JuliaPolyhedra/Polyhedra.jl/pull/265
       GKSwstype: nul
     steps:
