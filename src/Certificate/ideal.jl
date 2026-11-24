@@ -294,7 +294,6 @@ end
 _has_equalities(domain::BasicSemialgebraicSet) = _has_equalities(domain.V)
 
 function gram_basis(certificate::Newton, poly, domain)
-    ideal = _truncated_ideal(domain)
     a = _algebra_element(poly)
     vars = MP.variables(poly)
     if !_has_equalities(domain)
@@ -307,9 +306,12 @@ function gram_basis(certificate::Newton, poly, domain)
                 ),
             )
         end
+        ideal = _truncated_ideal(
+            domain,
+            max(certificate.maxdegree, _maxdegree(a, vars)),
+        )
         if isnothing(ideal)
-            # The ideal is not truncated so the multipliers of the equalities
-            # can cancel terms of any degree
+            # The multipliers of the equalities may cancel terms of any degree
             return maxdegree_gram_basis(
                 certificate.gram_basis,
                 vars,

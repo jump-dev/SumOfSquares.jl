@@ -582,7 +582,22 @@ end
     # With a Gröbner basis, only the standard monomials are needed
     V = MP.similar(@set(x^2 == 1), Float64)
     @test _gram(_maxdegree(4), 1 + 0 * x * y, V) == [1, y, x, y^2, x * y]
-    @test _gram(_newton(4), 1 + 0 * x * y, V) == [1, y, x, y^2, x * y]
+    # With a graded monomial ordering, the degree of the multiplier `λ` of
+    # `x^2 - 1` is at most 2 so `y^4` is not in the support of
+    # `1 - λ * (x^2 - 1)` and the diagonal entry of `y^2` is zero
+    # [L24, Theorem 3]
+    @test _gram(_newton(4), 1 + 0 * x * y, V) == [1, y, x, x * y]
+    V = MP.similar(@set(x^3 == y), Float64)
+    @test _gram(_maxdegree(6), x^4 + y^2, V) ==
+          [1, y, x, y^2, x * y, x^2, y^3, x * y^2, x^2 * y]
+    @test _gram(_newton(6), x^4 + y^2, V) == [y, y^2, x * y, x^2, x^2 * y]
+    # With a monomial ordering that is not graded, the multipliers of a
+    # Gröbner basis may have any degree so the Newton polytope is not used
+    @polyvar u v monomial_order = LexOrder
+    lex_basis = MB.FullBasis{MB.Monomial}(u * v)
+    V = MP.similar(@set(u^2 == 1), Float64)
+    newton = Certificate.Newton(SOSCone(), lex_basis, lex_basis, tuple(), 4)
+    @test _gram(newton, 1 + 0 * u * v, V) == [1, v, v^2, u, u * v]
     V = MP.similar(@set(x^2 == 1 && y^2 == 1), Float64)
     SemialgebraicSets.compute_gröbner_basis!(ideal(V))
     @test _gram(_maxdegree(1000), 1 + 0 * x * y, V) == [1, y, x, x * y]

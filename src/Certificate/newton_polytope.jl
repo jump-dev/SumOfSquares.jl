@@ -551,15 +551,30 @@ function half_newton_polytope(p, gs, vars, maxdegree, filter, ::Nothing)
 end
 
 # Truncated ideal of the equalities of the domain if the Gram bases should
-# take them into account and `nothing` otherwise.
-_truncated_ideal(_) = nothing
+# take them into account and `nothing` otherwise. The polynomials of degree at
+# most `maxdegree` should be in the ideal if and only if they are in this
+# truncated ideal.
+_truncated_ideal(_, _) = nothing
 
-function _truncated_ideal(domain::SemialgebraicSets.TruncatedAlgebraicSet)
+function _truncated_ideal(domain::SemialgebraicSets.TruncatedAlgebraicSet, _)
     return SemialgebraicSets.ideal(domain)
 end
 
-function _truncated_ideal(domain::BasicSemialgebraicSet)
-    return _truncated_ideal(SemialgebraicSets.algebraic_set(domain))
+# If `I` is a Gröbner basis for a graded monomial ordering, a polynomial of
+# degree `d` is in `I` if and only if it is equal to `∑ λ_j h_j` where `h_j`
+# are the elements of the Gröbner basis and the degree of each `λ_j h_j` is at
+# most `d`.
+function _truncated_ideal(domain::AlgebraicSet, maxdegree)
+    I = SemialgebraicSets.ideal(domain)
+    if SemialgebraicSets.is_gröbner_basis(I) &&
+       MP.ordering(eltype(SemialgebraicSets.equalities(domain))) isa MP.Graded
+        return SemialgebraicSets.truncated(I, maxdegree)
+    end
+    return
+end
+
+function _truncated_ideal(domain::BasicSemialgebraicSet, maxdegree)
+    return _truncated_ideal(SemialgebraicSets.algebraic_set(domain), maxdegree)
 end
 
 # Gram bases of `σ_0` and `σ_i` for a certificate

@@ -66,9 +66,10 @@ function default_ideal_certificate(
     maxdegree,
     newton_polytope,
 )
-    if newton_polytope !== nothing && _truncated(domain)
+    if newton_polytope !== nothing
         # The multipliers of the equalities are bounded by the degree of the
-        # truncation so the Newton polytope reduction needs `maxdegree`
+        # truncation, or by `maxdegree` if the Gröbner basis is known, so the
+        # Newton polytope reduction needs `maxdegree`
         return Certificate.Newton(
             cone,
             gram_basis,
