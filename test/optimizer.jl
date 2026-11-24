@@ -241,6 +241,40 @@ function test_truncated_newton()
     return
 end
 
+function _sparse_lower_bound(p, domain, sparsity)
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    @objective(model, Max, t)
+    @constraint(
+        model,
+        p - t in SOSCone(),
+        domain = domain,
+        sparsity = sparsity,
+        maxdegree = 2,
+    )
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    return value(t)
+end
+
+function test_sparsity_with_equalities()
+    @polyvar x y
+    # On the domain, `y + 1/4 = (x + 1/2)^2` so the bound is `-1/4`.
+    # `y` is invariant under `x ↦ -x` but `y - x^2 - x` is not so the Gram
+    # matrix should not be block-diagonalized with this sign symmetry.
+    V = @set y == x^2 + x
+    # The equation is redundant so that it is not a Gröbner basis
+    W = @set y == x^2 + x && 2y == 2x^2 + 2x
+    for domain in [V, W, SemialgebraicSets.truncated(W, 2)]
+        for sparsity in
+            [Sparsity.SignSymmetry(), Sparsity.Monomial(), Sparsity.Variable()]
+            @test _sparse_lower_bound(y, domain, sparsity) ≈ -1 / 4 rtol = 1e-5
+        end
+    end
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(W))
+    return
+end
+
 function test_groebner_standard_monomials()
     @polyvar x
     # `x^100 = 1` on the domain so the lower bound of `x^100 + x` is `0` and
