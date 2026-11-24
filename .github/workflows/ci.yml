@@ -8,8 +8,6 @@ jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
-    env:
-      JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
     strategy:
       fail-fast: false
       matrix:
@@ -34,12 +32,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v3
-      - name: Install SemialgebraicSets main on Julia 1.10
-        if: matrix.version == '1.10'
-        shell: julia --project=. {0}
-        run: |
-          using Pkg
-          Pkg.add(url="https://github.com/JuliaAlgebra/SemialgebraicSets.jl", rev="main")
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
 # # See https://github.com/oxfordcontrol/Clarabel.jl/pull/230
