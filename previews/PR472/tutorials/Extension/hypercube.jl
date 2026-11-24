@@ -60,9 +60,9 @@ min_algebraic(S)
 SemialgebraicSets.is_gröbner_basis(S.I)
 
 # The generators already form a Gröbner basis: their leading monomials `xi^2`
-# are pairwise coprime so all S-polynomials reduce to zero. We do not compute
-# Gröbner bases implicitly as it may be expensive in general but here, it is
-# cheap so we can compute it explicitly:
+# are pairwise coprime so all S-polynomials reduce to zero. SumOfSquares does
+# not compute Gröbner bases implicitly by default as it may be expensive in
+# general but here, it is cheap so we can compute it explicitly:
 
 SemialgebraicSets.compute_gröbner_basis!(S.I)
 SemialgebraicSets.is_gröbner_basis(S.I)
