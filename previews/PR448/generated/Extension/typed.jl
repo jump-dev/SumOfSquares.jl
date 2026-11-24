@@ -25,6 +25,7 @@ end
 
 TypedPolynomials.@polyvar x y
 S = @set x^3 * y + x == 2x^2 * y^2 && 3x^4 == y
+SemialgebraicSets.compute_gröbner_basis!(S.I)
 poly = -6x - 4y^3 + 2x*y^2 + 6x^3 - 3y^4 + 13x^2 * y^2
 model = Model(CSDP.Optimizer)
 con_ref = @constraint(model, poly in SOSCone(), domain = S)

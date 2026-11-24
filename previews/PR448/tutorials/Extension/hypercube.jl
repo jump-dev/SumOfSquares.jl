@@ -32,7 +32,7 @@ using SumOfSquares
 S = algebraicset([xi^2 - 1 for xi in x])
 
 # We will now search for the minimum of `x` over `S` using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import CSDP
 solver = optimizer_with_attributes(CSDP.Optimizer, MOI.Silent() => true)
@@ -54,15 +54,28 @@ min_algebraic(S)
 # and there is an odd number of variables, their sum is odd.
 # Therefore it cannot be zero!
 
-# We can see that the Gröbner basis of `S` was computed
+# This constraint uses the equalities truncated at degree two.
+# The Gröbner basis flag therefore remains `false` after the solve.
 
-@show S.I.gröbner_basis
-S.I.algo
+SemialgebraicSets.is_gröbner_basis(S.I)
 
-# The Gröbner basis is simple to compute in this case as the vector
-# of `xi^2 - 1` is already a Gröbner basis.
-# However, we still need to divide polynomials by the Gröbner basis
-# which can be simplified in this case.
+# The generators already form a Gröbner basis: their leading monomials `xi^2`
+# are pairwise coprime so all S-polynomials reduce to zero. We do not compute
+# Gröbner bases implicitly as it may be expensive in general but here, it is
+# cheap so we can compute it explicitly:
+
+SemialgebraicSets.compute_gröbner_basis!(S.I)
+SemialgebraicSets.is_gröbner_basis(S.I)
+
+# The constraint now uses the remainders modulo the Gröbner basis instead of
+# the truncation of the equalities:
+
+min_algebraic(S)
+
+# Since `xi^2 = 1`, the remainder of a monomial is obtained by reducing each
+# exponent modulo two. Instead of relying on the generic multivariate division
+# of `rem` for a polynomial ideal, the following custom domain implements this
+# reduction directly. The defining equalities have integer coefficients.
 
 import MutableArithmetics as MA
 const MP = MultivariatePolynomials
@@ -73,6 +86,7 @@ end
 struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
     ideal::HypercubeIdeal{V}
 end
+MP.coefficient_type(::Type{<:Union{HypercubeSet,HypercubeIdeal}}) = Int
 MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
 Base.similar(set::HypercubeSet, ::Type) = set
@@ -80,7 +94,7 @@ SS.ideal(set::HypercubeSet) = set.ideal
 function MA.promote_operation(::typeof(SS.ideal), ::Type{HypercubeSet{V}}) where {V}
     return HypercubeIdeal{V}
 end
-SS.similar_type(S::Type{<:HypercubeSet}, ::Type) = S
+MP.similar_type(S::Type{<:HypercubeSet}, ::Type) = S
 function Base.rem(p, set::HypercubeIdeal)
     return MP.polynomial(map(MP.terms(p)) do term
         mono = MP.monomial(term)

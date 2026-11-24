@@ -31,7 +31,7 @@ function sos_check(sparsity)
 end
 
 g = sos_check(Sparsity.NoPattern())
-@test keys_as_monomials(g.basis) == [x[1]^2, x[1] * x[2], x[2]^2, x[1], x[2], x[3], 1] #src
+@test keys_as_monomials(g.basis) == [1, x[3], x[2], x[1], x[2]^2, x[1] * x[2], x[1]^2] #src
 g.basis
 
 # As detailed in the Example 4 of [L09], we can exploit the *sign symmetry* of
@@ -40,6 +40,6 @@ g.basis
 g = sos_check(Sparsity.SignSymmetry())
 monos = [keys_as_monomials(sub.basis) for sub in g.blocks]
 @test length(monos) == 3 #src
-@test [x[1], x[2]] in monos #src
+@test [x[2], x[1]] in monos #src
 @test [x[3]] in monos #src
-@test [x[1]^2, x[1] * x[2], x[2]^2, 1] in monos #src
+@test [1, x[2]^2, x[1] * x[2], x[1]^2] in monos #src

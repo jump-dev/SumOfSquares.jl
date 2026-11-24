@@ -15,7 +15,7 @@ using DynamicPolynomials
 @polyvar x[1:2]
 
 # To use Sum-of-Squares Programming, we first need to pick an SDP solver,
-# see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
+# see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import Clarabel
 using Dualization

@@ -16,14 +16,16 @@ Base.:^(el::CyclicElem, k::Integer) = CyclicElem(el.n, (el.id * k) % el.n)
 Base.conj(a::CyclicElem, b::CyclicElem) = inv(b) * a * b
 Base.:^(a::CyclicElem, b::CyclicElem) = conj(a, b)
 
-function PermutationGroups.order(el::CyclicElem)
-    return div(el.n, gcd(el.n, el.id))
+function PermutationGroups.order(::Type{T}, el::CyclicElem) where {T}
+    return convert(T, div(el.n, gcd(el.n, el.id)))
 end
 
 struct CyclicGroup <: Group
     n::Int
 end
+Base.parent(el::CyclicElem) = CyclicGroup(el.n)
 Base.eltype(::CyclicGroup) = CyclicElem
+Base.isfinite(::CyclicGroup) = true
 Base.one(c::Union{CyclicGroup, CyclicElem}) = CyclicElem(c.n, 0)
 PermutationGroups.gens(c::CyclicGroup) = [CyclicElem(c.n, 1)]
 PermutationGroups.order(::Type{T}, c::CyclicGroup) where {T} = convert(T, c.n)
@@ -65,8 +67,8 @@ G = CyclicGroup(N)
 poly = sum(x[i] * x[mod1(i + 1, N)] for i in 1:N) + sum(x.^2)
 Symmetry.SymbolicWedderburn.action(action, g, poly)
 
-import Clarabel
-solver = Clarabel.Optimizer
+import Hypatia
+solver = Hypatia.Optimizer
 model = Model(solver)
 @variable(model, t)
 @objective(model, Max, t)

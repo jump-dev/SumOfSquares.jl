@@ -33,8 +33,6 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
     ng = length(ref[:gen])
     n = 2 * nbus + 2 * ng
     @polyvar x[1:n]
-    ineqs = Any[]
-    eqs = Any[]
     gens = sort!(collect(keys(ref[:gen])))
     bus = sort!(collect(keys(ref[:bus])))
 
@@ -47,6 +45,8 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
         push!(supp, [2nbus + i], [2nbus + i, 2nbus + i])
     end
     f = mkpoly(x, supp, coe)
+    ineqs = typeof(f)[]
+    eqs = typeof(f)[]
 
     # Voltage magnitude: vmin² ≤ eᵢ² + fᵢ² ≤ vmax².
     for i in 1:nbus
@@ -95,9 +95,14 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
     # Generation bounds: pmin ≤ pᵍ ≤ pmax and qmin ≤ qᵍ ≤ qmax.
     for i in 1:ng
         gen = ref[:gen][gens[i]]
-        p = mkpoly(x, Vector{Int}[[], [2nbus+i], [2nbus+i, 2nbus+i]],
-            [-gen["pmin"]*gen["pmax"], gen["pmin"]+gen["pmax"], -1])
-        push!(ineqs, normalize_poly(p))
+        # TSSOS fixes the active power of synchronous condensers to zero.
+        if gen["pmax"] >= 1e-6
+            p = mkpoly(x, Vector{Int}[[], [2nbus+i], [2nbus+i, 2nbus+i]],
+                [-gen["pmin"]*gen["pmax"], gen["pmin"]+gen["pmax"], -1])
+            push!(ineqs, normalize_poly(p))
+        else
+            push!(eqs, x[2nbus+i])
+        end
         p = mkpoly(x, Vector{Int}[[], [2nbus+ng+i], [2nbus+ng+i, 2nbus+ng+i]],
             [-gen["qmin"]*gen["qmax"], gen["qmin"]+gen["qmax"], -1])
         push!(ineqs, normalize_poly(p))
@@ -149,8 +154,8 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
             push!(supp1, [2nbus + gen]); push!(coe1, -1)
             push!(supp2, [2nbus + ng + gen]); push!(coe2, -1)
         end
-        push!(eqs, mkpoly(x, supp1, coe1))
-        push!(eqs, mkpoly(x, supp2, coe2))
+        push!(eqs, normalize_poly(mkpoly(x, supp1, coe1)))
+        push!(eqs, normalize_poly(mkpoly(x, supp2, coe2)))
     end
 
     # Reference bus: the imaginary part of the voltage is set to zero.
@@ -167,8 +172,8 @@ length(x), length(ineqs), length(eqs)
 import Clarabel
 
 function build_domain(ineqs, eqs)
-    gs = vcat(ineqs, eqs, [-h for h in eqs])
-    return mapreduce(g -> (@set g >= 0), intersect, gs)
+    V = SemialgebraicSets.truncated(SemialgebraicSets.algebraic_set(eqs), 2)
+    return V ∩ mapreduce(g -> (@set g >= 0), intersect, ineqs)
 end
 
 function relaxation(f, ineqs, eqs; sparsity = Sparsity.NoPattern())
@@ -184,8 +189,7 @@ function relaxation(f, ineqs, eqs; sparsity = Sparsity.NoPattern())
     return model, con_ref
 end
 
-function block_sizes(con_ref)
-    g = gram_matrix(con_ref)
+function block_sizes(g)
     if g isa SumOfSquares.BlockDiagonalGramMatrix
         return sort!([length(b.basis) for b in g.blocks]; rev = true)
     else
@@ -202,21 +206,22 @@ dense_bound
 gap(opt) = 100 * (AC - opt) / AC
 gap(dense_bound)
 
-dense_blocks = block_sizes(con_ref)
-maximum(dense_blocks)
+dense_blocks = block_sizes(gram_matrix(con_ref))
+fixed = [only(effective_variables(h)) for h in eqs if maxdegree(h) == 1]
+dense_blocks
 
 model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Variable())
 correlative_bound = objective_value(model)
 gap(correlative_bound)
 
-correlative_blocks = block_sizes(con_ref)
+correlative_blocks = block_sizes(gram_matrix(con_ref))
 correlative_blocks
 
-model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Monomial(ChordalCompletion()))
+model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Monomial(ChordalCompletion(), 1, true))
 term_bound = objective_value(model)
 gap(term_bound)
 
-term_blocks = block_sizes(con_ref)
+term_blocks = block_sizes(gram_matrix(con_ref))
 term_blocks
 
 using Printf

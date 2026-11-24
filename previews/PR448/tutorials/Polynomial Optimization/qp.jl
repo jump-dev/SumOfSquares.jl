@@ -29,7 +29,7 @@ K = @set x[1] >= 0 && x[1] <= 1 &&
          10x[1] + 12x[2] + 11x[3] + 7x[4] + 4x[5] <= 40
 
 # We will now see how to find the optimal solution using Sum of Squares Programming.
-# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/v1.12/installation/#Supported-solvers) for a list of the available choices.
+# We first need to pick an SDP solver, see [here](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers) for a list of the available choices.
 
 import Clarabel
 solver = Clarabel.Optimizer
