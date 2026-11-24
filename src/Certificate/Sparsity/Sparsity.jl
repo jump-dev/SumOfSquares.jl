@@ -17,11 +17,6 @@ export SignSymmetry
 abstract type Pattern end
 struct NoPattern <: Pattern end
 
-_equalities(::Nothing) = tuple()
-_equalities(::FullSpace) = tuple()
-_equalities(domain::AbstractAlgebraicSet) = equalities(domain)
-_equalities(domain::BasicSemialgebraicSet) = _equalities(domain.V)
-
 include("xor_space.jl")
 include("sign.jl")
 include("variable.jl")

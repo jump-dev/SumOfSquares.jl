@@ -59,7 +59,6 @@ function Ideal(
             gram_basis,
             zero_basis,
             newton_polytope,
-            maxdegree,
         ),
     )
 end
@@ -81,20 +80,11 @@ end
 
 function sparsity(
     poly,
-    sp::Variable,
-    certificate::SumOfSquares.Certificate.MaxDegree,
-)
-    return sparsity(poly, sp, certificate, SemialgebraicSets.FullSpace())
-end
-
-function sparsity(
-    poly,
     ::Variable,
     certificate::SumOfSquares.Certificate.MaxDegree,
-    domain,
 )
     basis = MB.explicit_basis(poly)
-    H, cliques = chordal_csp_graph(basis, domain)
+    H, cliques = chordal_csp_graph(basis, SemialgebraicSets.FullSpace())
     return map(cliques) do clique
         return _maxdegree_basis(
             certificate.gram_basis,
@@ -116,16 +106,11 @@ function sparsity(
     poly,
     sp::Union{SignSymmetry,Monomial},
     certificate::SumOfSquares.Certificate.AbstractIdealCertificate,
-    domain = nothing,
 )
     return sparsity(
-        _with_equalities(
-            MB.keys_as_monomials(MB.explicit_basis(poly)),
-            sp,
-            domain,
-        ),
+        MB.keys_as_monomials(MB.explicit_basis(poly)),
         sp,
-        SumOfSquares.Certificate.gram_basis(certificate, poly, domain),
+        SumOfSquares.Certificate.gram_basis(certificate, poly),
     )
 end
 
@@ -135,9 +120,6 @@ end
 
 function SumOfSquares.Certificate.gram_basis(certificate::Ideal, poly)
     return sparsity(poly, certificate.sparsity, certificate.certificate)
-end
-function SumOfSquares.Certificate.gram_basis(certificate::Ideal, poly, domain)
-    return sparsity(poly, certificate.sparsity, certificate.certificate, domain)
 end
 function MA.promote_operation(
     ::typeof(SumOfSquares.Certificate.gram_basis),

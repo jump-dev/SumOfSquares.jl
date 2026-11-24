@@ -91,19 +91,3 @@ function sparsity(
     n = MP.nvariables(monos)
     return sign_symmetry(monos, n, appropriate_type(n), gram_monos)
 end
-
-# A sign symmetry `s` of `p` can be used to block-diagonalize the Gram matrix
-# of a certificate `p = σ + ∑ λ_i h_i` if `h_i ∘ s = ±h_i` for each `i`.
-# Indeed, `(σ + σ ∘ s) / 2` is then also a valid Gram matrix. This holds if
-# `s` is a sign symmetry of `m * first(monomials(h_i))` for all monomials `m`
-# of `h_i`.
-function _with_equalities(monos, ::SignSymmetry, domain)
-    all_monos = collect(monos)
-    for h in _equalities(domain)
-        h_monos = MP.monomials(h)
-        for mono in h_monos
-            push!(all_monos, mono * first(h_monos))
-        end
-    end
-    return MP.monomial_vector(all_monos)
-end
