@@ -21,6 +21,11 @@ min_algebraic(S)
 
 SemialgebraicSets.is_gröbner_basis(S.I)
 
+SemialgebraicSets.compute_gröbner_basis!(S.I)
+SemialgebraicSets.is_gröbner_basis(S.I)
+
+min_algebraic(S)
+
 import MutableArithmetics as MA
 const MP = MultivariatePolynomials
 const SS = SemialgebraicSets

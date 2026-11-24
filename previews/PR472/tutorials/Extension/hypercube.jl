@@ -59,10 +59,23 @@ min_algebraic(S)
 
 SemialgebraicSets.is_gröbner_basis(S.I)
 
-# The generators already form a Gröbner basis. Since `xi^2 = 1`, the
-# remainder of a monomial is obtained by reducing each exponent modulo two.
-# The following custom domain implements this reduction directly. The
-# defining equalities have integer coefficients.
+# The generators already form a Gröbner basis: their leading monomials `xi^2`
+# are pairwise coprime so all S-polynomials reduce to zero. We do not compute
+# Gröbner bases implicitly as it may be expensive in general but here, it is
+# cheap so we can compute it explicitly:
+
+SemialgebraicSets.compute_gröbner_basis!(S.I)
+SemialgebraicSets.is_gröbner_basis(S.I)
+
+# The constraint now uses the remainders modulo the Gröbner basis instead of
+# the truncation of the equalities:
+
+min_algebraic(S)
+
+# Since `xi^2 = 1`, the remainder of a monomial is obtained by reducing each
+# exponent modulo two. Instead of relying on the generic multivariate division
+# of `rem` for a polynomial ideal, the following custom domain implements this
+# reduction directly. The defining equalities have integer coefficients.
 
 import MutableArithmetics as MA
 const MP = MultivariatePolynomials
