@@ -33,7 +33,6 @@ QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
-SemialgebraicSets = "8e049039-38e8-557d-ae3a-bc521ccf6204"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StarAlgebras = "0c0c59c1-dc5f-42e9-9a8b-b5dc384a6cd1"
 SumOfSquares = "4b9e565b-77fc-50a5-a571-1244f986bda1"
@@ -52,7 +51,4 @@ PolyJuMP = "0.9"
 SymbolicWedderburn = "0.5"
 
 [sources]
-HomotopyContinuation = {url = "https://github.com/blegat/HomotopyContinuation.jl", rev = "sa_refactor"}
-MixedSubdivisions = {url = "https://github.com/blegat/MixedSubdivisions.jl", rev = "bl/mp_v0.6"}
-SemialgebraicSets = {url = "https://github.com/JuliaAlgebra/SemialgebraicSets.jl", rev = "main"}
 SumOfSquares = {path = ".."}
