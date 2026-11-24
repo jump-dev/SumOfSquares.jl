@@ -91,8 +91,6 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
     ng = length(ref[:gen])
     n = 2 * nbus + 2 * ng
     @polyvar x[1:n]
-    ineqs = Any[]
-    eqs = Any[]
     gens = sort!(collect(keys(ref[:gen])))
     bus = sort!(collect(keys(ref[:bus])))
 
@@ -105,6 +103,8 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
         push!(supp, [2nbus + i], [2nbus + i, 2nbus + i])
     end
     f = mkpoly(x, supp, coe)
+    ineqs = typeof(f)[]
+    eqs = typeof(f)[]
 
     ## Voltage magnitude: vmin² ≤ eᵢ² + fᵢ² ≤ vmax².
     for i in 1:nbus
@@ -153,9 +153,14 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
     ## Generation bounds: pmin ≤ pᵍ ≤ pmax and qmin ≤ qᵍ ≤ qmax.
     for i in 1:ng
         gen = ref[:gen][gens[i]]
-        p = mkpoly(x, Vector{Int}[[], [2nbus+i], [2nbus+i, 2nbus+i]],
-            [-gen["pmin"]*gen["pmax"], gen["pmin"]+gen["pmax"], -1])
-        push!(ineqs, normalize_poly(p))
+        ## TSSOS fixes the active power of synchronous condensers to zero.
+        if gen["pmax"] >= 1e-6
+            p = mkpoly(x, Vector{Int}[[], [2nbus+i], [2nbus+i, 2nbus+i]],
+                [-gen["pmin"]*gen["pmax"], gen["pmin"]+gen["pmax"], -1])
+            push!(ineqs, normalize_poly(p))
+        else
+            push!(eqs, x[2nbus+i])
+        end
         p = mkpoly(x, Vector{Int}[[], [2nbus+ng+i], [2nbus+ng+i, 2nbus+ng+i]],
             [-gen["qmin"]*gen["qmax"], gen["qmin"]+gen["qmax"], -1])
         push!(ineqs, normalize_poly(p))
@@ -207,8 +212,8 @@ function build_opf_pop(data; AngleCons = true, LineLimit = "relax")
             push!(supp1, [2nbus + gen]); push!(coe1, -1)
             push!(supp2, [2nbus + ng + gen]); push!(coe2, -1)
         end
-        push!(eqs, mkpoly(x, supp1, coe1))
-        push!(eqs, mkpoly(x, supp2, coe2))
+        push!(eqs, normalize_poly(mkpoly(x, supp1, coe1)))
+        push!(eqs, normalize_poly(mkpoly(x, supp2, coe2)))
     end
 
     ## Reference bus: the imaginary part of the voltage is set to zero.
@@ -229,18 +234,15 @@ length(x), length(ineqs), length(eqs)
 # of the moment-SOS hierarchy, also known as Shor's relaxation for this
 # Quadratically Constrained Quadratic Program).
 #
-# TSSOS handles an equality constraint `h = 0` with a *free* polynomial
-# multiplier. This is equivalent to enforcing `h ≥ 0` and `-h ≥ 0` with
-# Sum-of-Squares multipliers: the difference of the two Gram matrices spans all
-# symmetric matrices, recovering an arbitrary (sign-free) multiplier. Modeling
-# equalities this way keeps everything in the preorder and avoids computing a
-# Gröbner basis of the balance equations.
+# At order one each quadratic equality has a free scalar multiplier. A linear
+# equality, such as zero active power at a synchronous condenser, admits an
+# affine multiplier. The degree-two truncated ideal enforces these equations.
 
 import Clarabel
 
 function build_domain(ineqs, eqs)
-    gs = vcat(ineqs, eqs, [-h for h in eqs])
-    return mapreduce(g -> (@set g >= 0), intersect, gs)
+    V = SemialgebraicSets.truncated(SemialgebraicSets.algebraic_set(eqs), 2)
+    return V ∩ mapreduce(g -> (@set g >= 0), intersect, ineqs)
 end
 
 function relaxation(f, ineqs, eqs; sparsity = Sparsity.NoPattern())
@@ -253,14 +255,17 @@ function relaxation(f, ineqs, eqs; sparsity = Sparsity.NoPattern())
         domain = build_domain(ineqs, eqs), maxdegree = 2, sparsity = sparsity,
     )
     optimize!(model)
+    @test is_solved_and_feasible(model) #src
+    multipliers = lagrangian_multipliers(con_ref) #src
+    @test length(multipliers) == length(ineqs) #src
+    @test all(g -> block_sizes(g) == [1], multipliers) #src
     return model, con_ref
 end
 
 # The maximal size of the semidefinite blocks is what drives the cost of the SDP,
 # so we define a small helper to read it off the Gram matrix of the certificate.
 
-function block_sizes(con_ref)
-    g = gram_matrix(con_ref)
+function block_sizes(g)
     if g isa SumOfSquares.BlockDiagonalGramMatrix
         return sort!([length(b.basis) for b in g.blocks]; rev = true)
     else
@@ -271,7 +276,8 @@ end
 # ### Dense relaxation
 #
 # Without exploiting sparsity, the objective's Sum-of-Squares multiplier uses a
-# single dense block indexed by `1` and all the variables.
+# single dense block. The degree-two ideal includes all affine multiples of the
+# three linear equations fixing active generator powers to zero.
 
 model, con_ref = relaxation(f, ineqs, eqs)
 dense_bound = objective_value(model)
@@ -288,20 +294,25 @@ dense_bound
 gap(opt) = 100 * (AC - opt) / AC
 gap(dense_bound)
 
-# The single dense block indexes the constant `1` together with all
-# `2 nbus + 2 ng` variables, hence has size `length(x) + 1`:
+# Removing the three fixed generator coordinates leaves 35 variables and the
+# constant in the dense Gram basis. TSSOS keeps a row and column for each of
+# those coordinates. Its moment equalities force their diagonal entries to zero,
+# so positive semidefiniteness forces the entire rows and columns to zero.
 
-dense_blocks = block_sizes(con_ref)
-@test maximum(dense_blocks) == length(x) + 1 #src
-maximum(dense_blocks)
+dense_blocks = block_sizes(gram_matrix(con_ref))
+fixed = [only(effective_variables(h)) for h in eqs if maxdegree(h) == 1]
+@test length(fixed) == 3 #src
+@test dense_blocks == [length(x) + 1 - length(fixed)] #src
+dense_blocks
 
 # ### Correlative sparsity
 #
 # `Sparsity.Variable` is the *correlative* sparsity of `CS-TSSOS`: it splits the
 # variables into the maximal cliques of (a chordal extension of) the correlative
 # sparsity graph and uses one semidefinite block per clique. The bound is
-# essentially unchanged (here within 0.03%) but the maximal block is now the size
-# of the largest clique.
+# preserved. At order one each quadratic balance equation has a single scalar
+# multiplier. Its individual terms can therefore belong to different cliques.
+# Joining all variables appearing in the equation would create larger blocks.
 
 model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Variable())
 correlative_bound = objective_value(model)
@@ -310,33 +321,56 @@ gap(correlative_bound)
 
 #-
 
-correlative_blocks = block_sizes(con_ref)
-@test maximum(correlative_blocks) < maximum(dense_blocks) #src
+correlative_blocks = block_sizes(gram_matrix(con_ref))
+@test (length(correlative_blocks), maximum(correlative_blocks)) == (28, 7) #src
 correlative_blocks
 
 # ### Term sparsity
 #
 # `Sparsity.Monomial` is the *term* sparsity of `TSSOS`. With a chordal
 # extension of the term sparsity graph it also breaks the dense block into many
-# small ones while preserving the bound.
+# small ones while preserving the bound. We take one support-extension step
+# and keep all monomials in the selected Gram basis, as in the first-order
+# example in the authors’ [runopf.jl](https://github.com/wangjie212/TSSOS.jl/blob/591f036ea37c36c4a9079eb882e93d7107d56ba2/example/runopf.jl).
 
-model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Monomial(ChordalCompletion()))
+model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.Monomial(ChordalCompletion(), 1, true))
 term_bound = objective_value(model)
 @test term_bound ≈ AC rtol = 1e-3 #src
 gap(term_bound)
 
 #-
 
-term_blocks = block_sizes(con_ref)
-@test maximum(term_blocks) < maximum(dense_blocks) #src
+term_blocks = block_sizes(gram_matrix(con_ref))
+@test (length(term_blocks), maximum(term_blocks)) == (25, 6) #src
 term_blocks
 
 # ## Summary
 #
-# All three formulations certify essentially the same bound (matching the local
-# solution to within 0.03%), but the sparsity-adapted certificates replace the
-# single dense semidefinite block by many small ones — exactly the reformulation
-# exploited by `TSSOS`/`CS-TSSOS` to scale to large networks.
+# On this instance the authors' `pop_opf_real` model has 115 inequalities and
+# 32 equalities. All three first-order bounds agree with TSSOS to the displayed
+# cents. The table counts objective Gram blocks. Each inequality has a scalar
+# nonnegative multiplier in all three formulations.
+#
+# | Pattern | TSSOS blocks × largest size | SumOfSquares blocks × largest size |
+# |:--------|----------------------------:|-----------------------------------:|
+# | Dense | 1 × 39 | 1 × 36 |
+# | Correlative | 28 × 7 | 28 × 7 |
+# | Term | 28 × 6 | 25 × 6 |
+#
+# For term sparsity the surviving Gram cliques agree monomial for monomial.
+# TSSOS also has a block on `[1, pᵍ]` for each fixed generator. On setting
+# `pᵍ = 0`, each becomes a constraint on the constant moment already present
+# in the other generator blocks. For correlative sparsity the two minimum-fill
+# orderings choose five different fill edges apiece. Those entries occur in
+# none of the problem data. Both chordal extensions describe the same PSD
+# completion problem on the specified first-order moments.
+#
+# The comparison uses the real voltage–power formulation, relaxed thermal
+# limits, and order one throughout. [Wang, Magron and Lasserre](https://arxiv.org/abs/2109.10005)
+# also study a minimum-order relaxation with different orders across cliques.
+
+@test (length(x), length(ineqs), length(eqs)) == (38, 115, 32) #src
+@test all(b -> isapprox(b, 2178.08; atol = 0.01), (dense_bound, correlative_bound, term_bound)) #src
 
 using Printf
 for (name, bound, blocks) in [
