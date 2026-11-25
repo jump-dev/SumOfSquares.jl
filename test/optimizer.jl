@@ -312,6 +312,37 @@ function test_scalar_localizing_constraints()
     return
 end
 
+function test_combined_sparsity()
+    @polyvar x y z
+    pattern = Sparsity.VariableMonomial()
+    p = (x - y)^2 + (y - z)^2
+    bound, c = _sparse_lower_bound(p, FullSpace(), pattern)
+    @test bound ≈ 0 atol = 1e-6
+    groups = Set(MB.keys_as_monomials(b.basis) for b in gram_matrix(c).blocks)
+    @test groups ==
+          Set(monomial_vector.([[x, y], [y, z], [constant_monomial(x)]]))
+
+    @test_throws ArgumentError Certificate.Sparsity.Ideal(
+        pattern,
+        MB.FullBasis{MB.Chebyshev}([x, y, z]),
+        MB.FullBasis{MB.Monomial}([x, y, z]),
+        SOSCone(),
+        2,
+        (),
+    )
+    # The two nonconstant localizers belong to different variable cliques.
+    g = 1 - x^2 - y^2
+    h = y^2 + z^2 - 1
+    K = SemialgebraicSets.truncated(@set(h == 0), 4) ∩ @set(g >= 0)
+    bound, c = _sparse_lower_bound(x^2 * g + y^2 * h, K, pattern, 4)
+    @test bound ≈ 0 atol = 1e-6
+    multiplier = only(lagrangian_multipliers(c))
+    bases = [MB.keys_as_monomials(b.basis) for b in multiplier.blocks]
+    @test any(b -> x in b, bases)
+    @test all(b -> all(m -> degree(m, z) == 0, b), bases)
+    return
+end
+
 function test_groebner_standard_monomials()
     @polyvar x
     # `x^100 = 1` on the domain so the lower bound of `x^100 + x` is `0` and

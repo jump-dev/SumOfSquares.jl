@@ -27,6 +27,8 @@ include("sign.jl")
 include("variable.jl")
 include("monomial.jl")
 
+include("variable_monomial.jl")
+
 include("preorder.jl")
 include("ideal.jl")
 

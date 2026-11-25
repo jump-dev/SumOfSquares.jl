@@ -712,7 +712,42 @@ function drop_monomials()
         end
     end
 end
+function combined_support_extension()
+    @polyvar x y z
+    p = x^2 * y + y^3 * z
+    full = MB.FullBasis{MB.Monomial}(p)
+    cert = Certificate.MaxDegree(SOSCone(), full, full, 4)
+    alg = MB.algebra_element(SA.coeffs(p), full)
+    # The first closure on {x,y} adds y and y³. Only the next iteration
+    # can use these shared powers to connect all six vertices on {y,z}.
+    yz = monomials([y, z], 0:2)
+    for (k, joined) in [(1, false), (2, true), (0, true)]
+        sp = Sparsity.VariableMonomial(
+            Sparsity.Monomial(ClusterCompletion(), k, true),
+        )
+        blocks = set_monos(Certificate.Sparsity.sparsity(alg, sp, cert))
+        @test (yz in blocks) == joined
+        @test all(blocks) do b
+            return !(
+                any(m -> MP.degree(m, x) > 0, b) &&
+                any(m -> MP.degree(m, z) > 0, b)
+            )
+        end
+    end
+    constant = MB.algebra_element(1.0 * only(monomials(typeof(x)[], 0:0)))
+    term = Sparsity.Monomial(ClusterCompletion(), 0, false)
+    blocks = Certificate.Sparsity.sparsity(
+        constant,
+        Sparsity.VariableMonomial(term),
+        cert,
+    )
+    @test length(blocks) == 1
+    @test all(isone, MB.keys_as_monomials(only(blocks)))
+    return
+end
+
 @testset "Sparsity" begin
+    combined_support_extension()
     xor_complement_test()
     wml19()
     l09()
