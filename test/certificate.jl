@@ -181,6 +181,10 @@ end
     # contributes to the (2, 0) and (0, 2) elements.
     expected = B == MB.Chebyshev ? [1, x, x^2] : [1, x, x * y, x^2]
     @test MB.keys_as_monomials(filtered[2]) == expected
+    # Removing x² must also remove both off-diagonal contributions from
+    # the pair (1, x²) before the filter can remove x.
+    filtered = only(Certificate.post_filter(unit, [unit], [gram]))
+    @test MB.keys_as_monomials(filtered) == [1]
 end
 
 @testset "Random SOS should be SOS" begin

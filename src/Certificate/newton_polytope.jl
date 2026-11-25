@@ -970,12 +970,16 @@ function _post_filter(
     keep = [ones(Bool, length(monos)) for monos in multipliers_gram_monos]
     # Finish consuming each product before reusing the multiplication caches.
     pending = Tuple{Int,Int}[]
-    function decrease(sign, a, b, generator)
+    symmetric =
+        style isa SA.OrderedTermProduct && MP.is_commutative(MP.variables(poly))
+    # An off-diagonal entry has unknown sign in both orientations.
+    off_diagonal = SignChange(missing, symmetric ? -2 : -1)
+    function decrease(change, a, b, generator)
         product = _weighted_gram_product(
             style,
             cache,
             cache2,
-            SignChange(sign, -1),
+            change,
             a,
             b,
             generator,
@@ -999,11 +1003,13 @@ function _post_filter(
             end
             keep[i][j] = false
             a = multipliers_gram_monos[i][j]
-            decrease(-1, a, a, generators[i])
+            decrease(SignChange(-1, -1), a, a, generators[i])
             for (k, b) in enumerate(multipliers_gram_monos[i])
                 if keep[i][k]
-                    decrease(missing, a, b, generators[i])
-                    decrease(missing, b, a, generators[i])
+                    decrease(off_diagonal, a, b, generators[i])
+                    if !symmetric
+                        decrease(off_diagonal, b, a, generators[i])
+                    end
                 end
             end
         end
