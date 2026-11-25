@@ -19,8 +19,12 @@ end
 
 min_algebraic(S)
 
-@show S.I.gröbner_basis
-S.I.algo
+SemialgebraicSets.is_gröbner_basis(S.I)
+
+SemialgebraicSets.compute_gröbner_basis!(S.I)
+SemialgebraicSets.is_gröbner_basis(S.I)
+
+min_algebraic(S)
 
 import MutableArithmetics as MA
 const MP = MultivariatePolynomials
@@ -31,6 +35,7 @@ end
 struct HypercubeSet{V} <: SS.AbstractAlgebraicSet
     ideal::HypercubeIdeal{V}
 end
+MP.coefficient_type(::Type{<:Union{HypercubeSet,HypercubeIdeal}}) = Int
 MP.variables(set::HypercubeSet) = MP.variables(set.ideal)
 MP.variables(ideal::HypercubeIdeal) = ideal.variables
 Base.similar(set::HypercubeSet, ::Type) = set

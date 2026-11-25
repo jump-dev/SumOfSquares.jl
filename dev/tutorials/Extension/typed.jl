@@ -43,8 +43,10 @@ sos_decomposition(con_ref)
 
 # One case for which using TypedPolynomials might be adequate is when
 # using domain defined by equalities (possibly also with inequalities).
-# Indeed, in that case, SumOfSquares computes the corresponding Gröbner basis which
-# may take a non-negligible amount of time for large systems of equalities.
+# Computing a Gröbner basis before passing such a domain to SumOfSquares
+# can take a non-negligible amount of time for large systems of equalities.
+# So this is not done by default in SumOfSquares but we can request it
+# explicitly with `SemialgebraicSets.compute_gröbner_basis!`.
 
 # To illustrate this, consider the computation of Gröbner basis for the
 # following system from [CLO05, p. 17].
@@ -73,10 +75,12 @@ end
 
 # We see that TypedPolynomials is faster.
 # The time is still negligible for this small system but for larger systems, choosing TypedPolynomials may be helpful.
-# We can use this system in a Sum-of-Squares constraint as follows:
+# To reduce the polynomial modulo the full ideal, we compute the Gröbner
+# basis before passing the domain to the SOS constraint.
 
 TypedPolynomials.@polyvar x y
 S = @set x^3 * y + x == 2x^2 * y^2 && 3x^4 == y
+SemialgebraicSets.compute_gröbner_basis!(S.I)
 poly = -6x - 4y^3 + 2x*y^2 + 6x^3 - 3y^4 + 13x^2 * y^2
 model = Model(CSDP.Optimizer)
 con_ref = @constraint(model, poly in SOSCone(), domain = S)
