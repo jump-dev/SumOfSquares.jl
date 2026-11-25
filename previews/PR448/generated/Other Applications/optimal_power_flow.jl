@@ -7,11 +7,28 @@ PowerModels.silence()
 data = PGLib.pglib("pglib_opf_case14_ieee")
 
 import Ipopt
-local_solution = PowerModels.solve_ac_opf(
+qcqp = PowerModels.instantiate_model(
     data,
+    PowerModels.ACRPowerModel,
+    PowerModels.build_opf,
+).model
+set_optimizer(
+    qcqp,
     optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0),
 )
-AC = local_solution["objective"]
+optimize!(qcqp)
+AC = objective_value(qcqp)
+
+import SCS
+sdp_solver = optimizer_with_attributes(
+    SCS.Optimizer,
+    "eps_abs" => 1e-9,
+    "eps_rel" => 1e-9,
+    "verbose" => 0,
+)
+set_optimizer(qcqp, () -> SumOfSquares.Optimizer(sdp_solver))
+optimize!(qcqp)
+qcqp_bound = objective_bound(qcqp)
 
 using DynamicPolynomials
 
