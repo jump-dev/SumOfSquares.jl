@@ -224,11 +224,19 @@ gap(term_bound)
 term_blocks = block_sizes(gram_matrix(con_ref))
 term_blocks
 
+model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.VariableMonomial())
+combined_bound = objective_value(model)
+gap(combined_bound)
+
+combined_blocks = block_sizes(gram_matrix(con_ref))
+combined_blocks
+
 using Printf
 for (name, bound, blocks) in [
     ("dense", dense_bound, dense_blocks),
     ("correlative", correlative_bound, correlative_blocks),
     ("term", term_bound, term_blocks),
+    ("combined", combined_bound, combined_blocks),
 ]
     @printf(
         "%-12s bound = %.2f   gap = %6.3f%%   #blocks = %3d   max block = %d\n",
