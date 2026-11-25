@@ -23,10 +23,9 @@
 # This is exactly the `pop_opf_real` formulation shipped with
 # [TSSOS](https://github.com/wangjie212/TSSOS). In this tutorial we build the
 # same POP from a [PGLib](https://github.com/power-grid-lib/pglib-opf) instance
-# and solve its first-order (Shor) moment-SOS relaxation. We then show that the
-# **correlative** and **term** sparsity patterns implemented in SumOfSquares
-# reproduce the block structure exploited by `CS-TSSOS`: the maximal
-# semidefinite block shrinks dramatically while the bound is preserved.
+# and solve its first-order (Shor) moment-SOS relaxation. We apply the
+# **correlative** and **term** sparsity patterns separately, then combine them
+# in the first CS-TSSOS step and compare its Gram blocks and bound with TSSOS.
 
 using Test #src
 using SumOfSquares
@@ -344,18 +343,40 @@ term_blocks = block_sizes(gram_matrix(con_ref))
 @test (length(term_blocks), maximum(term_blocks)) == (25, 6) #src
 term_blocks
 
+# ### Combined correlative and term sparsity
+#
+# `Sparsity.VariableMonomial()` first finds cliques of variables. Within each
+# clique it builds a term graph on that clique's monomials and takes one
+# minimum-fill chordal extension. This is the order-one TSSOS call with
+# `CS = "MF"`, `TS = "MF"`, and `MomentOne = false`.
+#
+# On case14 the largest Gram block shrinks from six to five. The lower bound
+# also drops, leaving about a 0.11% gap to the local AC solution.
+
+model, con_ref = relaxation(f, ineqs, eqs; sparsity = Sparsity.VariableMonomial())
+combined_bound = objective_value(model)
+@test combined_bound ≈ 2175.65597 atol = 0.005 #src
+gap(combined_bound)
+
+#-
+
+combined_blocks = block_sizes(gram_matrix(con_ref))
+@test [count(==(n), combined_blocks) for n in 1:5] == [24, 30, 10, 12, 4] #src
+@test length(combined_blocks) == 80 #src
+combined_blocks
+
 # ## Summary
 #
 # On this instance the authors' `pop_opf_real` model has 115 inequalities and
-# 32 equalities. All three first-order bounds agree with TSSOS to the displayed
-# cents. The table counts objective Gram blocks. Each inequality has a scalar
-# nonnegative multiplier in all three formulations.
+# 32 equalities. The table counts objective Gram blocks. All four bounds agree
+# with their TSSOS counterparts to the displayed cents.
 #
 # | Pattern | TSSOS blocks × largest size | SumOfSquares blocks × largest size |
 # |:--------|----------------------------:|-----------------------------------:|
 # | Dense | 1 × 39 | 1 × 36 |
 # | Correlative | 28 × 7 | 28 × 7 |
 # | Term | 28 × 6 | 25 × 6 |
+# | Combined | 80 × 5 | 80 × 5 |
 #
 # For term sparsity the surviving Gram cliques agree monomial for monomial.
 # TSSOS also has a block on `[1, pᵍ]` for each fixed generator. On setting
@@ -364,6 +385,14 @@ term_blocks
 # orderings choose five different fill edges apiece. Those entries occur in
 # none of the problem data. Both chordal extensions describe the same PSD
 # completion problem on the specified first-order moments.
+#
+# In the combined case all 80 Gram blocks agree with TSSOS, including their
+# monomial labels and multiplicities. On the 135 moments appearing in this
+# relaxation, the truncated ideal and the TSSOS equality multipliers impose
+# the same 35 independent linear equations. TSSOS assigns a scalar inequality
+# multiplier to every clique containing its constraint, producing 211 copies
+# across 115 inequalities here. The copies for a given inequality enter only
+# through their sum, so SumOfSquares uses one nonnegative scalar per inequality.
 #
 # The comparison uses the real voltage–power formulation, relaxed thermal
 # limits, and order one throughout. [Wang, Magron and Lasserre](https://arxiv.org/abs/2109.10005)
@@ -377,6 +406,7 @@ for (name, bound, blocks) in [
     ("dense", dense_bound, dense_blocks),
     ("correlative", correlative_bound, correlative_blocks),
     ("term", term_bound, term_blocks),
+    ("combined", combined_bound, combined_blocks),
 ]
     @printf(
         "%-12s bound = %.2f   gap = %6.3f%%   #blocks = %3d   max block = %d\n",
