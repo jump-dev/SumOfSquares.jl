@@ -108,6 +108,155 @@ function test_optimizer_equality()
     @test objective_value(model) ≈ -1 rtol = 1e-3
 end
 
+function test_algebraic_set_without_groebner_basis()
+    @polyvar x y z
+    # A single equation is a Gröbner basis so we add a redundant one
+    K = @set x^2 + y^2 + z^2 == 1 && 2x^2 + 2y^2 + 2z^2 == 2
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    @objective(model, Max, t)
+    # `x + 1 = ((x + 1)^2 + y^2 + z^2) / 2` on the sphere
+    @constraint(model, x - t in SOSCone(), domain = K, maxdegree = 2)
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test value(t) ≈ -1 rtol = 1e-6
+    # The equations are obtained from the Macaulay matrix instead
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(K))
+    return
+end
+
+function test_algebraic_set_sparse_equations()
+    # The dense equations obtained without the reduced row echelon form
+    # gave `NUMERICAL_ERROR` with Clarabel
+    @polyvar x y z
+    # A single equation is a Gröbner basis so we add a redundant one
+    K = @set x^2 + y^2 + z^2 == 1 && 2x^2 + 2y^2 + 2z^2 == 2
+    p = x^4 * y^2 + x^2 * y^4 + z^6 - 3x^2 * y^2 * z^2 + 1
+    model = SOSModel(SOLVER)
+    @constraint(model, p in SOSCone(), domain = K)
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(K))
+    return
+end
+
+# Maximize `t` such that `p - t` is SOS on `domain`
+function _max_lower_bound(p, domain, maxdegree...)
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    @objective(model, Max, t)
+    if isempty(maxdegree)
+        @constraint(model, p - t in SOSCone(), domain = domain)
+    else
+        @constraint(
+            model,
+            p - t in SOSCone(),
+            domain = domain,
+            maxdegree = only(maxdegree),
+        )
+    end
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    return value(t)
+end
+
+# With a smaller degree, the problems are weakly infeasible so we do not test
+# them as the solver may not detect it.
+function test_truncated_algebraic_set()
+    @polyvar x y
+    # `x - y = y * (x * y - 1) - x * (y^2 - 1)` vanishes on `V` but it is only
+    # in the truncation of the ideal at degree 3
+    V = @set x * y == 1 && y^2 == 1
+    # The ideal is truncated at `maxdegree` and not at the degree of the
+    # zero basis which is 2
+    @test _max_lower_bound(x - y, V, 3) ≈ 0 atol = 1e-6
+    # The degree of the truncation is independent of `maxdegree` which is 2
+    # by default
+    T = SemialgebraicSets.truncated(V, 3)
+    @test _max_lower_bound(x - y, T) ≈ 0 atol = 1e-6
+    @test _max_lower_bound(x - y, T, 2) ≈ 0 atol = 1e-6
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    for domain in [V, T]
+        @test_throws ArgumentError @constraint(
+            model,
+            x - y - t in SOSCone(),
+            domain = domain,
+            newton_of_remainder = true,
+        )
+    end
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(V))
+    return
+end
+
+function test_truncated_algebraic_set_with_inequalities()
+    @polyvar x y
+    # On `K`, `x - 1 = (x - y) + (y - 1)` where `x - y` is only in the
+    # truncation of the ideal at degree 3
+    V = @set x * y == 1 && y^2 == 1
+    K = V ∩ @set(y - 1 >= 0)
+    @test _max_lower_bound(x, K, 3) ≈ 1 atol = 1e-6
+    # The multipliers of the inequalities have degree at most 2 while the
+    # multipliers of the equalities have degree at most 3
+    K = SemialgebraicSets.truncated(V, 3) ∩ @set(y - 1 >= 0)
+    @test _max_lower_bound(x, K) ≈ 1 atol = 1e-6
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(V))
+    return
+end
+
+function test_truncated_newton()
+    @polyvar x y z
+    # The equation is redundant so that it is not a Gröbner basis
+    V = @set x^2 + y^2 + z^2 == 1 && 2x^2 + 2y^2 + 2z^2 == 2
+    for (K, bound) in [(V, -1.1720537), (V ∩ @set(x >= 0), -1)]
+        sizes = map([true, false]) do newton
+            model = SOSModel(SOLVER)
+            @variable(model, t)
+            @objective(model, Max, t)
+            if newton
+                c = @constraint(
+                    model,
+                    x^3 + y - t in SOSCone(),
+                    domain = K,
+                    maxdegree = 4,
+                )
+            else
+                c = @constraint(
+                    model,
+                    x^3 + y - t in SOSCone(),
+                    domain = K,
+                    maxdegree = 4,
+                    newton_polytope = nothing,
+                )
+            end
+            optimize!(model)
+            @test termination_status(model) == MOI.OPTIMAL
+            @test value(t) ≈ bound rtol = 1e-5
+            return length(gram_matrix(c).basis)
+        end
+        # `x^2` is the leading monomial of `x^2 + y^2 + z^2 - 1`
+        @test sizes == [9, 10]
+    end
+    @test !SemialgebraicSets.is_gröbner_basis(ideal(V))
+    return
+end
+
+function test_groebner_standard_monomials()
+    @polyvar x
+    # `x^100 = 1` on the domain so the lower bound of `x^100 + x` is `0` and
+    # the default `maxdegree` is 100 but only the standard monomials `1` and
+    # `x` are needed in the Gram basis
+    model = SOSModel(SOLVER)
+    @variable(model, t)
+    @objective(model, Max, t)
+    c = @constraint(model, x^100 + x - t in SOSCone(), domain = @set(x^2 == 1))
+    optimize!(model)
+    @test termination_status(model) == MOI.OPTIMAL
+    @test value(t) ≈ 0 atol = 1e-6
+    @test MB.keys_as_monomials(gram_matrix(c).basis) == [1, x]
+    return
+end
+
 # `min ∫_{-1}^{1} p` over the polynomials `p = a + b * t + c * t^2` that are
 # nonnegative with `∫_{-1}^{1} p^2 = 1`. Substituting `p = λ(t - r)^2` and
 # setting the derivative in `u = r^2` to zero gives `(5u - 1)^2 = 0` hence the

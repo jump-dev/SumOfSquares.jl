@@ -380,7 +380,239 @@ end
     end
 end
 
+@testset "Zero basis of AlgebraicSet" begin
+    @polyvar x y z
+    Certificate = SumOfSquares.Certificate
+    function _zero_basis(basis, domain)
+        full_basis = MB.implicit_basis(basis)
+        set = JuMP.moi_set(SOSCone(), basis, full_basis, full_basis; domain)
+        return Certificate.__reduce_with_domain(basis, full_basis, set.domain)
+    end
+    _coeffs(p, basis) = SA.coeffs(MB.algebra_element(p), basis)
+    # The bridge converts the domain to the coefficient type of the model
+    domain = MP.similar(@set(x * y == 1 && x^2 == y), Float64)
+    I = ideal(domain)
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials((x, y), 0:2))
+    zbasis = _zero_basis(basis, domain)
+    # The Gröbner basis is not computed
+    @test !SemialgebraicSets.is_gröbner_basis(I)
+    @test zbasis isa MB.QuotientBasis
+    # Monomials `[1, y, x, y^2, x * y, x^2]`, `x * y` is reduced to `1` and
+    # `x^2` to `y`
+    @test zbasis.matrix ≈ transpose([
+        1 0 0 0
+        0 1 0 0
+        0 0 1 0
+        0 0 0 1
+        1 0 0 0
+        0 1 0 0
+    ])
+    @test norm(_coeffs((x * y - 1) + 2 * (x^2 - y), zbasis)) < 1e-12
+    # `y^2 - x` is in the ideal but it requires multipliers of degree 2
+    @test _coeffs(y^2 - x, zbasis) ≈ [0, 0, -1, 1]
+    # The shifts are in all the variables
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials((x, y, z), 0:3))
+    zbasis = _zero_basis(basis, domain)
+    @test norm(_coeffs(z * (x^2 - y), zbasis)) < 1e-12
+    @test norm(_coeffs(y^2 - x, zbasis)) < 1e-12
+    @test !SemialgebraicSets.is_gröbner_basis(I)
+    # No dependent monomial
+    basis = MB.SubBasis{MB.Monomial}([x^0, x^2])
+    @test _zero_basis(basis, domain).matrix == [1 0; 0 1]
+    basis = MB.SubBasis{MB.Monomial}([x^0, x])
+    @test _zero_basis(basis, domain).matrix == [1 0; 0 1]
+    basis = MB.empty_basis(typeof(basis))
+    @test size(_zero_basis(basis, domain).matrix) == (0, 0)
+    # The Gröbner basis is computed
+    SemialgebraicSets.compute_gröbner_basis!(I)
+    basis = MB.SubBasis{MB.Monomial}(MP.monomials((x, y), 0:2))
+    zbasis = _zero_basis(basis, domain)
+    @test zbasis.matrix ≈ transpose([
+        1 0 0
+        0 1 0
+        0 0 1
+        0 0 1
+        1 0 0
+        0 1 0
+    ])
+    @test norm(_coeffs(y^2 - x, zbasis)) < 1e-12
+    # A single equation is a Gröbner basis so the Macaulay matrix of degree
+    # `2000` is not needed
+    domain = MP.similar(@set(x^1000 == x), Float64)
+    @test SemialgebraicSets.is_gröbner_basis(ideal(domain))
+    sparse_basis = MB.SubBasis{MB.Monomial}([x^0, x, x^1000, x^1001, x^2000])
+    @test _zero_basis(sparse_basis, domain).matrix ≈ [
+        1 0 0 0 0
+        0 1 1 0 0
+        0 0 0 1 1
+    ]
+    # `@set x == 1` gives a `FixedVariablesSet`, it should give the same zero
+    # basis as `@set x - 1 == 0`
+    for domain in [
+        MP.similar(@set(x == 1), Float64),
+        MP.similar(@set(x - 1 == 0), Float64),
+    ]
+        zbasis = _zero_basis(basis, domain)
+        @test zbasis isa MB.QuotientBasis
+        # Monomials `[1, y, x, y^2, x * y, x^2]` are reduced to
+        # `[1, y, 1, y^2, y, 1]`
+        @test zbasis.matrix ≈ [
+            1 0 1 0 0 1
+            0 1 0 0 1 0
+            0 0 0 1 0 0
+        ]
+    end
+    # Type inference
+    domain = MP.similar(@set(x^2 + y^2 == 1), Float64)
+    full_basis = MB.FullBasis{MB.Monomial}(x * y)
+    certificate = Certificate.MaxDegree(SOSCone(), full_basis, full_basis, 2)
+    poly = 1 - x^2 + y
+    a = MB.algebra_element(poly)
+    gram = Certificate.gram_basis(
+        certificate,
+        Certificate.WithVariables(a, MP.variables(poly)),
+    )
+    weight = MB.constant_algebra_element(SA.basis(a), Float64)
+    zbasis = Certificate.zero_basis(
+        certificate,
+        MB.explicit_basis(a),
+        domain,
+        [gram],
+        [weight],
+    )
+    @test zbasis isa MA.promote_operation(
+        Certificate.zero_basis,
+        typeof(certificate),
+        typeof(MB.explicit_basis(a)),
+        typeof(domain),
+        Vector{typeof(gram)},
+        Vector{typeof(weight)},
+    )
+    # `x^2` is reduced to `1 - y^2`
+    @test length(zbasis) == 5
+end
+
 include("ceg_test.jl")
 include("csp_test.jl")
 include("sparsity.jl")
 include("symmetry.jl")
+
+@testset "Newton with truncated equalities" begin
+    @polyvar x y
+    Certificate = SumOfSquares.Certificate
+    full_basis = MB.FullBasis{MB.Monomial}(x * y)
+    function _gram(poly, domain, maxdegree)
+        certificate = Certificate.Newton(
+            SOSCone(),
+            full_basis,
+            full_basis,
+            tuple(),
+            maxdegree,
+        )
+        a = MB.algebra_element(poly)
+        basis = Certificate.gram_basis(
+            certificate,
+            Certificate.WithVariables(a, MP.variables(poly)),
+            domain,
+        )
+        return MB.keys_as_monomials(basis)
+    end
+    # The equation is redundant so that it is not a Gröbner basis
+    V = MP.similar(@set(x^2 + y^2 == 1 && 2x^2 + 2y^2 == 2), Float64)
+    domain = SemialgebraicSets.truncated(V, 4)
+    # `x^2` is the leading monomial of `x^2 + y^2 - 1` so it is replaced by
+    # smaller monomials [L24, Theorem 2]
+    @test _gram(x^3 + y, domain, 4) == [1, y, x, y^2, x * y]
+    # Without truncation, the multipliers of the equalities may cancel terms
+    # of any degree so the Newton polytope of `x^3 + y` cannot be used
+    @test _gram(x^3 + y, V, 4) == [1, y, x, y^2, x * y, x^2]
+    certificate = Certificate.Newton(SOSCone(), full_basis, full_basis, tuple())
+    a = MB.algebra_element(x^3 + y)
+    @test_throws ArgumentError Certificate.gram_basis(
+        certificate,
+        Certificate.WithVariables(a, MP.variables(a)),
+        domain,
+    )
+    # `x^2` is in the support of `λ * (x^2 - y^2)` so its coefficient may be
+    # canceled [L24, Theorem 3]
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x^2 == y^2 && 2x^2 == 2y^2), Float64),
+        2,
+    )
+    @test _gram(1 + 0 * x * y, domain, 2) == [1, y, x]
+    # `x^2` and `y^2` are not in the support of `λ * x * y` so the diagonal
+    # entries of `x` and `y` are zero
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x * y == 0 && 2x * y == 0), Float64),
+        2,
+    )
+    @test _gram(1 + 0 * x * y, domain, 2) == [1]
+    # The degree of `x^3 - y` is larger than the degree of the truncation and
+    # the degree of the Macaulay matrix of [L24, Theorem 2] is negative
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x^2 + y^2 == 1 && x^3 == y), Float64),
+        2,
+    )
+    @test _gram(1 + 0 * x * y, domain, 6) == [1, y, x]
+    # All monomials of degree 2 are dependent so the maximal degree of the
+    # basis decreases and the degree of the Macaulay matrix increases
+    domain = SemialgebraicSets.truncated(
+        MP.similar(@set(x^2 == x && x * y == 0 && y^2 == y), Float64),
+        4,
+    )
+    @test _gram(1 + 0 * x * y, domain, 4) == [1, y, x]
+end
+
+@testset "Gram basis of standard monomials" begin
+    @polyvar x y
+    Certificate = SumOfSquares.Certificate
+    full_basis = MB.FullBasis{MB.Monomial}(x * y)
+    function _gram(certificate, poly, domain)
+        a = MB.algebra_element(poly)
+        basis = Certificate.gram_basis(
+            certificate,
+            Certificate.WithVariables(a, MP.variables(poly)),
+            domain,
+        )
+        return MB.keys_as_monomials(basis)
+    end
+    _maxdegree(d) = Certificate.MaxDegree(SOSCone(), full_basis, full_basis, d)
+    _newton(d) =
+        Certificate.Newton(SOSCone(), full_basis, full_basis, tuple(), d)
+    # With a Gröbner basis, only the standard monomials are needed
+    V = MP.similar(@set(x^2 == 1), Float64)
+    @test _gram(_maxdegree(4), 1 + 0 * x * y, V) == [1, y, x, y^2, x * y]
+    # With a graded monomial ordering, the degree of the multiplier `λ` of
+    # `x^2 - 1` is at most 2 so `y^4` is not in the support of
+    # `1 - λ * (x^2 - 1)` and the diagonal entry of `y^2` is zero
+    # [L24, Theorem 3]
+    @test _gram(_newton(4), 1 + 0 * x * y, V) == [1, y, x, x * y]
+    V = MP.similar(@set(x^3 == y), Float64)
+    @test _gram(_maxdegree(6), x^4 + y^2, V) ==
+          [1, y, x, y^2, x * y, x^2, y^3, x * y^2, x^2 * y]
+    @test _gram(_newton(6), x^4 + y^2, V) == [y, y^2, x * y, x^2, x^2 * y]
+    # With a monomial ordering that is not graded, the multipliers of a
+    # Gröbner basis may have any degree so the Newton polytope is not used
+    @polyvar u v monomial_order = LexOrder
+    lex_basis = MB.FullBasis{MB.Monomial}(u * v)
+    V = MP.similar(@set(u^2 == 1), Float64)
+    newton = Certificate.Newton(SOSCone(), lex_basis, lex_basis, tuple(), 4)
+    @test _gram(newton, 1 + 0 * u * v, V) == [1, v, v^2, u, u * v]
+    V = MP.similar(@set(x^2 == 1 && y^2 == 1), Float64)
+    SemialgebraicSets.compute_gröbner_basis!(ideal(V))
+    @test _gram(_maxdegree(1000), 1 + 0 * x * y, V) == [1, y, x, x * y]
+    K = MP.similar(@set(x^2 == 1 && y >= 0), Float64)
+    putinar = Certificate.Putinar(_maxdegree(4), _maxdegree(4), 4)
+    processed = Certificate.preprocessed_domain(
+        putinar,
+        K,
+        MB.algebra_element(1 + 0 * x * y),
+    )
+    @test MB.keys_as_monomials(
+        Certificate.multiplier_basis(
+            putinar,
+            first(Certificate.preorder_indices(putinar, processed)),
+            processed,
+        ),
+    ) == [1, y, x]
+end

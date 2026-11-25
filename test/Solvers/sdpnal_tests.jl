@@ -32,6 +32,7 @@ end
             # Infeasible not supported
             "quartic_ideal_rem",
             "quartic_ideal_2_rem",
+            "quartic_ideal_4_rem",
             "sos_horn",
             "maxcut",
             "choi",

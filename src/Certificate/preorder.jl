@@ -85,6 +85,10 @@ function with_fixed_basis(
             v.variables,
             maxdegree,
             newton,
+            _truncated_ideal(
+                v.inner,
+                max(maxdegree, _maxdegree(_algebra_element(p), v.variables)),
+            ),
         )[2],
     )
 end
@@ -129,6 +133,7 @@ function multiplier_basis(
         MP.variables(domain),
         # FIXME we ignore `certificate.multipliers_certificate.maxdegree` as it should be the same anyway
         multiplier_maxdegree(certificate.maxdegree, q),
+        domain.inner,
     )
 end
 function multiplier_basis(

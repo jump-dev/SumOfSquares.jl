@@ -546,6 +546,144 @@ function half_newton_polytope(
     return filtered_bases[end], filtered_bases[1:(end-1)]
 end
 
+function half_newton_polytope(p, gs, vars, maxdegree, filter, ::Nothing)
+    return half_newton_polytope(p, gs, vars, maxdegree, filter)
+end
+
+# Truncated ideal of the equalities of the domain if the Gram bases should
+# take them into account and `nothing` otherwise. The polynomials of degree at
+# most `maxdegree` should be in the ideal if and only if they are in this
+# truncated ideal.
+_truncated_ideal(_, _) = nothing
+
+function _truncated_ideal(domain::SemialgebraicSets.TruncatedAlgebraicSet, _)
+    return SemialgebraicSets.ideal(domain)
+end
+
+# If `I` is a Gröbner basis for a graded monomial ordering, a polynomial of
+# degree `d` is in `I` if and only if it is equal to `∑ λ_j h_j` where `h_j`
+# are the elements of the Gröbner basis and the degree of each `λ_j h_j` is at
+# most `d`.
+function _truncated_ideal(domain::AlgebraicSet, maxdegree)
+    I = SemialgebraicSets.ideal(domain)
+    if SemialgebraicSets.is_gröbner_basis(I) &&
+       MP.ordering(eltype(SemialgebraicSets.equalities(domain))) isa MP.Graded
+        return SemialgebraicSets.truncated(I, maxdegree)
+    end
+    return
+end
+
+function _truncated_ideal(domain::BasicSemialgebraicSet, maxdegree)
+    return _truncated_ideal(SemialgebraicSets.algebraic_set(domain), maxdegree)
+end
+
+# Gram bases of `σ_0` and `σ_i` for a certificate
+# `p = σ_0 + ∑ σ_i g_i + ∑ λ_j h_j` where the degree of `σ_0` and `σ_i g_i` is at
+# most `maxdegree` and `∑ λ_j h_j` is in the truncated ideal `ideal`.
+# This implements [L24, Algorithm 1]. As the signs of the coefficients of
+# `λ_j h_j` are unknown, the degree bounds of [L24, Theorem 4] reduce to
+# `maxdegree`. The bases are then reduced with [L24, Theorem 2] and
+# [L24, Theorem 3] until they do not change.
+#
+# [L24] Legat, Benoît and De Moor, Bart
+# *Reducing Sum-of-Squares constraints over a domain*
+function half_newton_polytope(
+    p::SA.AlgebraElement,
+    gs::AbstractVector{G},
+    vars,
+    maxdegree,
+    ::NewtonFilter{<:NewtonDegreeBounds},
+    ideal::SemialgebraicSets.TruncatedIdeal,
+) where {G<:SA.AlgebraElement}
+    gs = copy(gs)
+    push!(
+        gs,
+        MB.constant_algebra_element(MB.implicit_basis(SA.basis(p)), eltype(G)),
+    )
+    n = length(vars)
+    bounds = DegreeBounds(
+        0,
+        maxdegree,
+        _monomial(vars, zeros(Int, n)),
+        _monomial(vars, fill(maxdegree, n)),
+    )
+    bases = [multiplier_basis(g, bounds) for g in gs]
+    dependences = Dict{Int,Any}()
+    while true
+        new_bases = [
+            _macaulay_filter(basis, g, ideal, vars, dependences) for
+            (basis, g) in zip(bases, gs)
+        ]
+        new_bases = post_filter(p, gs, new_bases, ideal, vars, maxdegree)
+        if all(zip(bases, new_bases)) do (a, b)
+            return a.keys == b.keys
+        end
+            break
+        end
+        bases = new_bases
+    end
+    # The last one will be recomputed by the ideal certificate
+    return bases[end], bases[1:(end-1)]
+end
+
+function _dependence(ideal, d, vars, dependences)
+    return get!(dependences, d) do
+        return MM.BasisDependence{MM.LinearDependence}(
+            typeof(ideal)(ideal.generators, d),
+            vars,
+        )
+    end
+end
+
+function _is_dependent(dependence, mono)
+    i = SA.key_index(
+        dependence.basis,
+        MP.exponents(mono, MP.variables(dependence.basis)),
+    )
+    # A monomial that is not a column of the Macaulay matrix is independent
+    return !isnothing(i) && MM.is_dependent(dependence.dependence[i])
+end
+
+# Reduce `basis` with [L24, Theorem 2]: if a monomial `α` of `basis` is
+# `d`-dependent where `d = ideal.maxdegree - maxdegree(basis) - maxdegree(g)`,
+# it can be replaced by the `d`-independent monomials smaller than `α`.
+function _macaulay_filter(basis, g, ideal, vars, dependences)
+    while !isempty(basis)
+        d = ideal.maxdegree - _maxdegree(basis, vars) - _maxdegree(g, vars)
+        if d < 0
+            return basis
+        end
+        dependence = _dependence(ideal, d, vars, dependences)
+        monos = MB.keys_as_monomials(basis)
+        keep = [!_is_dependent(dependence, mono) for mono in monos]
+        if all(keep)
+            return basis
+        end
+        largest = maximum(monos[.!keep])
+        new_monos = monos[keep]
+        for (i, mono) in enumerate(MB.keys_as_monomials(dependence.basis))
+            if mono < largest && !MM.is_dependent(dependence.dependence[i])
+                push!(new_monos, mono)
+            end
+        end
+        new_basis = MB.SubBasis{MB.Monomial}(MP.monomial_vector(new_monos))
+        new_basis, _ = SA.promote_bases(new_basis, MB.implicit_basis(basis))
+        if _maxdegree(new_basis, vars) == _maxdegree(basis, vars)
+            return new_basis
+        end
+        basis = new_basis
+    end
+    return basis
+end
+
+function _maxdegree(basis::MB.SubBasis{MB.Monomial}, vars)
+    return maximum(
+        Base.Fix2(_sum_degree, vars),
+        MB.keys_as_monomials(basis),
+        init = 0,
+    )
+end
+
 struct SignChange{T}
     sign::T
     Δ::Int
@@ -663,6 +801,38 @@ function _term_constant_monomial(α, p::MB.BasisElement{B,M}) where {B,M}
     return _term(α, MB.BasisElement{B}(MP.constant_monomial(MP.monomial(p))))
 end
 
+# The monomials of `λ_j h_j` where the degree of `λ_j h_j` is at most
+# `ideal.maxdegree` have unknown sign so they cannot be forced to zero.
+_add_ideal_support!(_, ::Nothing, _, _) = nothing
+
+function _add_ideal_support!(
+    counter,
+    ideal::SemialgebraicSets.TruncatedIdeal,
+    vars,
+    maxdegree,
+)
+    full = SA.basis(counter)
+    for h in ideal.generators
+        shift_degree = ideal.maxdegree - MP.maxdegree(h)
+        if shift_degree < 0
+            continue
+        end
+        for shift in MP.monomials(vars, 0:shift_degree)
+            for mono in MP.monomials(h)
+                w = shift * mono
+                if MP.degree(w) <= maxdegree
+                    MA.operate!(
+                        SA.UnsafeAdd(),
+                        counter,
+                        _term(SignChange(missing, 1), full[full[w]]),
+                    )
+                end
+            end
+        end
+    end
+    return
+end
+
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
 # two different monomials of `monos` and `mono` is not in `X` then, the corresponding
 # diagonal entry of the Gram matrix will be zero hence the whole column and row
@@ -690,6 +860,9 @@ function post_filter(
     poly::SA.AlgebraElement,
     generators,
     multipliers_gram_monos,
+    ideal = nothing,
+    vars = nothing,
+    maxdegree = nothing,
 )
     # We use `_DictCoefficients` instead `SA.SparseCoefficients` because
     # we need to keep it canonicalized (without duplicate actually)
@@ -707,6 +880,7 @@ function post_filter(
             _term(SignChange(_sign(v), 1), SA.basis(poly)[mono]),
         )
     end
+    _add_ideal_support!(counter, ideal, vars, maxdegree)
     for (mult, gram_monos) in zip(generators, multipliers_gram_monos)
         if MP.variables(mult) != MP.variables(poly)
             error(

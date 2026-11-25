@@ -59,19 +59,41 @@ function JuMP.reshape_set(set::SOSPolynomialSet, ::PolyJuMP.PolynomialShape)
 end
 
 function default_ideal_certificate(
-    ::AbstractAlgebraicSet,
+    domain::AbstractAlgebraicSet,
     gram_basis::SA.ImplicitBasis,
     zero_basis,
     cone,
     maxdegree,
     newton_polytope,
 )
-    if maxdegree === nothing
-        return Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope)
+    truncated = PolyJuMP.truncated_domain(domain, maxdegree)
+    if newton_polytope !== nothing &&
+       !isnothing(Certificate._truncated_ideal(truncated, maxdegree))
+        # The multipliers of the equalities are bounded by the degree of the
+        # truncation, or by `maxdegree` if the Gröbner basis is known, so the
+        # Newton polytope reduction needs `maxdegree`
+        return Certificate.Newton(
+            cone,
+            gram_basis,
+            zero_basis,
+            newton_polytope,
+            maxdegree,
+        )
     else
         return Certificate.MaxDegree(cone, gram_basis, zero_basis, maxdegree)
     end
 end
+
+# Whether the equalities of `domain` are truncated, either by the user with
+# `SemialgebraicSets.truncated` or by `PolyJuMP.truncated_domain` because their
+# Gröbner basis is not known.
+_truncated(::AbstractAlgebraicSet) = false
+
+function _truncated(domain::AlgebraicSet)
+    return !SemialgebraicSets.is_gröbner_basis(SemialgebraicSets.ideal(domain))
+end
+
+_truncated(::SemialgebraicSets.TruncatedAlgebraicSet) = true
 function default_ideal_certificate(
     ::FixedVariablesSet,
     gram_basis::SA.ImplicitBasis,
@@ -144,13 +166,59 @@ end
 function default_ideal_certificate(
     domain::AbstractAlgebraicSet,
     newton_of_remainder::Bool,
-    args...,
+    symmetry,
+    sparsity,
+    gram_basis,
+    zero_basis,
+    cone,
+    maxdegree,
+    newton_polytope,
 )
-    c = default_ideal_certificate(domain, args...)
-    if newton_of_remainder && !(c isa SumOfSquares.Certificate.Remainder)
-        return SumOfSquares.Certificate.Remainder(c)
+    if !newton_of_remainder
+        return default_ideal_certificate(
+            domain,
+            symmetry,
+            sparsity,
+            gram_basis,
+            zero_basis,
+            cone,
+            maxdegree,
+            newton_polytope,
+        )
     end
-    return c
+    if _truncated(domain)
+        throw(
+            ArgumentError(
+                "`newton_of_remainder` requires the Gröbner basis of the equalities, compute it with `SemialgebraicSets.compute_gröbner_basis!(SemialgebraicSets.ideal(domain))`.",
+            ),
+        )
+    end
+    c = default_ideal_certificate(
+        domain,
+        symmetry,
+        sparsity,
+        gram_basis,
+        zero_basis,
+        cone,
+        nothing,
+        newton_polytope,
+    )
+    if c isa Certificate.Remainder
+        return c
+    end
+    return Certificate.Remainder(c)
+end
+
+# The degree is bounded by the Newton polytope of the remainder
+function default_ideal_certificate(
+    ::AbstractAlgebraicSet,
+    gram_basis::SA.ImplicitBasis,
+    zero_basis,
+    cone,
+    ::Nothing,
+    newton_polytope,
+)
+    return Certificate.Newton(cone, gram_basis, zero_basis, newton_polytope)
 end
 
 function default_ideal_certificate(domain::BasicSemialgebraicSet, args...)
@@ -226,36 +294,6 @@ function default_certificate(
     )
 end
 
-# Julia v1.0 does not support `init` keyword
-#_max_maxdegree(p) = maximum(MP.maxdegree, p, init=0)
-_max_maxdegree(p) = mapreduce(MP.maxdegree, max, p, init = 0)
-
-_maxdegree(domain) = 0
-
-function _maxdegree(domain::AlgebraicSet)
-    return _max_maxdegree(SemialgebraicSets.equalities(domain))
-end
-
-function _maxdegree(domain::BasicSemialgebraicSet)
-    return max(
-        _max_maxdegree(SemialgebraicSets.inequalities(domain)),
-        _maxdegree(SemialgebraicSets.algebraic_set(domain)),
-    )
-end
-
-"""
-    default_maxdegree(monos, domain)
-
-Return the default `maxdegree` to use for certifying a polynomial with
-monomials `monos` to be Sum-of-Squares over the domain `domain`.
-By default, the maximum of the maxdegree of `monos` and of all multipliers
-of the domain are used so that at least constant multipliers can be used
-with a Putinar certificate.
-"""
-function default_maxdegree(monos, domain)
-    return max(MP.maxdegree(monos), _maxdegree(domain))
-end
-
 function JuMP.moi_set(
     cone::SOSLikeCone,
     basis::SA.ExplicitBasis,
@@ -263,7 +301,7 @@ function JuMP.moi_set(
     zero_basis::SA.AbstractBasis;
     domain::AbstractSemialgebraicSet = FullSpace(),
     newton_polytope::Union{Nothing,Tuple} = tuple(),
-    maxdegree::Union{Nothing,Int} = default_maxdegree(basis, domain),
+    maxdegree::Int = PolyJuMP.default_maxdegree(basis, domain),
     sparsity::Certificate.Sparsity.Pattern = Certificate.Sparsity.NoPattern(),
     symmetry::Union{Nothing,Certificate.Symmetry.Pattern} = nothing,
     newton_of_remainder::Bool = false,
@@ -289,7 +327,11 @@ function JuMP.moi_set(
         newton_polytope,
     ),
 )
-    return SOSPolynomialSet(domain, basis, certificate)
+    return SOSPolynomialSet(
+        PolyJuMP.truncated_domain(domain, maxdegree),
+        basis,
+        certificate,
+    )
 end
 
 function PolyJuMP.bridges(
