@@ -11,21 +11,15 @@
 
 # The Alternating Current Optimal Power Flow (AC-OPF) problem looks for the
 # cheapest way to operate a power network subject to the physical laws governing
-# the flow of electricity. Writing the complex voltage at each bus in
-# *rectangular* coordinates $v = e + \mathrm{i}f$, the problem is a Polynomial
-# Optimization Problem (POP): the objective (generation cost) and every
-# constraint (voltage magnitude bounds, generation bounds, line angle
-# differences, thermal limits and the power-flow balance equations) are
-# polynomials of degree at most two in the variables
-# $(e, f, p^g, q^g)$ where $p^g, q^g$ are the active and reactive power
-# injected by the generators.
+# the flow of electricity. In rectangular coordinates each bus voltage has
+# real and imaginary parts. Branch powers are quadratic in those coordinates.
+# PowerModels keeps the branch powers as variables, which lets us send its
+# quadratically constrained quadratic program (QCQP) directly to an SOS solver.
 #
-# This is exactly the `pop_opf_real` formulation shipped with
-# [TSSOS](https://github.com/wangjie212/TSSOS). In this tutorial we build the
-# same POP from a [PGLib](https://github.com/power-grid-lib/pglib-opf) instance
-# and solve its first-order (Shor) moment-SOS relaxation. We apply the
-# **correlative** and **term** sparsity patterns separately, then combine them
-# in the first CS-TSSOS step and compare its Gram blocks and bound with TSSOS.
+# We then build the `pop_opf_real` formulation used by
+# [TSSOS](https://github.com/wangjie212/TSSOS) on the same PGLib instance.
+# We compare the dense first-order bounds before exploring how correlative
+# and term sparsity change the Gram blocks and the bound.
 
 using Test #src
 using SumOfSquares
@@ -43,17 +37,54 @@ PowerModels.silence()
 
 data = PGLib.pglib("pglib_opf_case14_ieee")
 
-# As a reference point, we compute a locally optimal solution with the interior
-# point solver [Ipopt](https://github.com/jump-dev/Ipopt.jl). Its objective
-# value `AC` is an upper bound on the global optimum, so any lower bound `opt`
-# provided by a relaxation yields the optimality gap `100 (AC - opt) / AC`.
+# ## Giving the PowerModels QCQP directly to SumOfSquares
+#
+# PowerModels' default AC formulation uses polar voltages, so its branch
+# equations contain sines and cosines. Choose rectangular voltages with
+# `ACRPowerModel` to get a QCQP for this instance. We build one JuMP model
+# and solve it twice.
+# First, Ipopt finds a feasible operating point. Its cost `AC` is an upper
+# bound on the minimum cost.
 
 import Ipopt
-local_solution = PowerModels.solve_ac_opf(
+qcqp = PowerModels.instantiate_model(
     data,
+    PowerModels.ACRPowerModel,
+    PowerModels.build_opf,
+).model
+set_optimizer(
+    qcqp,
     optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0),
 )
-AC = local_solution["objective"]
+optimize!(qcqp)
+@test is_solved_and_feasible(qcqp; allow_local = true) #src
+AC = objective_value(qcqp)
+
+# Switch the optimizer on that same model to compute a first-order SOS lower
+# bound. Query `objective_bound` for the relaxation value.
+
+import SCS
+sdp_solver = optimizer_with_attributes(
+    SCS.Optimizer,
+    "eps_abs" => 1e-9,
+    "eps_rel" => 1e-9,
+    "verbose" => 0,
+)
+set_optimizer(qcqp, () -> SumOfSquares.Optimizer(sdp_solver))
+optimize!(qcqp)
+@test termination_status(qcqp) == MOI.OPTIMAL #src
+qcqp_bound = objective_bound(qcqp)
+
+# PowerModels keeps active and reactive power at both ends of every branch.
+# On case14 that adds 80 flow variables to the 38 voltage and generator
+# variables, giving a dense first-order Gram block of size 119.
+# PowerModels enforces the apparent-power limit directly as
+# `p² + q² ≤ rate_a²`. The TSSOS formulation below substitutes the branch
+# flows into the bus balances. Substitution would make the apparent-power
+# constraint quartic, so TSSOS uses the weaker quadratic current limit
+# `|I|² ≤ rate_a² / vmin²`, which follows from `|S| = |V| |I|`.
+# It also encodes generator intervals as quadratic inequalities. These choices
+# affect the first-order SDP and its sparsity.
 
 # ## Building the polynomial optimization problem
 #
@@ -280,6 +311,7 @@ end
 
 model, con_ref = relaxation(f, ineqs, eqs)
 dense_bound = objective_value(model)
+@test dense_bound ≈ qcqp_bound atol = 0.01 #src
 @test dense_bound ≈ AC rtol = 1e-4 #src
 solution_summary(model)
 
@@ -287,8 +319,9 @@ solution_summary(model)
 
 dense_bound
 
-# The gap with respect to the locally optimal `AC` value is essentially zero:
-# the first-order relaxation is already tight for this instance.
+# Both dense relaxations and the Ipopt operating point give 2178.08 to the
+# cent on case14. We report the gap from each SOS bound to the Ipopt cost
+# as a percentage of that cost.
 
 gap(opt) = 100 * (AC - opt) / AC
 gap(dense_bound)
