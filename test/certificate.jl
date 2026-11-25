@@ -162,6 +162,27 @@ end
     end
 end
 
+@testset "Newton postfilter with a weighted Gram basis ($B)" for B in (
+    MB.Monomial,
+    MB.ScaledMonomial,
+    MB.Chebyshev,
+)
+    @polyvar x y
+    vars = [x, y]
+    full = MB.FullBasis{B}(vars)
+    unit = MB.constant_algebra_element(full, Float64)
+    p = unit + 2 * MB.algebra_element(full[[2, 2]])
+    g = unit - MB.algebra_element(full[[2, 0]])
+    multiplier = MB.SubBasis{B}(MP.monomials(vars, 0:1))
+    gram = MB.SubBasis{B}(MP.monomials(vars, 0:2))
+    filtered = Certificate.post_filter(p, [g, unit], [multiplier, gram])
+    @test MB.keys_as_monomials(filtered[1]) == [1, x]
+    # In the Chebyshev basis the square of the (1, 1) element also
+    # contributes to the (2, 0) and (0, 2) elements.
+    expected = B == MB.Chebyshev ? [1, x, x^2] : [1, x, x * y, x^2]
+    @test MB.keys_as_monomials(filtered[2]) == expected
+end
+
 @testset "Random SOS should be SOS" begin
     @polyvar x y
     x = [1, x, y, x^2, y^2, x * y]
