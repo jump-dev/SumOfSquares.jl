@@ -10,6 +10,11 @@ import MultivariateBases as MB
 import MutableArithmetics as MA
 import StarAlgebras as SA
 
+function test_mantel_tutorial()
+    include("../docs/src/tutorials/Symmetry/mantel.jl")
+    return
+end
+
 function test_invariant_basis_projection()
     @polyvar x y
     monomials = MB.SubBasis{MB.Monomial}([x, y])
