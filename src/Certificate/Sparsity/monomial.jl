@@ -130,21 +130,30 @@ function monomial_sparsity_iteration(
     P_next, cliques =
         monomial_sparsity_iteration(P, completion, use_all_monomials, monos)
     multiplier_cliques = map(multiplier_generator_monos) do m
-        multiplier_monos, generator_monos = m
-        g, squares = monomial_sparsity_graph(
-            multiplier_monos,
-            GeneratorP(P, generator_monos),
-            use_all_monomials,
-        )
-        H, _cliques = completion_with_squares(g, squares, completion)
-        _add_monos(multiplier_monos, H, squares) do mono
-            for b in generator_monos
-                push!(P_next, MP.monomial(mono * b))
-            end
-        end
-        return _cliques
+        return _localizing_blocks!(P_next, P, completion, use_all_monomials, m...)
     end
     return P_next, (cliques, multiplier_cliques)
+end
+function _localizing_blocks!(
+    P_next,
+    P,
+    completion,
+    use_all_monomials,
+    multiplier_monos,
+    generator_monos,
+)
+    g, squares = monomial_sparsity_graph(
+        multiplier_monos,
+        GeneratorP(P, generator_monos),
+        use_all_monomials,
+    )
+    H, _cliques = completion_with_squares(g, squares, completion)
+    _add_monos(multiplier_monos, H, squares) do mono
+        for b in generator_monos
+            push!(P_next, MP.monomial(mono * b))
+        end
+    end
+    return _cliques
 end
 function _monomial_vector(cliques::AbstractVector{<:MP.AbstractMonomial})
     return MP.monomial_vector(cliques)

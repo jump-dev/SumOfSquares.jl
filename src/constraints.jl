@@ -241,6 +241,23 @@ function default_certificate(
     return ideal_certificate
 end
 function default_certificate(
+    ::BasicSemialgebraicSet,
+    sparsity::Certificate.Sparsity.VariableMonomial,
+    ideal_certificate::Certificate.Sparsity.Ideal,
+    cone,
+    gram_basis,
+    zero_basis,
+    maxdegree,
+    newton_polytope,
+)
+    certificate = ideal_certificate.certificate
+    return Certificate.Sparsity.Preorder(
+        sparsity,
+        Certificate.Putinar(certificate, certificate, maxdegree),
+    )
+end
+
+function default_certificate(
     domain::BasicSemialgebraicSet,
     sparsity::Certificate.Sparsity.Pattern,
     ideal_certificate::Certificate.Sparsity.Ideal,

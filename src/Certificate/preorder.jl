@@ -161,3 +161,7 @@ ideal_certificate(::Type{<:Putinar{MC,IC}}) where {MC,IC} = IC
 function SumOfSquares.matrix_cone_type(::Type{<:Putinar{MC}}) where {MC}
     return SumOfSquares.matrix_cone_type(MC)
 end
+
+# A joint sparsity computation can prescribe the residual Gram blocks before
+# the bridge introduces the inequality multipliers.
+ideal_certificate(certificate, processed) = ideal_certificate(certificate)

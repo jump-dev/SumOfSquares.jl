@@ -15,25 +15,30 @@ struct Ideal{S<:Pattern,C<:SumOfSquares.Certificate.AbstractIdealCertificate} <:
 end
 
 function Ideal(
-    sp::Variable,
+    sp::Union{Variable,VariableMonomial},
     gram_basis,
     zero_basis,
     cone,
     maxdegree::Nothing,
     newton_polytope,
 )
-    return error(
-        "`newton_of_remainder` is not supported when `sparsity` is `Sparsity.Variable`.",
-    )
+    return error("`newton_of_remainder` is not supported with $(typeof(sp)).")
 end
 function Ideal(
-    sp::Variable,
+    sp::Union{Variable,VariableMonomial},
     gram_basis,
     zero_basis,
     cone,
     maxdegree::Integer,
     newton_polytope,
 )
+    if sp isa VariableMonomial && !(gram_basis isa MB.FullBasis{MB.Monomial})
+        throw(
+            ArgumentError(
+                "VariableMonomial requires a full monomial Gram basis.",
+            ),
+        )
+    end
     return Ideal(
         sp,
         SumOfSquares.Certificate.MaxDegree(

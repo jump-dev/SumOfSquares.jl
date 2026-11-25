@@ -90,7 +90,7 @@ function MOI.Bridges.Constraint.bridge_constraint(
     new_set = SOS.SOSPolynomialSet(
         set.domain.V,
         MB.explicit_basis(p),
-        Certificate.ideal_certificate(set.certificate),
+        Certificate.ideal_certificate(set.certificate, preprocessed),
     )
     constraint = MOI.add_constraint(
         model,
@@ -144,7 +144,7 @@ function MOI.Bridges.Constraint.concrete_bridge_type(
     B = Certificate.multiplier_basis_type(CT, MT)
     UMCT = union_constraint_types(MCT)
     UMST = union_set_types(MCT)
-    IC = Certificate.ideal_certificate(CT)
+    IC = Certificate.ideal_certificate(CT, B)
     return SOSPolynomialInSemialgebraicSetBridge{T,G,AT,IC,B,UMCT,UMST,MCT,BT}
 end
 

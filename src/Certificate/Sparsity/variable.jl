@@ -33,8 +33,12 @@ function csp_graph(
     basis::MB.SubBasis{MB.Monomial},
     ::FullSpace,
     maxdegree = nothing,
+    variables = (),
 )
     G = CEG.LabelledGraph{MP.variable_union_type(MP.monomial_type(basis))}()
+    for v in variables
+        CEG.add_node!(G, v)
+    end
     for mono in MB.keys_as_monomials(basis)
         CEG.add_clique!(G, MP.effective_variables(mono))
     end
@@ -45,8 +49,9 @@ function csp_graph(
     basis::MB.SubBasis,
     domain::AbstractAlgebraicSet,
     maxdegree = nothing,
+    variables = (),
 )
-    G = csp_graph(basis, FullSpace())
+    G = csp_graph(basis, FullSpace(), maxdegree, variables)
     degree =
         domain isa SemialgebraicSets.TruncatedAlgebraicSet ? domain.maxdegree :
         nothing
@@ -60,8 +65,9 @@ function csp_graph(
     basis::MB.SubBasis,
     domain::BasicSemialgebraicSet,
     maxdegree = nothing,
+    variables = (),
 )
-    G = csp_graph(basis, domain.V, maxdegree)
+    G = csp_graph(basis, domain.V, maxdegree, variables)
     for p in inequalities(domain)
         _constraint_edges!(G, p, maxdegree)
     end
@@ -71,11 +77,13 @@ end
 function chordal_csp_graph(
     basis::MB.SubBasis,
     domain::AbstractBasicSemialgebraicSet,
-    maxdegree = nothing,
+    maxdegree = nothing;
+    variables = (),
+    algorithm = CEG.GreedyFillIn(),
 )
     H, cliques = CEG.chordal_extension(
-        csp_graph(basis, domain, maxdegree),
-        CEG.GreedyFillIn(),
+        csp_graph(basis, domain, maxdegree, variables),
+        algorithm,
     )
     for clique in cliques
         sort!(clique, rev = true)

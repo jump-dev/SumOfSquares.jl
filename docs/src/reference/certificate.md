@@ -11,6 +11,7 @@ Types of sparsity
 ```@docs
 SumOfSquares.Certificate.Sparsity.Variable
 SumOfSquares.Certificate.Sparsity.Monomial
+SumOfSquares.Certificate.Sparsity.VariableMonomial
 SumOfSquares.Certificate.Sparsity.SignSymmetry
 SumOfSquares.Certificate.Sparsity.XORSpace
 ```
