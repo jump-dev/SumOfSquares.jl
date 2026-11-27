@@ -793,6 +793,20 @@ function SA.unsafe_push!(c::_DictCoefficients{K}, key::K, value) where {K}
     return c
 end
 
+function SA.unsafe_push_borrowed!(
+    c::_DictCoefficients{K},
+    key::K,
+    value,
+) where {K}
+    owned_key = getkey(c.inner, key, nothing)
+    if owned_key === nothing
+        c.inner[MA.copy_if_mutable(key)] = value
+    else
+        c.inner[owned_key] = MA.operate!!(+, c.inner[owned_key], value)
+    end
+    return c
+end
+
 function _term(α, p::MB.BasisElement)
     return SA.algebra_element(MP.term(α, p))
 end
@@ -837,6 +851,7 @@ function _weighted_gram_product(
     ::SA.OrderedTermProduct,
     cache,
     _,
+    buffers,
     change,
     a,
     b,
@@ -844,14 +859,16 @@ function _weighted_gram_product(
 )
     full = SA.basis(cache)
     ms = SA.mstructure(cache)
-    key, weight = only(SA.nonzero_pairs(ms(full[a], full[b])))
+    key, weight =
+        MA.operate_to!!(buffers[1], SA.basis_product, ms, full[a], full[b])
     count = convert(SignCount, weight * change)
     # Multiplication by a fixed key maps distinct generator keys to distinct
     # product keys, so these contributions can be used without canonicalizing.
     return Iterators.map(
         SA.nonzero_pairs(SA.coeffs(generator)),
     ) do (g, coefficient)
-        product, scale = only(SA.nonzero_pairs(ms(key, g)))
+        product, scale =
+            MA.operate_to!!(buffers[2], SA.basis_product, ms, key, g)
         return product => scale * (coefficient * count)
     end
 end
@@ -860,6 +877,7 @@ function _weighted_gram_product(
     ::SA.GeneralTermProduct,
     cache,
     cache2,
+    _,
     change,
     a,
     b,
@@ -868,6 +886,20 @@ function _weighted_gram_product(
     MA.operate_to!(cache, *, _term(change, a), MB.algebra_element(b))
     MA.operate_to!(cache2, *, cache, generator)
     return SA.nonzero_pairs(SA.coeffs(cache2))
+end
+
+function _gram_buffers(::SA.GeneralTermProduct, _)
+    return nothing, nothing
+end
+
+function _gram_buffers(::SA.OrderedTermProduct, counter)
+    counts = SA.coeffs(counter)
+    K = SA.key_type(counts)
+    op = SA.UnsafeAddMul(SA.mstructure(counter))
+    return ntuple(
+        _ -> MA.buffer_for(op, typeof(counts), K, K, SignCount),
+        Val(2),
+    )
 end
 
 # If `mono` is such that there is no other way to have `mono^2` by multiplying
@@ -933,8 +965,10 @@ function _post_filter(
     alg,
 )
     # The counter needs unique keys and does not need to keep them sorted.
-    counts = _DictCoefficients(Dict{SA.key_type(SA.basis(alg)),SignCount}())
+    K = SA.key_type(SA.basis(alg))
+    counts = _DictCoefficients(Dict{K,SignCount}())
     counter = SA.AlgebraElement(counts, alg)
+    buffers = _gram_buffers(style, counter)
     cache = zero(SignCount, alg)
     cache2 = zero(SignCount, alg)
     for (mono, v) in SA.nonzero_pairs(SA.coeffs(poly))
@@ -959,12 +993,19 @@ function _post_filter(
             )
         end
         empty!(gram_counts.inner)
-        MA.operate!(
+        MA.buffered_operate!(
+            buffers[1],
             SA.UnsafeAdd(),
             gram,
             SA.QuadraticForm{SA.star}(SignGram(-1, gram_monos)),
         )
-        MA.operate!(SA.UnsafeAddMul(*), counter, mult, gram)
+        MA.buffered_operate!(
+            buffers[1],
+            SA.UnsafeAddMul(*),
+            counter,
+            mult,
+            gram,
+        )
     end
     back = Dict{SA.key_type(counts),Vector{Tuple{Int,Int}}}()
     keep = [ones(Bool, length(monos)) for monos in multipliers_gram_monos]
@@ -979,13 +1020,14 @@ function _post_filter(
             style,
             cache,
             cache2,
+            buffers,
             change,
             a,
             b,
             generator,
         )
         for (key, value) in product
-            SA.unsafe_push!(counts, key, value)
+            SA.unsafe_push_borrowed!(counts, key, value)
             if !ismissing(_sign(counts[key]))
                 edges = pop!(back, key, nothing)
                 if edges !== nothing
@@ -1021,14 +1063,17 @@ function _post_filter(
                 style,
                 cache,
                 cache2,
+                buffers,
                 SignChange(1, 1),
                 mono,
                 mono,
                 generators[i],
             )
             for (key, _) in product
-                if ismissing(_sign(counts[key]))
-                    push!(get!(Vector{Tuple{Int,Int}}, back, key), (i, j))
+                # The counter already owns each key in the product.
+                owned_key = getkey(counts.inner, key, key)
+                if ismissing(_sign(counts[owned_key]))
+                    push!(get!(Vector{Tuple{Int,Int}}, back, owned_key), (i, j))
                 else
                     push!(pending, (i, j))
                     break
